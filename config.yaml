@@ -25,3 +25,39 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: TokenComp
+      description: 请帮我去找token compression相关论文
+      enabled: true
+      keywords:
+        - keyword: token compression
+          keyword_cn: token压缩
+          query: token compression techniques in natural language processing
+        - keyword: pruning tokens
+          keyword_cn: token剪枝
+          query: pruning unnecessary tokens in input sequences
+        - keyword: dynamic token selection
+          keyword_cn: 动态token选择
+          query: dynamic selection of tokens for processing
+      intent_queries:
+        - query: methods for compressing tokens in language models
+          query_cn: 语言模型中token压缩的方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: techniques to reduce token count in transformers
+          query_cn: 减少transformer中token数量的技术
+          enabled: true
+          source: manual
+          note: ''
+        - query: approaches for efficient token handling in NLP
+          query_cn: NLP中高效token处理的方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: strategies for token compression in long sequences
+          query_cn: 长序列中token压缩的策略
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-18T08:32:40.960Z'
