@@ -1,0 +1,551 @@
+Title: Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality
+
+URL Source: https://arxiv.org/pdf/2603.01471v1
+
+Published Time: Tue, 03 Mar 2026 03:25:05 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality 
+
+# Jiahan Chen 
+
+State Key Laboratory of AI Safety, Institute of Computing Technology, Chinese Academy of Sciences University of Chinese Academy of Sciences Beijing, China chenjiahan24s@ict.ac.cn 
+
+# Da Li, Hengran Zhang 
+
+State Key Laboratory of AI Safety, Institute of Computing Technology, Chinese Academy of Sciences University of Chinese Academy of Sciences Beijing, China lida21s@ict.ac.cn zhanghengran22z@ict.ac.cn 
+
+# Yinqiong Cai,Lixin Su 
+
+Baidu Inc. Beijing, China caiyinqiong@baidu.com sulixin@baidu.com 
+
+# Jiafeng Guo 
+
+State Key Laboratory of AI Safety, Institute of Computing Technology, Chinese Academy of Sciences University of Chinese Academy of Sciences Beijing, China guojiafeng@ict.ac.cn 
+
+# Daiting Shi,Dawei Yin 
+
+Baidu Inc. Beijing, China shidaiting01@baidu.com yindawei02@baidu.com 
+
+# Keping Bi 
+
+State Key Laboratory of AI Safety, Institute of Computing Technology, Chinese Academy of Sciences University of Chinese Academy of Sciences Beijing, China bikeping@ict.ac.cn 
+
+## Abstract 
+
+Multimodal embedding models, rooted in multimodal large lan-guage models (MLLMs), have yielded significant performance im-provements across diverse tasks such as retrieval and classification. However, most existing approaches rely heavily on large-scale contrastive learning, with limited exploration of how the architec-tural and training paradigms of MLLMs affect embedding quality. While effective for generation, the causal attention and next-token prediction paradigm of MLLMs does not explicitly encourage the formation of globally compact representations, limiting their ef-fectiveness as multimodal embedding backbones. To address this, we propose CoCoA , a Co ntent reconstruction pre-training para-digm based on Co llaborative Attention for multimodal embedding optimization. Specifically, we restructure the attention flow and in-troduce an EOS-based reconstruction task, encouraging the model to reconstruct input from the corresponding ⟨EOS ⟩ embeddings. This drives the multimodal model to compress the semantic infor-mation of the input into the ⟨EOS ⟩ token, laying the foundations for subsequent contrastive learning. Extensive experiments on MMEB-V1 demonstrate that CoCoA built upon Qwen2-VL and Qwen2.5-VL significantly improves embedding quality. Results validate that con-tent reconstruction serves as an effective strategy to maximize the value of existing data, enabling multimodal embedding models  
+
+> Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+> Conference acronym ’XX, Woodstock, NY
+> ©2018 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM ISBN 978-1-4503-XXXX-X/2018/06 https://doi.org/XXXXXXX.XXXXXXX
+
+generate compact and informative representations, raising their performance ceiling. 
+
+## CCS Concepts 
+
+• Information systems → Retrieval models and ranking .
+
+## Keywords 
+
+Multimodal Retrieval, Pretraining, Cross-Modal Alignment 
+
+ACM Reference Format: 
+
+Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi. 2018. Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality. In 
+
+Proceedings of Make sure to enter the correct conference title from your rights confirmation email (Conference acronym ’XX). ACM, New York, NY, USA, 11 pages. https://doi.org/XXXXXXX.XXXXXXX 
+
+## 1 Introduction 
+
+Multimodal embedding, a foundational paradigm in cross-modal learning, aims to project heterogeneous modality-specific inputs into a shared high-dimensional semantic space, where semantically equivalent content from different modalities is mapped to compara-ble representations [ 8, 19 , 27 , 39 ]. By bridging the inherent semantic gaps between heterogeneous data, this technique enables models to interpret and correlate information across modalities rather than in isolation. As a cornerstone component, multimodal embedding un-derpins a spectrum of high-impact tasks, ranging from cross-modal retrieval (e.g., text-to-image and image-to-text retrieval for con-tent discovery) to advanced vision-language understanding tasks such as visual question answering, visual commonsense reasoning, and multimodal sentiment analysis. Its practical value extends to real-world applications [ 5 , 9, 11 , 34 ], including personalized con-tent recommendation, intelligent retrieval and categorization of  
+
+> arXiv:2603.01471v1 [cs.IR] 2 Mar 2026 Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi
+
+e-commerce product images, and natural language-enabled seman-tic query for medical image databases, cementing its role as a pivotal driver of progress in modern information systems. Previous explorations, exemplified by methods such as CLIP [ 27 ], BLIP [ 19 ], ALBEF [ 20 ], and their variants [ 1, 33 , 35 –37 ], constructed multimodal embeddings by first encoding heterogeneous modality inputs separately, then fusing features via cross-modal alignment. Recently, Multimodal Large Language Models (MLLMs), a core component in building general-purpose AI systems, have made re-markable strides [ 2, 23 , 41 ], demonstrating transformative progress in unifying multimodal perception, generation, and reasoning. The success of MLLMs has unlocked new directions for multimodal embedding models. These MLLMs can be directly optimized as the backbone of multimodal embedding models. E5-V [ 16 ] introduces a unimodal contrastive learning paradigm, training the language branch of MLLMs on sentence pairs to narrow cross-modal rep-resentation gaps. VLM2Vec [ 17 ] presents the Massive Multimodal Embedding Benchmark (MMEB) comprising 36 datasets across 4 meta-tasks, and a contrastive training framework to transform state-of-the-art MLLMs into embedding models. Building on these foundations, LLaVE [ 18 ] proposes a simple yet effective framework that dynamically enhances the embedding model’s representation of negative pairs based on their discriminative difficulty. Under the influence of the scaling law [ 10 ], existing work focuses on optimizing contrastive learning, concentrating on how to modify the training process to enable MLLM-based embedding models to learn effectively from massive data. However, several structural challenges remain insufficiently explored. Firstly, the causal at-tention mechanism in MLLMs is not appropriately designed for embedding-oriented objectives . Mainstream multimodal em-bedding models [ 17 , 39 ] inherit causal attention from their MLLM backbones, where each token attends only to preceding tokens. While this unidirectional attention is essential for autoregressive generation, it does not explicitly encourage holistic semantic fusion across modalities, making it less suited for constructing compact and information-dense multimodal representations [ 3]. Secondly, 
+
+there exists a fundamental mismatch between next-token prediction and contrastive learning . Next token prediction pri-oritizes sequential coherence for generation, whereas contrastive learning aims to produce globally compact embeddings that capture the holistic semantic content of multimodal inputs. As a result, it is often necessary to employ alternative training objectives to bridge the gap between the two tasks. Several recent studies have proposed targeted strategies. UniME [ 12 ] employs knowledge distillation to enable the text modules within MLLMs to learn from a competi-tive text embedding model. MoCa [ 7 ] replaces the causal attention mechanism in MLLMs with a bidirectional attention mechanism. It further pre-trains the modified model on a massive corpus of 30B tokens, reorienting MLLMs from sequence generation toward em-bedding output, which incurs significant computational overhead and imposes requirements on data scale. In this work, we propose CoCoA , an effective pre-training strat-egy that enables MLLMs to transition into competitive multimodal embedding models. We restructure the attention flow and intro-duce an EOS-based reconstruction task, which prompts the model to reconstruct the original input using the corresponding ⟨EOS ⟩
+
+embeddings. This incentivizes the multimodal model to distill and compress the full semantic information of the input into the ⟨EOS ⟩
+
+token, thereby laying a solid foundation for subsequent contrastive learning. The end-to-end training process consists of three phases, which progressively transform causal attention-based MLLMs into effective multimodal embedding encoders. Firstly, we activate and warm up bidirectional attention through joint multimodal recon-struction, by performing masked next token prediction (MNTP) on text and masked autoencoding (MAE) on images, enabling un-restricted information flow across modalities and establishing a foundation for deep semantic fusion. Secondly, we introduce an EOS-Bridged compression mechanism via attention truncation. Dur-ing encoding, inputs are structured into a compression-side and a reconstruction-side connected by a shared ⟨EOS ⟩ token. By ag-gressively masking the text-side tokens and optimizing MNTP on the text block conditioned on ⟨EOS ⟩, we force multimodal infor-mation from the visual block to be summarized and compressed into the ⟨EOS ⟩ token, yielding compact and information-dense em-beddings. Finally, we perform contrastive learning based on the compressed embeddings, aligning multimodal representations in a unified semantic space. This staged design ensures that contrastive learning operates on compact and information-rich embeddings, rather than attempting to induce alignment directly from loosely organized representa-tions. Experiments on MMEB-V1 demonstrate that CoCoA is both efficient and effective. In the comparison of multimodal embed-ding models with a small size ( ≤ 3𝐵 ), it achieved state-of-the-art performance. In the comparison of 7𝐵 models, CoCoA achieved competitive results using a negligible amount of pre-training data compared to other methods, and still demonstrated an upward trend when additional data is introduced. We also conducted further ab-lation experiments to analyze how CoCoA works. Our results show that through content reconstruction, the potential of MLLMs in the field of multimodal embedding can be unlocked, thereby estab-lishing a robust foundation for large-scale contrastive learning. In summary, our contributions are as follows: 
+
+• We propose CoCoA, an effective training paradigm to mitigate the mismatch between next token prediction and contrastive learn-ing, by introducing the auxiliary task of content reconstruction to enable holistic multimodal fusion, compressing multimodal context into compact and information-rich embeddings. 
+
+• We compared CoCoAwith competitive multimodal embedding models. The results demonstrate that our approach achieves performance comparable to SOTA using significantly less data. This underscores the efficacy of CoCoA. 
+
+• We also conducted detailed experiments to analyse how CoCoA-works. The results demonstrate that it is the quality rather than the quantity of data that determines whether our reconstruction is effective and can aid in optimising contrastive learning. 
+
+## 2 Related Work 2.1 Multimodal Embedding 
+
+Multimodal embedding, as a core technology for cross-modal in-teraction, establishes a foundation for downstream tasks such as retrieval and classification by mapping information from different modalities, including text, images, and video, into a high-dimensional vector space, thereby enabling semantic matching [17, 19, 27, 40]. Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+Early Vision-Language Models (VLMs) process information across different modalities through deep fusion, such as CLIP [ 27 ] and BLIP [ 19 ], which achieve multimodal information interaction and deep fusion by independently encoding images and text and train-ing under specific objectives. CLIP is pre-trained on a large cor-pus of weakly annotated image-text pairs, aligning visual and tex-tual representations in a shared latent space through symmetric contrastive learning. BLIP introduces a multi-task pre-training framework based on CLIP, enhancing cross-modal representation performance in retrieval and classification tasks by unifying con-trastive learning, image-text matching, and image captioning tasks. However, the deep fusion paradigm inherently suffers from insuf-ficient cross-modal interaction, which limits its performance in fine-grained tasks. To mitigate this issue, VLMs have explored early fusion to strengthen cross-modal interactions between visual and textual modalities [ 17 , 39 , 40 ]. For instance, VISTA [ 40 ] improves the quality of multimodal embeddings by incorporating visual rep-resentations as input to text embedding models. Driven by the rapid adoption of multimodal large language mod-els (MLLMs), multimodal embedding has undergone a pivotal par-adigm shift. MLLMs can serve as powerful backbones for embed-ding models. There are several refined training strategies have been proposed to enhance the performance of MLLM-based em-bedding models. For example, VLM2Vec [ 17 ] extends contrastive learning to a multi-task setting to improve robustness across het-erogeneous objectives. GME [ 39 ] approaches the problem from a different perspective by synthesizing large-scale, high-quality fused-modal training data to enhance multimodal embedding learn-ing. Contrastive learning is inherently coarse-grained, as it prior-itizes instance-level similarity and provides limited supervision for fine-grained semantics matching. Moreover, this paradigm is highly sensitive to the quality and hardness of negative samples, where low-informative negatives can drastically hinder the dis-criminative power of learned representations. Consequently, recent work has focused on refining the contrastive learning paradigm. LLaVE [ 18 ] further enhances alignment by introducing hardness-weighted contrastive learning together with cross-device negative sample gathering. UniME-V2 [ 13 ] leverages MLLMs to mine hard negative samples, making embedding model training more efficient. 
+
+## 2.2 Pretraining for Multimodal Embedding 
+
+Contrastive learning, as a training paradigm for embedding opti-mization, has significantly advanced the matching capabilities of multimodal embeddings through global similarity constraints. How-ever, it is hard to scale without labeled pair data [ 28 , 30 ]. Contrastive learning cannot leverage the vast amount of unpaired multimodal data available on the internet. Lack of diversity in training objec-tives leads to suboptimal cross-modal alignment [ 8]. Contrastive learning encourages alignment based primarily on surface-level similarity, rather than deeper semantic or contextual understanding. As a result, the learned embedding models often struggle to general-ize to diverse multimodal scenarios. These limitations highlight the need for more expressive training objectives that explicitly facilitate semantic understanding over heterogeneous data distributions. To address this gap, early pioneering works, such as ALBEF [ 20 ] and BLIP [ 19 ], integrate auxiliary supervision signals into multimodal pre-training pipelines. Specifically, they employ Image-Text Match-ing and Masked Token Prediction on text, which helps inject richer semantic supervision into multimodal representations. Recent work, UniME [ 12 ], proposes an additional pretraining stage to improve multimodal embedding quality by leveraging textual discriminative knowledge distillation, in which a competitive LLM-based embed-ding model serves as a teacher to enhance the language representa-tions of the MLLMs. Beyond auxiliary objectives, some approaches further recognize the limitations of causal attention in VLMs for multimodal context fusion and advocate enabling bidirectional at-tention during pretraining. MoCa [ 7] introduces a modality-aware continual pretraining stage, converts the original causal VLM into a bidirectional multimodal encoder, and integrates Masked Language Modeling (MLM) and Masked Autoencoding (MAE), improving the model’s ability to capture bidirectional contextual dependencies and align multimodal semantics. 
+
+## 3 Preliminary 
+
+Multimodal Embedding Models. Multimodal embedding models encode images and text through two key steps: first, converting images and text into sequences of patches and tokens; then, using a unified backbone model to map these visual patches and text tokens into vectors within a shared latent space. Application of diverse pooling strategies on yielded feature sequences results in a corresponding embedding for the input. Recently, Multimodal Large Language Models (MLLMs), renowned for their robust cross-modal understanding abilities [ 2, 23 ], can serve as the backbone for multimodal embedding models. Most of them adopt causal attention, under which information from different modalities is aggregated unidirectionally, and embeddings are typically extracted from the last ⟨EOS ⟩ token [15]. 
+
+Contrastive Learning. Contrastive learning plays a central role in multimodal embedding optimization by enforcing semantic con-sistency across modalities. Its core objective is to pull semanti-cally relevant query-target pairs closer in the unified embedding space while pushing apart irrelevant pairs. This training paradigm has been adopted in downstream tasks such as multi-modal re-trieval, owing to its effectiveness in learning discriminative em-beddings [ 17 , 26 , 39 ]. Given an MLLM-based embedding model, we obtain the corresponding embedding by feeding the query and the target into the model. Specifically, we extract the embeddings 
+
+ℎ𝑞 and ℎ𝑡 + from the last layer hidden state of the ⟨EOS ⟩ token. To optimize the embedding space, we adopt the InfoNCE [ 31 ] objective with in-batch negative samples, formulated as: 
+
+L = − log exp (sim (ℎ𝑞 , ℎ 𝑡 + )/ 𝜏 )
+
+exp (sim (ℎ𝑞 , ℎ 𝑡 + )/ 𝜏 ) + Í𝑡 − ∈ N exp (sim (ℎ𝑞 , ℎ 𝑡 − )/ 𝜏 ) ,
+
+where N denotes the set of all negative samples, sim (·) denotes the similarity function and 𝜏 is a temperature hyperparameter. 
+
+## 4 Method 
+
+MLLMs can serve as the backbone for embedding models and have demonstrated remarkable performance in tasks such as retrieval and classification. However, the causal attention mechanism inherent to these models creates a bottleneck for cross-modal information fu-sion: it rigidly controls information access such that only tokens in Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi A small <mask> runs 
+
+> through the grass <mask> a
+> pink ball.
+> Full Bidirectional
+> Attention
+
+beagle,carrying,... 
+
+Random mask 50% patches 
+
+Random mask 20% tokens 
+
+Stage 1: Bidirectional Attention Warm-Up via Joint Reconstruction 
+
+> Image Decoder
+> Predict Head
+
+LLM 
+
+> MAE
+> MNTP
+> Weighted
+> Total Loss
+> Vision Token
+> Text Token
+> Masked Token
+> Compressed
+> Token
+
+Input 
+
+Stage 2: EOS-Bridged Reconstruction via Attention Truncation 
+
+LLM 
+
+> <EOS> Bridged
+> Attention
+> <EOS> BLOCK B
+> BLOCK A <EOS>
+> Predict
+> Predict
+> Predict
+> A small beagle runs through
+> the grass carrying a pink ball.
+> A relaxed tabby cat is lying
+> on its back in the sunlight.
+
+Stage 3: Contrastive Learning with Compressed Embeddings 
+
+> Push
+> Pull
+
+LLM 
+
+> A small <mask> runs
+> through the grass <mask> a
+> pink ball.
+> Full Bidirectional
+> Attention
+
+beagle,carrying,... 
+
+Random mask 50% patches 
+
+Random mask 20% tokens 
+
+Stage 1: Bidirectional Attention Warm-Up via Joint Reconstruction 
+
+> Image Decoder
+> Predict Head
+
+LLM 
+
+> MAE
+> MNTP
+> Weighted
+> Total Loss
+> Vision Token
+> Text Token
+> Masked Token
+> Compressed
+> Token
+
+Input 
+
+> A small <mask> runs
+> through the grass <mask> a
+> pink ball.
+> Full Bidirectional
+> Attention
+
+beagle,carrying,... 
+
+Random mask 50% patches 
+
+Random mask 20% tokens 
+
+Stage 1: Bidirectional Attention Warm-Up via Joint Reconstruction 
+
+> Image Decoder
+> Predict Head
+
+LLM 
+
+> MAE
+> MNTP
+> Weighted
+> Total Loss
+> Vision Token
+> Text Token
+> Masked Token
+> Compressed
+> Token
+
+Input 
+
+Stage 2: EOS-Bridged Reconstruction via Attention Truncation 
+
+LLM 
+
+> <EOS> Bridged
+> Attention
+> <EOS> BLOCK B
+> BLOCK A <EOS>
+> Predict
+> Predict
+> Predict
+
+Stage 2: EOS-Bridged Reconstruction via Attention Truncation 
+
+LLM 
+
+> <EOS> Bridged
+> Attention
+> <EOS> BLOCK B
+> BLOCK A <EOS>
+> Predict
+> Predict
+> Predict
+> A small beagle runs through
+> the grass carrying a pink ball.
+> A relaxed tabby cat is lying
+> on its back in the sunlight.
+
+Stage 3: Contrastive Learning with Compressed Embeddings 
+
+> Push
+> Pull
+
+LLM 
+
+> A small beagle runs through
+> the grass carrying a pink ball.
+> A relaxed tabby cat is lying
+> on its back in the sunlight.
+
+Stage 3: Contrastive Learning with Compressed Embeddings 
+
+> Push
+> Pull
+
+LLM 
+
+Figure 1: Overview of CoCoA. Stage 1: Bidirectional attention warm-up using MAE and MNTP for different modalities; Stage 2: EOS-bridged caption or answer tokens reconstruction forces the multi-modalities’ semantics to be compressed into a single token, i.e., ⟨EOS ⟩; Stage 3: Contrastive learning using ⟨EOS ⟩ .
+
+subsequent positions can extract and utilize contextual information from tokens that appear earlier in the sequence. Moreover, with-out additional training, the representations obtained from MLLMs tend to be weakly organized, making direct contrastive learning insufficient for fully exploiting the training data to generate com-pact and semantically well-structured embeddings. To address the aforementioned bottleneck and empower embedding models to comprehensively capture and fuse cross-modal contextual infor-mation, we propose an end-to-end training process consisting of three stages. In the first stage, we employ bidirectional attention to replace the original causal attention in MLLMs, and we deploy joint sequence reconstruction tasks to guide the MLLMs’ adapta-tion to bidirectional contextual dependency. And then we further exploit bidirectional attention to reconstruct the content for ex-plicitly compressing the multimodal input, resulting in compact yet semantically rich high-quality embeddings. Finally, contrastive learning is performed using the compressed ⟨EOS ⟩ token. 
+
+## 4.1 Bidirectional Attention Warm-Up via Joint Reconstruction 
+
+Mainstream multimodal embedding models [ 17 , 39 ] inherit causal attention from their backbones. However, the restricted informa-tion flow may limit symmetric multimodal interaction and hinders the model’s ability to integrate visual and textual semantics fully. In large language models, prior work [ 3, 38 ] have shown that modify-ing the attention mechanism can improve representation learning. However, directly replacing the causal attention in the backbone with bidirectional attention leads to suboptimal performance [ 3 ]. To adapt the model to bidirectional attention, LLM2Vec introduces a masked next token prediction (MNTP) task before contrastive learning. This pre-training step effectively initializes and activates the bidirectional attention mechanism, laying a foundation for sub-sequent contrastive learning. Motivated by this insight, we adopt a similar strategy in the first stage of our pretraining. For the text modality, we adopt a masked next token prediction (MNTP) objective to warm up the bidirectional attention mecha-nism. Specifically, we randomly mask 20% of the input text tokens and train the model to recover each masked token based on its sur-rounding context while preserving the autoregressive prediction paradigm. For a masked token at position 𝑖 , the model is trained to predict it using the output at the position 𝑖 − 1. The MNTP loss is formulated as: 
+
+LMNTP = −∑︁  
+
+> 𝑖 ∈ T mask
+
+log 𝑝 𝜃 (𝑥 𝑖 | h𝑖 −1) , (1) where Tmask denotes the set of masked text positions, 𝑥 𝑖 is the ground-truth token at position 𝑖 , and h𝑖 −1 is the hidden representa-tion at the previous position. For the image modality, we draw inspiration from the MAE [ 14 ]. Given an input sequence of image patches, we additionally sample a subset of image patches and replace them with Gaussian noise. Follow MAE, a shallow Transformer is employed to reconstruct pixel values within the masked image patch from its output yielded Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+by MLLMs. The MAE loss is defined as: 
+
+LMAE = 1
+
+|P mask |∑︁ 𝑖 ∈ P mask 
+
+MSE ( ˆv𝑖 , v𝑖 ) , (2) where Pmask denotes the set of masked image patches, v𝑖 and ˆv𝑖 
+
+represent the ground-truth and reconstructed visual features of the 𝑖 -th patch, respectively, and MSE (·) denotes the mean squared error. During the warm-up stage, the joint reconstruction objective is formulated as a weighted sum of the MNTP loss on the text modality and the MAE loss on the image modality, which is close to MoCa [7]: 
+
+Lwarm-up = LMNTP + 𝑤 LMAE . (3) 
+
+## 4.2 EOS-Bridged Reconstruction via Attention Truncation 
+
+Benefiting from the bidirectional attention warm-up in the prior stage, which lifts the constraint imposed by causal attention, MLLMs can effectively integrate information from multiple modalities and capture cross-modal semantic relationships, enabling more efficient semantic extraction. However, relying solely on such global seman-tic extraction capabilities still fails to meet the core requirement of precise cross-modal semantic alignment in multimodal tasks. To bridge this gap, we introduce a second-stage pre-training specifi-cally tailored to enhance the cross-modal alignment of MLLMs un-der the bidirectional attention mechanism. We divide a whole input sequence into two blocks and propose attention truncation to regu-late cross-block information flow explicitly. The pre-training data in this stage follows a unified structural format: “ Block A ⟨EOS ⟩ Block B ”, where Block A contains visual or multimodal inputs and Block B in-cludes only textual information. These two blocks are designed for different objectives. Block A aims to extract and compress the cor-responding content of its input. Block B is used to reconstruct the original information using the embedding obtained from Block A .To explicitly control cross-block information flow, we introduce a special ⟨EOS ⟩ token that serves as the sole communication bridge between two blocks. Bidirectional attention is permitted within each block. It is also allowed between Block A and ⟨EOS ⟩, as well as between ⟨EOS ⟩ and Block B . However, direct attention is strictly prohibited between Block A and Block B , preventing the two blocks from accessing each other’s representations. As a result, any cross-block information must be transmitted exclusively through the 
+
+⟨EOS ⟩, which is thereby forced to aggregate and compress multi-modal contextual information. Under the attention truncation constraint, the model is optimized using a masked next token prediction (MNTP) objective on Block B ,where predictions are conditioned solely on the ⟨EOS ⟩ token and the remaining unmasked local context. This design intentionally limits the available textual context, thereby forcing the visual in-formation from Block A to be compactly encoded into the ⟨EOS ⟩
+
+token. We apply an aggressive token masking strategy to Block B .Specifically, when the length of Block B is fewer than four tokens, the entire sequence is masked; otherwise, 70 % of its tokens are ran-domly masked. As a result, the model can successfully reconstruct the masked tokens in Block B only if ⟨EOS ⟩ aggregates and sum-marizes the relevant multimodal content from Block A . Through this aggressive masking strategy, accurate token reconstruction becomes possible only when the ⟨EOS ⟩ representation captures high-level semantic information that bridges the visual and tex-tual modalities. Consequently, the proposed attention truncation mechanism explicitly encourages the compression of multimodal in-formation in Block A into a compact and shared embedding, which is beneficial for subsequent contrastive learning. A core requirement of this pre-training paradigm is that content across Block A and Block B must be semantic-related. We specifi-cally adopt data instances from three meta-tasks in the train set of MMEB-V1: Classification, VQA, and Retrieval. In the training set of MMEB-V1, each instance is formalized as a query–target pair (ab-breviated as qry–tgt). For different tasks, two blocks are constructed differently. For Classification and Retrieval, Block A includes only the image, whereas Block B is composed of the target caption or label. For VQA, Block A consists of the visual input together with the query text, while Block B contains the corresponding target answer. The input and output formats corresponding to different tasks are listed in Table 1. 
+
+Table 1: Construction of training instances in the form of 
+
+Block A ⟨EOS ⟩ Block B for different tasks during reconstruc-tion. 
+
+Meta-Task Block A (Compression) Block B (Reconstruction) 
+
+Classification qry 𝑖𝑚𝑔 tgt 𝑡𝑥𝑡 
+
+VQA qry 𝑖𝑚𝑔 + qry 𝑡𝑥𝑡 tgt 𝑡𝑥𝑡 
+
+Retrieval qry 𝑖𝑚𝑔 tgt 𝑡𝑥𝑡 
+
+Synthetic Data Augmentation for Reconstruction Pretrain-ing. Although the data sources in MMEB-V1 are diverse, they are collected from downstream tasks and lack semantic variation in their content. At the current stage, the semantic association and coverage across different modalities remain insufficient. This may reduce the difficulty of the reconstruction task, making it less ef-fective in improving the quality of the embedding. Therefore, we introduce synthetic data generated by MLLMs into our pretrain-ing, leveraging their strong comprehension abilities to enrich the semantic diversity and quality of our data, like [ 21 ]. We emphasize that the effectiveness of synthetic data in our method does not rely on model heterogeneity, but rather on its ability to integrate information across different modalities to generate richer and more diverse data, which is complementary to real downstream data. Specifically, we generate two types of synthetic data from im-ages in the MMEB-V1 trainset using the Qwen2.5-VL-7B model. The first type corresponds to the setting where the multimodal input contains only an image (i.e., Block A consists solely of visual input). In this case, we prompt the model to produce a natural language description that captures the salient semantic content of the image, forming paired multimodal inputs for pretraining. The second type targets cross-modal scenarios where the multimodal input is composed of both an image and a question. We first prompt the model to generate questions that focus on specific attributes or semantic aspects of the image, and then require the model to produce corresponding answers conditioned on both the image Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi 
+
+and the generated question. This process results in multimodal samples that couple visual content with complementary linguistic supervision, enabling richer cross-modal semantic modeling. The question should:          
+
+> 1. Target a clearly identifiable key element (e.g., a primary
+> object, action, or scene)
+> 2. Be objectively answerable from visual content alone
+> 3. Avoid subjective judgments or ambiguous descriptions
+> Consider prominent objects and their attributes (type, color,
+> position), scene context (location type, time/weather if
+> apparent), and any visible text or symbols if present.
+> Given an image with its title: A
+> man standing on a tennis court
+> holding a racquet.
+> Please generate one concise and
+> specific question that captures the
+> most salient visual information for
+> image retrieval.
+> The person in the picture is wearing a dark jacket, white
+> shorts, and white shoes . They appear to be engaged in playing
+> tennis . This can be inferred from their stance, the racket they
+> are holding , and the setting which resembles a tennis court
+> with a green wall typical of an outdoor tennis area.
+
+Figure 2: An example of synthetic data. The fine-grained details are highlighted in bold to emphasize that these ele-ments are newly introduced by the synthetic data generation process and are not explicitly present in the original data. 
+
+## 4.3 Contrastive Learning Based on Compressed Embeddings 
+
+After the compression pretraining, we refine the multimodal rep-resentations through contrastive learning. For both the query and target inputs, we append the ⟨EOS ⟩ at the end of the sequence and extract its last layer representation as the embedding used for contrastive learning. The ⟨EOS ⟩ token maintains methodologi-cal consistency across stages: having already compressed complex multimodal semantics into an information-dense representation through content reconstruction, it now provides the same high-level context for contrastive learning. Building upon this property, contrastive learning is applied directly to these compressed embed-dings, encouraging semantically related query-target pairs to be pulled closer in the unified embedding space while pushing apart unrelated pairs. This design leads to more robust and discrimina-tive multimodal embeddings, which are uniquely conducive for downstream tasks. 
+
+## 5 Experimental Setup 5.1 Datasets 
+
+CoCoA takes content reconstruction as its core design orientation. To precisely align with this core goal and avoid interference from irrelevant data, all data used for both pretraining and contrastive learning are drawn from the Massive Multimodal Embedding Bench-mark (MMEB-V1), which comprises four meta-tasks: Classification, Visual Question Answering (VQA), Retrieval, and Visual Ground-ing, spanning a total of 36 datasets [ 4, 6, 22 , 29 ]. Among these, 20 datasets [ 24 , 25 , 32 ] are used for training. Across three training stages, we use the data sampled from these 20 datasets. 
+
+Data for Pretraining. During the Bidirectional Attention Warm-Up via Joint Reconstruction Stage, we randomly sample 100K query-target pairs and train the MLLM for one epoch, which we find sufficient for stable convergence. In the following EOS-Bridged Compression via Attention Truncation Stage, we construct a more diverse pretraining corpus by combining both original and synthe-sized data. Specifically, we sample 300K instances from datasets belonging to three meta-tasks: Classification, VQA, and Retrieval. In addition, we further augment the pretraining data by generat-ing approximately 200K high-quality multimodal instances using carefully designed prompts applied to images from the train set of MMEB-V1, thereby enriching the diversity and coverage of multi-modal contexts. 
+
+Data for Contrastive Learning. After completing the pretraining of reconstruction, we proceed to the contrastive learning stage, where only the original train set of MMEB-V1 is used, ensuring a fair evaluation setting without reliance on synthesized data. 
+
+## 5.2 Implementation Details 
+
+We adopt Qwen2-VL and Qwen2.5-VL as the backbone for CoCoA. Our training pipeline consists of two major stages: pretraining for embedding compression and contrastive learning. The pretrain-ing is further divided into bidirectional attention warm-up via joint reconstruction and EOS-Bridged compression via attention truncation. In the first pretraining stage, bidirectional attention is activated to warm up multimodal fusion. A masking ratio of 20% is applied to text tokens for MNTP, while 50% of the image patches are randomly masked for MAE. The loss weight for MAE is set to 0.5. During the second pretraining stage, bidirectional attention is retained while attention truncation is introduced to enforce visual-side compression. To this end, to preserve the integrity of visual information, no masking is applied to the multimodal input( Block A )tokens in the stage. Instead, masking is performed exclusively on the reconstruction-side( Block B ): when fewer than four text tokens are present, all tokens are masked; otherwise, a random masking ratio of 70% is applied. Under this asymmetric masking strategy, the model is trained with MNTP on the reconstruction-side, where the prediction of masked tokens is conditioned on the ⟨EOS ⟩ together with the limited remaining textual context. As a result, multimodal information from the multimodal input must be compactly encoded into the ⟨EOS ⟩, forcing the ⟨EOS ⟩ to act as a semantic bridge that aggregates and compresses visual context to support text recon-struction. Finally, in the third fine-tuning stage, the compressed multimodal embeddings are aligned through contrastive learning with a temperature parameter of 0.02, and the effective batch size is 1024. We adopt dynamic image resolution processing to handle multimodal inputs with varying image sizes. Across all training stages, we use LoRA (r=16), and all experiments are conducted on 8 A800 GPUs with a learning rate of 5e-5. 
+
+## 5.3 Evaluation and Metrics 
+
+We evaluate the performance of CoCoA on the eval set of MMEB-V1, a comprehensive benchmark that evaluates multimodal embed-dings across four meta-tasks aligned with the training setting. It Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+Table 2: Results on MMEB-V1. “IND” denotes in-distribution, and “OOD” refers to out-of-distribution. Bold and underline indicate the optimal and suboptimal performance, respectively. 
+
+Model Size Per Meta-Task Score Average Score 
+
+Classification VQA Retrieval Grounding IND OOD Overall 
+
+Only contrastive learning 
+
+CLIP (ViT-L) 428M 55.2 19.7 53.2 62.2 47.6 42.8 45.4 OpenCLIP (ViT-L) 428M 56.0 21.9 55.4 64.1 50.5 43.1 47.2 GME (Qwen2-VL) 2B 56.9 41.2 67.8 53.4 – – 55.8 UNITE (Qwen2-VL) 2B 63.2 55.9 65.4 75.6 65.8 60.1 63.3 VLM2Vec (Qwen2-VL) 2B 59.0 49.4 65.4 73.4 66.0 52.6 59.3 VLM2Vec (Qwen2.5-VL) 3B 55.3 57.3 62.7 73.2 – – 60.3 E5-V (LLaVA-1.6) 7B 39.7 10.8 39.4 60.2 34.2 33.9 33.9 VLM2Vec (Qwen2-VL) 7B 62.6 57.8 69.9 81.7 72.2 57.8 65.8 mmE5 11B 67.6 62.7 71.0 89.7 72.4 66.6 69.8 
+
+Pretrain before contrastive learning 
+
+UniME (Phi3.5-V) 4.2B 54.8 55.9 64.5 81.8 68.2 52.7 64.2 UniME (LLaVA-1.6) 7B 60.6 52.9 67.9 85.1 68.4 57.9 66.6 MoCa (Qwen2.5-VL) 3B 59.8 62.9 70.6 88.6 72.3 61.5 67.5 MoCa (Qwen2.5-VL) 7B 65.8 64.7 75.0 92.4 74.7 67.6 71.5 
+
+Our method 
+
+CoCoA (Qwen2-VL) 2B 63.0 57.4 69.6 85.8 70.2 60.7 66.0 CoCoA (Qwen2.5-VL) 3B 60.9 63.5 69.5 88.2 72.6 61.2 67.5 CoCoA (Qwen2.5-VL) 7B 64.7 66.5 72.5 90.1 75.7 64.3 70.6 
+
+consists of 36 evaluation datasets, including 20 in-domain datasets and 16 out-of-domain datasets, enabling systematic assessment of both in-distribution and cross-domain generalization. We adopt Precision@1 as the evaluation metric. 
+
+## 6 Experimental Results 
+
+We present the overall multimodal embedding performance on MMEB-V1 in Table 2. For a rigorous comparative analysis, we select a diverse suite of state-of-the-art multimodal embedding models. Experimental results in Table 2 show that CoCoA achieves state-of-the-art performance in a comparison of methods on models of small scale ( ≤ 3𝐵 ). In the comparison of 7𝐵 models, CoCoA achieved competitive results using a negligible amount of pre-training data compared to other methods. Results from CoCoA based on Qwen2-VL and Qwen2.5-VL demonstrate its generalizability. These methods can be categorized into two distinct groups based on their training paradigms: those that exclusively leverage con-trastive learning, and those that incorporate an additional pretrain-ing phase before contrastive learning. Some findings can be drawn by comparing the performance of methods across different groups and by comparing the performance of methods within the same group: (1) Comparison of results between two categories shows that, under the same backbone, introducing a dedicated pretraining stage leads to notable improvements in embedding performance. (2) Comparisons among methods optimized solely through contrastive learning demonstrate the impact of the performance of MLLMs on multimodal embedding models. (3) Compared with existing pre-training approaches, CoCoA achieves comparable results while using substantially less pretraining data and contrastive learning data. MoCa was pretrained with full parameters on a corpus contain-ing 30B tokens, followed by contrastive learning on the MMEB-V1 training set and additional expanded data, totaling approximately 2 million query-target pairs. In contrast, CoCoA uses only 500K pre-training pairs, consists of 300K instances sampled from the train set of MMEB-V1 and an additional 200K high-quality synthetic pairs generated by Qwen2.5-VL-7B, and the whole train set of MMEB-V1 for contrastive learning. Our method achieves performance compa-rable to the best baseline, highlighting the effectiveness of explicit compression. 
+
+## 7 Further Analysis 
+
+We conducted additional experiments to analyze how CoCoA works. To ensure fair and comparable analysis, all the experiments are conducted under a unified setting. We adopt Qwen2-VL-2B as the backbone and extract one million query-target pairs from MMEB-V1 for contrastive learning to enable efficiency in analysis. 
+
+## 7.1 Ablation Study 
+
+To demonstrate the value of each pretraining stage in CoCoA, we compared performance changes after removing each stage indi-vidually from the existing end-to-end training. The same 100K pretraining samples are uniformly sampled from the train set of MMEB-V1 for this comparison. Results are shown in Table 3. First, removing the EOS-Bridged Reconstruction via Attention Trunca-tion leads to the most significant performance degradation. This observation highlights the central role of explicit content recon-struction: by reconstructing input content from the embedding of 
+
+⟨EOS ⟩, multimodal embedding models are compelled to compress Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi 
+
+input information into a compact embedding. It establishes a robust foundation for subsequent contrastive learning. Second, eliminat-ing the Bidirectional Attention Warm-Up stage also results in a clear performance drop. Without prior warm-up, the model strug-gles to exploit bidirectional dependencies, leading to suboptimal cross-modal fusion capabilities and poor compression performance, even when retaining the reconstruction task. 
+
+Table 3: Ablation study on different pretraining stages. Model MMEB-V1 
+
+Our Method 
+
+CoCoA (Qwen2-VL 2B) 62.9 
+
+Pretraining Stage Ablation 
+
+w/o. Bidirectional Attention Warm-Up 61.6 w/o. EOS-Bridged Reconstruction 60.7 
+
+Baseline 
+
+VLM2Vec (Qwen2-VL 2B) 59.3 
+
+We further examine the design of the warm-up stage. We com-pared the performance of models trained using different loss func-tions after subsequent training. The results are presented in Table 4. 
+
+Table 4: Impact of different loss functions in Bidirectional Attention Warm-Up. Image Loss Text Loss MMEB-V1 
+
+MAE MNTP 62.9 MAE – 61.8 – MNTP 62.3 – MLM 57.9 
+
+We can observe that removing either the loss function corre-sponding to the image or to the text alone will impair performance. This confirms that reconstruction objectives on both the textual and visual modalities are essential for establishing robust bidirectional fusion. Text-side MNTP encourages semantic dependency modeling across modalities, while image-side MAE promotes holistic visual understanding. Together, they enable the model to effectively lever-age bidirectional attention for multimodal representation learning. The task of MLM requires that mask tokens be predicted through their contextual environment, which typically involves bidirec-tional information access. This task format differs from next to-ken prediction and cannot leverage the causal flow of information within MLLMs. MNTP addresses these problems by combining next token prediction with masked language modelling [3]. 
+
+## 7.2 Influence of Mask Ratios 
+
+During the EOS-Bridged Reconstruction via Attention Truncation stage, we employ a masking strategy on the Block B to facilitate semantic compression. The tokens in the Block B are masked with a probability of 70%. Specifically, when the Block B contains fewer than four tokens, all of them are masked. In this part, we analyzed the impact of mask probability on performance. We conduct exper-iments under three masking ratios of 20%, 50%, or 70%. And these experiments are all conducted on 300K samples sampled from the train set of MMEB-V1. We show the performance variation under different masking ratios in Figure 3. Classification VQA Retrieval Grounding 
+
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> Performance
+> 59.6
+> 55.7
+> 66.2
+> 85.6
+> 60.4
+> 57.3
+> 67.3
+> 86.3
+> 60.6
+> 57.4
+> 67.6
+> 86.9 20%
+> 50%
+> 70%
+
+Figure 3: Performance under different mask ratios. We adopt three different mask ratios: 20%, 50%, and 70% from left to right. 
+
+We observe that as the mask ratio increases, the performance of the multimodal embedding models gradually improves. This trend clearly demonstrates the effectiveness of the reconstruction task: by reconstructing the content from the corresponding em-beddings of ⟨EOS ⟩, the model is forced to aggregate and encode multimodal information into the ⟨EOS ⟩ token, resulting in a com-pact and information-rich embedding. However, there are subtle differences in the gains across different tasks. The performance gains observed for tasks of retrieval and VQA exceed those seen in classification. We attribute this difference to the varying lengths of text sequences across different tasks. We analyzed the distribu-tion of text token lengths across different tasks. The corresponding statistical results are shown in Table 5. 
+
+Table 5: Token length statistics of reconstructed text across different tasks. Task Avg. Tokens <4 4–10 >10 
+
+Classification 2.41 89.3% 9.1% 1.6% VQA 3.12 67.8% 28.4% 3.8% Retrieval 18.09 0.3% 20.1% 79.6% For classification, the reconstruction content is typically short, and thus nearly all text tokens are masked regardless of the nominal masking ratio. For retrieval and VQA, where inputs requiring recon-struction are generally longer, increasing the masking ratio yields sustained performance gains. When handling long text, high mask-ing ratios suppress reliance on residual textual context, compelling the model to reconstruct masked tokens based on the informa-tion compressed in the ⟨EOS ⟩ token. As a result, the embedding of ⟨EOS ⟩ becomes increasingly information-dense, establishing a solid foundation for contrastive learning. This indicates that con-tent reconstruction requires the coordination of masking strategies to improve the quality of embeddings. Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+## 7.3 Scaling of Pretraining Data 
+
+CoCoA proposes an efficient pretraining strategy for multimodal embedding models, which relies on pretraining data that is not only inexpensive to construct but also widely available in abundant quantities. To analyze the impact of pretraining dataset scale on CoCoA’s performance, we vary the number of pretraining sam-ples uniformly sampled from the train set of MMEB-V1, and then examine the effect of incorporating additional synthesized data. Specifically, we pretrain the model using 100K, 200K, and 300K samples drawn from MMEB-V1. We demonstrate the performance variations across different data scales in Figure 4. Baseline 100K 200K 300K 400K 100K+ 200K+                    
+
+> 56
+> 58
+> 60
+> 62
+> 64
+> 66 Classification
+> Baseline 100K 200K 300K 400K 100K+ 200K+
+> 47.5
+> 50.0
+> 52.5
+> 55.0
+> 57.5
+> VQA
+> Baseline 100K 200K 300K 400K 100K+ 200K+
+> 62
+> 64
+> 66
+> 68
+> 70
+> 72
+> Retrieval
+> Baseline 100K 200K 300K 400K 100K+ 200K+
+> 70
+> 75
+> 80
+> 85
+> Grounding
+
+Figure 4: Performance under different pre-training data vol-umes. Baseline is VLM2Vec based on Qwen2-VL-2B. 100K-400K denote the amounts of MMEB-V1 original data, and “+” indicates additional synthetic data. 
+
+As shown in the figure, increasing the amount of pretraining data from 100K to 300K consistently improves performance across all tasks. This trend indicates that larger pretraining corpora pro-vide richer multimodal information, enabling the model to better organize and compress multimodal information during the pre-training stage. However, when further increasing the pretraining data scale from 300K to 400K samples (still drawn from the train set of MMEB-V1), we observe no significant performance gains, with most meta-task scores remaining unchanged. We attribute this saturation effect to the limited diversity of MMEB-V1 itself: this portion of data was collected from specific tasks, and they tend to be semantically redundant. To increase data diversity, we extend the train subset of MMEB-V1 by incorporating additional high-quality multimodal data syn-thesized by Qwen2.5-VL-7B. We observed that performance has been further improved across multiple tasks. This suggests that data diversity and semantic novelty, rather than sheer data volume alone, play a crucial role in pretraining. Synthetic data introduces richer semantic information, making reconstruction tasks more challenging. Consequently, even when the overall dataset is already substantial, it can still yield performance gains. In addition, we analyze the impact of pretraining data scale in both in-domain (IND) and out-of-domain (OOD) contexts. As the amount of original data from the MMEB-V1 training set increases, baseline 100k 200k 300k 400k 100k+ 200k+        
+
+> 50
+> 55
+> 60
+> 65
+> 70
+> 75
+> Performance
+> IND
+> baseline 100k 200k 300k 400k 100k+ 200k+
+> 45.0
+> 47.5
+> 50.0
+> 52.5
+> 55.0
+> 57.5
+> 60.0
+> 62.5
+> 65.0 OOD
+
+Figure 5: The effect of pretraining data scale on In-Domain (IND) and Out-of-Domain (OOD) performance. 
+
+we observe consistent performance improvements on both IND and OOD performance up to 300K samples, indicating that moderate scaling of real data effectively enhances representation learning and generalization. However, when the data scale is further in-creased from 300K to 400K, the performance gain on IND begins to slow down, while OOD performance exhibits a noticeable decline. This suggests that simply increasing the amount of data within the same distribution may gradually introduce redundancy and bias the learned embeddings toward dominant in-domain patterns, thereby weakening generalization to unseen domains. After introducing synthetic data on top of the 300K original samples, both IND and OOD performance continue to improve. The additional synthetic data provides more diverse semantic coverage beyond the original data, which helps enhance robustness and generalization. Never-theless, the performance gains gradually plateau as more synthetic data is added, indicating diminishing returns from data scaling once sufficient semantic diversity has been achieved. 
+
+## 8 Case Study 
+
+To gain an intuitive understanding of how the compression pre-training stage organizes and structures multimodal embeddings, we conduct a qualitative study on representative examples. Specifically, we investigate whether the semantic information compressed into the ⟨EOS ⟩ token during pretraining is sufficient to support text reconstruction. We compare models with and without compression pretraining and using the ⟨EOS ⟩ representations to generate text tokens under the same decoding constraints. As illustrated in Figure 6, CoCoA can preserve and recover fine-grained visual semantics more accurately. In the first example, our method effectively compresses and reconstructs high-level scene semantics from the visual input. Specifically, the model correctly captures the barbecue-related context in the image and recovers the semantic concept of a “picbecue party”. By comparison, VLM2Vec produces a more generic and less precise description, “It is a camp-ing gathering.”, which overlooks the key visual information related to the barbecue scene. The second instance illustrates an example where CoCoA pro-duces an incorrect reconstruction content. From the reconstructed content, it can be seen that the retrieved semantics emphasize vi-sual aspects that differ from the ground truth focus. In such cases, a single caption is insufficient to fully capture the rich content of the image. Although concepts such as “soap”, “bathroom”, and “mirror” are correctly inferred from the image, they introduce semantic dis-tractions during retrieval, as they correspond to secondary visual elements rather than the primary retrieval intent. This suggests that when images contain multiple objects and diverse information, Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jiahan Chen, Da Li, Hengran Zhang, Yinqiong Cai,Lixin Su, Jiafeng Guo, Daiting Shi,Dawei Yin, and Keping Bi Annotation : Barbeque.        
+
+> Annotation :
+> VLM2Vec :It is a camping gathering .
+> CoCoA: Picbecue party.
+> Represent the given
+> image with the
+> following question:
+> What type of
+> gathering is this?
+> Find an image
+> caption describing
+> the given everyday
+> image.
+> A modern round sink is white,
+> with lotion bottles beside it.
+> A white bathroom with soap ,
+> hand lotion and a mirror .
+> A bathroom sink with a faucet
+> and some bottles.
+> VLM2Vec:
+> CoCoA:
+
+Figure 6: Case study of visual information reconstruction from ⟨EOS ⟩ in different multimodal embedding models. 
+
+compressing the visual content from a single aspect may bias the representation toward certain aspects while suppressing others. These observations indicate that incorporating more comprehen-sive modeling could be critical for handling images with complex and multi-aspect visual information. 
+
+## 9 Conclusion and Future Work 
+
+In this work, we present CoCoA, a pretraining task of reconstruct-ing content via collaborative attention for the optimization of multimodal embedding. By employing a bidirectional attention mechanism and performing EOS-Bridged on the embedding ob-tained under truncated attention before contrastive learning, Co-CoA compresses multimodal inputs into a compact and information-rich embedding. This design substantially improves the efficiency with which training data is utilized, allowing MLLM-based em-bedding models to achieve strong performance with significantly less pretraining and contrastive learning data. Extensive experi-ments and analysis demonstrate that CoCoA can unlock the po-tential of MLLMs as embedding models. Our case studies reveal that compressing visual information from a single embedding may be insufficient for complex images that contain multiple objects, attributes, or viewpoints. This observation suggests one promising direction is to explore a compression and reconstruction mecha-nism based on multiple embeddings, where different tokens capture complementary aspects of the multimodal content. 
+
+## References 
+
+[1] Jean-Baptiste Alayrac, Jeff Donahue, Pauline Luc, Antoine Miech, Iain Barr, Yana Hasson, Karel Lenc, Arthur Mensch, Katie Millican, Malcolm Reynolds, Roman Ring, Eliza Rutherford, Serkan Cabi, Tengda Han, Zhitao Gong, Sina Samangooei, Marianne Monteiro, Jacob Menick, Sebastian Borgeaud, Andrew Brock, Aida Nematzadeh, Sahand Sharifzadeh, Mikolaj Binkowski, Ricardo Barreira, Oriol Vinyals, Andrew Zisserman, and Karen Simonyan. 2022. Flamingo: a Visual Language Model for Few-Shot Learning. arXiv:2204.14198 [cs.CV] https://arxiv. org/abs/2204.14198 [2] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, Humen Zhong, Yuanzhi Zhu, Mingkun Yang, Zhaohai Li, Jianqiang Wan, Pengfei Wang, Wei Ding, Zheren Fu, Yiheng Xu, Jiabo Ye, Xi Zhang, Tianbao Xie, Zesen Cheng, Hang Zhang, Zhibo Yang, Haiyang Xu, and Junyang Lin. 2025. Qwen2.5-VL Technical Report. arXiv:2502.13923 [cs.CV] https://arxiv.org/abs/2502.13923 [3] Parishad BehnamGhader, Vaibhav Adlakha, Marius Mosbach, Dzmitry Bahdanau, Nicolas Chapados, and Siva Reddy. 2024. LLM2Vec: Large Language Models Are Secretly Powerful Text Encoders. arXiv:2404.05961 [cs.CL] https://arxiv.org/abs/ 2404.05961 [4] Ali Borji. 2020. ObjectNet Dataset: Reanalysis and Correction. arXiv:2004.02042 [cs.CV] https://arxiv.org/abs/2004.02042 [5] Lukas Bossard, Matthieu Guillaumin, and Luc Van Gool. 2014. Food-101–mining discriminative components with random forests. In European conference on com-puter vision . Springer, 446–461. [6] Yingshan Chang, Mridu Narang, Hisami Suzuki, Guihong Cao, Jianfeng Gao, and Yonatan Bisk. 2022. WebQA: Multihop and Multimodal QA. arXiv:2109.00590 [cs.CL] https://arxiv.org/abs/2109.00590 [7] Haonan Chen, Hong Liu, Yuping Luo, Liang Wang, Nan Yang, Furu Wei, and Zhicheng Dou. 2025. MoCa: Modality-aware Continual Pre-training Makes Better Bidirectional Multimodal Embeddings. arXiv:2506.23115 [cs.CV] https: //arxiv.org/abs/2506.23115 [8] Haonan Chen, Liang Wang, Nan Yang, Yutao Zhu, Ziliang Zhao, Furu Wei, and Zhicheng Dou. 2025. mmE5: Improving Multimodal Multilingual Embeddings via High-quality Synthetic Data. arXiv:2502.08468 [cs.CV] https://arxiv.org/abs/ 2502.08468 [9] Jiahan Chen, Da Li, and Keping Bi. 2025. LifeIR at the NTCIR-18 Lifelog-6 Task. arXiv:2505.20987 [cs.IR] https://arxiv.org/abs/2505.20987 [10] Yan Fang, Jingtao Zhan, Qingyao Ai, Jiaxin Mao, Weihang Su, Jia Chen, and Yiqun Liu. 2024. Scaling Laws For Dense Retrieval. arXiv:2403.18684 [cs.IR] https://arxiv.org/abs/2403.18684 [11] Manuel Faysse, Hugues Sibille, Tony Wu, Bilel Omrani, Gautier Viaud, Céline Hudelot, and Pierre Colombo. 2025. ColPali: Efficient Document Retrieval with Vision Language Models. arXiv:2407.01449 [cs.IR] https://arxiv.org/abs/2407. 01449 [12] Tiancheng Gu, Kaicheng Yang, Ziyong Feng, Xingjun Wang, Yanzhao Zhang, Dingkun Long, Yingda Chen, Weidong Cai, and Jiankang Deng. 2025. Breaking the Modality Barrier: Universal Embedding Learning with Multimodal LLMs. arXiv:2504.17432 [cs.CV] https://arxiv.org/abs/2504.17432 [13] Tiancheng Gu, Kaicheng Yang, Kaichen Zhang, Xiang An, Ziyong Feng, Yueyi Zhang, Weidong Cai, Jiankang Deng, and Lidong Bing. 2025. UniME-V2: MLLM-as-a-Judge for Universal Multimodal Embedding Learning. arXiv:2510.13515 [cs.CV] https://arxiv.org/abs/2510.13515 [14] Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Dollár, and Ross Girshick. 2021. Masked Autoencoders Are Scalable Vision Learners. arXiv:2111.06377 [cs.CV] https://arxiv.org/abs/2111.06377 [15] Ting Jiang, Shaohan Huang, Zhongzhi Luan, Deqing Wang, and Fuzhen Zhuang. 2024. Scaling Sentence Embeddings with Large Language Models. In Findings of the Association for Computational Linguistics: EMNLP 2024 , Yaser Al-Onaizan, Mo-hit Bansal, and Yun-Nung Chen (Eds.). Association for Computational Linguistics, Miami, Florida, USA, 3182–3196. doi:10.18653/v1/2024.findings-emnlp.181 [16] Ting Jiang, Minghui Song, Zihan Zhang, Haizhen Huang, Weiwei Deng, Feng Sun, Qi Zhang, Deqing Wang, and Fuzhen Zhuang. 2024. E5-V: Universal Embeddings with Multimodal Large Language Models. arXiv:2407.12580 [cs.CL] https://arxiv. org/abs/2407.12580 [17] Ziyan Jiang, Rui Meng, Xinyi Yang, Semih Yavuz, Yingbo Zhou, and Wenhu Chen. 2025. VLM2Vec: Training Vision-Language Models for Massive Multimodal Embedding Tasks. arXiv:2410.05160 [cs.CV] https://arxiv.org/abs/2410.05160 [18] Zhibin Lan, Liqiang Niu, Fandong Meng, Jie Zhou, and Jinsong Su. 2025. LLaVE: Large Language and Vision Embedding Models with Hardness-Weighted Con-trastive Learning. arXiv:2503.04812 [cs.CV] https://arxiv.org/abs/2503.04812 [19] Junnan Li, Dongxu Li, Caiming Xiong, and Steven Hoi. 2022. BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language Understanding and Generation. arXiv:2201.12086 [cs.CV] https://arxiv.org/abs/2201.12086 [20] Junnan Li, Ramprasaath R. Selvaraju, Akhilesh Deepak Gotmare, Shafiq Joty, Caiming Xiong, and Steven Hoi. 2021. Align before Fuse: Vision and Language Representation Learning with Momentum Distillation. arXiv:2107.07651 [cs.CV] https://arxiv.org/abs/2107.07651 [21] Mingxin Li, Yanzhao Zhang, Dingkun Long, Keqin Chen, Sibo Song, Shuai Bai, Zhibo Yang, Pengjun Xie, An Yang, Dayiheng Liu, Jingren Zhou, and Junyang Lin. 2026. Qwen3-VL-Embedding and Qwen3-VL-Reranker: A Unified Framework for State-of-the-Art Multimodal Retrieval and Ranking. arXiv:2601.04720 [cs.CL] https://arxiv.org/abs/2601.04720 [22] Tsung-Yi Lin, Michael Maire, Serge Belongie, Lubomir Bourdev, Ross Girshick, James Hays, Pietro Perona, Deva Ramanan, C. Lawrence Zitnick, and Piotr Dollár. 2015. Microsoft COCO: Common Objects in Context. arXiv:1405.0312 [cs.CV] https://arxiv.org/abs/1405.0312 [23] Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. 2023. Visual Instruc-tion Tuning. arXiv:2304.08485 [cs.CV] https://arxiv.org/abs/2304.08485 [24] Minesh Mathew, Viraj Bagal, Rubèn Pérez Tito, Dimosthenis Karatzas, Ernest Valveny, and C. V Jawahar. 2021. InfographicVQA. arXiv:2104.12756 [cs.CV] https://arxiv.org/abs/2104.12756 [25] Minesh Mathew, Dimosthenis Karatzas, and C. V. Jawahar. 2021. DocVQA: A Dataset for VQA on Document Images. arXiv:2007.00398 [cs.CV] https://arxiv. org/abs/2007.00398 [26] Rui Meng, Ziyan Jiang, Ye Liu, Mingyi Su, Xinyi Yang, Yuepeng Fu, Can Qin, Zeyuan Chen, Ran Xu, Caiming Xiong, Yingbo Zhou, Wenhu Chen, and Semih Yavuz. 2025. VLM2Vec-V2: Advancing Multimodal Embedding for Videos, Images, and Visual Documents. arXiv:2507.04590 [cs.CV] https://arxiv.org/abs/2507. 04590 Reconstructing Content via Collaborative Attention to Improve Multimodal Embedding Quality Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+[27] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. 2021. Learning Transferable Visual Models From Natural Language Supervision. arXiv:2103.00020 [cs.CV] https://arxiv.org/ abs/2103.00020 [28] Christoph Schuhmann, Richard Vencu, Romain Beaumont, Robert Kaczmarczyk, Clayton Mullis, Aarush Katta, Theo Coombes, Jenia Jitsev, and Aran Komatsuzaki. 2021. LAION-400M: Open Dataset of CLIP-Filtered 400 Million Image-Text Pairs. arXiv:2111.02114 [cs.CV] https://arxiv.org/abs/2111.02114 [29] Dustin Schwenk, Apoorv Khandelwal, Christopher Clark, Kenneth Marino, and Roozbeh Mottaghi. 2022. A-OKVQA: A Benchmark for Visual Question Answer-ing using World Knowledge. arXiv:2206.01718 [cs.CV] https://arxiv.org/abs/ 2206.01718 [30] Michael Tschannen, Alexey Gritsenko, Xiao Wang, Muhammad Ferjad Naeem, Ibrahim Alabdulmohsin, Nikhil Parthasarathy, Talfan Evans, Lucas Beyer, Ye Xia, Basil Mustafa, Olivier Hénaff, Jeremiah Harmsen, Andreas Steiner, and Xiaohua Zhai. 2025. SigLIP 2: Multilingual Vision-Language Encoders with Improved Semantic Understanding, Localization, and Dense Features. arXiv:2502.14786 [cs.CV] https://arxiv.org/abs/2502.14786 [31] Aaron van den Oord, Yazhe Li, and Oriol Vinyals. 2019. Representation Learning with Contrastive Predictive Coding. arXiv:1807.03748 [cs.LG] https://arxiv.org/ abs/1807.03748 [32] Zhen Wang, Xu Shan, Xiangxie Zhang, and Jie Yang. 2022. N24News: A New Dataset for Multimodal News Classification. arXiv:2108.13327 [cs.CL] https: //arxiv.org/abs/2108.13327 [33] Cong Wei, Yang Chen, Haonan Chen, Hexiang Hu, Ge Zhang, Jie Fu, Alan Ritter, and Wenhu Chen. 2023. UniIR: Training and Benchmarking Universal Multimodal Information Retrievers. arXiv:2311.17136 [cs.CV] https://arxiv.org/abs/2311. 17136 [34] Hui Wu, Yupeng Gao, Xiaoxiao Guo, Ziad Al-Halah, Steven Rennie, Kristen Grauman, and Rogerio Feris. 2020. Fashion IQ: A New Dataset Towards Retrieving Images by Natural Language Feedback. arXiv:1905.12794 [cs.CV] https://arxiv. org/abs/1905.12794 [35] Chunyu Xie, Bin Wang, Fanjing Kong, Jincheng Li, Dawei Liang, Gengshen Zhang, Dawei Leng, and Yuhui Yin. 2025. FG-CLIP: Fine-Grained Visual and Textual Alignment. arXiv:2505.05071 [cs.CV] https://arxiv.org/abs/2505.05071 [36] Lewei Yao, Runhui Huang, Lu Hou, Guansong Lu, Minzhe Niu, Hang Xu, Xi-aodan Liang, Zhenguo Li, Xin Jiang, and Chunjing Xu. 2021. FILIP: Fine-grained Interactive Language-Image Pre-Training. arXiv:2111.07783 [cs.CV] https://arxiv.org/abs/2111.07783 [37] Jiahui Yu, Zirui Wang, Vijay Vasudevan, Legg Yeung, Mojtaba Seyedhosseini, and Yonghui Wu. 2022. CoCa: Contrastive Captioners are Image-Text Foundation Models. arXiv:2205.01917 [cs.CV] https://arxiv.org/abs/2205.01917 [38] Hengran Zhang, Keping Bi, Jiafeng Guo, Xiaojie Sun, Shihao Liu, Daiting Shi, Dawei Yin, and Xueqi Cheng. 2025. Unleashing the Power of LLMs in Dense Retrieval with Query Likelihood Modeling. arXiv:2504.05216 [cs.IR] https: //arxiv.org/abs/2504.05216 [39] Xin Zhang, Yanzhao Zhang, Wen Xie, Mingxin Li, Ziqi Dai, Dingkun Long, Pengjun Xie, Meishan Zhang, Wenjie Li, and Min Zhang. 2025. GME: Improving Universal Multimodal Retrieval by Multimodal LLMs. arXiv:2412.16855 [cs.CL] https://arxiv.org/abs/2412.16855 [40] Junjie Zhou, Zheng Liu, Shitao Xiao, Bo Zhao, and Yongping Xiong. 2024. VISTA: Visualized Text Embedding For Universal Multi-Modal Retrieval. arXiv:2406.04292 [cs.IR] https://arxiv.org/abs/2406.04292 [41] Deyao Zhu, Jun Chen, Xiaoqian Shen, Xiang Li, and Mohamed Elhoseiny. 2023. MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. arXiv:2304.10592 [cs.CV] https://arxiv.org/abs/2304.10592

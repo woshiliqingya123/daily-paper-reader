@@ -1,6 +1,834 @@
 {
-  "generated_at": "2026-03-18T09:51:34.890710+00:00",
+  "generated_at": "2026-03-18T10:00:17.501874+00:00",
   "updated_date": "20260217-20260318",
   "carryover_days": 9,
-  "items": []
+  "items": [
+    {
+      "id": "2603.08462v1",
+      "title": "Reasoning as Compression: Unifying Budget Forcing via the Conditional Information Bottleneck",
+      "abstract": "Chain-of-Thought (CoT) prompting improves LLM accuracy on complex tasks but often increases token usage and inference cost. Existing \"Budget Forcing\" methods reducing cost via fine-tuning with heuristic length penalties, suppress both essential reasoning and redundant filler. We recast efficient reasoning as a lossy compression problem under the Information Bottleneck (IB) principle, and identify a key theoretical gap when applying naive IB to transformers: attention violates the Markov property between prompt, reasoning trace, and response. To resolve this issue, we model CoT generation under the Conditional Information Bottleneck (CIB) principle, where the reasoning trace Z acts as a computational bridge that contains only the information about the response Y that is not directly accessible from the prompt X. This yields a general Reinforcement Learning objective: maximize task reward while compressing completions under a prior over reasoning traces, subsuming common heuristics (e.g., length penalties) as special cases (e.g., uniform priors). In contrast to naive token-counting-based approaches, we introduce a semantic prior that measures token cost by surprisal under a language model prior. Empirically, our CIB objective prunes cognitive bloat while preserving fluency and logic, improving accuracy at moderate compression and enabling aggressive compression with minimal accuracy drop.",
+      "authors": [
+        "Fabio Valerio Massoli",
+        "Andrey Kuzmin",
+        "Arash Behboodi"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-09T14:56:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.08462v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "recast efficient reasoning as a lossy compression problem",
+      "llm_evidence_cn": "将高效推理重构为有损压缩问题",
+      "llm_evidence": "将高效推理重构为有损压缩问题",
+      "canonical_evidence": "将高效推理重构为有损压缩问题",
+      "llm_tldr_en": "Uses Conditional Information Bottleneck to compress Chain-of-Thought reasoning traces for efficient LLM inference.",
+      "llm_tldr_cn": "利用条件信息瓶颈理论压缩思维链推理轨迹，以实现高效的LLM推理。",
+      "llm_tldr": "利用条件信息瓶颈理论压缩思维链推理轨迹，以实现高效的LLM推理。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "methods for compressing tokens in language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08462v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.00518v1",
+      "title": "Vision-TTT: Efficient and Expressive Visual Representation Learning with Test-Time Training",
+      "abstract": "Learning efficient and expressive visual representation has long been the pursuit of computer vision research. While Vision Transformers (ViTs) gradually replace traditional Convolutional Neural Networks (CNNs) as more scalable vision learners, their applications are plagued by the quadratic complexity of the self-attention mechanism. To address the challenge, we introduce a new linear-time sequence modeling method Test-Time Training (TTT) into vision and propose Vision-TTT, which compresses the visual token sequence in a novel self-supervised learning manner. By incorporating bidirectional scan strategy and the Conv2d module, Vision-TTT effectively extends vanilla TTT to model 2D visual correlations with global receptive fields. Extensive experiments show that \\texttt{Vittt-T/S/B} achieve 77.3%,81.2%,82.5% Top-1 accuracy on ImageNet classification and also greatly outperform their counterparts on downstream tasks. At 1280x1280 resolution, \\texttt{Vittt-T} reduces FLOPs by 79.4% and runs 4.38x faster with 88.9% less memory than DeiT-T. These results demonstrate the expressiveness and efficiency of Vision-TTT as a strong candidate for the next-generation generic visual backbone.",
+      "authors": [
+        "Quan Kong",
+        "Yanru Xiao",
+        "Yuhao Shen",
+        "Cong Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-02-28T07:31:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.00518v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "compresses the visual token sequence in a self-supervised manner",
+      "llm_evidence_cn": "以自监督方式压缩视觉Token序列",
+      "llm_evidence": "以自监督方式压缩视觉Token序列",
+      "canonical_evidence": "以自监督方式压缩视觉Token序列",
+      "llm_tldr_en": "Introduces Vision-TTT, which uses test-time training to compress visual token sequences for efficient modeling.",
+      "llm_tldr_cn": "引入Vision-TTT，通过测试时训练压缩视觉Token序列，实现高效的视觉建模。",
+      "llm_tldr": "引入Vision-TTT，通过测试时训练压缩视觉Token序列，实现高效的视觉建模。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "techniques to reduce token count in transformers",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.00518v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.13430v1",
+      "title": "Dynamic Sparse Attention: Access Patterns and Architecture",
+      "abstract": "Dynamic sparse attention (DSA) reduces the per-token attention bandwidth by restricting computation to a top-k subset of cached key-value (KV) entries, but its token-dependent selection pattern introduces a system-level challenge: the KV working set is fragmented, volatile, and difficult to prefetch, which can translate into poor cache locality and stalled decode throughput. We study these effects by implementing a lightweight indexer for DSA-style selection on multiple open-source backbones and logging per-layer KV indices during autoregressive decoding. Our analysis shows a gap in serving DSA backbones - a potential for a high volume of blocking LL (last level) cache miss events, causing inefficiency; we propose a novel LL cache reservation system to save KV tokens in the LL cache between decode steps, combined with a token-granularity LRU eviction policy, and show on the data we collected how this architecture can benefit serving with DSA implemented on different backbones. Finally, we propose directions for future architectural and algorithmic exploration to improve serving of DSA on modern inference platforms.",
+      "authors": [
+        "Noam Levy"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-13T03:38:35+00:00",
+      "link": "https://arxiv.org/pdf/2603.13430v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "restricting computation to a top-k subset of cached key-value entries",
+      "llm_evidence_cn": "将计算限制在缓存键值条目的top-k子集",
+      "llm_evidence": "将计算限制在缓存键值条目的top-k子集",
+      "canonical_evidence": "将计算限制在缓存键值条目的top-k子集",
+      "llm_tldr_en": "Studies dynamic sparse attention which selects a subset of tokens to reduce attention bandwidth.",
+      "llm_tldr_cn": "研究动态稀疏注意力机制，通过选择标记子集来降低注意力带宽需求。",
+      "llm_tldr": "研究动态稀疏注意力机制，通过选择标记子集来降低注意力带宽需求。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "dynamic selection of tokens for processing",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.13430v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.07135v1",
+      "title": "The Model Knows Which Tokens Matter: Automatic Token Selection via Noise Gating",
+      "abstract": "Visual tokens dominate inference cost in vision-language models (VLMs), yet many carry redundant information. Existing pruning methods alleviate this but typically rely on attention magnitude or similarity scores. We reformulate visual token pruning as capacity constrained communication: given a fixed budget K, the model must allocate limited bandwidth to maximally preserve visual information. We propose AutoSelect, which attaches a lightweight Scorer and Denoiser to a frozen VLM and trains with only the standard next token prediction loss, without auxiliary objectives or extra annotations. During training, a variance preserving noise gate modulates each token's information flow according to its predicted importance so that gradients propagate through all tokens; a diagonal attention Denoiser then recovers the perturbed representations. At inference, only the Scorer and a hard top-K selection remain, adding negligible latency. On ten VLM benchmarks, AutoSelect retains 96.5% of full model accuracy while accelerating LLM prefill by 2.85x with only 0.69 ms overhead, and transfers to different VLM backbones without architecture-specific tuning. Code is available at https://github.com/MedHK23/AutoSelect.",
+      "authors": [
+        "Landi He",
+        "Xiaoyu Yang",
+        "Lijian Xu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-07T09:57:35+00:00",
+      "link": "https://arxiv.org/pdf/2603.07135v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reformulate visual token pruning as capacity constrained communication",
+      "llm_evidence_cn": "将视觉标记剪枝重新表述为容量受限的通信问题",
+      "llm_evidence": "将视觉标记剪枝重新表述为容量受限的通信问题",
+      "canonical_evidence": "将视觉标记剪枝重新表述为容量受限的通信问题",
+      "llm_tldr_en": "Proposes AutoSelect for automatic visual token pruning in vision-language models to reduce inference cost.",
+      "llm_tldr_cn": "提出AutoSelect方法，用于视觉语言模型中的自动标记剪枝，以降低推理成本。",
+      "llm_tldr": "提出AutoSelect方法，用于视觉语言模型中的自动标记剪枝，以降低推理成本。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "pruning unnecessary tokens in input sequences",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.07135v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.02096v1",
+      "title": "FluxMem: Adaptive Hierarchical Memory for Streaming Video Understanding",
+      "abstract": "This paper presents FluxMem, a training-free framework for efficient streaming video understanding. FluxMem adaptively compresses redundant visual memory through a hierarchical, two-stage design: (1) a Temporal Adjacency Selection (TAS) module removes redundant visual tokens across adjacent frames, and (2) a Spatial Domain Consolidation (SDC) module further merges spatially repetitive regions within each frame into compact representations. To adapt effectively to dynamic scenes, we introduce a self-adaptive token compression mechanism in both TAS and SDC, which automatically determines the compression rate based on intrinsic scene statistics rather than manual tuning. Extensive experiments demonstrate that FluxMem achieves new state-of-the-art results on existing online video benchmarks, reaching 76.4 on StreamingBench and 67.2 on OVO-Bench under real-time settings, while reducing latency by 69.9% and peak GPU memory by 34.5% on OVO-Bench. Furthermore, it maintains strong offline performance, achieving 73.1 on MLVU while using 65% fewer visual tokens.",
+      "authors": [
+        "Yiweng Xie",
+        "Bo He",
+        "Junke Wang",
+        "Xiangyu Zheng",
+        "Ziyi Ye",
+        "Zuxuan Wu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-03-02T17:16:47+00:00",
+      "link": "https://arxiv.org/pdf/2603.02096v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "self-adaptive token compression mechanism for redundant visual tokens",
+      "llm_evidence_cn": "针对冗余视觉Token的自适应Token压缩机制",
+      "llm_evidence": "针对冗余视觉Token的自适应Token压缩机制",
+      "canonical_evidence": "针对冗余视觉Token的自适应Token压缩机制",
+      "llm_tldr_en": "FluxMem adaptively compresses redundant visual tokens in video sequences using temporal and spatial modules.",
+      "llm_tldr_cn": "FluxMem通过时空模块自适应地压缩视频序列中的冗余视觉Token。",
+      "llm_tldr": "FluxMem通过时空模块自适应地压缩视频序列中的冗余视觉Token。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "dynamic selection of tokens for processing",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.02096v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.14224v1",
+      "title": "Self-Indexing KVCache: Predicting Sparse Attention from Compressed Keys",
+      "abstract": "The KV cache in self-attention has emerged as a major bottleneck in long-context and large-batch inference for LLMs. Existing approaches often treat sparsity prediction and compression as separate modules, relying on auxiliary index structures to select relevant tokens, and on complex quantization schemes to reduce memory usage. This fragmented design introduces redundant overhead and limits scalability.   In this paper, we propose a novel paradigm: treating the compressed key representation not merely as storage, but as a self-indexing structure that directly enables efficient sparse attention. By designing a sign-based 1-bit vector quantization (VQ) scheme, our method unifies compression and retrieval in a single, hardware-friendly format. This approach eliminates the need for external indices or learning-based predictors, offering a lightweight yet robust solution for memory-constrained inference. All components are designed to be hardware-efficient and easy to implement. By implementing custom CUDA kernels, our method integrates seamlessly with FlashAttention, minimizing additional runtime and memory overhead. Experimental results demonstrate that our approach delivers both effectiveness and efficiency.",
+      "authors": [
+        "Xu Yang",
+        "Jiapeng Zhang",
+        "Dongyang Zhao",
+        "Guo Chen",
+        "Zhuo Tang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-15T05:02:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.14224v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "unifies KV cache compression and retrieval using vector quantization",
+      "llm_evidence_cn": "利用向量量化统一KV缓存压缩与检索",
+      "llm_evidence": "利用向量量化统一KV缓存压缩与检索",
+      "canonical_evidence": "利用向量量化统一KV缓存压缩与检索",
+      "llm_tldr_en": "This paper proposes a self-indexing KV cache that uses 1-bit quantization to enable efficient sparse attention.",
+      "llm_tldr_cn": "本文提出了一种自索引KV缓存，利用1比特量化实现高效的稀疏注意力。",
+      "llm_tldr": "本文提出了一种自索引KV缓存，利用1比特量化实现高效的稀疏注意力。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "methods for compressing tokens in language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.14224v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.01914v1",
+      "title": "AdaPonderLM: Gated Pondering Language Models with Token-Wise Adaptive Depth",
+      "abstract": "Test-time scaling via recurrent/iterative Transformers enables large language models to spend more computation at inference, but most pretrained recurrent LMs run a fixed number of iterations, wasting compute on easy tokens and lacking token-wise adaptivity. Following the core idea of Adaptive Computation Time(ACT) and Early Exit(EE), we propose AdaPonderLM, a self-supervised recurrent language model that learns token-wise early exiting during pretraining without manually tuned per-token/per-layer pruning ratios. AdaPonderLM uses iteration-specific MLP gates with a monotonic halting mask to decide when each token stops recurring, and introduces a KV reuse mechanism that reuses cached key/value states for halted tokens, ensuring train--test consistency and practical acceleration. Across Pythia backbones from 70M to 410M (pretraining) and up to 2.8B (continued pretraining), AdaPonderLM reduces inference compute at about 10% while maintaining comparable language modeling perplexity and competitive downstream accuracy. Our analysis shows the learned gates allocate more computation to high-NLL (hard) tokens, exhibiting adaptive computation time behavior in a fully self-supervised setting. Meanwhile, under iso-FLOPs, the learned halting policy consistently outperforms fixed pruning, showing AdaPonderLM allocates compute to the right tokens rather than just reducing average depth.",
+      "authors": [
+        "Shixiang Song",
+        "He Li",
+        "Zitong Wang",
+        "Boyi Zeng",
+        "Feichen Song",
+        "Yixuan Wang",
+        "Zhiqin John Xu",
+        "Ziwei He",
+        "Zhouhan Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-02T14:28:16+00:00",
+      "link": "https://arxiv.org/pdf/2603.01914v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "token-wise adaptive depth and early exiting during pretraining",
+      "llm_evidence_cn": "预训练期间的Token级自适应深度与早期退出",
+      "llm_evidence": "预训练期间的Token级自适应深度与早期退出",
+      "canonical_evidence": "预训练期间的Token级自适应深度与早期退出",
+      "llm_tldr_en": "AdaPonderLM enables token-wise adaptive computation and early exiting to save compute on easy tokens.",
+      "llm_tldr_cn": "AdaPonderLM实现了Token级的自适应计算和早期退出，以节省简单Token的计算量。",
+      "llm_tldr": "AdaPonderLM实现了Token级的自适应计算和早期退出，以节省简单Token的计算量。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "dynamic selection of tokens for processing",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.01914v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.14785v1",
+      "title": "SkipOPU: An FPGA-based Overlay Processor for Large Language Models with Dynamically Allocated Computation",
+      "abstract": "Large language models (LLMs) have achieved remarkable performance across a wide range of tasks, but their inference efficiency remains a critical bottleneck due to rapidly growing parameters. Recent advances in dynamic computation allocation address this challenge by exploiting the highly uneven contributions of different tokens and layers, enabling selective execution that significantly reduces redundant computation while preserving model accuracy. However, existing hardware platforms and accelerators are primarily optimized for uniform, static execution, limiting their ability to efficiently support such dynamic inference patterns. In this work, we propose SkipOPU, an FPGA-based overlay processor that dynamically allocates computation across tokens and layers with high flexibility through a lightweight routing mechanism. First, we decouple reduction operations from element-wise computation in nonlinear modules and perform reductions incrementally, which enables both stages to be fused with adjacent linear operations (router or matrix multiplication) for effective latency hiding. Second, motivated by asymmetric sensitivity to numerical precision between activation and weight, we design a PE array that efficiently supports float-fixed hybrid execution. A novel DSP overpacking technique is introduced to maximize hardware utilization while minimizing resource overhead. Finally, we develop a proactive on-chip KV history buffer that exploits cross-layer KV invariance of pruned tokens, eliminating irregular HBM accesses during decoding and supplementing off-chip bandwidth through high-locality on-chip reuse. Experimental results demonstrate that SkipOPU on an AMD U280 FPGA outperforms GPU and other FPGA-based accelerators by 1.23x-3.83x in bandwidth efficiency for LLMs inference with dynamic computation allocation and can reduce up to 25.4% KV storage overhead across varying sequence lengths.",
+      "authors": [
+        "Zicheng He",
+        "Anhao Zhao",
+        "Xiaoyu Shen",
+        "Chen Wu",
+        "Lei He"
+      ],
+      "primary_category": "cs.AR",
+      "categories": [
+        "cs.AR"
+      ],
+      "published": "2026-03-16T03:35:04+00:00",
+      "link": "https://arxiv.org/pdf/2603.14785v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "dynamic computation allocation by exploiting uneven token contributions",
+      "llm_evidence_cn": "利用不均匀的令牌贡献进行动态计算分配",
+      "llm_evidence": "利用不均匀的令牌贡献进行动态计算分配",
+      "canonical_evidence": "利用不均匀的令牌贡献进行动态计算分配",
+      "llm_tldr_en": "An FPGA processor supporting dynamic inference by skipping redundant token and layer computations.",
+      "llm_tldr_cn": "一种支持动态推理的FPGA处理器，通过跳过冗余令牌和层计算提高效率。",
+      "llm_tldr": "一种支持动态推理的FPGA处理器，通过跳过冗余令牌和层计算提高效率。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "dynamic selection of tokens for processing",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.14785v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.07192v1",
+      "title": "FastSTAR: Spatiotemporal Token Pruning for Efficient Autoregressive Video Synthesis",
+      "abstract": "Visual Autoregressive modeling (VAR) has emerged as a highly efficient alternative to diffusion-based frameworks, achieving comparable synthesis quality. However, as this paradigm extends to Spacetime Autoregressive modeling (STAR) for video generation, scaling resolution and frame counts leads to a \"token explosion\" that creates a massive computational bottleneck in the final refinement stages. To address this, we propose FastSTAR, a training-free acceleration framework designed for high-quality video generation. Our core method, Spatiotemporal Token Pruning, identifies essential tokens by integrating two specialized terms: (1) Spatial similarity, which evaluates structural convergence across hierarchical scales to skip computations in regions where further refinement becomes redundant, and (2) Temporal similarity, which identifies active motion trajectories by assessing feature-level variations relative to the preceding clip. Combined with a Partial Update mechanism, FastSTAR ensures that only non-converged regions are refined, maintaining fluid motion while bypassing redundant computations. Experimental results on InfinityStar demonstrate that FastSTAR achieves up to a 2.01x speedup with a PSNR of 28.29 and less than 1% performance degradation, proving a superior efficiency-quality trade-off for STAR-based video synthesis.",
+      "authors": [
+        "Sungwoong Yune",
+        "Suheon Jeong",
+        "Joo-Young Kim"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-07T13:05:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.07192v1",
+      "tags": [
+        "keyword:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Spatiotemporal token pruning for efficient autoregressive synthesis",
+      "llm_evidence_cn": "用于高效自回归合成的时空Token剪枝",
+      "llm_evidence": "用于高效自回归合成的时空Token剪枝",
+      "canonical_evidence": "用于高效自回归合成的时空Token剪枝",
+      "llm_tldr_en": "Introduces FastSTAR, a training-free spatiotemporal token pruning method to accelerate video generation.",
+      "llm_tldr_cn": "引入FastSTAR，一种无需训练的时空Token剪枝方法，用于加速视频生成。",
+      "llm_tldr": "引入FastSTAR，一种无需训练的时空Token剪枝方法，用于加速视频生成。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "pruning unnecessary tokens in input sequences",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.07192v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.03583v1",
+      "title": "ByteFlow: Language Modeling through Adaptive Byte Compression without a Tokenizer",
+      "abstract": "Modern language models still rely on fixed, pre-defined subword tokenizations. Once a tokenizer is trained, the LM can only operate at this fixed level of granularity, which often leads to brittle and counterintuitive behaviors even in otherwise strong reasoning models. We introduce \\textbf{ByteFlow Net}, a new hierarchical architecture that removes tokenizers entirely and instead enables models to learn their own segmentation of raw byte streams into semantically meaningful units. ByteFlow Net performs compression-driven segmentation based on the coding rate of latent representations, yielding adaptive boundaries \\emph{while preserving a static computation graph via Top-$K$ selection}. Unlike prior self-tokenizing methods that depend on brittle heuristics with human-designed inductive biases, ByteFlow Net adapts its internal representation granularity to the input itself. Experiments demonstrate that this compression-based chunking strategy yields substantial performance gains, with ByteFlow Net outperforming both BPE-based Transformers and previous byte-level architectures. These results suggest that end-to-end, tokenizer-free modeling is not only feasible but also more effective, opening a path toward more adaptive and information-grounded language models.",
+      "authors": [
+        "Chunyuan Deng",
+        "Sanket Lokegaonkar",
+        "Colin Lockard",
+        "Besnik Fetahu",
+        "Nasser Zalmout",
+        "Xian Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-03-03T23:20:31+00:00",
+      "link": "https://arxiv.org/pdf/2603.03583v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adaptive byte compression to learn semantically meaningful units",
+      "llm_evidence_cn": "自适应字节压缩以学习语义单元",
+      "llm_evidence": "自适应字节压缩以学习语义单元",
+      "canonical_evidence": "自适应字节压缩以学习语义单元",
+      "llm_tldr_en": "Replaces fixed tokenizers with adaptive byte compression to learn semantic segmentation dynamically.",
+      "llm_tldr_cn": "用自适应字节压缩取代固定分词器，动态学习语义分割。",
+      "llm_tldr": "用自适应字节压缩取代固定分词器，动态学习语义分割。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "methods for compressing tokens in language models",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.03583v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08453v1",
+      "title": "LycheeCluster: Efficient Long-Context Inference with Structure-Aware Chunking and Hierarchical KV Indexing",
+      "abstract": "The quadratic complexity of the attention mechanism and the substantial memory footprint of the Key-Value (KV) cache present severe computational and memory challenges for Large Language Models (LLMs) processing long contexts. Existing retrieval-based methods often compromise semantic integrity through fixed-size chunking and suffer from inefficient linear scanning. In this paper, we propose LycheeCluster, a novel method for efficient KV cache management. LycheeCluster preserves local semantic coherence via boundary-aware chunking and constructs a recursive hierarchical index rooted in the triangle inequality. This design transforms cache retrieval from a linear scan into a theoretically bounded, logarithmic-time pruning process, while a lazy update strategy supports efficient streaming generation. Experiments demonstrate that LycheeCluster achieves up to a 3.6x end-to-end inference speedup with negligible degradation in model performance, outperforming state-of-the-art KV cache management methods (e.g., Quest, ClusterKV). We will release our code and kernels after publication.",
+      "authors": [
+        "Dongfang Li",
+        "Zixuan Liu",
+        "Gang Lin",
+        "Baotian Hu",
+        "Min Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-03-09T14:50:35+00:00",
+      "link": "https://arxiv.org/pdf/2603.08453v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Efficient KV cache management and pruning for long contexts",
+      "llm_evidence_cn": "针对长上下文的高效KV缓存管理与剪枝",
+      "llm_evidence": "针对长上下文的高效KV缓存管理与剪枝",
+      "canonical_evidence": "针对长上下文的高效KV缓存管理与剪枝",
+      "llm_tldr_en": "Presents LycheeCluster for efficient long-context inference using structure-aware chunking and hierarchical indexing.",
+      "llm_tldr_cn": "提出LycheeCluster，通过结构感知分块和层级索引实现高效的长上下文推理。",
+      "llm_tldr": "提出LycheeCluster，通过结构感知分块和层级索引实现高效的长上下文推理。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "strategies for token compression in long sequences",
+      "matched_requirement_id": "req-7",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08453v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.09480v1",
+      "title": "Prune Redundancy, Preserve Essence: Vision Token Compression in VLMs via Synergistic Importance-Diversity",
+      "abstract": "Vision-language models (VLMs) face significant computational inefficiencies caused by excessive generation of visual tokens. While prior work shows that a large fraction of visual tokens are redundant, existing compression methods struggle to balance importance preservation and information diversity. To address this, we propose PruneSID, a training-free Synergistic Importance-Diversity approach featuring a two-stage pipeline: (1) Principal Semantic Components Analysis (PSCA) for clustering tokens into semantically coherent groups, ensuring comprehensive concept coverage, and (2) Intra-group Non-Maximum Suppression (NMS) for pruning redundant tokens while preserving key representative tokens within each group. Additionally, PruneSID incorporates an information-aware dynamic compression ratio mechanism that optimizes token compression rates based on image complexity, enabling more effective average information preservation across diverse scenes. Extensive experiments demonstrate state-of-the-art performance, achieving 96.3% accuracy on LLaVA-1.5 with only 11.1% token retention, and 92.8% accuracy at extreme compression rates (5.6%) on LLaVA-NeXT, outperforming prior methods by 2.5% with 7.8 $\\times$ faster prefilling speed compared to the original model. Our framework generalizes across diverse VLMs and both image and video modalities, showcasing strong cross-modal versatility. Code is available at https://github.com/ZhengyaoFang/PruneSID}{https://github.com/ZhengyaoFang/PruneSID.",
+      "authors": [
+        "Zhengyao Fang",
+        "Pengyuan Lyu",
+        "Chengquan Zhang",
+        "Guangming Lu",
+        "Jun Yu",
+        "Wenjie Pei"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-10T10:31:58+00:00",
+      "link": "https://arxiv.org/pdf/2603.09480v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "pruning redundant visual tokens in vision-language models",
+      "llm_evidence_cn": "在视觉语言模型中剪枝冗余视觉标记",
+      "llm_evidence": "在视觉语言模型中剪枝冗余视觉标记",
+      "canonical_evidence": "在视觉语言模型中剪枝冗余视觉标记",
+      "llm_tldr_en": "Proposes PruneSID to compress visual tokens in VLMs by clustering and non-maximum suppression to improve efficiency.",
+      "llm_tldr_cn": "提出PruneSID，通过聚类和非极大值抑制压缩VLM中的视觉标记，在保留多样性的同时提高效率。",
+      "llm_tldr": "提出PruneSID，通过聚类和非极大值抑制压缩VLM中的视觉标记，在保留多样性的同时提高效率。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "techniques to reduce token count in transformers",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.09480v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.05353v1",
+      "title": "InfoFlow KV: Information-Flow-Aware KV Recomputation for Long Context",
+      "abstract": "Retrieval-augmented generation (RAG) for long-context question answering is bottlenecked by inference-time prefilling over large retrieved contexts. A common strategy is to precompute key-value (KV) caches for individual documents and selectively recompute a small subset of tokens to restore global causal dependencies, but existing methods rely on heuristics or representation discrepancies without modeling whether selected tokens can effectively influence generation. We cast selective KV recomputation as an information flow problem and show that a simple attention-norm signal from the query reliably identifies tokens that are both semantically relevant and structurally positioned to propagate information, when computed under an inference-consistent RoPE geometry. We therefore reconstruct global positional assignments for retrieved chunks and introduce an information-flow-guided chunk reordering strategy. Experiments on LLM and VLM benchmarks demonstrate consistent gains over prior methods under comparable efficiency budgets.",
+      "authors": [
+        "Xin Teng",
+        "Canyu Zhang",
+        "Shaoyi Zheng",
+        "Danyang Zhuo",
+        "Tianyi Zhou",
+        "Shengjie Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-05T16:33:20+00:00",
+      "link": "https://arxiv.org/pdf/2603.05353v1",
+      "tags": [
+        "keyword:TokenComp",
+        "query:TokenComp"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "selective recomputation of tokens based on information flow",
+      "llm_evidence_cn": "基于信息流的令牌选择性重计算",
+      "llm_evidence": "基于信息流的令牌选择性重计算",
+      "canonical_evidence": "基于信息流的令牌选择性重计算",
+      "llm_tldr_en": "Uses information-flow signals to selectively recompute KV caches for efficient long-context processing.",
+      "llm_tldr_cn": "利用信息流信号选择性地重计算 KV 缓存，以实现高效的长上下文处理。",
+      "llm_tldr": "利用信息流信号选择性地重计算 KV 缓存，以实现高效的长上下文处理。",
+      "llm_tags": [
+        "query:tokencomp"
+      ],
+      "matched_query_tag": "query:tokencomp",
+      "matched_query_text": "dynamic selection of tokens for processing",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.05353v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.11254v1",
+      "title": "Artificial Intelligence for Sentiment Analysis of Persian Poetry",
+      "abstract": "Recent advancements of the Artificial Intelligence (AI) have led to the development of large language models (LLMs) that are capable of understanding, analysing, and creating textual data. These language models open a significant opportunity in analyzing the literature and more specifically poetry. In the present work, we employ multiple Bidirectional encoder representations from transformers (BERT) and Generative Pre-trained Transformer (GPT) based language models to analyze the works of two prominent Persian poets: Jalal al-Din Muhammad Rumi (Rumi) and Parvin E'tesami. The main objective of this research is to investigate the capability of the modern language models in grasping complexities of the Persian poetry and explore potential correlations between the poems' sentiment and their meters. Our findings in this study indicates that GPT4o language model can reliably be used in analysis of Persian poetry. Furthermore, the results of our sentiment analysis revealed that in general, Rumi's poems express happier sentiments compared to Parvin E'tesami's poems. Furthermore, comparing the utilization of poetic meters highlighted Rumi's poems superiority in using meters to express a wider variety of sentiments. These findings are significant as they confirm that LLMs can be effectively applied in conducting computer-based semantic studies, where human interpretations are not required, and thereby significantly reducing potential biases in the analysis.",
+      "authors": [
+        "Arash Zargar",
+        "Abolfazl Moshiri",
+        "Mitra Shafaei",
+        "Shabnam Rahimi-Golkhandan",
+        "Mohamad Tavakoli-Targhi",
+        "Farzad Khalvati"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-11T19:34:23+00:00",
+      "link": "https://arxiv.org/pdf/2603.11254v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "sentiment analysis of Persian poetry using BERT and GPT models",
+      "llm_evidence_cn": "使用BERT和GPT模型对波斯诗歌进行情感分析",
+      "llm_evidence": "使用BERT和GPT模型对波斯诗歌进行情感分析",
+      "canonical_evidence": "使用BERT和GPT模型对波斯诗歌进行情感分析",
+      "llm_tldr_en": "Explores the capability of LLMs to analyze emotional tone and sentiment in complex Persian poetry.",
+      "llm_tldr_cn": "探索大语言模型在分析复杂波斯诗歌情感基调和情绪方面的能力。",
+      "llm_tldr": "探索大语言模型在分析复杂波斯诗歌情感基调和情绪方面的能力。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.11254v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.01778v1",
+      "title": "LLM-as-an-Annotator: Training Lightweight Models with LLM-Annotated Examples for Aspect Sentiment Tuple Prediction",
+      "abstract": "Training models for Aspect-Based Sentiment Analysis (ABSA) tasks requires manually annotated data, which is expensive and time-consuming to obtain. This paper introduces LA-ABSA, a novel approach that leverages Large Language Model (LLM)-generated annotations to fine-tune lightweight models for complex ABSA tasks. We evaluate our approach on five datasets for Target Aspect Sentiment Detection (TASD) and Aspect Sentiment Quad Prediction (ASQP). Our approach outperformed previously reported augmentation strategies and achieved competitive performance with LLM-prompting in low-resource scenarios, while providing substantial energy efficiency benefits. For example, using 50 annotated examples for in-context learning (ICL) to guide the annotation of unlabeled data, LA-ABSA achieved an F1 score of 49.85 for ASQP on the SemEval Rest16 dataset, closely matching the performance of ICL prompting with Gemma-3-27B (51.10), while requiring significantly lower computational resources.",
+      "authors": [
+        "Nils Constantin Hellwig",
+        "Jakob Fehle",
+        "Udo Kruschwitz",
+        "Christian Wolff"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-02T12:03:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.01778v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "aspect sentiment tuple prediction and target aspect sentiment detection",
+      "llm_evidence_cn": "方面情感元组预测与目标方面情感检测",
+      "llm_evidence": "方面情感元组预测与目标方面情感检测",
+      "canonical_evidence": "方面情感元组预测与目标方面情感检测",
+      "llm_tldr_en": "Uses LLMs to annotate data for training lightweight models on complex aspect-based sentiment analysis tasks.",
+      "llm_tldr_cn": "利用LLM生成标注数据，以训练用于复杂细粒度情感分析任务的轻量化模型。",
+      "llm_tldr": "利用LLM生成标注数据，以训练用于复杂细粒度情感分析任务的轻量化模型。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.01778v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.16760v1",
+      "title": "Dual Stream Independence Decoupling for True Emotion Recognition under Masked Expressions",
+      "abstract": "Recongnizing true emotions from masked expressions is extremely challenging due to deliberate concealment. Existing paradigms recognize true emotions from masked-expression clips that contain onsetframes just starting to disguise. However, this paradigm may not reflect the actual disguised state, as the onsetframe leaks the true emotional information without reaching a stable disguise state. Thus, this paper introduces a novel apexframe-based paradigm that classifies true emotions from the apexframe with a stable disguised state. Furthermore, this paper proposes a novel dual stream independence decoupling framework that decouples true and disguised emotion features, avoiding the interference of disguised emotions on true emotions. For efficient decoupling, we design a decoupling loss group, comprising two classification losses that learn true emotion and disguised expression features, respectively, and a Hilbert-Schmidt Independence loss that enhances the independence of two features. Experiments demonstrate that the apexframe-based paradigm is challenging, and the proposed decouple framework improves recogntion performances.",
+      "authors": [
+        "Jinsheng Wei",
+        "Xiguang Zhang",
+        "Zheng Shi",
+        "Guanming Lu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-17T16:40:48+00:00",
+      "link": "https://arxiv.org/pdf/2603.16760v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "recognizing true emotions from masked expressions using dual stream decoupling",
+      "llm_evidence_cn": "通过双流解耦从掩蔽表情中识别真实情感",
+      "llm_evidence": "通过双流解耦从掩蔽表情中识别真实情感",
+      "canonical_evidence": "通过双流解耦从掩蔽表情中识别真实情感",
+      "llm_tldr_en": "Proposes a framework to decouple true and disguised emotion features for better recognition under masked expressions.",
+      "llm_tldr_cn": "提出一种双流解耦框架，用于在掩蔽表情下区分并识别真实情感与伪装情感。",
+      "llm_tldr": "提出一种双流解耦框架，用于在掩蔽表情下区分并识别真实情感与伪装情感。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.16760v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.00746v1",
+      "title": "SpectroFusion-ViT: A Lightweight Transformer for Speech Emotion Recognition Using Harmonic Mel-Chroma Fusion",
+      "abstract": "Speech is a natural means of conveying emotions, making it an effective method for understanding and representing human feelings. Reliable speech emotion recognition (SER) is central to applications in human-computer interaction, healthcare, education, and customer service. However, most SER methods depend on heavy backbone models or hand-crafted features that fail to balance accuracy and efficiency, particularly for low-resource languages like Bangla. In this work, we present SpectroFusion-ViT, a lightweight SER framework built utilizing EfficientViT-b0, a compact Vision Transformer architecture equipped with self-attention to capture long-range temporal and spectral patterns. The model contains only 2.04M parameters and requires 0.1 GFLOPs, enabling deployment in resource-constrained settings without compromising accuracy. Our pipeline first performs preprocessing and augmentation on raw audio, then extracts Chroma and Mel-frequency cepstral coefficient (MFCC) features. These representations are fused into a complementary time-frequency descriptor that preserves both fine-grained spectral detail and broader harmonic structure. Using transfer learning, EfficientViT-b0 is fine-tuned for multi-class emotion classification. We evaluate the system on two benchmark Bangla emotional speech datasets, SUBESCO and BanglaSER, which vary in speaker diversity, recording conditions, and acoustic characteristics. The proposed approach achieves 92.56% accuracy on SUBESCO and 82.19% on BanglaSER, surpassing existing state-of-the-art methods. These findings demonstrate that lightweight transformer architectures can deliver robust SER performance while remaining computationally efficient for real-world deployment.",
+      "authors": [
+        "Faria Ahmed",
+        "Rafi Hassan Chowdhury",
+        "Fatema Tuz Zohora Moon",
+        "Sabbir Ahmed"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.LG"
+      ],
+      "published": "2026-02-28T17:44:46+00:00",
+      "link": "https://arxiv.org/pdf/2603.00746v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "lightweight Transformer for speech emotion recognition using harmonic mel-chroma fusion",
+      "llm_evidence_cn": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
+      "llm_evidence": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
+      "canonical_evidence": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
+      "llm_tldr_en": "Develops a compact Vision Transformer for efficient and accurate speech emotion recognition.",
+      "llm_tldr_cn": "开发了一种紧凑的视觉Transformer，用于高效且准确的语音情感识别。",
+      "llm_tldr": "开发了一种紧凑的视觉Transformer，用于高效且准确的语音情感识别。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.00746v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.11715v1",
+      "title": "Affect Decoding in Phonated and Silent Speech Production from Surface EMG",
+      "abstract": "The expression of affect is integral to spoken communication, yet, its link to underlying articulatory execution remains unclear. Measures of articulatory muscle activity such as EMG could reveal how speech production is modulated by emotion alongside acoustic speech analyses. We investigate affect decoding from facial and neck surface electromyography (sEMG) during phonated and silent speech production. For this purpose, we introduce a dataset comprising 2,780 utterances from 12 participants across 3 tasks, on which we evaluate both intra- and inter-subject decoding using a range of features and model embeddings. Our results reveal that EMG representations reliably discriminate frustration with up to 0.845 AUC, and generalize well across articulation modes. Our ablation study further demonstrates that affective signatures are embedded in facial motor activity and persist in the absence of phonation, highlighting the potential of EMG sensing for affect-aware silent speech interfaces.",
+      "authors": [
+        "Simon Pistrosch",
+        "Kleanthis Avramidis",
+        "Tiantian Feng",
+        "Jihwan Lee",
+        "Monica Gonzalez-Machorro",
+        "Shrikanth Narayanan",
+        "Björn W. Schuller"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.AI",
+        "cs.SD"
+      ],
+      "published": "2026-03-12T09:22:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.11715v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "affect decoding from facial EMG and acoustic speech",
+      "llm_evidence_cn": "从面部肌电图和声学语音中解码情感",
+      "llm_evidence": "从面部肌电图和声学语音中解码情感",
+      "canonical_evidence": "从面部肌电图和声学语音中解码情感",
+      "llm_tldr_en": "Investigates affect decoding using surface EMG and acoustic signals during phonated and silent speech.",
+      "llm_tldr_cn": "研究了在发声和无声语音过程中利用表面肌电图和声学信号进行情感解码的方法。",
+      "llm_tldr": "研究了在发声和无声语音过程中利用表面肌电图和声学信号进行情感解码的方法。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.11715v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08927v1",
+      "title": "MEGC2026: Micro-Expression Grand Challenge on Visual Question Answering",
+      "abstract": "Facial micro-expressions (MEs) are involuntary movements of the face that occur spontaneously when a person experiences an emotion but attempts to suppress or repress the facial expression, typically found in a high-stakes environment. In recent years, substantial advancements have been made in the areas of ME recognition, spotting, and generation. The emergence of multimodal large language models (MLLMs) and large vision-language models (LVLMs) offers promising new avenues for enhancing ME analysis through their powerful multimodal reasoning capabilities. The ME grand challenge (MEGC) 2026 introduces two tasks that reflect these evolving research directions: (1) ME video question answering (ME-VQA), which explores ME understanding through visual question answering on relatively short video sequences, leveraging MLLMs or LVLMs to address diverse question types related to MEs; and (2) ME long-video question answering (ME-LVQA), which extends VQA to long-duration video sequences in realistic settings, requiring models to handle temporal reasoning and subtle micro-expression detection across extended time periods. All participating algorithms are required to submit their results on a public leaderboard. More details are available at https://megc2026.github.io.",
+      "authors": [
+        "Xinqi Fan",
+        "Jingting Li",
+        "John See",
+        "Moi Hoon Yap",
+        "Su-Jing Wang",
+        "Adrian K. Davison"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.MM"
+      ],
+      "published": "2026-03-09T20:53:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.08927v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multimodal reasoning for facial micro-expression analysis",
+      "llm_evidence_cn": "用于面部微表情分析的多模态推理",
+      "llm_evidence": "用于面部微表情分析的多模态推理",
+      "canonical_evidence": "用于面部微表情分析的多模态推理",
+      "llm_tldr_en": "Explores micro-expression understanding using multimodal large language models and video QA.",
+      "llm_tldr_cn": "利用多模态大语言模型和视频问答探索微表情理解。",
+      "llm_tldr": "利用多模态大语言模型和视频问答探索微表情理解。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08927v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15120v1",
+      "title": "How Attention Shapes Emotion: A Comparative Study of Attention Mechanisms for Speech Emotion Recognition",
+      "abstract": "Speech Emotion Recognition (SER) plays a key role in advancing human-computer interaction. Attention mechanisms have become the dominant approach for modeling emotional speech due to their ability to capture long-range dependencies and emphasize salient information. However, standard self-attention suffers from quadratic computational and memory complexity, limiting its scalability. In this work, we present a systematic benchmark of optimized attention mechanisms for SER, including RetNet, LightNet, GSA, FoX, and KDA. Experiments on both MSP-Podcast benchmark versions show that while standard self-attention achieves the strongest recognition performance across test sets, efficient attention variants dramatically improve scalability, reducing inference latency and memory usage by up to an order of magnitude. These results highlight a critical trade-off between accuracy and efficiency, providing practical insights for designing scalable SER systems.",
+      "authors": [
+        "Marc Casals-Salvador",
+        "Federico Costa",
+        "Rodolfo Zevallos",
+        "Javier Hernando"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-03-16T11:16:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.15120v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark of optimized attention mechanisms for speech emotion recognition",
+      "llm_evidence_cn": "针对语音情感识别的优化注意力机制基准测试",
+      "llm_evidence": "针对语音情感识别的优化注意力机制基准测试",
+      "canonical_evidence": "针对语音情感识别的优化注意力机制基准测试",
+      "llm_tldr_en": "Benchmarks efficient attention mechanisms to improve the scalability of speech emotion recognition systems.",
+      "llm_tldr_cn": "对高效注意力机制进行基准测试，以提高语音情感识别系统的可扩展性。",
+      "llm_tldr": "对高效注意力机制进行基准测试，以提高语音情感识别系统的可扩展性。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15120v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.16553v1",
+      "title": "EmoLLM: Appraisal-Grounded Cognitive-Emotional Co-Reasoning in Large Language Models",
+      "abstract": "Large language models (LLMs) demonstrate strong cognitive intelligence (IQ), yet many real-world interactions also require emotional intelligence (EQ) to produce responses that are both factually reliable and emotionally appropriate. In settings such as emotional support, technical assistance, and consultation, effective dialogue depends on how situations are appraised with respect to the user's needs, goals, and coping capacity. Inspired by appraisal theory, we propose EmoLLM, an appraisal-grounded framework for IQ/EQ co-reasoning in dialogue. EmoLLM uses an explicit Appraisal Reasoning Graph (ARG) to structure intermediate reasoning over contextual facts, inferred user needs, appraisal dimensions, emotional states, and response strategies before generating a reply. We train EmoLLM in a multi-turn role-play environment with reinforcement learning, where reverse-perspective reasoning provides reward signals based on predicted user-side consequences of responses. Across diverse dialogue settings, EmoLLM improves emotional state outcomes and response quality over strong baselines while preserving strong factual reliability.",
+      "authors": [
+        "Yifei Zhang",
+        "Mingyang Li",
+        "Henry Gao",
+        "Liang Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-17T14:17:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.16553v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "appraisal-grounded framework for cognitive-emotional co-reasoning in dialogue",
+      "llm_evidence_cn": "对话中基于评价理论的认知-情感协同推理框架",
+      "llm_evidence": "对话中基于评价理论的认知-情感协同推理框架",
+      "canonical_evidence": "对话中基于评价理论的认知-情感协同推理框架",
+      "llm_tldr_en": "Introduces EmoLLM, a framework that enhances LLMs with emotional intelligence through appraisal-based reasoning.",
+      "llm_tldr_cn": "引入 EmoLLM 框架，通过基于评价的推理增强大语言模型的情感智能。",
+      "llm_tldr": "引入 EmoLLM 框架，通过基于评价的推理增强大语言模型的情感智能。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.16553v1",
+      "carry_days": 1
+    }
+  ]
 }

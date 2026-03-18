@@ -1,0 +1,611 @@
+Title: MixSarc: A Bangla-English Code-Mixed Corpus for Implicit Meaning Identification
+
+URL Source: https://arxiv.org/pdf/2602.21608v1
+
+Published Time: Thu, 26 Feb 2026 01:34:16 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# MixSarc: A Bangla–English Code-Mixed Corpus for Implicit Meaning Identification 
+
+## Kazi Samin Yasar Alam 1, Md Tanbir Chowdhury 1,Tamim Ahmed 1, Ajwad Abrar 1* , Md Rafid Haque 2
+
+> 1
+
+Department of Computer Science and Engineering, Islamic University of Technology, Dhaka, Bangladesh. 
+
+> 2
+
+Department of Computer Science, University of Illinois at Chicago, Chicago, United States. *Corresponding author(s). E-mail(s): ajwadabrar@iut-dhaka.edu; Contributing authors: saminyasar20@iut-dhaka.edu; tanbir@iut-dhaka.edu; tamimahmed20@iut-dhaka.edu; mhaqu23@uic.edu; 
+
+Abstract 
+
+Bangla–English code-mixing is widespread across South Asian social media, yet resources for implicit meaning identification in this setting remain scarce. Existing sentiment and sarcasm models largely focus on monolingual English or high-resource languages and struggle with transliteration variation, cultural references, and intra-sentential language switching. To address this gap, we intro-duce MixSarc, the first publicly available Bangla–English code-mixed corpus for implicit meaning identification. The dataset contains 9,087 manually annotated sentences labeled for humor, sarcasm, offensiveness, and vulgarity. We construct the corpus through targeted social media collection, systematic filtering, and multi-annotator validation. We benchmark transformer-based models and eval-uate zero-shot large language models under structured prompting. Results show strong performance on humor detection but substantial degradation on sarcasm, offense, and vulgarity due to class imbalance and pragmatic complexity. Zero-shot models achieve competitive micro-F1 scores but low exact match accuracy. Further analysis reveals that over 42% of negative sentiment instances in an external dataset exhibit sarcastic characteristics. MixSarc provides a founda-tional resource for culturally aware NLP and supports more reliable multi-label modeling in code-mixed environments. 
+
+1  
+
+> arXiv:2602.21608v1 [cs.CL] 25 Feb 2026 Fig. 1 Examples of Humorous, Sarcastic, Offensive, and Vulgar utterances from the MixSarc dataset. Each example is presented in its original Bangla–English code-mixed form followed by an English translation. Red represents English words, blue represents Bengali words written in English alphabets.
+> Keywords: Code-Mixed Text, Sarcasm Detection, Humor Detection, Offensive Language, Multi-Label Classification, Bangla–English NLP
+
+# 1 Introduction 
+
+In the rapidly evolving digital landscape of South Asia, code-mixing between Bangla and English has emerged as a prevalent mode of communication, particularly on social media platforms. Users seamlessly interweave Bangla (often in Romanized form, known as Banglish) with English words, phrases, slang, and culturally nuanced expressions. This fluid linguistic practice, while natural to millions of speakers, poses signifi-cant challenges to existing natural language processing (NLP) systems, which are predominantly trained on monolingual or high-resource language data. Subjective tasks such as humor, sarcasm, offense, and vulgarity detection are especially difficult in code-mixed settings. These phenomena rely heavily on implicit cultural knowledge, contextual incongruity, and intentional ambiguity—elements that 2Table 1 Comparison of existing Bangla and Bangla–English code-mixed datasets relevant to sentiment, sarcasm, offense, and humor detection. 
+
+Dataset Language(s) Task(s) #Samples BnSentMix [1] Bangla-English Codemix Sentiment (4 labels) ∼20,000 
+
+BanglaSarc [2] Bangla Sarcasm detection 5,112 
+
+SentMix-3L [3] Bangla-English-Hindi Sentiment analysis Not reported 
+
+BanglishRev [4] Bangla-English + Ban-glish Product review sentiment 1.74M 
+
+BanTH [5] Transliterated Bangla Multi-label hate speech 37,300 
+
+MixSarc (Ours) Bangla–English Codemix Implicit meaning 9,087 are frequently obscured by inconsistent transliterations, informal spellings, and intra-sentential language switching. Consequently, current sentiment analysis and toxicity detection models often misclassify sarcastic or humorous content as literal sentiment, or fail to identify veiled offense and vulgarity masked by irony. Despite increasing work on code-mixed sentiment analysis for Indian languages, Bangla–English remains severely understudied, and virtually no resources exist for finer-grained subjective tasks like humor, sarcasm, offense, and vulgarity in this language pair (see Table 1 for a comparison with existing datasets). To address this gap, we present MixSarc , the first large-scale, human-annotated Bangla–English code-mixed corpus specifically designed for humor, sarcasm, offense, and vulgarity detection. Collected from diverse online sources (YouTube comments, Facebook posts, and e-commerce reviews), MixSarc contains over 9000 samples anno-tated with four primary labels—Humorous, Sarcastic, Offensive, and Vulgar. Our contributions are threefold: 1. We introduce MixSarc, a rich, publicly available 1 dataset comprising 9,087 
+
+Bangla–English code-mixed sentences that capture authentic linguistic and cultural nuances. Figure 1 shows representative examples from each category, highlighting how humor, sarcasm, offense, and vulgarity manifest in real-world code-mixed text. 2. We establish strong baselines using classical machine learning classifiers, state-of-the-art transformer models fine-tuned for code-mixed text (Banglish-BERT and Gemma-2B), and a zero-shot large language model baseline, reporting comprehen-sive results across all four tasks. 3. Through in-depth analysis, we reveal key interactions between the tasks: 42.13% of negative-sentiment instances are sarcastic rather than genuine (visualized in Figure 4), underscoring sarcasm’s role as a frequent carrier of negativity in Bangla–English discourse. We further demonstrate that while transformers excel at humor and sarcasm detection, they completely fail on the minority classes of vulgarity and offense (F1 = 0.00) due to severe class imbalance. 
+
+> 1The dataset is publicly available at https://huggingface.co/datasets/ajwad-abrar/MixSarc.
+
+3These findings highlight the necessity of imbalance-aware techniques (e.g., over-sampling, class-weighted losses, or targeted augmentation) for robust detection of subjective toxicity in low-resource code-mixed settings. By releasing MixSarc along with detailed baselines and analyses, this work provides a solid foundation for future research on culturally aware NLP and safer content moderation for South Asian digital platforms. 
+
+# 2 Related Work 
+
+Research on code-mixed language processing has expanded rapidly in recent years, driven by the widespread use of multilingual communication on South Asian social media. Bangla–English code-mixing, in particular, presents unique challenges for NLP due to inconsistent transliteration, non-standard grammar, and culturally embed-ded expressions that complicate language identification and downstream classification tasks. 
+
+## 2.1 Code-Mixed Language Processing 
+
+Early work on Bangla–English code-mixed text focused on foundational tasks such as word-level language identification. Chanda et al. [6] introduced a predictor–corrector model combining rule-based heuristics and machine learning, supported by a Facebook chat corpus that remains a valuable early resource. More recently, Raihan et al. [3] advanced code-mixed modeling through Mixed-DistilBERT, a lightweight transformer pretrained on both monolingual and synthetically generated code-mixed text. Their results demonstrated the effectiveness of task-specific pretraining even in low-resource, noisy environments. 
+
+## 2.2 Sentiment Analysis in Code-Mixed Text 
+
+Bangla–English sentiment analysis has attracted increasing attention with the release of datasets such as SentMix-3L [3] and BnSentMix [1]. SentMix-3L introduced a tri-lingual Bangla–English–Hindi corpus combining natural and synthetic samples, highlighting the complexity of multilingual sentiment detection. BnSentMix provided a larger, more natural dataset with high-quality annotation and a “mixed” sentiment category to capture nuanced polarity expression. However, existing models trained on these datasets often misinterpret sarcastic or offensive content, revealing substantial performance degradation on subjective or context-heavy examples. 
+
+## 2.3 Sarcasm and Humor Detection 
+
+Sarcasm detection has traditionally relied on detecting incongruity between surface sentiment and contextual meaning, as formalized by Riloff et al. [7]. While substan-tial progress has been made in English–Hindi code-mixed sarcasm detection, including datasets by Swami et al. [8] and large-scale Hinglish corpora by Aggarwal et al. [9], Bangla–English sarcasm detection remains significantly underexplored. Bengali-only resources such as Ben-Sarc [10] and BanglaSarc [2] provide early baselines but do 4Fig. 2 Overview of the dataset preparation pipeline used in this work. 
+
+not capture code-mixed linguistic behavior. Prior work on humor and offense detec-tion using transformer-based systems, such as the DuluthNLP system [11], further underscores the importance of contextual modeling and fine-tuning strategies. 
+
+## 2.4 Offensive and Vulgar Language Detection 
+
+Work on detecting offensive language in Bangla–English code-mixed text is limited but growing. Mandal et al. [12] introduced one of the earliest code mixed offensive corpora and demonstrated the effectiveness of traditional machine learning models using lexical features. Sazzed [13] contributed the BEOL dataset, distinguishing between offensive and vulgar expressions and showing the advantage of deep recurrent models over traditional techniques. More recent studies fine tuned multilingual transformers such as mBERT for abusive content detection [14] and achieved improved performance, although challenges remain due to transliteration inconsistencies and subtle pragmatic cues. 
+
+# 3 MixSarc Dataset 
+
+In this work, we introduce MixSarc, a Bangla–English code-mixed dataset designed for the joint detection of humor, sarcasm, offensiveness, and vulgarity in social media text. To the best of our knowledge, MixSarc is the first large-scale resource that simultaneously annotates these four pragmatic phenomena on transliterated Bangla– English content. The dataset construction followed a multi-stage pipeline analogous to other recent code-mixed benchmarks (see Figure 2): targeted data collection from public social media pages, systematic cleaning and filtering to retain linguistically robust code-mixed content, and a controlled annotation campaign with multiple trained anno-tators. Particular emphasis was placed on handling the variation in transliteration (Banglish), script mixing, and subtle context-dependent cues that are typical of infor-mal online communication. In the following subsections, we present the data sourcing 5Source Page Posts Collected      
+
+> Shelby Bhai 6,034
+> OneTwoThreeAmiOnekFree 8,315
+> Porte Bosh 7,386
+> Ammu Dake 9,394
+> Table 2 Summary of data sources and number of posts collected.
+
+process, preprocessing and code mix filtering procedures, annotation protocol, label distribution, and the key challenges and limitations. 
+
+## 3.1 Data Sourcing 
+
+To obtain naturally occurring humorous and sarcastic code-mixed text, we collected posts from publicly accessible Facebook pages that predominantly publish informal, culture-specific content in Bangla–English. Data collection was carried out using the 
+
+Scrapy framework 2, which allowed us to systematically crawl and store page posts. We selected four high-engagement Facebook pages as data sources and collected all available posts within a specified time window. Table 2 summarizes the selected source pages and the number of posts collected from each page. 
+
+In total, this step yielded 31,129 raw text items, which formed the initial pool for subsequent filtering and annotation. 
+
+## 3.2 Data Cleaning and Preprocessing 
+
+Starting from the raw collection, we applied a series of cleaning and filtering operations to remove non-linguistic artifacts and retain posts that exhibit genuine Bangla–English code-mixing. The preprocessing pipeline consisted of emoji removal, script-based filtering, and a final code-mix validation stage based on a fine-tuned mBERT classifier. 
+
+3.2.1 Emoji and Non-Textual Cue Removal 
+
+To eliminate non-textual cues and ensure that models trained on MixSarc rely solely on language-based signals, all emojis were removed using the replace_emoji function from the Python emoji 3 library. This ensures that humor, sarcasm, and offensiveness must be inferred from text rather than pictorial markers. The complete text cleaning procedure is summarized in Algorithm 1. 
+
+3.2.2 Script-Based Filtering 
+
+Because our focus is on transliterated Bangla and English, posts written entirely in Bengali script were discarded. We identified Bangla-only content by matching against Bengali Unicode ranges using regular expressions. Posts containing English script, Romanized Bangla (Banglish), or mixed scripts were preserved for downstream processing. 
+
+> 2https://github.com/scrapy/scrapy
+> 3https://pypi.org/project/emoji/
+
+6Algorithm 1 Clean Text 
+
+Require: text ← Input text 
+
+Ensure: text ← Preprocessed text  
+
+> 1:
+
+text ← text.lower () ▷ {Convert to lowercase } 
+
+> 2:
+
+text ← Remove all special characters except “?”, “,”, “!”, and “.”  
+
+> 3:
+
+text ← Reduce consecutive sequences of punctuations to a single instance  
+
+> 4:
+
+text ← Remove all non-ASCII characters  
+
+> 5:
+
+text ← Remove extra white spaces  
+
+> 6:
+
+text ← Capitalize the first letter after each period (.)  
+
+> 7:
+
+return text 
+
+## 3.3 Code-Mixed Validation via mBERT 
+
+To automatically verify that each post contains genuine Bangla–English code-mixing, we employed a token-level classifier derived from a fine-tuned Multilingual BERT (mBERT) model. The classifier assigns tokens to one of two categories: 
+
+• English 
+
+• Banglish (Romanized Bangla) Using these token-level predictions, we computed the proportion of Banglish tokens per post and applied a simple rule-based decision function. Let total_word_count 
+
+denote the number of tokens in the post and total_benglish_word_count the number identified as Banglish. The full procedure is outlined in Algorithm 2. Posts with fewer than four tokens were discarded to avoid extremely short and noisy content. Remaining posts were retained only if at least 30% of tokens were classified as Banglish, ensuring meaningful code-mixing. After this automatic filtering stage, a total of 9,087 high-quality code-mixed sentences were passed to the annotation phase. 
+
+## 3.4 Data Annotation 
+
+3.4.1 Annotation Scheme 
+
+Each sentence in MixSarc is annotated with four binary labels: 
+
+• Humorous – indicates explicit or implicit comedic intent. 
+
+• Sarcastic – denotes irony, mockery, or contrast between literal and intended meaning. 
+
+• Offensive – marks potentially insulting, derogatory, or harmful expressions. 
+
+• Vulgar – captures coarse, profane, or obscene language usage. The annotation is multi-label : a single sentence may simultaneously exhibit mul-tiple phenomena (e.g., humorous and sarcastic, or offensive and vulgar). This design better reflects the overlapping nature of tone and intent in informal social media discourse. Each sentence was independently annotated by three annotators. Final labels were determined through majority voting across annotators for each of the four binary 7Algorithm 2 Detect Code-mixed Bengali 
+
+Require: S ← List of sentences 
+
+Require: model ← Pre-trained mBERT model 
+
+Require: tokenizer ← Pre-trained mBERT tokenizer 
+
+Ensure: pred ← Predicted class label (0 or 1)  
+
+> 1:
+
+b count ← 0 
+
+> 2:
+
+w count ← 0 
+
+> 3:
+
+for each sent in S do  
+
+> 4:
+
+words ← split (sent ) 
+
+> 5:
+
+for each w in words do  
+
+> 6:
+
+w ← preprocess (w) 
+
+> 7:
+
+if w is empty then  
+
+> 8:
+
+continue  
+
+> 9:
+
+end if  
+
+> 10:
+
+w count ← w count + 1  
+
+> 11:
+
+inputs ← tokenize (w) 
+
+> 12:
+
+outputs ← model (inputs ) 
+
+> 13:
+
+pred class ← argmax (outputs ) 
+
+> 14:
+
+if pred class == 1 then  
+
+> 15:
+
+b count ← b count + 1  
+
+> 16:
+
+end if  
+
+> 17:
+
+end for  
+
+> 18:
+
+end for  
+
+> 19:
+
+if w count < 4 then  
+
+> 20:
+
+return 0 
+
+> 21:
+
+end if  
+
+> 22:
+
+b percent ← b count/w count  
+
+> 23:
+
+if b percent ≥ 0.3 then  
+
+> 24:
+
+return 1 
+
+> 25:
+
+else  
+
+> 26:
+
+return 0 
+
+> 27:
+
+end if 
+
+dimensions. Detailed annotation guidelines, including definitions, labeling rules, and examples for all categories, are provided in Appendix A. 
+
+3.4.2 Annotators 
+
+We recruited 18 annotators who are native Bengali speakers , fluent in Bangla, familiar with transliterated Bangla (Banglish), and comfortable with English. All annotators had formally studied Bangla as an academic subject up to at least the Higher Secondary level. Additionally, they were required to pass a qualification test, achieving at least 70% accuracy against a gold standard subset before participating in the main annotation process. 8Attribute Value        
+
+> Number of annotators 18 Age range 19–59 years Gender distribution 11 male, 7 female Countries represented 6Institutions represented 14 Average sentences per annotator ∼1500
+> Table 3 Annotator demographics and annotation workload.
+
+The annotator pool is demographically diverse as shown in Table 3. On average, each annotator labeled approximately 1,500 sentences. Annotators were compensated upon completion of their assigned batches. 
+
+3.4.3 Label Statistics 
+
+Table 4 reports the complete label distribution obtained after the full annotation pro-cess, along with the balanced subset used for model training. Each sentence in the corpus was annotated independently by three annotators, and the final label assign-ment was determined through majority voting. The resulting distribution, shown in Table 4 (column: Full Dataset), reflects the natural frequencies of humorous, sar-castic, offensive, vulgar, and neutral content across all 9,087 sentences, including all multi-label combinations. As shown, humorous (4,041) and sarcastic (1,475) expres-sions appear most frequently, while offensive (207) and vulgar (290) content occur less often. Multi-label overlaps such as humorous + sarcastic (844) further highlight the intertwined nature of pragmatic cues in Bangla–English code-mixed discourse. 
+
+## 3.5 Dataset Statistics 
+
+For downstream modeling, a balanced subset of the corpus was constructed to ensure equal representation across the primary single-label classes. Table 4 (column: Balanced Subset) shows the final curated counts used for training, validation, and testing. Each of the four primary labels—humorous, sarcastic, vulgar, and offensive—was capped at 750 instances, along with 750 neutral samples. Multi-label counts remain unchanged from the full dataset, preserving real-world co-occurrence patterns. The final dataset contains 9,087 sentences and is split into training, validation, and test sets using a 70:15:15 ratio, resulting in 6,361 training samples, 1,363 validation samples, and 1,363 test samples. 
+
+## 3.6 Annotation Validation 
+
+To assess annotation reliability, we computed Fleiss’ Kappa [15] to measure inter-annotator agreement among the three annotators. Unlike Cohen’s Kappa, which is limited to two raters, Fleiss’ Kappa extends the agreement measure to multiple annotators while correcting for chance agreement. 9Table 4 Full vs. balanced label distribution.                                 
+
+> Label Full Balanced
+> Humorous 4041 750 Sarcastic 1475 750 Offensive 207 207 Vulgar 290 290 None 1953 750 Humor + Sarc. 844 844 Humor + Vul. 84 84 Humor + Off. 76 76 Off. + Sarc. 38 38 Vul. + Off. 34 34 Vul. + Sarc. 27 27 Humor + Off. + Sarc. 99Humor + Vul. + Sarc. 44Humor + Vul. + Off. 33Vul. + Off. + Sarc. 22
+
+3.6.1 Inter-Annotator Agreement 
+
+The overall agreement across the dataset yielded an average Fleiss’ Kappa coefficient of ¯ κ = 0 .26, corresponding to fair agreement under the conventional interpretation scale. 
+
+3.6.2 Factors Affecting Agreement 
+
+The observed agreement level can be attributed to several inherent characteristics of the annotation task: 1. Implicit and Context-Sensitive Categories: The annotated labels—humor, sarcasm, vulgarity, and offensiveness—are inherently implicit and context-dependent. Unlike objective factual annotations, these categories require interpre-tation of pragmatic cues, tone, cultural references, and implied meanings, which increases annotation variability. 2. Annotator Diversity: Annotators were intentionally recruited from diverse age groups (19–59 years) and varied cultural and educational backgrounds. While this diversity improves ecological validity and dataset representativeness, it also introduces differences in perception regarding humor, sarcasm, and offensive content. 3. Intrinsic Subjectivity of Target Phenomena: The target phenomena are inherently subjective. Sarcasm often relies on irony and contextual incongruity; humor depends on personal and cultural preferences; and perceptions of offensive-ness vary across individuals and social norms. Moderate agreement is therefore expected even among trained annotators. 10 Overall, the agreement level (¯ κ = 0 .26) reflects the intrinsic complexity of annotat-ing socially grounded and pragmatically nuanced language, capturing natural variation in human interpretation. 
+
+# 4 Methodology and Experimental Setup 
+
+## 4.1 Modeling Approach 
+
+We formulate the MixSarc classification task as a multi-label text classifica-tion problem, reflecting the fact that a single sentence may simultaneously express humor, sarcasm, offensiveness, and vulgarity. Each instance is represented by a four-dimensional binary vector: [yhum , y sar , y off , y vul ] ∈ { 0, 1}4.
+
+To support this setup, the dataset was partitioned into 70% training, 15% valida-tion, and 15% test sets. Stratified sampling was applied using the humorous label to maintain distributional consistency. A modified PyTorch Dataset class was used to return tokenized inputs alongside multi-label vectors for each sample. The classification models are based on transformer encoders, fine-tuned end-to-end on the MixSarc dataset. The use of pretrained language models allows the system to capture nuanced contextual and pragmatic cues that are characteristic of Bangla–English code-mixed discourse. 
+
+## 4.2 Evaluation Metrics 
+
+We evaluate model performance using classification accuracy , precision , recall ,and F1-score , following standard multi-label evaluation practice. All metrics are com-puted using sample-based averaging , which treats each sentence as an independent multi-label instance and averages performance across labels accordingly. In addition, confusion matrices are generated separately for humor, sarcasm, offen-siveness, and vulgarity, enabling a fine-grained analysis of misclassification patterns for each attribute. 
+
+## 4.3 Implementation Details 
+
+All models were implemented using the HuggingFace Transformers library. Fine-tuning was performed using the following configuration: 
+
+• Loss Function: Binary Cross-Entropy with Logits ( BCEWithLogitsLoss )
+
+• Optimizer: AdamW 
+
+• Learning Rate: 1.25 × 10 −6
+
+• Scheduler: Linear decay without warmup 
+
+• Epochs: 15 
+
+• Batch Size: 32 Training was conducted using GPU acceleration when available. During each iter-ation, the model performed a forward pass over input IDs and attention masks, 11 computed independent binary losses for each label, aggregated them, and applied back-propagation followed by an optimization step. The training pipeline closely follows standard practices for multi-label fine-tuning of transformer architectures. 
+
+## 4.4 Zero-Shot Baseline with Large Language Models 
+
+In addition to supervised fine-tuning, we evaluate the MixSarc task under a zero-shot learning setting using large language models (LLMs), with the goal of establishing strong, training-free baselines and analyzing the inherent capabilities and limitations of LLMs on Bangla–English code-mixed implicit meaning detection. We benchmark three instruction-following large language models (LLMs) via API-based inference: 1. LLaMA-3.1-8B-Instant , accessed through the Groq API, 2. Gemini-3-Flash , accessed through the Gemini API, and 3. LLaMA-3.3-70B-Versatile , accessed through the Groq API. None of these models are fine-tuned on the MixSarc dataset. Instead, each instance is classified using a structured prompt designed to closely follow the original MixSarc annotation guidelines, ensuring consistency between human and model-based labeling. The zero-shot task is formulated as a multi-label binary classification problem consistent with the supervised setup. Given a single sentence, the model is instructed to assign four binary labels corresponding to Humorous , Sarcastic , Offensive , and Vulgar .The prompt defines each category and enforces strict output constraints. Models are required to return predictions in valid JSON format with binary values ( {0,1 }) for each label, ensuring deterministic parsing and compatibility with automated evaluation (Figure 3). To reduce randomness and improve consistency, decoding temperature is set to zero for all models. Due to API rate limits and resource constraints, we perform inference using batched requests while keeping the output format unchanged (one JSON object per sentence). Specifically, Gemini-3-Flash is evaluated with a batch size of 50 ,while LLaMA-3.3-70B-Versatile is evaluated with a batch size of 20 . LLaMA-3.1-8B-Instant is also queried through the Groq API 4 under the same prompt constraints. The resulting predictions are mapped to a four-dimensional binary vector for each instance, analogous to the ground-truth annotation format. Evaluation is conducted on the full test split using exact match accuracy and 
+
+micro-averaged precision, recall, and F1-score . Exact match accuracy measures the proportion of samples for which all four labels are predicted correctly, providing a strict assessment of holistic multi-label performance. Micro-averaged metrics aggregate true positives, false positives, and false negatives across all labels, making them more informative under class imbalance. 
+
+> 4https://console.groq.com/
+
+12 Zero-Shot Prompt for MixSarc Annotation Task: Given one sentence, assign four binary labels (0/1). 
+
+Labels & Definition: 
+
+• Sarcasm : Verbal irony with mocking or insincere tone. 
+
+• Humor : Language intended to amuse or provoke laughter. 
+
+• Offense : Insulting or identity-targeted language. 
+
+• Vulgarity : Obscene or sexually explicit language. 
+
+Rules: 
+
+• Output only valid JSON 
+
+• Each label must be 0 or 1 
+
+• No explanations or extra text 
+
+Return format: {"Humorous":0,"Sarcastic":0,"Offensive":0,"Vulgar":0} 
+
+Sentence: {text}  
+
+> Fig. 3 Zero-shot prompt used for LLM-based multi-label classification
+
+# 5 Result Analysis 
+
+## 5.1 Benchmarking Transformer Models 
+
+We evaluate the performance of two transformer-based architectures—Banglish-BERT and Gemma-2B—on the MixSarc dataset across four binary classification tasks: Humor, Sarcasm, Vulgarity, and Offensiveness. The comparison uses Accuracy, Pre-cision, Recall, and F1-score to capture overall and class-sensitive performance. The detailed results are presented in Table 5. 
+
+5.1.1 Banglish-BERT Performance 
+
+Banglish-BERT 5 achieves its strongest results on Humor , with an F1-score of 0.708 and high recall (0.8197). This suggests the model is sensitive to humorous cues, though moderate precision implies false positives remain present. Sarcasm detection demonstrates significantly lower performance (F1 = 0.3938), highlighting the inherent difficulty of interpreting ironic and context-dependent expressions in code-mixed text. For Vulgarity and Offensiveness, the model shows high accuracy but very low recall and F1-scores, largely due to strong label imbalance. Although the model predicts the majority class reliably, minority-class examples are frequently missed. 
+
+> 5https://huggingface.co/aplycaebous/tb-BanglaBERT-fpt
+
+13 Table 5 Performance of Banglish-BERT, Gemma-2B, and zero-shot LLM baselines on the MixSarc dataset.                                                 
+
+> Model Acc. Prec. Rec. F1 Humor
+> Banglish-BERT 0.6232 0.6230 0.8197 0.7080 Gemma-2B 0.6012 0.6007 0.8474 0.7031
+> Sarcasm
+> Banglish-BERT 0.6569 0.3689 0.4222 0.3938 Gemma-2B 0.7287 0.4539 0.0944 0.1553
+> Vulgar
+> Banglish-BERT 0.9509 0.5000 0.1194 0.1928 Gemma-2B 0.9509 0.5000 0.0299 0.0563
+> Offensive
+> Banglish-BERT 0.9508 0.1250 0.0364 0.0563 Gemma-2B 0.9589 0.0000 0.0000 0.0000
+> Zero-shot (Micro-averaged)
+> LLaMA-3.1-8b 0.2616 0.4613 0.7172 0.5615 Gemini-3-Flash 0.2530 0.5000 0.6391 0.5610 LLaaMa-3.3-70b-versatile 0.2340 0.4628 0.2921 0.3582
+
+5.1.2 Gemma-2B Performance 
+
+Gemma-2B 6, fine-tuned using QLoRA (4-bit quantization with Low-Rank Adaptation adapters), shows comparable performance to Banglish-BERT on Humor, achieving an F1-score of 0.7031 with high recall (0.8474). In Sarcasm detection, Gemma-2B attains higher accuracy and precision but extremely low recall (0.0944), indicating a conservative prediction strategy that misses most sarcastic instances. Performance on Vulgarity and Offensiveness mirrors Banglish-BERT: extremely low recall and F1-scores despite high overall accuracy. Particularly, the Offense task yields an F1-score of 0, meaning Gemma-2B fails to correctly identify any offensive examples. 
+
+## 5.2 Comparative Insights 
+
+Both models handle humor effectively, driven by strong recall. Sarcasm remains the most challenging task, with neither model achieving satisfactory F1-scores. Banglish-BERT displays a more balanced precision–recall pattern, while Gemma-2B prioritizes precision at the expense of recall. On Vulgar and Offensive content, the nearly zero recall values indicate that the rarity and contextual subtlety of these categories severely hinder transformer-based classification. These results emphasize the need for: 
+
+> 6https://huggingface.co/google/gemma-2b
+
+14 • better class balancing, 
+
+• domain-specific augmentation strategies, 
+
+• more context-aware architectures for minority-class detection. 
+
+## 5.3 Zero-Shot Evaluation 
+
+Table 5 reports the performance of three zero-shot LLM baselines: LLaMA-3.1-8B-Instant, Gemini-3-Flash, and LLaMA-3.3-70B-Versatile. Since these models predict all four labels jointly for each sentence, we report exact match accuracy along with 
+
+micro-averaged precision, recall, and F1-score , which summarize performance across all labels under the multi-label setting. Overall, both LLaMA-3.1-8B and Gemini-3-Flash achieve comparable micro-F1 scores (0.5615 and 0.5610, respectively), indicating that both models can capture a substantial portion of positive instances without any task-specific training. Their behavior is largely recall-oriented : LLaMA-3.1-8B attains high micro-recall (0.7172), while Gemini-3-Flash also maintains strong micro-recall (0.6391), at the cost of reduced precision and increased false positives. Despite these reasonable micro-F1 scores, exact match accuracy remains low (0.2616 for LLaMA-3.1-8B and 0.2530 for Gemini-3-Flash), reflecting the difficulty of correctly predicting all four binary labels simultaneously for the same sentence. In contrast, LLaMA-3.3-70B-Versatile shows lower overall performance in this setup (micro-F1 = 0.3582), driven by substantially lower recall (0.2921), which indi-cates a more conservative prediction tendency that misses many positive labels. We note that this model was evaluated under stricter resource constraints, using a smaller 
+
+batch size of 20 (compared to 50 for Gemini-3-Flash), which was necessary to ensure stable API inference and output parsing. These results highlight two key observations. First, zero-shot LLMs can provide competitive training-free baselines with reasonable micro-F1 scores, but their holis-tic correctness remains limited as reflected by low exact match accuracy. Second, model behavior varies significantly: some models favor higher recall (capturing more positives) while others adopt conservative outputs that reduce recall. This reinforces the importance of supervised fine-tuning for reliable and label-specific multi-label pre-diction on MixSarc, particularly under severe class imbalance and culturally grounded implicit cues. 
+
+## 5.4 Improving Sentiment Analysis Through Sarcasm Detection 
+
+5.4.1 Revisiting Sentiment Labels in BnSentMix 
+
+To evaluate the broader applicability of MixSarc-based models, we applied a MixSarc-finetuned BERT model to the BnSentMix dataset. Since sarcasm often manifests with negative lexical cues, traditional sentiment systems frequently misclassify sarcastic sentences as genuinely negative. 15 Fig. 4 Distribution of sarcastic vs. genuine negative samples within the negative sentiment class of BnSentMix. 
+
+5.4.2 Findings 
+
+Our analysis of the negative class in BnSentMix reveals that a substantial portion of samples are likely sarcastic. The MixSarc-tuned classifier estimates a sarcasm probability of 0.4213 for negative-labeled sentences. Out of 6,172 negative samples, approximately 2,600 exhibit sarcastic characteristics. 
+
+5.4.3 Implications 
+
+These results highlight sarcasm as a critical confounding factor in sentiment analysis: 
+
+• Reliability Improvement: Correcting sarcastic misclassifications improves senti-ment accuracy for downstream tasks such as opinion mining. 
+
+• Dataset Insight: The presence of sarcasm in over 40% of negative samples exposes a significant limitation in current annotation practices. 
+
+• Practical Value: In real-world social media and customer feedback systems, distinguishing sarcastic negativity from genuine negativity is essential to avoid misinterpretation of user intent. Overall, this case study reinforces the practical significance of MixSarc’s multi-label framework for improving sentiment reliability in multilingual, code-mixed domains. 16 6 Conclusion 
+
+This work introduced MixSarc, the first publicly available Bangla–English code-mixed sarcasm detection dataset designed to reflect the linguistic complexity of multilin-gual online discourse. By focusing on naturally occurring code-mixed content and providing carefully curated annotations, the dataset addresses a clear gap in sar-casm research, which has largely centered on monolingual English benchmarks. The annotation process followed structured guidelines and achieved fair inter-annotator agreement, supporting the reliability of the labels and the overall dataset quality. Through benchmarking experiments, we evaluated multiple instruction-following large language models using prompt-based classification without task-specific fine-tuning. The results demonstrate that while contemporary LLMs show reasonable sensitivity to sarcastic cues, their performance remains inconsistent in code-mixed settings. This highlights the inherent difficulty of sarcasm detection when pragmatic signals, cultural references, and language mixing interact. Overall, MixSarc estab-lishes a strong foundation for future research in multilingual and code-mixed figurative language understanding. By releasing MixSarc and reporting systematic baseline evaluations, this study contributes both a resource and an empirical analysis that can facilitate progress in sarcasm detection, cross-lingual NLP, and instruction-based LLM evaluation. We hope this work encourages further exploration of pragmatics-aware modeling approaches that better capture nuanced meaning in linguistically diverse contexts. 
+
+# 7 Limitations and Future Directions 
+
+Although the MixSarc dataset and models establish a strong baseline for Bangla–English code-mixed classification, several limitations remain. Dataset expan-sion could increase coverage of vulgar and offensive samples from public Facebook groups, YouTube comments, and Bangladeshi meme communities. It could also ensure a more balanced distribution across humorous, sarcastic, offensive, and vul-gar categories. Advanced filtering using transformer-based language identification and few-shot LLM-assisted screening can further improve quality. Modeling improve-ments include experiments with fine-tuned transformers such as BERT, mBERT, and XLM-R. Instruction-tuned LLMs like GPT-4, Claude, and Gemini can be evaluated under few-shot prompting. Hybrid frameworks combining supervised fine-tuning with LLM-guided label refinement are another promising direction. Broader goals involve enhancing models with sarcasm- and offensiveness-aware mechanisms for low-resource, code-mixed settings. Developing evaluation metrics tailored for nuanced multilingual and code-mixed NLP tasks is also important. These directions aim to produce richer datasets, stronger models, and more reliable evaluation strategies. 
+
+# Data Availability Statement 
+
+All data are publicly available on Hugging Face at https://huggingface.co/datasets/ ajwad-abrar/MixSarc. 17 Declaration of competing interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+# References 
+
+[1] Alam, S., Ishmam, M.F., Alvee, N.H., Siddique, M.S., Hossain, M.A., Kamal, A.R.M.: Bnsentmix: A diverse bengali-english code-mixed dataset for sentiment analysis. arXiv preprint arXiv:2408.08964 (2024) [2] Apon, T.S., Anan, R., Modhu, E.A., Suter, A., Sneha, I.J., Alam, M.G.R.: Ban-glasarc: A dataset for sarcasm detection. In: 2022 IEEE Asia-Pacific Conference on Computer Science and Data Engineering (CSDE), pp. 1–5 (2022). IEEE [3] Raihan, M.N., Goswami, D., Mahmud, A.: Mixed-distil-bert: Code-mixed lan-guage modeling for bangla, english, and hindi. arXiv preprint arXiv:2309.10272 (2023) [4] Shamael, M.N., Nawshin, S., Shatabda, S., Islam, S.: Banglishrev: A large-scale bangla-english and code-mixed dataset of product reviews in e-commerce. arXiv preprint arXiv:2412.13161 (2024) https://doi.org/10.48550/arXiv.2412.13161 . 1.74M review dataset for sentiment analysis [5] Haider, F., Shifat, F.T., Ishmam, M.F., Sourove, M.S.U.R., Barua, D.D., Fahim, M., Bhuiyan, M.F.A.: Banth: A multi-label hate speech detection dataset for transliterated bangla. In: Chiruzzo, L., Ritter, A., Wang, L. (eds.) Findings of the Association for Computational Linguistics: NAACL 2025, pp. 7217–7236. Association for Computational Linguistics, Albuquerque, New Mexico (2025). https://doi.org/10.18653/v1/2025.f indings-naacl.403 . 37,300 transliterated Bangla hate speech samples. https://aclanthology.org/2025.findings-naacl.403/ 
+
+[6] Chanda, A., Das, D., Mazumdar, C.: Unraveling the english-bengali code-mixing phenomenon. In: Proceedings of the Second Workshop on Computational Approaches to Code Switching, pp. 80–89 (2016) [7] Riloff, E., Qadir, A., Surve, P., De Silva, L., Gilbert, N., Huang, R.: Sarcasm as contrast between a positive sentiment and negative situation. In: Proceedings of the 2013 Conference on Empirical Methods in Natural Language Processing, pp. 704–714 (2013) [8] Swami, S., Khandelwal, A., Singh, V., Akhtar, S.S., Shrivastava, M.: A cor-pus of english-hindi code-mixed tweets for sarcasm detection. arXiv preprint arXiv:1805.11869 (2018) [9] Aggarwal, A., Wadhawan, A., Chaudhary, A., Maurya, K.: ” did you really mean what you said?”: Sarcasm detection in hindi-english code-mixed data using 18 bilingual word embeddings. arXiv preprint arXiv:2010.00310 (2020) [10] Lora, S.K., Shahariar, G., Nazmin, T., Rahman, N.N., Rahman, R., Bhuiyan, M., Shah, F.M.: Ben-sarc: A self-annotated corpus for sarcasm detection from bengali social media comments and its baseline evaluation. Natural Language Processing 
+
+31 (2), 674–699 (2025) [11] Akrah, S.: Duluthnlp at semeval-2021 task 7: Fine-tuning roberta model for humor detection and offense rating. In: Proceedings of the 15th International Workshop on Semantic Evaluation (SemEval-2021), pp. 1196–1203 (2021) [12] Mandal, S., Mahata, S.K., Das, D.: Preparing Bengali-English code-mixed cor-pus for sentiment analysis of indian languages. CoRR abs/1803.04000 (2018) arXiv:1803.04000 [13] Sazzed, S.: Abusive content detection in transliterated Bengali-English social media corpus. In: Proceedings of the Fifth Workshop on Computational Approaches to Linguistic Code-Switching, pp. 125–130. Association for Compu-tational Linguistics, Online (2021). https://doi.org/10.18653/v1/2021.calcs-1.16 . https://aclanthology.org/2021.calcs-1.16 
+
+[14] Hasan, M.T., Atmaja, Y., Khan, A., Uddin, M.A., Rivera, J., Ahmed, N.: Clas-sification Bengali hate speech using LSTM model. In: Proceedings of the First Workshop on Speech and Language Technologies for Dravidian Languages, pp. 299–303 (2021). https://doi.org/10.18653/v1/2021.dravidianlangtech-1.39 . 
+
+https://aclanthology.org/2021.dravidianlangtech-1.39 
+
+[15] Fleiss, J.L.: Measuring nominal scale agreement among many raters. Psycho-logical Bulletin 76 (5), 378–382 (1971) https://doi.org/10.1037/h00316 19 
+
+# A Annotation Guidelines for MixSarc 
+
+This appendix presents the annotation guidelines used to construct the MixSarc 
+
+corpus. Each sentence in the dataset is annotated along four pragmatic dimensions: 1. Sarcasm (Yes / No) 2. Humor (Yes / No) 3. Offense (Yes / No) 4. Vulgarity (Yes / No) Every sentence must receive a label ( Yes or No ) for each of the four criteria. Anno-tations are multi-label : a sentence may be humorous and sarcastic at the same time, or offensive and vulgar, etc. Annotators are instructed not to skip any sentence. 19 A.1 Sarcasm 
+
+A.1.1 Definition. 
+
+Sarcasm is a form of verbal irony where the literal meaning of an utterance is opposite to the intended meaning, often with a mocking or ridiculing tone. 
+
+A.1.2 Labeling Rules. 
+
+Mark Sarcasm = Yes if: 
+
+• The sentence appears positive on the surface but implies a negative meaning. 
+
+• There is exaggerated, insincere, or over-the-top praise. 
+
+• The tone is clearly mocking or ridiculing someone or something. Mark Sarcasm = No if: 
+
+• The sentence is direct, literal, or straightforward. 
+
+• The sentence may be ironic but does not contain mockery or ridicule. 
+
+A.1.3 Examples. 
+
+• “Wow! Ki boro genius re tor matha ektu beshi kaj kore!” 
+
+(Over-the-top praise implying the opposite) ⇒ Sarcasm = Yes 
+
+• “Ami class e ashlam on-time, teacher impressed hoye amake bari pathai dilo!” 
+
+(Apparently positive, but clearly ironic) ⇒ Sarcasm = Yes 
+
+• “Ami kalke porashona korinai.” 
+
+(Literal statement, no mockery) ⇒ Sarcasm = No 
+
+## A.2 Humor 
+
+A.2.1 Definition. 
+
+Humor refers to language that is intended to be funny, amusing, or entertaining, for example through jokes, puns, or playful exaggeration. 
+
+A.2.2 Labeling Rules. 
+
+Mark Humor = Yes if: 
+
+• The sentence contains jokes, puns, or playful exaggerations. 
+
+• The primary intention is to provoke laughter or amusement. Mark Humor = No if: 
+
+• The content is serious, angry, neutral, or purely informative. 
+
+• The content is sarcastic but not clearly meant to be funny. 
+
+A.2.3 Examples. 
+
+• “Friend-zoned hoar jonno ami ekta premium badge paowa uchit.” 
+
+(Self-deprecating joke) ⇒ Humor = Yes 
+
+20 • “Tumi ashbe na jani, tai ami aram kore bose asi.” 
+
+(Neutral, not clearly humorous) ⇒ Humor = No 
+
+## A.3 Offense 
+
+A.3.1 Definition. 
+
+Offense covers language that insults, demeans, or attacks a person or group. This includes name-calling, slurs, or hate speech directed at individuals or communities. 
+
+A.3.2 Labeling Rules. 
+
+Mark Offense = Yes if: 
+
+• The sentence contains aggressive insults or explicit verbal attacks. 
+
+• It targets someone’s identity (e.g., race, gender, religion, appearance, or other protected traits). Mark Offense = No if: 
+
+• The sentence is critical, emotional, or negative but does not personally attack a person or group. 
+
+• The sentence expresses anger or frustration without direct insult or demeaning language. 
+
+A.3.3 Examples. 
+
+• “Tui eto kala keno?” 
+
+(Insult targeting physical appearance/skin color) ⇒ Offense = Yes 
+
+• “Eder shobai chagol, kono akal nai!” 
+
+(Demeaning a group with animal comparison) ⇒ Offense = Yes 
+
+• “Ami or upor ragi, kintu kichu boli nai.” 
+
+(Expressing anger without insult) ⇒ Offense = No 
+
+## A.4 Vulgarity 
+
+A.4.1 Definition. 
+
+Vulgarity refers to obscene, sexually explicit, or profane language that is inappropriate in formal or public settings. It focuses on lexical vulgarity, not just rude tone. 
+
+A.4.2 Labeling Rules. 
+
+Mark Vulgarity = Yes if: 
+
+• The sentence includes crude or explicit references to sex or body parts. 
+
+• It uses slang, swear words, or profane expressions with strong inappropriate connotations. Mark Vulgarity = No if: 
+
+• The language is rude or harsh but not sexually explicit or profane. 21 • There are insults or offensive remarks without vulgar or obscene terms. 
+
+A.4.3 Examples. 
+
+• “Tui ekdom bokachoda!” 
+
+(Contains vulgar slur) ⇒ Vulgarity = Yes 
+
+• “O pura sex joke-er factory.” 
+
+(Explicit sexual reference) ⇒ Vulgarity = Yes 
+
+• “Tor matha thik ase?” 
+
+(Rude but not obscene) ⇒ Vulgarity = No 
+
+## A.5 Final Notes 
+
+For each sentence, annotators must: 
+
+• Assign a Yes or No label for all four dimensions: Sarcasm, Humor, Offense, and Vulgarity. 
+
+• Allow multiple labels to be Yes simultaneously (e.g., a sentence can be both sarcastic and humorous, or both offensive and vulgar). 
+
+• Avoid leaving any sentence unlabeled. If an annotator is uncertain about a particular case, they are encouraged to flag the instance for further review or discuss it with a supervisor. Consistent application of these guidelines is essential to ensure the reliability and usefulness of the MixSarc dataset for future research. 22
