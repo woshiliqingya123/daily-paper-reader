@@ -1,0 +1,1374 @@
+Title: Nano-EmoX: Unifying Multimodal Emotional Intelligence from Perception to Empathy
+
+URL Source: https://arxiv.org/pdf/2603.02123v2
+
+Published Time: Wed, 04 Mar 2026 02:33:28 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# Nano-EmoX: Unifying Multimodal Emotional Intelligence from Perception to Empathy 
+
+Jiahao Huang 1 Fengyan Lin 1 Xuechao Yang 2 Chen Feng 4 Kexin Zhu 4
+
+Xu Yang 3∗ Zhide Chen 1∗
+
+> 1
+
+Fujian Normal University 2RMIT University 3Minjiang University 4Independent Researcher 
+
+{qsz20241923, qsz20241935 }@student.fjnu.edu.cn, xuechao.yang@rmit.edu.au fc@fvti.edu.cn, m073040090@student.nsysu.edu.tw, xu.yang@mju.edu.cn, zhidechen@fjnu.edu.cn 
+
+Abstract 
+
+The development of affective multimodal language models (MLMs) has long been constrained by a gap between low-level perception and high-level interaction, leading to frag-mented affective capabilities and limited generalization. To bridge this gap, we propose a cognitively inspired three-level hierarchy that organizes affective tasks according to their cognitive depth—perception, understanding, and in-teraction—and provides a unified conceptual foundation for advancing affective modeling. Guided by this hier-archy, we introduce Nano-EmoX , a small-scale multitask MLM, and P2E (Perception-to -Empathy), a curriculum-based training framework. Nano-EmoX integrates a suite of omni-modal encoders, including an enhanced facial en-coder and a fusion encoder, to capture key multimodal af-fective cues and improve cross-task transferability. The out-puts are projected into a unified language space via het-erogeneous adapters, empowering a lightweight language model to tackle diverse affective tasks. Concurrently, P2E progressively cultivates emotional intelligence by aligning rapid perception with chain-of-thought-driven empathy. To the best of our knowledge, Nano-EmoX is the first compact MLM (2.2B) to unify six core affective tasks across all three hierarchy levels, achieving state-of-the-art or highly com-petitive performance across multiple benchmarks, demon-strating excellent efficiency and generalization. 
+
+1. Introduction 
+
+To advance human-centric AI, systems must move beyond simple emotion perception toward holistic emotional intel-ligence, a unified continuum from perception to interac-tion [24, 47]. However, the current landscape of affec-tive computing remains a vast yet fragmented collection 
+
+> *Corresponding authors
+
+Level 1 : Foundational Perception 
+
+Level 2: Deep Understanding 
+
+Level 3: Emotional Interaction             
+
+> MultimodalSentimentAnalysis
+> MultimodalEmotionRecognition(MER)
+> Open -Vocabulary MER
+> MultimodalIntentionRecognition
+> EmotionReasonInference
+> EmpathicResponseGeneration
+> I can handle all the
+> tasks listed.
+> Nano EmoX
+
+Figure 1. This framework organizes tasks by increasing cognitive depth: (1) Perception for direct recognition of emotional cues; (2) 
+
+Understanding for inferring emotional causality and context; and (3) Emotional Interaction for establishing an emotional connec-tion with humans. Please refer to the appendix for details. 
+
+of tasks, lacking a coherent structure to guide systematic progress or to assess a model’s true emotional maturity. Motivated by the Perception–Action Model [49], we in-troduce a three-level cognitive hierarchy for organizing af-fective tasks. As illustrated in Fig. 1, the hierarchy arranges emotional tasks by cognitive depth, ascending from foun-dational perception to deeper understanding and emotional interaction, mapping each task to a progressively more ad-vanced level of affective processing. Viewing the field through this hierarchical lens clarifies its historical trajectory. Early research—from unimodal [6, 17, 29, 48, 52, 54] to multimodal pipelines [1, 2, 8, 46, 64, 72, 73]—primarily addressed challenges at a single level. The advent of Large Language Models (LLMs) [10, 15, 39] and Multimodal Language Models (MLMs) [11, 23, 33, 60, 62, 63, 75] catalyzed a significant shift, enabling models to master analytical tasks at the understanding level. More recently, this progress has culminated in pioneering efforts toward the interaction stratum [37, 71]. 1
+
+> arXiv:2603.02123v2 [cs.AI] 3 Mar 2026
+
+Table 1. Comparison with representative LLM-based methods un-der different task settings, our method unifies six core affective tasks with a smaller parameter scale.                                                                                                           
+
+> Models Scale Hierarchy
+> MSA
+> MER
+> OV-MER
+> ERI
+> MIR
+> ERG
+> EmoLLMs [39] 7B level 1 ✓✓××××
+> Emotion-LLaMA [11] 7.8B level 2 ××✓✓××
+> Omni-Emotion [63] 9B level 2 ××✓✓××
+> LGSRR [77] 7.1B level 2 ××××✓×
+> E3RG [36] 7B level 3 ×××××✓
+> EmoVIT [60] 8.2B level 1&2 ×✓×✓××
+> Empatheia [71] 8B level 1&3 ×✓×××✓
+> EmoVerse [26] 4/8B level 1&2 ✓✓×✓××
+> AffectGPT [33] 8.3B level 1&2 ✓✓✓✓××
+> Emotion-Qwen [23] 7.5B level 1&2 ×✓×✓××
+> SMES [13] 7.1B level 1&3 ×✓×××✓
+> R1-Omni [75] 2.1B level 1&2 ×✓×✓××
+> Our Nano-EmoX 2.2B level 1 ∼3✓✓✓✓✓✓
+
+Nevertheless, this upward progression exposes a fun-damental gap: current models are typically level special-ists—they excel at tasks within a single cognitive stratum but fail to integrate knowledge across the hierarchy [11, 36, 39, 63, 77]. Developing a unified agent that spans the full perception-to-interaction continuum remains a major open challenge. First, suboptimal fusion: existing fusion mecha-nisms struggle to adapt to the diverse feature requirements of different cognitive strata, limiting a model’s ability to generalize across levels. Second, fragmented capabilities: as shown in Tab. 1, the knowledge currently mastered by the model is still isolated. Without learning the deep connec-tions between perceiving an emotion and reasoning about its cause, models lack genuine affective comprehension. Fi-nally, resource intensity: the heavy computing and data de-mands of most LLM-based methods hinder the real-world deployment of a comprehensive affective agent for train-ing and inference. Furthermore, deploying multiple task-specific models is impractical and inefficient. To address these limitations, we introduce Nano-EmoX, a compact MLM that unifies six core affective tasks: mul-timodal sentiment analysis (MSA), multimodal emotion recognition (MER), open-vocabulary MER (OV-MER), multimodal intention recognition (MIR), emotion reason in-ference (ERI) and empathetic response generation (ERG). Specifically, Nano-EmoX integrates omni-modal inputs. Beyond capturing general visual and acoustic cues, our model explicitly models fine-grained facial affective sig-nals and implements an early, hierarchical, and dynamic au-dio–visual feature fusion. After a dimensional alignment step performed by heterogeneous adapters, the language model (LM) proceeds to tackle all downstream tasks. Building on the cognitive hierarchy, we propose aframework-P2E (Perception-to-Empathy), designed to ef-ficiently unlock the model’s potential in emotional intelli-gence. The core of this framework lies in a carefully de-signed data curriculum and a progressive training proce-dure. In itially, P2E enables the model to establish foun-dational perception and acquire multimodal fusion knowl-edge; subsequently, it cultivates advanced capabilities in af-fective reasoning and empathy. Fig. 1 illustrates our pro-posed conceptual hierarchy and summarizes the six unified affective tasks. Experimental results validate the effective-ness of the P2E framework in enabling learning across af-fective multilevel. Our contributions are summarized as follows: • We present Nano-EmoX, a small-scale MLM that inte-grates a dedicated facial encoder and a hierarchical ex-pert fusion encoder for dynamic audio–visual alignment. This design enables fine-grained affective feature model-ing, and strong cross-task generalization across different cognitive levels. • We introduce a three-level cognitive hierarchy that orga-nizes affective tasks by their cognitive depth. Guided by this hierarchy, we then develop the P2E training frame-work, designed to progressively cultivate higher-level af-fective reasoning and emotional interaction. • Nano-EmoX is the first compact MLM to unify six core affective tasks across all hierarchy levels, achieving com-parable or better performance than substantially larger models. This demonstrates an effective balance between parameter efficiency and multilevel affective capability. 
+
+2. Related Work 
+
+Multimodal Language Models. The advent of MLMs, 
+
+e.g ., SALMONN [56], Video-LLaMA [68], Qwen2.5-Omni [61] has revolutionized the field by integrating pre-trained modality encoders with LLMs. This fusion has led to remarkable advancements in tasks such as visual ques-tion answering and automatic speech recognition. Of late, comprehensive benchmarks [21, 53, 70] have systemati-cally evaluated both open-source and proprietary models, including InternLM 2.5 [59], GPT-4 [44], and Gemini-2.0-Flash [16], etc . The findings consistently reveal a substan-tial emotional intelligence gap between MLMs and humans. Recent research has increasingly focused on vertical MLMs for emotional domains. Works like EmoVIT [60] and Emotion-Qwen [23] focus on emotion recognition from vision, while subsequent studies such as Emotin-LLaMA [11] and AffectGPT [33] incorporated audio and video features to achieve explainable emotion recogni-tion. Other advancements have explored multimodal intent recognition tasks, as seen in [67, 77], or focused on gener-ating more human-like empathetic responses [37, 71]. However, their work is limited by a lack of task-aware feature fusion and the absence of an explicit model for crucial facial expressions ( e.g ., AffecGPT). In contrast, Nano-EmoX employs adaptive fusion modeling and fine-grained facial-feature extraction, thereby boosting its mul-2Small Scale Language Model LoRA   
+
+> Tokenizer Speech
+> Adapter
+> Visual
+> Adapter
+> Subtitle Utterance Prompt
+> Speech
+> Visual Token
+> Speech Token
+> Text Token
+> Fusion Token
+> Face Token
+> Speech
+> Encoder
+> Visual
+> Encoder
+> Facial
+> Encoder
+> Facial
+> Adapter
+> Fusion
+> Adapter
+> Fusion
+> Encoder
+> Video
+> Trainable
+> Frozen
+> Video
+
+Figure 2. The architecture of the Nano-EmoX. The visual branch extracts general visual emotional cues, the facial branch is responsible for modeling fine-grained facial details, the speech branch captures acoustic emotional cues. To balance the contribution of each modality, the fusion branch integrates key emotional cues from the audio-visual modalities and extracts complementary information. The language model integrates multimodal information and performs multitask emotion recognition. 
+
+titask performance. 
+
+Multitask Learning for Emotion-centric MLMs. Re-cent works have seen a surge of interest in training paradigms for affective LLM-based mothod. For in-stance, EmoLLMs [39] utilizes instruction fine-tuning to optimize and unify five text-based sentiment tasks, while Emotion-LLaMA [11] and AffectGPT [33] adopt joint-training to achieve a deeper understanding of emotion. Other approaches, Omni-Emotion [63] employs multi-stage fine-tuning to enhance emotion processing capabilities. EmoVerse [26], have introduced M 2SE strategy to im-prove the emotional intelligence of MLMs. Furthermore, R1-Omni [75] leverages verifiable reinforcement learning to strengthen a model’s emotional reasoning abilities. Nev-ertheless, most prior works remain confined to a single cog-nitive level. In contrast, our P2E training framework en-ables the model to learn capabilities that span the entire af-fective hierarchy—from perception to empathy. 
+
+3. Methodology 
+
+3.1. Architecture of Nano-EmoX 
+
+Nano-EmoX is a compact, hybrid-reasoning, and multitask-ing MLM designed for emotion-centric tasks. As depicted in Fig. 2, it comprises four modality-specific branches and a language backbone. 
+
+Scene visual perception branch: To perceive generic visual signals, we employ a pre-trained visual encoder trained on large-scale datasets to process video frames xv ∈
+
+R3×H×W , producing general-purpose visual emotion em-beddings Ev . Here, H and W denote the frame height and width, respectively. Since scaling down LMs typically reduces the number of modality-agnostic neurons [55], we posit that incorporating a resampling network upstream of the LM can alleviate this problem and improve expressiveness. Therefore, the visual branch employs a two-layer Q-Former [28] to resample vi-sual tokens Tv ∈ RTv ×Dv , thereby enriching the emotional representation. In this notation, Tv and Dv represent the token length and dimensionality, respectively. 
+
+Speech perception branch: To extract high-quality acoustic features such as prosody and pitch, we employ a pre-trained speech encoder to process audio frames xa ∈
+
+RTa1×Da1 (sampled at 1.6 kHz), obtaining speech emotion embeddings Ea. Here, Ta1 and Da1 denote the frame length and the Mel-spectrogram dimensionality, respectively. Similarly, the speech branch employs a two-layer Q-Former to extract fine-grained speech tokens Ta ∈
+
+RTa2×Da2 , where Ta2 and Da2 represent the token length and dimensionality, respectively. 
+
+Enhanced face modeling: Since facial expressions are crucial cues for conveying visual emotional features, mod-eling fine-grained facial representations is vital for enhanc-ing the emotion perception capability of Nano-EmoX. The FaceXFormer [43] encoder excels at extracting fine-grained, identity-invariant facial representations. We en-hance this encoder by shifting its processing paradigm from the original image-level operation to frame-sequence pro-cessing. Specifically, we employ a facial encoder to process video frames xv for the extraction of multi-scale features 
+
+Ef . Subsequently, Temporal Modeling (TM) is responsible for reconstructing the temporal relationship of features, en-abling the capture of key facial emotion expression Ecf . The 3Fusion 
+
+> Expert 1
+> Fusion
+> Expert 2
+> Fusion
+> Expert 3
+> Gating
+> Network
+> Visual Encoder
+> Speech Encdoer
+> Concat
+> Layer 22
+> Layer 16
+> Layer 12
+> Layer 22
+> Layer 18
+> Layer 16
+> +
+
++
+
+> +mf E1
+> mf E2
+> mf E3
+> mf E1G2G3G
+> Fusion
+> Expert 1
+> Fusion
+> Expert 2
+> Fusion
+> Expert 3
+> Gating
+> Network
+> Visual Encoder
+> Speech Encdoer
+> Concat
+> Layer 22
+> Layer 16
+> Layer 12
+> Layer 22
+> Layer 18
+> Layer 16
+> +
+
++
+
+> +mf E1
+> mf E2
+> mf E3
+> mf E1G2G3G
+
+Figure 3. The fusion encoder extracts multi-layer features from the visual and speech encoders and feeds them to three fusion experts with independent weights. Each expert extracts complementary information Eimf . Then, the gating network dynamically weighs the contribution Gi of each expert and routes the feature Emf of the output. 
+
+core computation of TM is formalized as follows: 
+
+Ecf = CrossAttention (Q, E Kf , E Vf ) (1) where Q ∈ RTf 1×Df denotes learnable temporal query to-kens, Tf 1 is the token length, EKf and EVf are the key and value projected from the face embedding Ef .Subsequently, a two-layer fully connected network with GeLU [19] performs dimensional alignment with the LM and generates the face token Tf ∈ RTf ×Df , where Tf and 
+
+Df denote the token length and feature dimension, respec-tively. For detailed network specifications, Please refer to the appendix for more details. 
+
+Cross-modal hierarchical expert fusion: To enhance the model’s multitask capabilities, we introduce a fusion en-coder comprising three experts with independent weights and a gating network. Inspired by [9, 14, 45, 76]—and recognizing the pivotal role of speech features in emotion-related tasks as well as the benefits of multiscale semantic information, we design a visual-speech fusion expert. The fusion expert employs speech features as queries to guide visual features through cross-modal cross-attention. Specifically, as described in Fig. 3, the encoder extracts in-termediate features from layers 16, 18, and 22 of the speech encoder and from layers 12, 16, and 22 of the visual en-coder. These features are hierarchically paired from lower to higher levels and fed into the three corresponding fusion experts to generate fused representations Eimf . The gating network, consisting of a two-layer fully connected network with GeLU, dynamically routes the output of each expert by adjusting their contributions Gi based on the specific fea-ture demands of each task. The gating network process is formulated as follows: 
+
+G1, G 2, G 3 = fgate (Concat (E1 
+
+> mf
+
+, E 2 
+
+> mf
+
+, E 3 
+
+> mf
+
+)) (2) 
+
+Emf = G1 ⊙ E1 
+
+> mf
+
++ G2 ⊙ E2 
+
+> mf
+
++ G3 ⊙ E3 
+
+> mf
+
+(3) Here, Emf represents the final fusion embedding and fgate 
+
+denotes the gating network processing. Finally, an adapter network projects the dimensionality of the fused features to align with that of the LM, gener-ating fusion tokens Tmf ∈ RTh×Dh , where Tmf and Dmf 
+
+denote the token length and feature dimension, respectively. With its hierarchical structure and dynamic gating mecha-nism, the fusion encoder effectively learns robust mappings between tasks and modalities. Please refer to the appendix for additional details. 
+
+The core of language processing: We use the Qwen2.5 [50] tokenizer to process dialogues, subtitles, and other text inputs to generate text tokens. The small-scale LM then integrates tokens from all modalities to accomplish various downstream emotion tasks. 
+
+3.2. The P2E Training Framework 
+
+As shown in Fig. 4, the P2E framework is a three-phase curriculum, with each phase following the law of cognitive development from shallow to deep. We omit explicit train-ing on the MSA task, as its knowledge can be implicitly acquired from related tasks. To adapt to different task for-mats, we use identifiers to distinguish tasks within the in-struction templates, for the templates used in task training and additional details, please refer to the appendix. The entire multitask training process is unified under a single objective: optimizing the maximum likelihood esti-mation (MLE) of the model parameters θ across all modal-ities, which can be formalized as follows: 
+
+θM LE = arg max 
+
+> θ∈Θ
+
+X log P (Y | T ; θ) (4) where T represents the tokenized representation of each modality, and Y denotes the target output. The P2E frame-work achieves this objective through three carefully de-signed phases. Phase 1: Foundational Modality Alignment. We first es-tablish a robust unimodal foundation (see Fig. 4, Phase 1). Training is focused on the modality-specific adapters to align the feature spaces of each encoder with the LM’s embedding space, while the remaining modules are kept frozen. Specifically, the visual and facial adapters are jointly trained on FERV39K [58] and CAER [25] to learn diverse visual–language knowledge and fine-grained fa-cial cues. Concurrently, the speech adapter is trained on CREMA-D [7] and M3ED [74] to capture emotional acous-tic knowledge. Phase 2: Cross-modal Fusion Pre-training. We posit that the MIR task serves as a natural bridge between ba-sic perception and higher-order reasoning, compelling the model to synthesize multimodal cues to infer social goals (see Fig. 4, Phase 2). We use the MIntRec [67] and 4Phase 1:  Foundational Modality Alignment  Phase 2:  Cross -modal Fusion Pre -training  Phase 3:  Multitask Instruction Tuning 55%                
+
+> 5%
+> 2%
+> 3%
+> 35%
+> MER-Caption+
+> MERR-Fine
+> MIntRec
+> MIntRec2
+> AvaMERG 46%
+> 16%
+> 9%
+> 29% FERV39K
+> CAER
+> CREMA-D
+> M3ED 24%
+> 76%
+> MIntRec
+> MIntRec2.0
+> Curriculums: MER task Curriculums: MIR task
+> Adaptors
+> Adaptors
+> Fusion
+> Encoder
+> Adaptors
+> Fusion
+> Encoder
+> LoRA LM
+> scene 1 scene 2
+> Angry, sad, happy,
+> fear,disgusted,
+> surprised
+> Scene1 intent: advise
+> Scene2 intent: apologize
+> Furrowed eyebrows
+> and trembling voice
+> indicate of fear
+> [think...] It ’s normal
+> to feel this way; I ’m
+> here with you.
+> Curriculums: OV -MER & ERI & ERG & Review
+> Data Distribution :
+> Data Distribution :
+> Data Distribution :
+> Visual + speech
+> +face training Visual + speech +
+> face + fusion training Holistic training
+> user
+> Multimodal knowledge
+
+Figure 4. The P2E framework consists of a three-phase instruction fine-tuning process. Phase 1 focuses on the basic emotion recognition, to ensure a smooth learning curve, phase 2 multimodal fusion and contextual understanding by incorporating the MIR task. Finally, phase 3 revisits prior knowledge and integrates a diverse set of multilevel, complex tasks governed by a predefined data mixture ratio. 
+
+MIntRec2.0 [69] datasets to facilitate the learning of effec-tive multimodal integration. This phase activates and trains the fusion encoder while continuing to train all modal-ity adapters, whereas the remaining components are kept frozen. For models without a fusion-encoder architec-ture, this phase is retained to continue the joint training of adapters within each branch. Phase 3: Multitask Instruction Tuning. This phase aims to cultivate synergy across tasks, from deepening fine-grained perception (OV-MER) to fostering high-level em-pathy (see Fig. 4, Phase 3). We fine-tune the fusion en-coder and all adapters on a carefully curated data curricu-lum and activate a Low-Rank Adaptation (LoRA) module for the LM. The data sampling ratio is set to MER: OV-MER: MIR: ERI: ERG = 18: 28: 5: 31: 18 to fully unleash the mode’s potential. For the OV-MER task, we use the MER-Caption+ [33] dataset to train the model to capture fine-grained, multi-label emotional perception capabilities. For the ERI task, we employ MER-Caption+ together with the meticulously annotated MERR-Fine [11] dataset to enhance the model’s explanatory and reasoning abilities. For the ERG task, we restructure the AvaMERG [71] dataset into a turn-based format, preserving dialogue history as context: (Qt
+
+> 1
+
+, R t
+
+> 1
+
+), (Qt
+
+> 2
+
+, R t
+
+> 2
+
+), . . . , where Qti is the user’s textual query and Rti is the model’s previous textual re-sponse. In this format, the current user input (Qtn, Q vn, Q an)
+
+serves as the query, while the corresponding response Rtn is the generation target. Here, Qtn represents the textual input, 
+
+Qvn and Qan denote the visual and audio queries, respec-tively, and Rtn denotes the model’s target textual response. Following [71], we guide the model to first consider the dialogue scenario, the speaker’s emotion, and the re-sponse goal, thereby generating higher-quality empathetic responses. The reasoning process is wrapped within the 
+
+<think > tag. We also define a standard MER task on the AvaMERG dataset to help the model better grasp the asso-ciations between emotions and dialogue. 
+
+4. Experimental Analysis 
+
+In this section, we conduct a series of experiments to ana-lyze the multitask processing capabilities of Nano-EmoX and to evaluate the performance gains achieved by the P2E framework. We perform evaluations on the fol-lowing benchmarks: MER-UniBench [33], EMER [31], MIntRec [67], MIntRec 2.0 [69], and AvaMERG [71], where the evaluation metrics follow the official protocols. Please refer to the appendix for detailed descriptions of the benchmarks, evaluation metrics, and additional ablation ex-periments. 
+
+4.1. Implementation Details 
+
+Model: Nano-EmoX uses CLIP-Large [51] as the visual encoder, HuBERT-Large [20] as the speech encoder, and Qwen2.5-1.5B [50] as the LM. The token lengths for the visual, speech, facial, and fusion streams are set to 32, 32, 4, and 1, respectively. For a controlled analysis of small-scale performance, we created AffectGPT(s), a compact variant of AffectGPT that substitutes the original LM with the smaller Qwen2.5-1.5B. This baseline was trained iden-tically using our P2E framework. 
+
+Training details: We use AdamW [41] as the optimizer, with a batch size of 3 and gradient accumulation steps of 4. The model is trained on a single NVIDIA RTX 4090 GPU for 32 hours. The phase-specific hyperparameters for the P2E framework are as follows: Phase 1: The learning rate for all adapters is set to 3e-4. The visual and facial branches are trained for 25,000 steps, while the speech branch is trained for 15,000 steps. Phase 2: The learning rate for all trainable components is reduced to 1e-5, with training conducted for 5,000 steps. Phase 3: A uniform learning rate of 8e-6 is applied for 300,000 train-ing steps. To conserve memory, the LoRA parameters are 5Table 2. Performance comparison on the MSA, MER and fine-grained OV-MER tasks. AffectGPT (s) marked with a † is trained solely on the MER-caption+ dataset, as proposed in the original work [33], while the unmarked counterparts is trained using P2E. Nano-EmoX marked with ‡ uses a joint training approach. The best performance is displayed in bold , the second-best performance is underlined. Models Scale MER2023 [30] MER2024 [32] MELD [18] IEMOCAP [5] MOSI [66] MOSEI [3] SIMS [65] SIMSV2 [38] OV-MERD [34] Avg. Hit Rate ↑ (MER) WAF ↑ (MSA) WAF ↑ (OV-MER) -SALMONN [56] ↑ 11.7B 55.53 45.38 45.62 46.84 81.00 67.03 68.69 68.69 45.00 57.89 MiniCPM-V-2.6-8B [22] ↑ 5.8B 46.67 45.31 40.27 36.31 74.96 57.44 74.85 75.04 50.04 55.65 Qwen-2VL-7B [57] ↑ 5.5B 59.81 69.14 48.05 50.53 74.10 58.35 78.65 77.43 55.61 63.52 Emotion-LLaMA [11] ↑ 5.6B 59.38 73.62 46.76 55.47 66.13 67.66 78.32 77.23 52.97 64.17 AffectGPT [33] ↑ 6.1B 78.54 78.80 55.65 60.54 81.30 80.90 88.49 86.18 62.52 74.77                                                                                   
+
+> Small-scale Multimodal Models MobileVLM V2-1.7B [12] ↓0.5B 36.65 47.03 33.37 49.24 41.00 56.49 51.46 51.94 36.96 44.90 MobileVLM V2-3B [12] ↑0.8B 37.70 53.87 30.72 53.00 55.81 44.87 69.17 65.72 33.86 49.95 R1-Omni [75] ↓0.1B 58.30 69.41 40.87 50.18 55.56 48.62 74.71 76.67 51.84 58.46 AffectGPT (s) †↓0.1B 73.45 74.71 47.69 53.14 75.51 71.30 82.50 84.10 62.43 69.43 AffectGPT (s) ↓0.1B 72.43 77.83 50.19 57.64 80.40 79.97 83.28 83.23 63.75 72.08
+> Our Nano-EmoX ‡2.2B 74.26 78.61 54.27 61.54 80.71 79.52 84.64 83.31 62.68 73.28
+> Our Nano-EmoX 2.2B 79.09 77.94 56.55 60.12 76.82 79.81 86.25 84.76 64.75 74.01
+
+Table 3. Performance comparison of models on the ERI task. 
+
+Models Scale Clue Overlap ↑ Label Overlap ↑
+
+MiniCPM-V-2.6-8B [22] ↑ 5.8B 5.13 4.74 Qwen-2VL-7B [57] ↑ 5.5B 6.32 5.65 Emotion-LLaMA [11] ↑ 5.6B 7.83 6.25 AffectGPT [33] ↑ 6.1B 5.70 5.49 Omni-Emotion [63] ↑ 6.8B 8.22 6.78 Emotion-Qwen [23] ↑ 5.3B 8.25 8.16 
+
+Small-scale Multimodal Models MobileVLM V2-1.7B [12] ↓ 0.5B 6.59 4.66 MobileVLM V2-3B [12] ↑ 0.8B 6.49 4.82 R1-Omni [75] ↓ 0.1B 7.11 5.54 AffectGPT (s) ↓ 0.1B 7.60 5.70 
+
+Our Nano-EmoX ‡ 2.2B 7.62 5.46 
+
+Our Nano-EmoX 2.2B 7.83 5.78 
+
+configured with r = 32 and α = 16 .To evaluate our training methodology’s contribution, we compare the entire P2E with a standard Joint-training (Jo-T) setup, where all tasks are trained for 345000 steps jointly without hierarchical curriculum. 
+
+4.2. Performance Comparison 
+
+Zero-shot Evaluation on The MSA, MER and OV-MER Task. To evaluate the intrinsic perception capabilities of the model developed under our P2E framework, we first as-sess its zero-shot performance on benchmarks without any task-specific fine-tuning. As shown in Tab. 2, Nano-EmoX achieves an overall average score that closely approaches current state-of-the-art (SOTA) results, achieving compara-ble results with 73% fewer parameters. Furthermore, our model establishes new SOTA results on both the coarse-grained emotion recognition benchmarks MER2023 and MELD, as well as on the OV-MER benchmark. Notably, AffectGPT (s) trained with our P2E framework exhibits a 3.6% performance increase over the specialist AffectGPT (s), which was trained on its original method [33]. Our experiments validate both the proposed architec-ture and the training framework. Specifically, Nano-EmoX demonstrates a strong ability to learn diverse emotional styles and generalize well, while the P2E framework is shown to improve the model’s emotion awareness. 
+
+Zero-shot Evaluation on The ERI Task. As detailed in Tab. 3, our model surpasses numerous small-scale model and even larger-scale methods. Moreover, it performs on par with Emotion-LLaMA while using significantly fewer parameters. Nano-EmoX demonstrates strong pro-ficiency in capturing subtle, context-dependent emotional cues within dynamic conversations, thereby validating the effectiveness of our architectural design for temporal rea-soning and contextual understanding. 
+
+Fine-Tuning Evaluation on The MIR Task. As shown in Tab. 4, Nano-EmoX achieves the best results among small-scale models, and surpasses a strong baseline, GPT-4, on MIntRec 2.0 by 12.4% in accuracy (Acc) and 7.6% in WF1. These results highlight the potential of Nano-EmoX in discriminating fine-grained intents. In terms of performance, our method is not yet on par with substantially larger, SOTA models. However, our ab-lation study on visual tokens (detailed in the Appendix) demonstrates that increasing token counts effectively cap-tures fine-grained emotional cues, significantly boosting MIR performance. This finding provides a clear direction for our future work on high-resolution affective modeling. 
+
+Fine-Tuning Evaluation on The ERG Task. As detailed in Tab. 5, our model continues to demonstrate strong per-formance. Nano-EmoX achieves an Acc of 54.82 in rec-ognizing the speaker’s emotion prior to generating an em-pathetic response, surpassing all other small-scale models. 6Table 4. Evaluation results of the model on the MIR task.                                                                         
+
+> Methods MIntRec MIntRec 2.0 Acc ↑WF1 ↑WP ↑Acc ↑WF1 ↑WP ↑
+> GPT-4 (3 shots) [44] 63.84 63.97 68.16 42.10 43.92 53.18 MiniCPM-V-2.6-8B [22] 80.67 80.56 82.19 53.58 51.91 61.66 Qwen-2VL-7B [57] 82.92 82.79 86.75 64.19 63.31 64.39 Qwen-VL-72B [57] 86.29 86.09 86.75 66.99 66.63 67.45
+> LLaVA-Video-72B [35] 80.22 79.94 80.63 64.98 64.72 65.40 Small-scale Multimodal Models MobileVLM V2-1.7B [12] 33.27 33.81 34.75 21.34 22.64 25.59 MobileVLM V2-3B [12] 36.12 37.74 35.12 23.98 24.16 26.45 AffectGPT (s) 48.76 50.71 57.87 38.79 37.18 41.91
+> Our Nano-EmoX ‡56.18 56.62 65.05 47.13 45.38 47.83
+> Our Nano-EmoX 58.20 58.17 60.12 47.32 47.27 51.10
+
+Table 5. Performance comparison of models with different scales on the ERG task. MiniCPM-o-2.6B [22], Qwen2.5-Omni-7B [61], and Ola-Omni-7B [40] enhance their capabilities by incorporating the E3RG [36] method.                                  
+
+> Models Acc / Hit Rate ↑Dist-1 ↑Dist-2 ↑
+> Empatheia [71] 48.51 / -2.69 14.76 MiniCPM-o-2.6B [22] - / 65.8 95.20 99.60 Qwen2.5-Omni-7B [61] - / 72.3 98.60 99.70 Ola-Omni-7B [40] - / 75.6 98.90 99.80 Small-scale Multimodal Models MobileVLM V2-1.7B [12] 4.07 / 21.14 75.07 96.91 MobileVLM V2-3B [12] 25.18 / 61.42 78.66 97.41 AffectGPT (s) 47.36 / 90.88 95.44 99.81
+> Our Nano-EmoX ‡34.91 / 74.79 95.41 99.73
+> Our Nano-EmoX 54.82 / 91.13 95.47 99.83
+
+Notably, it establishes a new SOTA in coarse-grained emo-tion recognition with a Hit Rate of 91.13, marking a 22.54% improvement over the previous SOTA method. Meanwhile, AffectGPT (s), after being trained with the P2E framework, achieves the second-best performance with a Hit Rate of 90.88. These results validate the effectiveness of our cross-modal fusion encoder and the P2E framework for high-quality empathetic generation, highlighting our approach as a promising solution for enabling models to master rich, multi-layered emotional knowledge. 
+
+4.3. Ablation Evaluation 
+
+Investigating Performance Improvements of The P2E Framework on Affective Tasks. The results, presented in Tab. 6, are striking. While the standard Jo-T approach provides a solid foundation, particularly for perceptual tasks within MER-UniBench, our strategy consistently outper-forms it across all task categories. The most pronounced im-provements are observed in the ERG task. After P2E train-ing, the Hit Rate of AffectGPT (s) increases by an impres-
+
+Table 6. Comparison of training time and performance improve-ments across different training methods, evaluated on the MER-UniBench [33], EMER [31], and AvaMERG [71] benchmarks.                             
+
+> Models Strategy Time MSA&MER&OV-MER ERI ERG Avg. ↑Avg. ↑Hit Rate ↑
+> AffectGPT (s) Jo-T 40 h 72.26 6.71 29.33 Our Nano-EmoX Jo-T 40 h 73.28 6.54 74.79 AffectGPT (s) P2E 32 h 72.08 6.65 90.88 Our Nano-EmoX P2E 32 h 74.01 6.80 91.13
+
+Table 7. The comparison result between the standard P2E and the reverse P2E (from empathy to perception).               
+
+> Strategy MSA & MER & OV-MER ERI ERG Avg. ↑Avg. ↑Hit Rate ↑
+> Standard P2E 74.01 6.80 91.13 Reverse P2E 63.35 (-10.66) 6.17 (-0.63) 57.64 (-33.49)
+
+sive 67.72%, while that of Nano-EmoX rises by 17.93%. These findings strongly corroborate the effectiveness of the P2E framework in deepening emotional perception and fos-tering a more comprehensive form of emotional intelli-gence. To further validate our approach, we then reverse the shallow-to-deep cognitive progression by designing a ”Re-verse P2E” training strategy. As shown in Tab. 7, re-verse P2E leads to a noticeable performance degradation. This results underscore the importance of adhering to a cognitively-aware, shallow-to-deep learning paradigm for cultivating the model’s affective capabilities. 
+
+Revisiting the Role of MSA Task Training. Fig. 6 (a) presents the performance of Nano-EmoX on the MSA task under both fine-tuned and zero-shot settings. Notably, the model maintains competitive accuracy even without task-specific fine-tuning. We attribute this strong zero-shot ca-pability to the presence of positive and negative annotations in our pre-training data, from which the model implicitly acquired knowledge relevant to the MSA task. 
+
+Architectural Contribution Analysis. As detailed in Tab. 8, the bimodal variants serve as strong baselines but struggle on the complex ERG task, underscoring the need for a more holistic perceptual system. Augmenting the vi-sual representations with our facial encoder significantly improves performance, which validates the importance of leveraging facial cues for effective affective modeling. The effectiveness of our specific design choices is further validated by two key experiments. First, when we replace our facial encoder with face landmarks and Action Units (AUs) extracted using FAN [4] and ME-GraphAU [42] re-7anxiety, nervousness,  self -blame , regret , sorrow 
+
+Please recognize all possible emotional states of the 
+
+character. 
+
+Recognize speaker's  intention .
+
+Apologize  
+
+> Ground True: regret, guilt, sadness
+
+In the text, the caption reads: "Director Bai, you're also 
+
+paying attention to this matter." Given the individual's 
+
+excitement and anticipation for the upcoming event as 
+
+described in the  audio cues , and the  woman's joyful smile 
+
+and relaxed posture depicted in the  video clues , we can infer 
+
+that this statement might be an expression of praise or 
+
+encouragement. The woman may be excited and  happy 
+
+about Director Bai's attention to this particular matter, and 
+
+wishes for him to pay attention to and support it as well. 
+
+This alignss with the positive emotional state the woman 
+
+displays  in the video. 
+
+Based on the synthesis of multimodal data including 
+
+video, audio, what is the subject's comprehensive emotional 
+
+state? Provide a detailed rationale with evidence from each 
+
+modality. 
+
+Yes, it really is frustrating. Some days I just want to 
+
+feel normal again. 
+
+It's completely understandable to feel that way. 
+
+Have you thought about what might help you feel 
+
+better?            
+
+> Ground True: In the video, he had a smile on his lips, showing his teeth and dimples, which
+> made him look quite happy. Through the phrase "you are also paying attention to this
+> matter!", it can be seen that he was somewhat surprised by the other person's attention to
+> this matter. Therefore, it is inferred that his emotional state is happy and surprised .
+> Ground True: It's completely understandable to feel that way. Have you
+> found anything that helps you cope with these feelings?
+
+ER I Task (EMER Dataset :sample_00000153 ) ERG  Task (AvaMERG Dataset :dia03998utt2_60 )
+
+MIR Task ：
+
+OV MER Task (OV -MERD Dataset:sample_00000665)   
+
+> Subtitle: I'm sorry, Gan Jing. I'm sorry for everything, from the
+> beginning until now, I've been wrong about everything.
+> Subtitle: Director Bai, you are also paying attention to this matter!
+
+<think> Firstly , the event scenario of this conversation 
+
+is: The speaker shares her struggle with maintaining a 
+
+routine while dealing with grief. 
+
+Secondly , the emotion of the speaker is  sad. 
+
+Thirdly , the emotion cause is  the  void left by her 
+
+husband's absence .
+
+Fourthly , the goal to response is : to express 
+
+understanding and support .</think> 
+
+Is the character's emotion positive or negative ?
+
+Negative 
+
+MSA Task ：
+
+anxiety, nervousness,  self -blame , regret , sorrow 
+
+Please recognize all possible emotional states of the 
+
+character. 
+
+Recognize speaker's  intention .
+
+Apologize  
+
+> Ground True: regret, guilt, sadness
+
+In the text, the caption reads: "Director Bai, you're also 
+
+paying attention to this matter." Given the individual's 
+
+excitement and anticipation for the upcoming event as 
+
+described in the  audio cues , and the  woman's joyful smile 
+
+and relaxed posture depicted in the  video clues , we can infer 
+
+that this statement might be an expression of praise or 
+
+encouragement. The woman may be excited and  happy 
+
+about Director Bai's attention to this particular matter, and 
+
+wishes for him to pay attention to and support it as well. 
+
+This alignss with the positive emotional state the woman 
+
+displays  in the video. 
+
+Based on the synthesis of multimodal data including 
+
+video, audio, what is the subject's comprehensive emotional 
+
+state? Provide a detailed rationale with evidence from each 
+
+modality. 
+
+Yes, it really is frustrating. Some days I just want to 
+
+feel normal again. 
+
+It's completely understandable to feel that way. 
+
+Have you thought about what might help you feel 
+
+better?            
+
+> Ground True: In the video, he had a smile on his lips, showing his teeth and dimples, which
+> made him look quite happy. Through the phrase "you are also paying attention to this
+> matter!", it can be seen that he was somewhat surprised by the other person's attention to
+> this matter. Therefore, it is inferred that his emotional state is happy and surprised .
+> Ground True: It's completely understandable to feel that way. Have you
+> found anything that helps you cope with these feelings?
+
+ER I Task (EMER Dataset :sample_00000153 ) ERG  Task (AvaMERG Dataset :dia03998utt2_60 )
+
+MIR Task ：
+
+OV MER Task (OV -MERD Dataset:sample_00000665)   
+
+> Subtitle: I'm sorry, Gan Jing. I'm sorry for everything, from the
+> beginning until now, I've been wrong about everything.
+> Subtitle: Director Bai, you are also paying attention to this matter!
+
+<think> Firstly , the event scenario of this conversation 
+
+is: The speaker shares her struggle with maintaining a 
+
+routine while dealing with grief. 
+
+Secondly , the emotion of the speaker is  sad. 
+
+Thirdly , the emotion cause is  the  void left by her 
+
+husband's absence .
+
+Fourthly , the goal to response is : to express 
+
+understanding and support .</think> 
+
+Is the character's emotion positive or negative ?
+
+Negative 
+
+MSA Task ：Figure 5. Visualization results on the OV-MER, MIR, ERI, and ERG tasks. Our model responds rapidly when handling perceptual tasks, whereas for interactive tasks, it first considers the interlocutor’s state before generating empathetic responses. Table 8. Ablation results showing the influence of different branch combinations in Nano-EmoX, ‘A’, ‘V’, ‘F’, ‘M’, and ‘T’ represent Audio, Vision, Face, Fusion, and Text modalities, respectively. 
+
+Variants Modal MSA&MER&OV-MER ERI ERG Avg. ↑ Avg. ↑Hit Rate ↑
+
+Audio Perception AT 69.23 5.86 76.50 Visual Perception VT 64.13 5.78 53.36 Face Perception FT 65.99 5.63 46.54 Visual + Face VFT 67.26 5.94 82.61 w/o Fusion AVFT 71.65 6.05 62.20 w Experts Fusion AVFMT 74.01 6.80 91.13 
+
+Face Landmark + AUAVFMT 70.88 6.13 57.25 Attention Fusion AVFMT 71.43 6.56 86.27 
+
+spectively, the model’s performance declines. Second, re-moving the fusion encoder entirely or using attention fu-sion [33] leads to a significant decline in performance on AvaMERG, clearly demonstrating its effectiveness in dy-namically and efficiently integrating multimodal streams. We also explored alternative fusion architectures to val-idate the effectiveness of our design. Specifically, replac-ing the layer-wise sequential fusion with a cross-layer ap-proach, or substituting the dynamic gating mechanism with average weighting, both resulted in consistently lower per-formance. As shown in Fig. 6 (b) and Fig. 6 (c), our encoder effectively learns to fuse features adaptively, selecting com-binations that are better suited for each task. 
+
+Qualitative analysis on Nano-EmoX. We present visu-alization results of Nano-EmoX on four key tasks in the Fig. 5. In the OV-MER task, our model accurately cap-tures more subtle emotions such as tension and anxiety. In the ERI task, by comprehensively synthesizing multi-76.82              
+
+> 79.81
+> 86.25
+> 84.76 81.74
+> 85.96
+> 89.33
+> 87.52
+> 81.19
+> 78.88
+> 85.77
+> 83.86
+> CMU-MOSI CMU-MOESI CH-SIMS CH-SIMS V2
+> Zero Shot (P2E) FT Zero Shot (JoT)
+> 74.01
+> 6.8
+> 91.13
+> 70.98
+> 6.25
+> 87.57
+> MER-UniBench EMER AvaMERG
+> layer-wise sequential Cross-layer
+> 74.01
+> 6.8
+> 91.13
+> 73.16
+> 6.53
+> 88.49
+> MER-UniBench EMER AvaMERG
+> Gating network Average weighting
+> (a) (b) (c)
+
+Figure 6. Ablation result: (a) Training the MSA task vs. Zero shot; (b) Feature layer-wise fusion vs. cross-layer fusion; (c) Gated dy-namic weighting vs. average weighting. 
+
+modal emotional cues, Nano-EmoX achieves precise causal reasoning for a character’s emotional state. Furthermore, in the ERG task, Leveraging a chain-of-thought process, Nano-EmoX first analyzes the emotional context by pin-pointing the user’s emotion and its root cause. It then es-tablishes a response objective to guide the generation of a final, empathetic, and contextually appropriate reply. For more visualization results, please refer to the appendix. 
+
+5. Conclusion 
+
+In this work, we propose a three-level conceptual hierar-chy that mirrors the cognitive progression, building on this taxonomy, we introduce Nano-EmoX, a compact MLM, and the P2E training framework, which together resolve the long-standing fragmentation of skills in affective comput-ing. Nano-EmoX improves cross-task generalization via fine-grained facial modeling and audio-visual dynamic fu-sion, while P2E validates that cognition-inspired, progres-sive curricula are indispensable for cultivating multilevel emotional intelligence. Our results show that advancing emotional AI hinges less on scaling model size than on co-designing efficient architectures with structured, cognition-aligned training. 8Nano-EmoX: Unifying Multimodal Emotional Intelligence from Perception to Empathy 
+
+# Supplementary Material 
+
+A. Overview 
+
+As part of the Appendix, we present the following as an extension to the ones shown in the paper: 
+
+• Task Definition (Sec. B) 
+
+• Nano-EmoX Details (Sec. C) 
+
+• Details of P2E Framework (Sec. D) 
+
+• Experimental Setup and Additional Experiments (Sec. E) 
+
+• More visualization results (Sec. F) 
+
+B. Task Definition 
+
+The P2E is conceptually inspired by Preston & de Waal’s PAM. We map this to P2E as (1) perception: non-deliberative extraction of affective cues from multimodal inputs (automatic activation), (2) understanding: context and intent-aware integration (regulatory modulation), and (3) interaction: generation of context-appropriate, socially aligned outputs (prosocial response). 
+
+Level 1: Foundational Perception. Multimodal Senti-mental Analysis (MSA): This task takes as input multimodal data including text, images, and speech. It fuses emotion-related features across these modalities—such as textual semantics, facial expressions in images, and prosody in speech—and determines the emotional state of the target. The emotional state can be categorized by sentiment polar-ity (positive/negative/neutral) or emotional intensity levels. 
+
+Multimodal Emotion Recognition (MER): This task in-volves identifying discrete emotion categories ( e.g ., joy, sadness) or continuous affective dimensions from human expressions. 
+
+Open-Vocabulary MER (OV-MER): Moving beyond coarse-grained labels, OV-MER requires the model to iden-tify and describe nuanced, intertwined emotions ( e.g ., a mix of anxiety and anger). 
+
+Level 2: Deep Understanding. Emotion Reasoning In-tegration (ERI): This task pushes the model beyond mere recognition into the realm of causal inference, requiring it to explain the underlying reasons for a specific emotion. 
+
+Multimodal Intent Recognition (MIR): To understand the social goals behind utterances, MIR requires the model to infer a speaker’s intent ( e.g ., gratitude, suggestion, apology) from both verbal and non-verbal cues. 
+
+Level 3: Emotional Interaction. Empathic Response Generation (ERG): This task takes as input the user’s emo-MLP -  
+
+> Fusion
+> Temporal Modeling
+> Block -1
+> Block -2
+> Block -3
+> Block -4
+> MLP
+> MLP
+> MLP
+> MLP
+> Learnable Queries
+> Cross -
+> Attention
+> FC
+> FC
+> FC
+> Visual
+> Feature
+> Speech
+> Feature
+> (b) Fusion Expert
+> (a) Facial Encoder
+> ++FFN
+> ++c
+> fEi
+> mf EfEV
+> vEK
+> vEQ
+> sEQK
+> fEV
+> fE
+> MLP -
+> Fusion
+> Temporal Modeling
+> Block -1
+> Block -2
+> Block -3
+> Block -4
+> MLP
+> MLP
+> MLP
+> MLP
+> Learnable Queries
+> Cross -
+> Attention
+> FC
+> FC
+> FC
+> Visual
+> Feature
+> Speech
+> Feature
+> (b) Fusion Expert
+> (a) Facial Encoder
+> ++FFN
+> ++c
+> fEi
+> mf EfEV
+> vEK
+> vEQ
+> sEQK
+> fEV
+> fE
+
+Figure 1. The facial Encoder extracts multiscale facial features and fuses them via an MLP to generate a rich facial embedding Ef .Subsequently, a temporal modeling block construct the sequence to output a final facial representation, which provides the language model with critical affective visual signals Ecf . Fusion experts use audio features to guide vision and extract key complementary information Eimf .
+
+tional expressions (e.g., text, speech) and contextual in-formation. It first understands the user’s emotional needs and underlying emotions, then generates natural language responses that align with the user’s emotions and convey understanding and support, ultimately achieving emotional resonance. 
+
+C. Details of Nano-EmoX 
+
+C.1. Fine-grained Facial Clues Extracting 
+
+The Fig. 1 (a) illustrates the network details: a lightweight facial encoder extracts features from block-1, block-2, block-3, and block-4 of the visual backbone network, which encompasses multiscale facial features ranging from fine-grained to global semantics. Features at each scale are aligned and then aggregated into MLP Fusion, which fuses them into a unified representation balancing facial detail and global structure: 
+
+Ef = fFaceXFormer (xv ) (1) 
+
+Ef ∈ RTf ×Df , where Tf and Df denote the length and dimension of embeddings, respectively. To extend the facial encoder’s capability from single-frame to video-level analysis, we introduce learnable temporal query tokens Q.These tokens interact with frame-ordered facial features via temporal modeling to reconstruct the time-sequential rela-1tionships among key facial emotional cues. The specific calculation methods and subsequent processing steps are presented in Sec. 3.1. 
+
+C.2. Fusion Expert 
+
+The details of fusion expert as depicted in Fig. 1 (b), The fusion process within each expert i is formalized as: 
+
+Eim = CrossAttention (EQs , E Kv , E Vv ) + EQs (2) where EQs denotes the query features projected from the speech embedding Es, and EKv and EVv represent the key and value projections from the visual embedding Ev . This allows the fusion expert to leverage the more emotionally stable speech cues to attend to the most salient affective in-formation within the visual stream. Subsequently, a feed-forward network (FFN) enriches the representation: 
+
+Eimf = FFN (Eim) + Eim (3) 
+
+D. Details of P2E Framework 
+
+In this section, we provide specific additional details about the P2E framework, including the prompt templates used for training. Tab. 1 describes the task identifiers and training data used for each training task. Task identifiers are essential for the model to accurately follow instructions. Embedded within the P2E curriculum, these identifiers enable the model to execute rapid reasoning in perception and understanding layers, and employ Chain-of-Thought for deep contemplation in the interactive empa-thy layer, thereby ensuring the output of accurate and ap-propriate empathetic responses 
+
+Phase1: Foundational Modality Alignment: in this ini-tial stage (see Fig.4, Phase 1 in the Sec 3.2.), we focus on pre-training for basic emotion recognition to establish a ro-bust foundation by aligning the feature space of each modal-ity encoder with the language model’s embedding space. An example of the standardized instruction template for this phase is shown below: 
+
+The MER Task Prompt Template [Recognition] Please select the label that can best de-scribe the person’s emotional state from the provided candidate labels: <Emotion Labels >.
+
+Phase2: Cross-modal Fusion Pre-training: We posit that intent recognition serves as a natural bridge between basic perception and higher-order empathy, as it requires the model to synthesize cross-modal cues to infer a speaker’s underlying social goals, a clear progression from simple emotion identification. The instruction template for the MIR task is as follows: 
+
+The MIR Task Prompt Template [Intent] Recognize speaker’s intention from the pro-vided candidate labels: <Intention Labels >.
+
+Phase3: Multitask Instruction Tuning: in the final stage (see Fig.4, Phase 3 in the Sec 3.2.), we fine-tune the entire architecture on a complex mixture of tasks to integrate all acquired knowledge and unlock the model’s full potential for high-level reasoning and empathetic interaction. 
+
+Deepening perception: to facilitate the model in learn-ing to address the OV-MER task, which requires describ-ing fine-grained and multi-label emotions, we have speci-fied the following prompt template: 
+
+The OV-MER Task Prompt Template [Recogn OV] Recognize all the possible emotional states the character miaght be feeling in this context. 
+
+Cultivating Reasoning: for the ERI task, we require the model to describe the most relevant emotional cues, with the prompt template as follows: 
+
+The ERI Task Prompt Template [Inference] From the combined evidence of speech, tone, and visual expression, construct a detailed sum-mary of the subject’s emotional journey and final in-ferred state. 
+
+The ERG Task Prompt Template [Interaction] You are an empathetic listener, your goal is to understand the user’s emotions and intentions, and respond or comfort them with appropriate lan-guage that helps them feel understood and cared for. Please analyze using Chain of Empathy: 
+
+First, Reflect on the event scenarios that arise from the ongoing dialogue. 
+
+Secondly, Analyze both the implicit and explicit emo-tions conveyed by the user. 
+
+Thirdly , Infer the underlying reasons for the user’s emotions. 
+
+Fourthly , Determine the goal of your response in this particular instance, such as alleviating anxiety, offer-ing reassurance, or expressing understanding. 
+
+Empathy activation: to enable the model to generate the most appropriate empathetic responses based on prior knowledge, we require it to engage in step-by-step reason-ing following a four-step approach. After this deliberative empathetic process, the model then generates the final re-2Table 1. Details of task identifiers and training datasets for diverse emotional tasks.                       
+
+> Task MER OV-MER ERI MIR ERG Identifier [Recognition] [Recog OV] [Inference] [Intent] [Interaction] Datasets CAER [25], CREMA-D [7] MER-Caption+ [33] MER-Caption+ [33] MIntRec [67] AvaMERG [71] M3ED [74], FERV39K [58] MER-Fine [11] MIntRec2.0 [69] Samples 141k 36k 40.5k 7.4k 57k
+
+sponse to the interlocutor. The ERG task prompt template is illustrated above. 
+
+E. Experimental Setup and Additional Experi-ments 
+
+E.1. Benchmarks 
+
+Our comprehensive evaluation assesses performance across six core affective tasks using a suite of established bench-marks. A significant portion of this evaluation is conducted using MER-UniBench [33], a multifaceted benchmark de-signed for three distinct tasks: The MSA task is evaluated on the standard benchmarks of MOSI (CMU-MOSI) [66], MOSEI (CMU-MOSEI) [3], SIMS (CH-SIMS) [65], and its successor, SIMSv2 (CH-SIMS V2) [38]. The MER task is assessed on subsets of four widely-used datasets: MER2023 [30], MER2024 [32], MELD [18], and IEMOCAP [5]. The OV-MER task is benchmarked against the specialized OV-MERD [34] dataset. For the remaining three affective tasks, we employ the following four benchmarks: The explainable ERI task is evaluated using the primary EMER [31] benchmark. The MIR task is assessed on the standard MIntRec [67] and MIntRec2.0 [69] testset. The ERG task utilizes the large-scale AvaMERG [71] testset for evaluation. 
+
+E.2. Metrics 
+
+To ensure fair and comprehensive comparisons, we adopt the official evaluation metrics for each benchmark. 1. For the MER task, following MER-UniBench [33], we report the Emotion Wheel Hit Rate. This metric provides a robust measure of categorical accuracy by mapping model predictions to standardized emotion groups based on psychological emotion wheels, with the detailed map-ping function described in the original paper [33]. 2. For the MSA and OV-MER task [33], we employ the Weighted Average F1-score (WAF) from MER-UniBench, which is well suited for multi-label classifi-cation scenarios. 3. For the ERI task, evaluating free-form explanations requires semantic-level assessment. We adopt the Clue/Label Overlap metric from Emotion-LLaMA [11], which employs GPT-3.5-Turbo as an automatic judge to evaluate generated text in terms of multimodal cue com-pleteness and emotion inference accuracy. Specifically, Clue Overlap measures the similarity between reason-ing clues and ground truth, while Label Overlap assesses emotion recognition accuracy. 4. For the MIR task, adhering to the official protocols of MIntRec [67] and MIntRec2.0 [69], we report accuracy (Acc), WAF, and weighted precision (WP). 5. For the ERG task, we conduct a multifaceted evaluation. To measure whether the model’s response is grounded in an accurate understanding of the user’s emotion, we report both the fine-grained Acc from AvaMERG [71] and the coarse-grained Hit Rate from E3RG [36]. To quantify the lexical diversity of the generated responses, we use Dist-n [27]. 
+
+E.3. Human Blind Evaluation on the ERG task 
+
+To ensure the reliability of automated evaluation metrics, we conducted a blind review by human experts for the em-pathetic generation task. Specifically, we randomly sample 200 dialogues (including the complete context of the con-versation), and 10 human experts conduct blind evaluations using a 1 to 5 Likert scale on three metrics. As shown in Tab. 2, Nano-EmoX outperforms the baseline with an av-erage Fleiss’ Kappa of ≈ 0.697, achieving the best perfor-mance across all three dimensions and thus validating the reliability of automated metrics. 
+
+Table 2. Human experts blind evaluation on the ERG task.                            
+
+> Models Empathy ↑Insight ↑Safety ↑Avg. Qwen2.5-Omni-7B 3.98 4.03 4.59 4.20 Ola-Omni-7B 4.18 4.29 4.67 4.38 Small-scale Multimodal Models MobileVLM V2-1.7B 2.25 2.84 3.73 2.94 AffectGPT (s) 4.34 4.16 4.79 4.43
+> Our Nano-EmoX 4.75 4.42 4.87 4.68
+
+E.4. Additional ablation study 
+
+Ablation study on the fusion encoder. We investigated the impact of feature source depth by varying the number and position of the extracted encoder layers for fusion. As presented in Tab. 3, the results reveal that a three-layer con-figuration, sourcing from two intermediate layers (12, 16) and one deep layer (22), achieves the optimal performance. 3Table 3. Exploring the appropriate number of experts and the depth of the extraction layer, extracting from too shallow a layer will lead to a decline in performance.                           
+
+> Speech Extract Layers Visual Extract Layers Expert MSA&MER&OV-MER ERI ERG Avg. Avg.Hit Rate 8 / 18 8 / 16 271.98 6.02 88.26 16 / 18 12 / 16 272.42 6.08 88.89 8 / 18 / 22 8 / 16 / 22 373.17 6.40 89.55 16 / 18 / 22 12 / 16 / 22 374.01 6.80 91.13
+> 8 /16 / 18 / 22 8 / 12 / 16 / 22 471.09 5.70 91.12
+
+We observe that incorporating shallower features (e.g., from layer 8) provides limited benefits, likely due to their lack of semantic richness. Conversely, adding a fourth layer yields diminishing returns and fails to justify the increased compu-tational cost. Thus, our three-expert setup strikes an effec-tive balance between representational power and efficiency. 
+
+Ablation study on the vision token numbers. Tab. 4 confirms that 32 tokens are sufficient for perception tasks. While increasing tokens benefits reasoning tasks, we se-lected 32 to achieve trade-off between efficiency and per-formance. 
+
+Table 4. The result of different visual token settings.                        
+
+> Visual Tokens MSA& MER& OV-MER MIR ERI ERG Avg. ↑Avg. ↑Avg. ↑Hit Rate ↑
+> 32 74.01 52.72 6.80 91.13 64 73.96 55.48 6.83 91.08 128 74.28 60.53 6.95 92.87
+
+Ablation study on task proportioning. We analyzed the task composition in Phase 3 of the P2E frame-work to identify the optimal training ratio for down-stream tasks. As detailed in Tab. 5, we identified a balanced configuration (MER:OV-MER:MIR:ERI:ERG = 18%:28%:5%:31%:18%) that prioritizes foundational emo-tion perception and empathetic recognition. This comes at the acceptable cost of a minor performance dip in the MIR task. We posit that this is a favorable trade-off, as robust perceptual capabilities are a prerequisite for generating gen-uinely empathetic responses. This choice directly supports our overarching goal of bridging the cognitive gap from per-ception to empathy. 
+
+F. More visualization results 
+
+We provide additional qualitative results to illustrate the interpretability and empathetic quality of Nano-EmoX’s responses. In the Fig. 2, our visualizations first demonstrate that the model can synthesize cues from visual, acoustic, and textual modalities to provide comprehensive causal explanations for an emotion. Furthermore, the model employs a multi-step reasoning process to progressively build an emotional context, which enables it to craft genuinely empathetic replies. Taken together, these findings highlight Nano-EmoX’s robust capabilities in both emotional understanding and empathetic interaction. 
+
+References 
+
+[1] Panos Achlioptas, Maks Ovsjanikov, Leonidas J. Guibas, and Sergey Tulyakov. Affection: Learning affective explana-tions for real-world visual data. In 2023 IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) ,2023. 1 [2] Md Shad Akhtar, Dushyant Chauhan, Deepanway Ghosal, Soujanya Poria, Asif Ekbal, and Pushpak Bhattacharyya. Multi-task learning for multi-modal emotion recognition and sentiment analysis. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computa-tional Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) , pages 370–379, 2019. 1 [3] AmirAli Bagher Zadeh, Paul Pu Liang, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Multimodal lan-guage analysis in the wild: Cmu-mosei dataset and inter-pretable dynamic fusion graph. In Proceedings of the 56th Annual Meeting of the Association for Computational Lin-guistics (Volume 1: Long Papers) , pages 2236–2246, 2018. 6, 3 [4] Adrian Bulat and Georgios Tzimiropoulos. How far are we from solving the 2d & 3d face alignment problem? (and a dataset of 230,000 3d facial landmarks). In International Conference on Computer Vision , 2017. 7 [5] Carlos Busso, Murtaza Bulut, Chi-Chun Lee, Abe Kazemzadeh, Emily Mower, Samuel Kim, Jeannette N Chang, Sungbok Lee, and Shrikanth S Narayanan. Iemo-cap: Interactive emotional dyadic motion capture database. 
+
+Language resources and evaluation , 42(4):335–359, 2008. 6, 3 [6] Xingyu Cai, Jiahong Yuan, Renjie Zheng, Liang Huang, and Kenneth Church. Speech emotion recognition with multi-task learning. In Interspeech , pages 4508–4512. Brno, 2021. 1[7] Houwei Cao, David G Cooper, Michael K Keutmann, Ruben C Gur, Ani Nenkova, and Ragini Verma. Crema-d: Crowd-sourced emotional multimodal actors dataset. IEEE transactions on affective computing , 5(4):377–390, 2014. 4, 3[8] Feiyu Chen, Jie Shao, Shuyuan Zhu, and Heng Tao Shen. Multivariate, multi-frequency and multimodal: Rethinking graph neural networks for emotion recognition in conversa-tion. In 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023. 1 [9] Haodong Chen, Haojian Huang, Junhao Dong, Mingzhe Zheng, and Dian Shao. Finecliper: Multi-modal fine-grained clip for dynamic facial expression recognition with adapters. 
+
+4Table 5. Results of the ablation study on task composition in phase 3 of P2E. This table investigates the model’s sensitivity to different proportions of training tasks.                                  
+
+> P2E Phase3 Task Ratio (MER: OV-MER: MIR: ERI: ERG) MER-UniBench MIntRec MIntRec 2.0 EMER AvaMERG Avg. WAF WAF Avg. Hit Rate 0% : 20% : 20% : 25% : 35% 71.43 (-2.58) 61.29 (+3.12) 49.8 (+2.53) 6.65 (-0.15) 43.15 (-44.03) 10% : 30% : 15% : 35% : 10% 72.79 (-1.22) 62.23 (+4.06) 51.04 (+3.77) 6.64 (-0.16) 58.88 (-28.3) 18% : 20% : 20% : 25% : 18% 72.60 (-1.41) 63.41(+5.24) 49.09 (+1.82) 6.60 (-0.20) 91.30 (+0.17) 18% : 28% : 5% : 31% : 18% 74.01 58.17 47.27 6.80 91.13 25% : 17% : 10% : 22% : 25% 72.18 (-1.83) 42.19 (-15.98) 52.09 (+4.82) 6.83 (+0.03) 87.18 (-3.95)
+
+In Proceedings of the 32nd ACM International Conference on Multimedia , pages 2301–2310, 2024. 4 [10] Yi Cheng, Wenge Liu, Wenjie Li, Jiashuo Wang, Ruihui Zhao, Bang Liu, Xiaodan Liang, and Yefeng Zheng. Improv-ing multi-turn emotional support dialogue generation with lookahead strategy planning. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Pro-cessing , 2022. 1 [11] Zebang Cheng, Zhi-Qi Cheng, Jun-Yan He, Kai Wang, Yuxi-ang Lin, Zheng Lian, Xiaojiang Peng, and Alexander Haupt-mann. Emotion-llama: Multimodal emotion recognition and reasoning with instruction tuning. Advances in Neural Infor-mation Processing Systems , 37:110805–110853, 2024. 1, 2, 3, 5, 6 [12] Xiangxiang Chu, Limeng Qiao, Xinyu Zhang, Shuang Xu, Fei Wei, Yang Yang, Xiaofei Sun, Yiming Hu, Xinyang Lin, Bo Zhang, et al. Mobilevlm v2: Faster and stronger baseline for vision language model. arXiv preprint arXiv:2402.03766 , 2024. 6, 7 [13] Yuqi Chu, Lizi Liao, Zhiyuan Zhou, Chong-Wah Ngo, and Richang Hong. Towards multimodal emotional support con-versation systems. IEEE Transactions on Multimedia , 2025. 2[14] Chaoyue Ding, Daoming Zong, Baoxiang Li, Ken Zheng, Dinghao Zhou, Jiakui Li, and Qunyan Zhou. Learning aligned audiovisual representations for multimodal senti-ment analysis. In Proceedings of the 1st International Work-shop on Multimodal and Responsible Affective Computing ,pages 21–28, 2023. 4 [15] Hao Fei, Bobo Li, Qian Liu, Lidong Bing, Fei Li, and Tat-Seng Chua. Reasoning implicit sentiment with chain-of-thought prompting. In Proceedings of the 61st Annual Meet-ing of the Association for Computational Linguistics (Volume 2: Short Papers) , 2023. 1 [16] Mike Schaekermann Gheorghe Comanici, Eric Bieber et al. Gemini 2.5: Pushing the frontier with advanced reasoning, multimodality, long context, and next generation agentic ca-pabilities. arXiv preprint arXiv:2507.06261 , 2025. 2 [17] Tobias Hallmen, Fabian Deuser, Norbert Oswald, and Elisabeth Andr´ e. Unimodal multi-task fusion for emo-tional mimicry intensity prediction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 4657–4665, 2024. 1 [18] Shilin He, Zhaopeng Tu, Xing Wang, Longyue Wang, Michael Lyu, and Shuming Shi. Towards understanding neural machine translation with word importance. In Pro-ceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 953–962. Association for Computational Linguistics, 2019. 6, 3 [19] Dan Hendrycks and Kevin Gimpel. Gaussian error linear units (gelus). arXiv preprint arXiv:1606.08415 , 2016. 4 [20] Wei-Ning Hsu, Benjamin Bolte, Yao-Hung Hubert Tsai, Kushal Lakhotia, Ruslan Salakhutdinov, and Abdelrahman Mohamed. Hubert: Self-supervised speech representation learning by masked prediction of hidden units. IEEE/ACM transactions on audio, speech, and language processing , 29: 3451–3460, 2021. 5 [21] H Hu, Y Zhou, L You, H Xu, Q Wang, Z Lian, FR Yu, F Ma, and L Cui. Emobench-m: Benchmarking emotional intelli-gence for multimodal large language models (2025), 2025. 2[22] Shengding Hu, Yuge Tu, Xu Han, Chaoqun He, Ganqu Cui, Xiang Long, Zhi Zheng, Yewei Fang, Yuxiang Huang, Weilin Zhao, Xinrong Zhang, Zhen Leng Thai, Kai Zhang, Chongyi Wang, Yuan Yao, Chenyang Zhao, Jie Zhou, Jie Cai, Zhongwu Zhai, Ning Ding, Chao Jia, Guoyang Zeng, Dahai Li, Zhiyuan Liu, and Maosong Sun. Minicpm: Un-veiling the potential of small language models with scalable training strategies. arXiv preprint arXiv:2404.06395 , 2024. 6, 7 [23] Dawei Huang, Qing Li, Chuan Yan, Zebang Cheng, Yurong Huang, Xiang Li, Bin Li, Xiaohui Wang, Zheng Lian, and Xiaojiang Peng. Emotion-qwen: Training hybrid experts for unified emotion and general vision-language understanding. 
+
+arXiv preprint arXiv:2505.06685 , 2025. 1, 2, 6 [24] Tingting Jiang, Zhumo Sun, Shiting Fu, and Yan Lv. Human-ai interaction research agenda: A user-centered perspective. 
+
+Data and Information Management , 8(4):100078, 2024. 1 [25] Jiyoung Lee, Seungryong Kim, Sunok Kim, Jungin Park, and Kwanghoon Sohn. Context-aware emotion recognition net-works. In Proceedings of the IEEE/CVF international con-ference on computer vision , pages 10143–10152, 2019. 4, 3[26] Ao Li, Longwei Xu, Chen Ling, Jinghui Zhang, and Peng-wei Wang. Emoverse: Enhancing multimodal large language models for affective computing via multitask learning. Neu-rocomputing , 650:130810, 2025. 2, 3 [27] Jiwei Li, Michel Galley, Chris Brockett, Jianfeng Gao, and Bill Dolan. A diversity-promoting objective func-
+
+5In the text, the caption reads: "Saying 'I swear' is useless 
+
+even if you're lying one hundred times." This phrase might 
+
+be a  woman's evaluation or response to someone. Given the 
+
+speaker's's tone described in the audio cues as tense and 
+
+agitated, along with the fast pace of speech, we can infer 
+
+that this statement may carry a sense of dissatisfaction or 
+
+criticism. Therefore, this sentence could be a woman's way 
+
+of expressing her discontent or dissatisfaction towards 
+
+someone, which alignss with her overall display of tension 
+
+and anger. 
+
+Based on the synthesis of multimodal data including 
+
+video, audio, and facial expressions, what is the subject's 
+
+comprehensive emotional state? 
+
+yes i go to my local charity every weekend 
+
+Are you there to help the homeless directly or to 
+
+bring awareness to the issue?      
+
+> Ground True: In the video, he suspected the other person was lying and became a little
+> angry. His voice also slightly raised and he looked at the other person with a sidelong
+> glance. Therefore, it is inferred that his emotional state is anger.
+> Ground True: Good for you, I feel bad for never helping out.
+> Subtitle: No need to swear, if you lie, swearing a hundred times is
+> useless.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Discussion about the speaker's feelings towards 
+
+homelessness and  their efforts to help at a local 
+
+charity. 
+
+Secondly, the emotion of the speaker is angry 
+
+Thirdly, the emotion cause is Seeing homeless 
+
+individuals triggers feelings of anger and sadness in 
+
+the speaker. 
+
+Fourthly, the goal to response is Encouraging proactive 
+
+support and engagement with the issue.</think> 
+
+Yes we decided together with our minds, and know i 
+
+come home and feel so distant from the world 
+
+That is sad. I hope you will get through this phase  
+
+> Ground True: Absolutely, every step counts. Your life experiences,
+> no matter how small they seem, have shaped who you are today.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: A breakup with the speaker's girlfriend after 8 years 
+
+of marriage. \nSecondly, the emotion of the speaker is 
+
+lonely\nThirdly, the emotion cause is The speaker feels 
+
+immense loneliness and emptiness after ending a long -
+
+term relationship. \nFourthly, the goal to response is 
+
+Providing comfort and reassurance to help the speaker 
+
+cope with their  emotions. </think> 
+
+In the text, the caption reads: "Ah, it's Wei Wei is 
+
+pregnant." This sentence could be the woman's 
+
+announcement or confirmation of news. Given the audio 
+
+clues, where the individual's voice is shaking, their speech is 
+
+slightly slower, and the video clues showing the woman's 
+
+facial expressions to be surprise we can infer that this 
+
+statement might carry an element of surprise or excitement. 
+
+Therefore, this sentence might be the woman's response to 
+
+some unexpected news or situation, which alignss well with 
+
+her overall neutral emotional state. 
+
+Evaluate all available clues —visual, auditory, and 
+
+physiological. What is the final conclusion about the 
+
+subject's emotion, and which pieces of evidence were most 
+
+critical to this determination?      
+
+> Subtitle: Ah. Wei Wei is pregnant.
+> Ground True: In the video, he found out that his friend is pregnant and he was very
+> surprised. He spoke faster, raised his voice, and suddenly sat up from the sofa. He opened
+> his mouth wide, widened his eyes, and raised his eyebrows. Therefore, it can be inferred
+> that his emotional state is surprise.
+
+Nah  - I knew that they were just having fun with me! 
+
+I was blindfolded and put in the trunk of a big car (I am 
+
+tiny) 
+
+I would have done the same thing if it was for my 
+
+birthday!  
+
+> Ground True: Well at least you had a good time. Did they do something
+> nice for you after?
+
+<think>Firstly, the event scenario of this conversation 
+
+is: A humorous anecdote about being 'kidnapped' by 
+
+friends for a surprise birthday party. 
+
+Secondly, the emotion of the speaker is surprised 
+
+Thirdly, the emotion cause is Feeling playful and 
+
+funny about a surprising birthday tradition. 
+
+Fourthly, the goal to response is Encouraging a 
+
+lighthearted and shared understanding of the humorous 
+
+experience.</think> 
+
+Not recently but getting last at a race really makes me 
+
+angry and motivates me 
+
+I can imagine how frustrating that must be. How 
+
+did you perform at the race?  
+
+> Ground True: I agree, it makes you just want to try harder next time.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Feeling motivated by losing at a race 
+
+Secondly, the emotion of the speaker is angry 
+
+Thirdly, the emotion cause is Experiencing defeat in a 
+
+race that triggers anger and a desire for victory. 
+
+Fourthly, the goal to response is Validating the 
+
+speaker's feelings of frustration and encouraging 
+
+reflection on race performance.</think> 
+
+I think I might just spend the weekend relaxing and 
+
+not think about school at all. 
+
+That sounds like a great plan! Taking a moment to 
+
+relax can definitely help ease that pressure.  
+
+> Ground True: That sounds like a wonderful plan! It's important to
+> recharge and take care of yourself.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: considering relaxation from schoolwork 
+
+Secondly, the emotion of the speaker is anxious 
+
+Thirdly, the emotion cause is desire for a break from 
+
+stress 
+
+Fourthly, the goal to response is to encourage the 
+
+speaker's self -care intentions</think> 
+
+I haven't really thought about it, but maybe I should 
+
+try to reconnect with them. 
+
+It could bring back a lot of positive energy and help 
+
+you feel less isolated. What do you think?  
+
+> Ground True: That sounds like a great idea! It could bring back some joy
+> and connection in your life.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Considering reconnection with friends 
+
+Secondly, the emotion of the speaker is lonely 
+
+Thirdly, the emotion cause is Feeling disconnected 
+
+from friends who have moved away 
+
+Fourthly, the goal to response is To explore the idea 
+
+of reuniting and providing support</think> 
+
+In the text, the caption reads: "I don't give a rat's ass who 
+
+you are, as long as you dare to bully my little brother, I'll 
+
+chop you up." This statement expresses the speaker's's anger 
+
+and threat towards a specific individual. Based on the audio 
+
+cues, the speaker's's aggressive tone, trembling voice, and 
+
+the aggressive language and threats in the caption, we can 
+
+infer that this statement is an expression of the speaker's's 
+
+anger and threat towards the target of the bullying. 
+
+Therefore, this statement indicates that the speaker's's 
+
+emotional state is anger and threat, which is consistent with 
+
+the angry and frustrated tone indicated by the audio cues. 
+
+Evaluate all available clues —visual, auditory, and 
+
+physiological. What is the final conclusion about the 
+
+subject's emotion, and which pieces of evidence were most 
+
+critical to this determination?   
+
+> Subtitle: I don't care who you are, as long as you dare to bully my
+> younger brother, I will chop you up
+> Ground True: In the video, he issued a serious warning to the other party by saying "I
+> will chop you up", indicating that he is very angry. He speaks quickly, furrows his brows,
+> and has a serious expression. Finally, he emphasizes the word "chop" and shows a
+> murderous intent. Therefore, it can be inferred that his emotional state is anger.
+
+In the text, the caption reads: "Saying 'I swear' is useless 
+
+even if you're lying one hundred times." This phrase might 
+
+be a  woman's evaluation or response to someone. Given the 
+
+speaker's's tone described in the audio cues as tense and 
+
+agitated, along with the fast pace of speech, we can infer 
+
+that this statement may carry a sense of dissatisfaction or 
+
+criticism. Therefore, this sentence could be a woman's way 
+
+of expressing her discontent or dissatisfaction towards 
+
+someone, which alignss with her overall display of tension 
+
+and anger. 
+
+Based on the synthesis of multimodal data including 
+
+video, audio, and facial expressions, what is the subject's 
+
+comprehensive emotional state? 
+
+yes i go to my local charity every weekend 
+
+Are you there to help the homeless directly or to 
+
+bring awareness to the issue?      
+
+> Ground True: In the video, he suspected the other person was lying and became a little
+> angry. His voice also slightly raised and he looked at the other person with a sidelong
+> glance. Therefore, it is inferred that his emotional state is anger.
+> Ground True: Good for you, I feel bad for never helping out.
+> Subtitle: No need to swear, if you lie, swearing a hundred times is
+> useless.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Discussion about the speaker's feelings towards 
+
+homelessness and  their efforts to help at a local 
+
+charity. 
+
+Secondly, the emotion of the speaker is angry 
+
+Thirdly, the emotion cause is Seeing homeless 
+
+individuals triggers feelings of anger and sadness in 
+
+the speaker. 
+
+Fourthly, the goal to response is Encouraging proactive 
+
+support and engagement with the issue.</think> 
+
+Yes we decided together with our minds, and know i 
+
+come home and feel so distant from the world 
+
+That is sad. I hope you will get through this phase  
+
+> Ground True: Absolutely, every step counts. Your life experiences,
+> no matter how small they seem, have shaped who you are today.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: A breakup with the speaker's girlfriend after 8 years 
+
+of marriage. \nSecondly, the emotion of the speaker is 
+
+lonely\nThirdly, the emotion cause is The speaker feels 
+
+immense loneliness and emptiness after ending a long -
+
+term relationship. \nFourthly, the goal to response is 
+
+Providing comfort and reassurance to help the speaker 
+
+cope with their  emotions. </think> 
+
+In the text, the caption reads: "Ah, it's Wei Wei is 
+
+pregnant." This sentence could be the woman's 
+
+announcement or confirmation of news. Given the audio 
+
+clues, where the individual's voice is shaking, their speech is 
+
+slightly slower, and the video clues showing the woman's 
+
+facial expressions to be surprise we can infer that this 
+
+statement might carry an element of surprise or excitement. 
+
+Therefore, this sentence might be the woman's response to 
+
+some unexpected news or situation, which alignss well with 
+
+her overall neutral emotional state. 
+
+Evaluate all available clues —visual, auditory, and 
+
+physiological. What is the final conclusion about the 
+
+subject's emotion, and which pieces of evidence were most 
+
+critical to this determination?      
+
+> Subtitle: Ah. Wei Wei is pregnant.
+> Ground True: In the video, he found out that his friend is pregnant and he was very
+> surprised. He spoke faster, raised his voice, and suddenly sat up from the sofa. He opened
+> his mouth wide, widened his eyes, and raised his eyebrows. Therefore, it can be inferred
+> that his emotional state is surprise.
+
+Nah  - I knew that they were just having fun with me! 
+
+I was blindfolded and put in the trunk of a big car (I am 
+
+tiny) 
+
+I would have done the same thing if it was for my 
+
+birthday!  
+
+> Ground True: Well at least you had a good time. Did they do something
+> nice for you after?
+
+<think>Firstly, the event scenario of this conversation 
+
+is: A humorous anecdote about being 'kidnapped' by 
+
+friends for a surprise birthday party. 
+
+Secondly, the emotion of the speaker is surprised 
+
+Thirdly, the emotion cause is Feeling playful and 
+
+funny about a surprising birthday tradition. 
+
+Fourthly, the goal to response is Encouraging a 
+
+lighthearted and shared understanding of the humorous 
+
+experience.</think> 
+
+Not recently but getting last at a race really makes me 
+
+angry and motivates me 
+
+I can imagine how frustrating that must be. How 
+
+did you perform at the race?  
+
+> Ground True: I agree, it makes you just want to try harder next time.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Feeling motivated by losing at a race 
+
+Secondly, the emotion of the speaker is angry 
+
+Thirdly, the emotion cause is Experiencing defeat in a 
+
+race that triggers anger and a desire for victory. 
+
+Fourthly, the goal to response is Validating the 
+
+speaker's feelings of frustration and encouraging 
+
+reflection on race performance.</think> 
+
+I think I might just spend the weekend relaxing and 
+
+not think about school at all. 
+
+That sounds like a great plan! Taking a moment to 
+
+relax can definitely help ease that pressure.  
+
+> Ground True: That sounds like a wonderful plan! It's important to
+> recharge and take care of yourself.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: considering relaxation from schoolwork 
+
+Secondly, the emotion of the speaker is anxious 
+
+Thirdly, the emotion cause is desire for a break from 
+
+stress 
+
+Fourthly, the goal to response is to encourage the 
+
+speaker's self -care intentions</think> 
+
+I haven't really thought about it, but maybe I should 
+
+try to reconnect with them. 
+
+It could bring back a lot of positive energy and help 
+
+you feel less isolated. What do you think?  
+
+> Ground True: That sounds like a great idea! It could bring back some joy
+> and connection in your life.
+
+<think>Firstly, the event scenario of this conversation 
+
+is: Considering reconnection with friends 
+
+Secondly, the emotion of the speaker is lonely 
+
+Thirdly, the emotion cause is Feeling disconnected 
+
+from friends who have moved away 
+
+Fourthly, the goal to response is To explore the idea 
+
+of reuniting and providing support</think> 
+
+In the text, the caption reads: "I don't give a rat's ass who 
+
+you are, as long as you dare to bully my little brother, I'll 
+
+chop you up." This statement expresses the speaker's's anger 
+
+and threat towards a specific individual. Based on the audio 
+
+cues, the speaker's's aggressive tone, trembling voice, and 
+
+the aggressive language and threats in the caption, we can 
+
+infer that this statement is an expression of the speaker's's 
+
+anger and threat towards the target of the bullying. 
+
+Therefore, this statement indicates that the speaker's's 
+
+emotional state is anger and threat, which is consistent with 
+
+the angry and frustrated tone indicated by the audio cues. 
+
+Evaluate all available clues —visual, auditory, and 
+
+physiological. What is the final conclusion about the 
+
+subject's emotion, and which pieces of evidence were most 
+
+critical to this determination?   
+
+> Subtitle: I don't care who you are, as long as you dare to bully my
+> younger brother, I will chop you up
+> Ground True: In the video, he issued a serious warning to the other party by saying "I
+> will chop you up", indicating that he is very angry. He speaks quickly, furrows his brows,
+> and has a serious expression. Finally, he emphasizes the word "chop" and shows a
+> murderous intent. Therefore, it can be inferred that his emotional state is anger.
+
+Figure 2. More visualization results in ERI and ERG task. tion for neural conversation models. arXiv preprint arXiv:1510.03055 , 2015. 3 [28] Junnan Li, Dongxu Li, Silvio Savarese, and Steven Hoi. Blip-2: Bootstrapping language-image pre-training with frozen image encoders and large language models. In In-ternational conference on machine learning , pages 19730– 19742. PMLR, 2023. 3 [29] Jeng-Lin Li and Chi-Chun Lee. Attentive to individual: A multimodal emotion recognition network with personalized attention profile. In Interspeech , pages 211–215, 2019. 1 
+
+6[30] Zheng Lian, Haiyang Sun, Licai Sun, Kang Chen, Mingyu Xu, Kexin Wang, Ke Xu, Yu He, Ying Li, Jinming Zhao, Ye Liu, Bin Liu, Jiangyan Yi, Meng Wang, Erik Cambria, Guoying Zhao, Bj¨ orn W. Schuller, and Jianhua Tao. Mer 2023: Multi-label learning, modality robustness, and semi-supervised learning. In Proceedings of the 31st ACM inter-national conference on multimedia , pages 9610–9614, 2023. 6, 3 [31] Zheng Lian, Licai Sun, Mingyu Xu, Haiyang Sun, Ke Xu, Zhuofan Wen, Shun Chen, B. Liu, and Jianhua Tao. Ex-plainable multimodal emotion recognition. arXiv preprint arXiv:2306.15401 , 2023. 5, 7, 3 [32] Zheng Lian, Haiyang Sun, Licai Sun, Zhuofan Wen, Siyuan Zhang, Shun Chen, Hao Gu, Jinming Zhao, Ziyang Ma, Xie Chen, Jiangyan Yi, Rui Liu, Kele Xu, Bin Liu, Erik Cam-bria, Guoying Zhao, Bj¨ orn W. Schuller, and Jianhua Tao. Mer 2024: Semi-supervised learning, noise robustness, and open-vocabulary multimodal emotion recognition. In Pro-ceedings of the 2nd International Workshop on Multimodal and Responsible Affective Computing , pages 41–48, 2024. 6, 3[33] Zheng Lian, Haoyu Chen, Lan Chen, Haiyang Sun, Licai Sun, Yong Ren, Zebang Cheng, Bin Liu, Rui Liu, Xiaojiang Peng, et al. Affectgpt: A new dataset, model, and benchmark for emotion understanding with multimodal large language models. In Proceedings of the International Conference on Machine Learning (ICML) (Oral, Top 1%) , 2025. 1, 2, 3, 5, 6, 7, 8 [34] Zheng Lian, Haiyang Sun, Licai Sun, Haoyu Chen, Lan Chen, Hao Gu, Zhuofan Wen, Shun Chen, Siyuan Zhang, Hailiang Yao, Bin Liu, Rui Liu, Shan Liang, Ya Li, Jiangyan Yi, and Jianhua Tao. Ov-mer: Towards open-vocabulary multimodal emotion recognition. In Proceedings of the In-ternational Conference on Machine Learning (ICML) , 2025. 6, 3 [35] Bin Lin, Yang Ye, Bin Zhu, Jiaxi Cui, Munan Ning, Peng Jin, and Li Yuan. Video-llava: Learning united visual rep-resentation by alignment before projection. arXiv preprint arXiv:2311.10122 , 2023. 7 [36] Ronghao Lin, Shuai Shen, Weipeng Hu, Qiaolin He, Aolin Xiong, Li Huang, Haifeng Hu, and Yap-peng Tan. E3rg: Building explicit emotion-driven empathetic response gen-eration system with multimodal large language model. In 
+
+Proceedings of the 33rd ACM International Conference on Multimedia , page 14006–14013. Association for Computing Machinery, 2025. 2, 7, 3 [37] Chenxiao Liu, Zheyong Xie, Sirui Zhao, Jin Zhou, Tong Xu, Minglei Li, and Enhong Chen. Speak from heart: an emotion-guided llm-based multimodal method for emotional dialogue generation. In Proceedings of the 2024 Interna-tional Conference on Multimedia Retrieval , pages 533–542, 2024. 1, 2 [38] Yihe Liu, Ziqi Yuan, Huisheng Mao, Zhiyun Liang, Wanqi-uyue Yang, Yuanzhe Qiu, Tie Cheng, Xiaoteng Li, Hua Xu, and Kai Gao. Make acoustic and visual cues matter: Ch-sims v2. 0 dataset and av-mixup consistent module. In Pro-ceedings of the 2022 international conference on multimodal interaction , pages 247–258, 2022. 6, 3 [39] Zhiwei Liu, Kailai Yang, Qianqian Xie, Tianlin Zhang, and Sophia Ananiadou. Emollms: A series of emotional large language models and annotation tools for comprehen-sive affective analysis. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 5487–5496, 2024. 1, 2, 3 [40] Zuyan Liu, Yuhao Dong, Jiahui Wang, Ziwei Liu, Winston Hu, Jiwen Lu, and Yongming Rao. Ola: Pushing the frontiers of omni-modal language model. arXiv e-prints , pages arXiv– 2502, 2025. 7 [41] Ilya Loshchilov and Frank Hutter. Decoupled weight de-cay regularization. In International Conference on Learning Representations (ICLR) , 2019. 5 [42] Cheng Luo, Siyang Song, Weicheng Xie, Linlin Shen, and Hatice Gunes. Learning multi-dimensional edge feature-based au relation graph for facial action unit recognition. In 
+
+Proceedings of the Thirty-First International Joint Confer-ence on Artificial Intelligence, IJCAI-22 , pages 1239–1246. International Joint Conferences on Artificial Intelligence Or-ganization, 2022. 7 [43] Kartik Narayan, Vibashan VS, Rama Chellappa, and Vishal M. Patel. Facexformer: A unified transformer for facial analysis. In Proceedings of the IEEE/CVF Inter-national Conference on Computer Vision (ICCV) , pages 11369–11382, 2025. 3 [44] OpenAI et al. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 , 2023. 2, 7 [45] Miguel A Pastor, Dayana Ribas, Alfonso Ortega, Antonio Miguel, and Eduardo Lleida. Cross-corpus speech emotion recognition with hubert self-supervised representation. In 
+
+IberSPEECH 2022 , pages 76–80. ISCA, 2022. 4 [46] Cheng Peng, Ke Chen, Lidan Shou, and Gang Chen. Carat: contrastive feature reconstruction and aggregation for multi-modal multi-label emotion recognition. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 14581– 14589, 2024. 1 [47] Rosalind W Picard. Affective computing . MIT press, 2000. 1[48] Flor Miriam Plaza-del Arco, Sercan Halat, Sebastian Pad´ o, and Roman Klinger. Multi-task learning with sentiment, emotion, and target detection to recognize hate speech and offensive language. In Proceedings of the Forum for Infor-mation Retrieval Evaluation (FIRE 2021) , pages 297–318. CEUR-WS.org, 2021. 1 [49] Stephanie D Preston and Frans BM De Waal. Empathy: Its ultimate and proximate bases. Behavioral and brain sci-ences , 25(1):1–20, 2002. 1 [50] Qwen, :, An Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, Huan Lin, Jian Yang, Jianhong Tu, Jianwei Zhang, Jianxin Yang, Jiaxi Yang, Jingren Zhou, Jun-yang Lin, Kai Dang, Keming Lu, Keqin Bao, Kexin Yang, Le Yu, Mei Li, Mingfeng Xue, Pei Zhang, Qin Zhu, Rui Men, Runji Lin, Tianhao Li, Tianyi Tang, Tingyu Xia, Xingzhang Ren, Xuancheng Ren, Yang Fan, Yang Su, Yichang Zhang, Yu Wan, Yuqiong Liu, Zeyu Cui, Zhenru Zhang, and Zihan Qiu. Qwen2.5 technical report, 2025. 4, 5 
+
+7[51] Alec Radford, Jong Wook Kim, Chris Hallacy, A. Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and I. Sutskever. Learning transferable visual models from nat-ural language supervision. In International conference on machine learning , pages 8748–8763. PmLR, 2021. 5 [52] Sahand Sabour, Chujie Zheng, and Minlie Huang. Cem: Commonsense-aware empathetic response generation. In 
+
+Proceedings of the AAAI Conference on Artificial Intelli-gence , pages 11229–11237, 2022. 1 [53] Sahand Sabour, Siyang Liu, Zheyuan Zhang, June Liu, Jin-feng Zhou, Alvionna Sunaryo, Tatia Lee, Rada Mihalcea, and Minlie Huang. EmoBench: Evaluating the emotional intelligence of large language models. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . Association for Com-putational Linguistics, 2024. 2 [54] Andrey V Savchenko. Facial expression and attributes recog-nition based on multi-task learning of lightweight neural net-works. In 2021 IEEE 19th international symposium on intel-ligent systems and informatics (SISY) , pages 119–124. IEEE, 2021. 1 [55] Sarah Schwettmann, Neil Chowdhury, Samuel Klein, David Bau, and Antonio Torralba. Multimodal neurons in pre-trained text-only transformers. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 2862–2867, 2023. 3 [56] Changli Tang, Wenyi Yu, Guangzhi Sun, Xianzhao Chen, Tian Tan, Wei Li, Lu Lu, Zejun Ma, and Chao Zhang. Salmonn: Towards generic hearing abilities for large lan-guage models. In Proceedings of the International Confer-ence on Learning Representations (ICLR 2024) , 2024. 2, 6 [57] Peng Wang, Shuai Bai, Sinan Tan, Shijie Wang, Zhihao Fan, Jinze Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Yang Fan, Kai Dang, Mengfei Du, Xuancheng Ren, Rui Men, Dayiheng Liu, Chang Zhou, Jingren Zhou, and Jun-yang Lin. Qwen2-vl: Enhancing vision-language model’s perception of the world at any resolution. arXiv preprint arXiv:2409.12191 , 2024. 6, 7 [58] Yan Wang, Yixuan Sun, Yiwen Huang, Zhongying Liu, Shuyong Gao, Wei Zhang, Weifeng Ge, and Wenqiang Zhang. Ferv39k: A large-scale multi-scene dataset for fa-cial expression recognition in videos. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 20922–20931, 2022. 4, 3 [59] Zijian Wu, Suozhi Huang, Zhejian Zhou, Huaiyuan Ying, Jiayu Wang, Dahua Lin, and Kai Chen. Internlm2. 5-stepprover: Advancing automated theorem proving via ex-pert iteration on large-scale lean problems. arXiv preprint arXiv:2410.15700 , 2024. 2 [60] Hongxia Xie, Chu-Jun Peng, Yu-Wen Tseng, Hung-Jen Chen, Chan-Feng Hsu, Hong-Han Shuai, and Wen-Huang Cheng. Emovit: Revolutionizing emotion insights with vi-sual instruction tuning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 26596–26605, 2024. 1, 2 [61] Jin Xu, Zhifang Guo, Jinzheng He, Hangrui Hu, Ting He, Shuai Bai, Keqin Chen, Jialin Wang, Yang Fan, Kai Dang, Bin Zhang, Xiong Wang, Yunfei Chu, and Jun-yang Lin. Qwen2.5-omni technical report. arXiv preprint arXiv:2503.20215 , 2025. 2, 7 [62] Qu Yang, Mang Ye, and Bo Du. Emollm: Multimodal emo-tional understanding meets large language models. arXiv preprint arXiv:2406.16442 , 2024. 1 [63] Qize Yang, Detao Bai, Yi-Xing Peng, and Xihan Wei. Omni-emotion: Extending video mllm with detailed face and audio modeling for multimodal emotion analysis. arXiv preprint arXiv:2501.09502 , 2025. 1, 2, 3, 6 [64] Qu Yang, Qinghongya Shi, Tongxin Wang, and Mang Ye. Uncertain multimodal intention and emotion understanding in the wild. In 2025 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2025. 1 [65] Wenmeng Yu, Hua Xu, Fanyang Meng, Yilin Zhu, Yixiao Ma, Jiele Wu, Jiyun Zou, and Kaicheng Yang. Ch-sims: A chinese multimodal sentiment analysis dataset with fine-grained annotation of modality. In Proceedings of the 58th annual meeting of the association for computational linguis-tics , pages 3718–3727, 2020. 6, 3 [66] Amir Zadeh, Rowan Zellers, Eli Pincus, and Louis-Philippe Morency. Mosi: multimodal corpus of sentiment intensity and subjectivity analysis in online opinion videos. arXiv preprint arXiv:1606.06259 , 2016. 6, 3 [67] Hanlei Zhang, Hua Xu, Xin Wang, Qianrui Zhou, Shaojie Zhao, and Jiayan Teng. Mintrec: A new dataset for multi-modal intent recognition. In Proceedings of the 30th ACM International Conference on Multimedia , page 1688–1697, 2022. 2, 4, 5, 3 [68] Hang Zhang, Xin Li, and Lidong Bing. Video-LLaMA: An instruction-tuned audio-visual language model for video un-derstanding. In Proceedings of the 2023 Conference on Em-pirical Methods in Natural Language Processing: System Demonstrations . Association for Computational Linguistics, 2023. 2 [69] Hanlei Zhang, Xin Wang, Hua Xu, Qianrui Zhou, Kai Gao, Jianhua Su, jinyue Zhao, Wenrui Li, and Yanting Chen. MIntrec2.0: A large-scale benchmark dataset for multimodal intent recognition and out-of-scope detection in conversa-tions. In The Twelfth International Conference on Learning Representations , 2024. 5, 3 [70] Hanlei Zhang, Zhuohang Li, Yeshuang Zhu, Hua Xu, Peiwu Wang, Haige Zhu, Jie Zhou, and Jinchao Zhang. Can large language models help multimodal language analy-sis? mmla: A comprehensive benchmark. arXiv preprint arXiv:2504.16427 , 2025. 2 [71] Han Zhang, Zixiang Meng, Meng Luo, Hong Han, Lizi Liao, Erik Cambria, and Hao Fei. Towards multimodal empathetic response generation: A rich text-speech-vision avatar-based benchmark. In Proceedings of the ACM on Web Conference 2025 , pages 2872–2881, 2025. 1, 2, 5, 7, 3 [72] Sitao Zhang, Yimu Pan, and James Z. Wang. Learning emo-tion representations from verbal and nonverbal communica-tion. In 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2023. 1 [73] Zhicheng Zhang, Lijuan Wang, and Jufeng Yang. Weakly supervised video emotion detection and prediction via cross-
+
+8modal temporal erasing network. In 2023 IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) ,2023. 1 [74] Jinming Zhao, Tenggan Zhang, Jingwen Hu, Yuchen Liu, Qin Jin, Xinchao Wang, and Haizhou Li. M3ED: Multi-modal multi-scene multi-label emotional dialogue database. In Proceedings of the 60th Annual Meeting of the Associa-tion for Computational Linguistics (Volume 1: Long Papers) ,pages 5699–5710. Association for Computational Linguis-tics, 2022. 4, 3 [75] Jiaxing Zhao, Xihan Wei, and Liefeng Bo. R1-omni: Ex-plainable omni-multimodal emotion recognition with rein-forcement learning. arXiv preprint arXiv:2503.05379 , 2025. 1, 2, 3, 6 [76] Zhixian Zhao, Haifeng Chen, Xi Li, Dongmei Jiang, and Lei Xie. Improving multimodal emotion recognition by lever-aging acoustic adaptation and visual alignment. In Proceed-ings of the 2nd International Workshop on Multimodal and Responsible Affective Computing , pages 67–71, 2024. 4 [77] Qianrui Zhou, Hua Xu, Yifan Wang, Xinzhi Dong, and Han-lei Zhang. LLM-guided semantic relational reasoning for multimodal intent recognition. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Pro-cessing , pages 22221–22237. Association for Computational Linguistics, 2025. 2 
+
+9

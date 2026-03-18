@@ -1,0 +1,631 @@
+Title: EMO-R3: Reflective Reinforcement Learning for Emotional Reasoning in Multimodal Large Language Models
+
+URL Source: https://arxiv.org/pdf/2602.23802v1
+
+Published Time: Mon, 02 Mar 2026 01:38:23 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# EMO-R3: Reflective Reinforcement Learning for Emotional Reasoning in Multimodal Large Language Models 
+
+## Yiyang Fang 12 , Wenke Huang 1, Pei Fu 2*, Yihao Yang 1, Kehua Su 1, Zhenbo Luo 2, Jian Luan 2, Mang Ye 1†
+
+1 School of Computer Science, Wuhan University. 
+
+2 MiLM Plus, Xiaomi Inc. 
+
+{fangyiyang, yemang }@whu.edu.cn https://github.com/xiaomi-research/emo-r3 
+
+## Abstract 
+
+Multimodal Large Language Models (MLLMs) have shown remarkable progress in visual reasoning and understanding tasks but still struggle to capture the complexity and sub-jectivity of human emotions. Existing approaches based on supervised fine-tuning often suffer from limited generaliza-tion and poor interpretability, while reinforcement learning methods such as Group Relative Policy Optimization fail to align with the intrinsic characteristics of emotional cogni-tion. To address these challenges, we propose Reflective Re-inforcement Learning for Emotional Reasoning ( EMO-R3 ), a framework designed to enhance the emotional reason-ing ability of MLLMs. Specifically, we introduce Struc-tured Emotional Thinking to guide the model to perform step-by-step emotional reasoning in a structured and inter-pretable manner, and design a Reflective Emotional Reward that enables the model to re-evaluate its reasoning based on visual-text consistency and emotional coherence. Exten-sive experiments demonstrate that EMO-R3 significantly im-proves both the interpretability and emotional intelligence of MLLMs, achieving superior performance across multiple visual emotional understanding benchmarks. 
+
+## 1. Introduction 
+
+Multimodal Large Language Models (MLLMs) [22, 30] have achieved remarkable progress in visual question an-swering, visual understanding, and visual generation tasks by leveraging large-scale multimodal data [5, 24, 43, 51, 61]. However, despite their strong performance on general visual tasks, MLLMs still struggle to capture and interpret emotions effectively [56, 58], often generating superficial emotional responses and failing to fully understand com-
+
+> *
+
+Project Leader. Work done during internship at Xiaomi Inc. 
+
+> †
+
+Corresponding Author. (a) Limitation of supervised fine -tuning 
+
+(b) Non -generality of GRPO in emotional tasks 
+
+SFT  
+
+> In -domain
+> Emotion
+> Out -of -domain
+> Emotion
+> train
+> inference
+> awe excitement
+
+…  
+
+> landscape event
+> inference
+> surprise
+> movement
+> excitement
+> Answer:
+> No Reasons
+> ！
+
+GRPO           
+
+> Answer General Thinking
+> Out -of -domain
+> Emotion
+> In -domain
+> Emotion
+> Emotional
+> Thinking
+> GRPO
+> SFT
+> Zero -shot
+> In -domain Out -of -domain
+> <think >The image shows avast landscape with the
+> sun rising or …</think >
+
+…… Contentment                      
+
+> rethink for text
+> <think >The beautiful sunlight brings afeeling of
+> amusement ,as if its warm glow …</ think>
+> <think >The colors are mellow rather than dramatic,
+> creating asoothing atmosphere …</ think> awe
+
+…… 
+
+> Roll out…
+> amusement
+> awe
+
+Figure 1. Illustration of the motivation. (a) SFT relies on hu-man annotations but is constrained by fixed labels and limited cat-egories, resulting in poor generalization and interpretability. It per-forms well on in-domain pairs like “landscape–awe” but struggles with out-of-domain or unseen cases (e.g., “movement-surprise”). 
+
+(b) Although GRPO improves generalization, its think process is not emotion-oriented and weakly connected to the final answer (e.g., rethinking the last rollout yields “amusement”, while the pre-diction is “fear”). 
+
+plex emotional cues [6, 7, 53, 54, 65, 67]. In the field of visual emotional understanding, many ex-isting studies such as EmoVIT [53], EmotionL-LaMA [6], AffectGPT [27], and EmoLLM [58] primarily adopt Super-vised Fine-Tuning (SFT) [15, 16, 28] to improve model per-formance on emotional tasks. However, these approaches still have notable limitations in generalization and inter-pretability [40]. As shown in Fig. 1(a), SFT learns emo-
+
+> arXiv:2602.23802v1 [cs.AI] 27 Feb 2026
+
+tional representations by fitting the distribution of the train-ing data, but the limited range of emotional categories and the fixed, predefined label taxonomy constrain the model to discrete emotional types. As a result, the model strug-gles to capture the continuity, subtle nuances, and contex-tual variability of visual emotional expressions. This re-liance on a closed label space often leads to overfitting and reduces the adaptability of model to unseen visual or affective domains. Moreover, because SFT relies on example-level supervision, its reasoning tends to be pattern-matching rather than genuinely capturing the relationships among emotional factors. In contrast, applying Reinforce-ment Learning (RL) [31, 70] for post-training MLLMs can effectively alleviate these issues. In particular, Group Rela-tive Policy Optimization (GRPO) [12, 41, 44, 46] stands out because, unlike Proximal Policy Optimization (PPO) [45] and Direct Preference Optimization (DPO) [39, 55], it does not require additional human-annotated reasoning traces for training [48]. Specifically, GRPO optimizes model behav-ior based on relative feedback among grouped samples, en-abling the model to learn more generalizable emotional rea-soning strategies through comparative evaluation. This op-timization mechanism allows the model to uncover the la-tent structures and semantic relationships between visual content and emotional expressions, thereby enhancing its capability in visual emotional understanding and reasoning. GRPO-based methods typically focus on optimizing the group-relative advantage [18, 63] or improving sam-pled roll-outs [4, 59, 60, 64] to enhance general capabil-ities, yet they pay little attention to task-specific adapta-tion for downstream emotional-understanding tasks. While recent emotion-related reinforcement learning works intro-duce GRPO into emotional reasoning [27, 69], they largely do so in a superficial manner, reusing its framework with-out adapting it to the intrinsic nature of emotional cognition. Actually, ❶ general GRPO generated reasoning process does not align well with the reasoning patterns required for emotion interpretation , especially in visual emotion-understanding scenarios. While the decision-making of GRPO is effective, it fails to reliably capture the intuitive logic underlying human emotional comprehension. Furthermore, unlike tasks such as mathematical reason-ing [46] or code generation [42], where the relationship be-tween think and answer is tightly bound, ❷ visual emo-tional understanding tasks lack this direct correspondence between reasoning traces and outputs . In mathematical or programming tasks, an incorrect reasoning step almost in-evitably leads to an incorrect answer, allowing GRPO to indirectly constrain the reasoning process through answer verification. In contrast, emotional understanding is highly subjective and context-dependent. The reasoning path may diverge from the final answer due to individual or contex-tual variations in emotional interpretation. As shown in Fig. 1(b), when we rethink the think -text from roll-out sam-ples, the inferred emotion often differs from that of the final 
+
+answer , indicating that the correctness of the answer can-not reliably reflect the quality of the reasoning process. Vi-sual emotional tasks require not only perception of visual cues but also comprehension of complex emotional con-texts and background knowledge, while maintaining emo-tional coherence across these cues. Therefore, constraining the answer alone is insufficient to guide the reasoning pro-cess effectively, posing a unique challenge for enhancing emotional reasoning in vision-based tasks. To tackle these challenges, we propose Reflective 
+
+Reinforcement Learning for Emotional Reasoning in Multi-modal Large Language Models ( EMO-R3 ). First , we design Structured Emotional Thinking that explicitly guides the model to reason about emotions in a step-by-step manner and constrains its output to follow a specific, interpretable format. This structured formulation helps the model gen-erate coherent emotional reasoning traces rather than frag-mented or task-agnostic thoughts. Next , we introduce Re-flective Emotional Reward, which allows the model to re-evaluate its own reasoning and assess whether its emotional interpretation aligns with visual and contextual cues. By feeding the reasoning back into the model, we apply two rewards: visual-text consistency, ensuring the reasoning is grounded in the visual input, and emotional reasoning valid-ity, enforcing logical soundness and emotional coherence in the inferred emotions. Extensive experiments demonstrate that EMO-R3 significantly enhances the interpretability and emotional intelligence of multimodal large language mod-els in visual emotional understanding. The main contributions can be summarized as follows: • We propose a Structured Emotional Thinking process that guides MLLMs to perform emotional reasoning in a structured and interpretable manner, improving their abil-ity to understand emotions more human-likely. • We introduce a Reflective Emotional Reward mechanism that enables the model to re-evaluate its reasoning and optimize through reflective feedback, ensuring more co-herent and grounded emotional reasoning. • We conduct extensive experiments demonstrating that 
+
+EMO-R3 consistently outperforms previous methods from multiple perspectives. 
+
+## 2. Related Works 
+
+2.1. Emotion Recognition in MLLMs 
+
+Recent advances in Multimodal Large Language Models (MLLMs) [5, 22, 24, 30, 51] have significantly enhanced the joint understanding across visual, textual, and auditory modalities [20, 21, 33], and improved the ability to handle a variety of multimodal tasks [15, 16, 28]. Most research in this field focuses on leveraging large-scale pretrained mod-els for general-purpose applications [2, 13, 32, 68], includ-ing vision-language reasoning [35, 36, 50], image caption-ing [29, 62], and visual question answering [11, 17, 19, 47]. MLLMs have demonstrated remarkable performance in these tasks [3], showcasing their ability to integrate and rea-son across multiple modalities. However, MLLMs often struggle with emotion-related tasks [27]. These challenges arise from the subjective and context-dependent nature of emotional understanding, which requires not only perceptual grounding but also af-fective reasoning across modalities. To address this is-sue, several studies have explored supervised fine-tuning MLLMs using emotional datasets [54, 58, 65, 67]. For ex-ample, EmoVIT [53] leverages GPT-4 to generate emotion-relevant textual descriptions, helping models better inter-pret affective cues and capture nuanced emotional expres-sions. Meanwhile, Emotion-LLaMA [6] integrates spe-cialized affective encoders that are designed to capture and interpret emotional signals across multiple modalities, thereby enhancing the capacity of model to understanding emotions from text, audio, and visual inputs. Although these fine-tuning approaches improve performance, they typically require extensive retraining or instruction-based adaptation, leading to high computational costs and limited scalability. Nowadays, increasing attention has been de-voted to enhancing the generalization and interpretability of MLLMs [25, 26, 52], which has motivated the exploration of reinforcement learning strategies for downstream emo-tional understanding. These approaches aim to improve the affective cognition of models and human alignment in open-domain scenarios through more flexible reward signals and adaptive optimization processes. 
+
+2.2. Group Relative Policy Optimization 
+
+With the growing adoption of reinforcement learning [31, 70] in large language models (LLMs) [49] training [10, 66], Group Relative Policy Optimization (GRPO) [41, 46] has emerged as a widely used optimization paradigm, originally applied to enhance reasoning and alignment performance in LLMs. Unlike traditional Proximal Policy Optimization (PPO) [45], GRPO optimizes based on in-group relative rewards, generating multiple candidate reasoning trajecto-ries for the same input and computing relative advantages among them. This formulation greatly improves optimiza-tion stability and reasoning consistency. Early works such as the DeepSeek-R1 [12] demonstrated that GRPO can sub-stantially enhance model performance and interpretability in mathematical, logical, and scientific reasoning tasks. Recently, extensive studies have extended and refined the GRPO framework. For instance, Text-Debiased Hint-GRPO [14] introduces debiased hint mechanisms to miti-gate linguistic bias in multimodal reasoning; R1-VL [64] adopts a step-wise optimization strategy to stabilize learn-ing across multimodal tasks; and R1-Omni [69] applies reinforcement learning to omni-modal emotion recogni-tion, verifying its potential in subjective affective reasoning. Moreover, Video-R1 [9], VideoChat-R1 [23], and Visual-RFT [34] extend the paradigm to video and vision-centric settings, showcasing its cross-modal scalability. Nevertheless, in the field of emotion understanding, the application of GRPO remains largely superficial. Most methods merely adapt the general GRPO framework at a surface level [27, 69], without addressing its inherent mis-match with subjective emotional reasoning. Specifically, the reasoning paths generated by general GRPO often di-verge from the intuitive logic of human affective reason-ing, making it difficult to capture subjective and context-dependent emotional associations. Furthermore, unlike mathematical or coding tasks, where the thinking–answer relationship is tightly coupled, visual emotion understand-ing lacks such direct correspondence, causing traditional GRPO to struggle with learning stable affective semantic signals. Therefore, developing a GRPO optimization mech-anism tailored to emotional understanding is essential for advancing affective reasoning in multimodal large models. 
+
+## 3. The Proposed Method 
+
+3.1. Preliminary 
+
+Group Relative Policy Optimization (GRPO) is a variant of Proximal Policy Optimization (PPO). Originally, PPO was designed to enhance mathematical reasoning in large lan-guage models. However, GRPO can be effectively adapted to improve visual reasoning and other multimodal capabili-ties as well. GRPO begins by constructing the current pol-icy model πθ and a reference model πold , where the latter represents the old policy, i.e., the policy from a previous it-eration. Let ρQ denote the distribution of prompts or ques-tions. Given a prompt q ∼ ρQ, the model samples a group of outputs o1, o 2, . . . , o G from the old policy πold . The pol-icy πθ is then optimized by maximizing the following ob-jective function: 
+
+JGRPO (θ) = Eq∼ρQ Eo∼πold (·| q)
+
+"
+
+1
+
+G
+
+> G
+
+X
+
+> i=1
+
+fϵ
+
+ πθ (oi|q)
+
+πold (oi|q) , ˆAi
+
+ #
+
+− β DKL [πθ ∥πref ] , (1) where β is the hyperparameter, and fϵ(x, y ) =min( xy, clip (x, 1 − ϵ, 1 + ϵ)y). ˆAi denotes the advantage, which is calculated based on the relative rewards of the out-puts within each group. More specifically, for each question 
+
+q, a group of outputs o1, o 2, . . . , o G is sampled from the old policy model πold . A reward function R is then used to score these outputs, yielding G rewards r = r1, r 2, . . . , r G,where ri = R(q, o i). The mean reward is computed as You First think the emotional meaning step by step, and then provide the final answer .                                                                                        
+
+> The reasoning process MUST follow the structure below :
+> <step 1>Identify what in the scene could trigger emotion (action, face, environment) .</step 1>
+> <step 2>Describe how ahuman would feel about it .</step 2>
+> <step 3>Conclude if the emotion is positive or negative, and if it's high or low arousal .</step 3>
+> The final answer MUST BE put in \boxed{} .
+> <step 1>Identify what in the scene could …</step 1>
+> Calm sunrise landscape with soft light, open field,
+> and alone tree —no threats or intense action .
+> <step 2>Describe how ahuman would feel ... </step 2>
+> Viewers typically feel peaceful, relaxed, and at
+> ease when seeing tranquil dawn scenes .
+> <step 3>Conclude if the emotion is positive …</step 3>
+> Positive emotion, low arousal .
+
+# …… 
+
+Emotional 
+
+Thinking 
+
+Prompt 
+
+Accuracy Score 
+
+Reflective Emotional Reward 
+
+> \boxed{awe}
+
+awe       
+
+> \boxed
+> {amusement}
+> <step 1>The image …<step 2>People …
+> <step 1>The colors …</step 1><step 2>…
+> extract
+
+Format Score Coherence Score Consistency Score 
+
+1.0 
+
+0.0 
+
+1.0 
+
+1.0 
+
+1.0 
+
+0.0 
+
+# …… 
+
+## TARGET 
+
+awe                          
+
+> <step 1>Identify what in the …</step 1>
+> Calm sunrise landscape with soft light …
+> <step 2>Describe how ahuman ... </step 2>
+> Viewers typically feel peaceful, relax …
+> rethink for text
+> Roll out…
+> rethink for image
+> Emotional Coherence Image -Text Consistency
+> Calm sunrise landscape
+> with soft light, open field,
+> and alone tree …
+> contentment
+
+awe 
+
+# …… 
+
+> amusement
+
+0.0 
+
+1.0 
+
+1.0 
+
+Yes 
+
+Yes 
+
+# …… 
+
+No 
+
+1.0 
+
+1.0 
+
+0.0 Update 
+
+EMO -R3 
+
+Advantage 
+
+Structure Emotional Thinking Answer Rethink Response Figure 2. Architecture illustration of EMO-R3 . The upper part presents the Structured Emotional Thinking prompt, which consists of three consecutive thinking steps followed by a final answer. The lower part illustrates the Reflective Emotional Reward mechanism, where multiple rollout samples are evaluated based on image–text consistency and emotional coherence, and are jointly optimized with the original Format and Accuracy rewards under the GRPO framework. 
+
+μ = 1
+
+> G
+
+PGi=1 ri, and the standard deviation is defined as 
+
+σ =
+
+q 1
+
+> G
+
+PGi=1 (ri − μ)2. The normalized advantage for the ith rollout is then defined as ˆAi = ri−μσ . This normal-ization ensures that the advantage values have zero mean and unit variance within each group, stabilizing gradients and promoting consistent optimization dynamics. 
+
+3.2. Structured Emotional Thinking (SET) 
+
+Motivation. Although GRPO has shown effectiveness in improving general reasoning abilities of large multimodal models, its prompting design for the thinking stage is of-ten minimal, typically consisting of a single instruction such as think . This one-step thinking cue is task-agnostic and provides no explicit guidance on how emotional rea-soning should be organized. In emotional understanding tasks, such a simplistic prompt frequently causes the model to generate fragmented or inconsistent emotional reasoning traces that fail to capture the subtle relationships between visual cues and human affective appraisal. In visual emo-tional understanding, where the mapping between percep-tion and emotion is complex and context dependent, a single 
+
+think instruction is insufficient to elicit coherent or human-aligned reasoning. 
+
+Designed Prompt. To achieve interpretable and human-like emotional understanding, we propose Structured Emo-tional Thinking (SET), a module that guides the model to perform emotion reasoning in a structured, step-by-step manner before generating the final prediction. Concretely, SET constrains the reasoning process into three explicit stages, mirroring how humans interpret emo-tions in visual scenes: 
+
+Structured Emotional Thinking: 
+
+• Emotional Trigger Identification: Detect which elements in the scene (objects, actions, environ-ments, or facial cues) may trigger emotional re-sponses. • Human Emotional Reflection: Describe how a human observer would emotionally respond to these elements. • Emotional Conclusion: Determine whether the overall emotion is positive or negative, and assess its arousal level (e.g., calm vs. excited). Given a multimodal input pair (I, T ), the model gener-ates a structured reasoning output o = {s1, s 2, s 3, ˆE} cor-responding to the three stages and the final answer of emo-tional reasoning: 
+
+o = Mθ (I, T ), ˆE = Fa(o), (2) where Mθ denotes the multimodal reasoning model param-eterized by θ, and Fa(·) outputs the final answer enclosed in \boxed {} .
+
+General Reward. Following the GRPO setting, we de-fine two reward terms to guide the optimization of the struc-tured emotional reasoning model. The format reward Rformat measures whether the gener-ated reasoning sequence adheres to the prescribed structure. Specifically, it checks whether each reasoning step si corre-sponds to the expected stage and whether the final answer 
+
+is correctly enclosed in \boxed {} :
+
+Rformat =
+
+(
+
+1, if the step and box format are correct; 
+
+0, otherwise. Meanwhile, the accuracy reward Racc evaluates whether the predicted emotional label ˆE aligns with the ground-truth emotion label E∗:
+
+Racc =
+
+(
+
+1, if ˆE = E∗;0, otherwise. These two general rewards serve as the foundational su-pervision signal that initiates the optimization of the struc-tured emotional thinking model under the GRPO frame-work, ensuring that the model first learns to produce struc-turally valid and semantically accurate emotional reasoning before incorporating higher-level reflective objectives. 
+
+3.3. Reflective Emotional Reward (RER) 
+
+Motivation. Although the Designed Prompt provides a structured framework for emotional reasoning, it cannot en-sure that the generated reasoning is visually consistent with the textual content or emotionally coherent. Meanwhile, the general GRPO formulation lacks effective constraints on the 
+
+think process; by supervising only the final answer , it fails to effectively select high-quality reasoning samples. 
+
+Image-Text Consistency Reward. The image-text con-sistency reward enforces alignment between the generated reasoning and the visual content of the image. In this process, we extract only step1 from the model output o, denoted as s1 = F1(o), and feed it back into the model together with the image I. The prompt for this re-flective process is denoted as Pcons :
+
+Can the following text describe the image? 
+
+The model then produces a reflective output: 
+
+ˆycons = M(I, s 1, Pcons ), (3) 
+
+Algorithm 1: EMO-R3 
+
+Input: Dataset D = {(I, T, E∗)}, pretrained model Mθ ,rollout number G, coefficients λ1, λ 2
+
+Output: Optimized model M′
+
+> θ
+
+foreach (I, T, E∗) ∈ D do      
+
+> /* Generate multiple reasoning outputs with structured prompt */
+
+{o1, o 2, . . . , o G} ∼ πold (·| I, T )     
+
+> /* Compute rewards for each rollout */
+
+for i = 1 to G do    
+
+> /* (1) General Reward */
+
+Parse oi = {s1, s 2, s 3, ˆE} R(i) 
+
+> format
+
+= I(step and box format correct )
+
+R(i) 
+
+> acc
+
+= I( ˆE = E∗)    
+
+> /* (2) Reflective Emotional Reward */
+
+Image-text consistency: 
+
+ˆy(i) 
+
+> cons
+
+= M(I, s 1, Pcons ), R(i) 
+
+> cons
+
+= I(ˆ y(i) 
+
+> cons
+
+= Yes )
+
+Emotional coherence: 
+
+ˆy(i) 
+
+> coh
+
+= M(s1,2, Pcoh ), R(i) 
+
+> coh
+
+= I(ˆ y(i) 
+
+> coh
+
+= E∗)
+
+R(i) 
+
+> RER
+
+= 12 (R(i) 
+
+> cons
+
++ R(i)
+
+> coh
+
+)     
+
+> /* (3) Combine into overall reward */
+
+R(i) 
+
+> overall
+
+= (1 −λ1 −λ2)R(i) 
+
+> acc
+
++λ1R(i) 
+
+> RER
+
++λ2R(i)
+
+> format
+
+end       
+
+> /* Compute advantage and update model via GRPO */
+
+Normalize rewards within group to obtain ˆAi;Update policy parameters θ using GRPO objective with advantages ˆAi.
+
+end return M′
+
+> θ
+
+where the response can be either “Yes” or “No”. The corre-sponding reward is defined as: 
+
+Rcons =
+
+(
+
+1, if ˆycons = Yes; 
+
+0, if ˆycons = No. This reward encourages the model to generate reasoning that is both emotionally coherent and visually grounded, en-suring stronger alignment between textual descriptions and image semantics. 
+
+Emotional Coherence Reward. The emotional coher-ence reward aims to evaluate whether the reasoning process maintains consistency with the ground-truth emotion label. In this process, we extract step1 and step2 from the model-generated reasoning, denoted as s1,2 = F1,2(o),which is fed back into the model for reflection. The prompt for this reflective process is denoted as Pcoh :
+
+Which emotion best describes the text above? 
+
+The model then produces a reflective output: 
+
+ˆycoh = M(Rinput , Pcoh ), (4) where ˆycoh represents the emotion label predicted by the model during the reflective stage. We then compare ˆycoh 
+
+with the ground-truth emotion label E∗. The emotional co-herence reward is defined as: 
+
+Rcoh =
+
+(
+
+1, if ˆycoh = E∗;0, otherwise. This reward encourages the model to generate reason-ing that is emotionally consistent with the ground-truth la-bel, thereby improving the emotional coherence and inter-pretability of the reasoning process. 
+
+3.4. Overall Reward and Discussion 
+
+Overall Reward. The final optimization objective inte-grates all the previously defined reward components into a unified formulation. Specifically, the reflective emotional reward is obtained by averaging the image-text consistency reward and the emotional coherence reward: 
+
+RRER = Rcons + Rcoh 
+
+2 . (5) Subsequently, the overall reward used for GRPO opti-mization is defined as a weighted combination of the accu-racy reward, the reflective emotional reward, and the format reward, which is calculated as follows: 
+
+Roverall = (1 − λ1 − λ2) Racc + λ1 RRER + λ2 Rformat , (6) where λ1 and λ2 are balancing coefficients that control the relative contributions of emotional coherence and structural correctness. By combining these complementary rewards, the train-ing process promotes reasoning traces that are not only vi-sually grounded and emotionally coherent but also maintain interpretable, human-aligned structure. 
+
+Discussion on Cold-Start-Emo. In our framework, a key question is whether Supervised Fine-Tuning (SFT) should be introduced as a cold-start stage before GRPO optimiza-tion. Unlike factual reasoning or visual question answering tasks, emotion recognition inherently involves subjectiv-ity. Pretrained MLLMs often carry emotional priors derived from large-scale corpora, which reflect general or culture-dependent affective tendencies. These priors may deviate considerably from the labeling schemes of specific down-stream datasets. If GRPO training is conducted without any prior alignment, such a mismatch can cause the model to re-peatedly generate reasoning traces that are inconsistent with the dataset annotations, leading to sparse reward signals and consequently weakening optimization stability. Inspired by previous studies, many works perform cold start with Chain-of-Thought (CoT)-annotated datasets prior to GRPO. The main motivation behind this design is to endow the model with an initial thinking ability, enabling more effective reasoning optimization later. Our moti-vation, however, is different: instead of enhancing the reasoning-chain capability of model, we aim to alleviate the training difficulty caused by subjective bias in emotional understanding tasks. To this end, we explore a lightweight SFT-based Cold Start for Emotional Reasoning (Cold-Start-Emo) using a small number of samples without CoT annotations. This stage requires no additional reasoning chains; rather, a small set of task-specific examples is used to help the model pre-liminarily learn the task format, emotional label system, and expression patterns. Such initialization enables an early-stage alignment between the pretrained priors and the target task distribution. Empirical results demonstrate that this ini-tialization allows the model to generate higher-quality roll-outs more stably during subsequent GRPO training, miti-gating reward sparsity and ultimately improving both the coherence and accuracy of emotional reasoning. 
+
+## 4. Experiments 
+
+4.1. Experimental Setup 
+
+Environment and Dataset. Our training framework uses EasyR1, and the testing framework uses NoisyRollout. Our experiments use three emotion datasets: EmoSet [57] (8 cat-egories), Emotion6 [38] (6 categories), and WebEmo [37] (7 categories). We train separately on the EmoSet and Emotion6 datasets, while other datasets are used as out-of-domain tests. To enhance efficiency, we randomly cropped the training and testing sets of each dataset (2,000 samples). 
+
+Architecture and Counterparts. We utilize the popu-lar open-source Qwen2.5-VL-3B-Instruct [1] as the base (Vanilla) model, which exhibits strong foundational capa-bilities well-suited for subsequent RL training. We fur-ther compare our approach with the training-free method SEPM [8], as well as GRPO [46] and DAPO [63], to vali-date its effectiveness. 
+
+Implement Details. The experimental results are ob-tained at the same step (when convergence is reached), with the hyperparameters λ1 and λ2 both set to 0.1. The learning rate for the experiment is set to 2.0e-6. To eliminate ran-domness, we ran the experiment three times and reported the median result. The experiments are conducted on a total of 8 NVIDIA H20 GPUs, each with 96GB of memory. 
+
+Evaluation Metrics. We evaluate both in-domain and out-of-domain performance. For each dataset, we use Ac-curacy (ACC) as the evaluation metric. We further com-pute the average performance for in-domain ( AI ) and out-Table 1. Performance comparison with the state-of-the-art GRPO variants on the emotional reasoning tasks across in-domain and out-of-domain settings. * denotes models without post-training. Datasets marked with the superscript I, e.g . EmoSet I and Emotion6 I ,denote the in-domain training dataset. We mark the Best in bold across different methods. Please refer to Sec. 4.2 for details. 
+
+Methods Roll-out EmoSet I Emotion6 WebEmo Emotion6 I EmoSet WebEmo AI AO A
+
+LLaVA1.5-7B 
+
+Vanilla* - 52.77 48.32 25.56 48.32 52.77 25.56 50.55 38.05 42.22 SEPM* - 56.04 54.21 42.39 54.21 56.04 42.39 55.13 48.76 50.88 
+
+Qwen2.5-VL-3B-Instruct 
+
+Vanilla* - 51.55 50.00 40.65 50.00 51.55 40.65 50.77 45.71 47.40 SFT - 77.15 34.51 17.75 69.53 26.45 37.65 73.34 29.09 43.84 GRPO 74.60 60.10 49.50 70.88 59.90 44.85 72.74 53.59 59.97 DAPO 68.99 56.90 49.80 68.56 59.95 45.50 68.78 53.04 58.28 
+
+EMO-R3 
+
+4
+
+75.50 60.44 50.45 70.71 60.70 45.20 73.10 54.20 60.50 
+
+GRPO 75.45 57.91 49.40 69.87 60.30 42.05 72.66 52.42 59.16 DAPO 70.21 55.72 48.80 62.39 58.05 46.30 66.30 52.22 56.91 
+
+EMO-R3 
+
+8
+
+76.40 59.26 49.70 71.72 61.80 43.65 74.06 53.60 60.42 50                  
+
+> 55
+> 60
+> 65
+> 70
+> 75
+> 80
+> 010 20 30 40 50 60 70 80
+> GRPO
+> DAPO
+> Ours
+> ERROR!
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> 010 20 30 40 50 60 70 80
+> GRPO
+> DAPO
+> Ours
+> Testing Accuracy Training Accuracy
+
+Figure 3. Training and testing accuracy during the training pro-cess. DAPO fails to conduct complete training. A more detailed analysis of this failure is provided in Sec. 4.2. 
+
+of-domain ( AO ) evaluations. Finally, we take the average of all these results to obtain the overall performance ( A). 
+
+4.2. Comparison Experiments 
+
+Comparison with State-of-the-art. We compare the pro-posed approach with GRPO variants on both in-domain and out-of-domain emotional datasets, as well as with several training-free methods. As reported in Tab. 1, EMO-R3 con-sistently achieves the highest overall accuracy across both 4-rollout and rollout-8 settings, demonstrating its ability to enhance emotional reasoning. Compared to these baselines, our method yields higher in-domain performance, reflecting better alignment with emotional cues learned from the train-ing distributions. Meanwhile, the gain in out-of-domain ac-curacy shows that our learning strategy mitigates overfitting and improves robustness to domain shift. Notably, DAPO fails to conduct complete training, as shown in Fig. 3. The failure stems from a fundamental mismatch between the fil-tering strategy of DAPO and the discrete nature of emo-tional reasoning evaluation, where the binary reward struc-ture conflicts with the continuous filtering criteria, leading to sample depletion and training instability. 
+
+Experiment on Cold-Start-Emo. We explore the Cold-
+
+Table 2. Experiment on Cold-Start-Emo. EMO-R3 # denotes 
+
+EMO-R3 with additional Cold-Start-Emo module. See Sec. 4.2. 
+
+Methods EmoSet I Emotion6 WebEmo A
+
+SFT 77.15 34.51 17.75 43.14 GRPO 75.45 57.91 49.40 60.92 
+
+EMO-R3 76.40 59.26 49.70 61.79 
+
+EMO-R3 # 77.81 58.59 50.00 62.13 
+
+Table 3. Ablative study of Structured Emotional Thinking (SET) and Reflective Emotional Reward (RER). Please see Sec. 4.3. 
+
+SET RER EmoSet I Emotion6 WebEmo A◦ ◦ 75.45 57.91 49.40 60.92 
+
+• ◦ 76.02 58.42 49.20 61.21 
+
+• • 76.40 59.26 49.70 61.79 
+
+Start-Emo under the rollout-8 setting. The Cold-Start-Emo is designed to provide early alignment and stabilize the learning process for emotional reasoning. As shown in Tab. 2, the integration of Cold-Start-Emo significantly out-performs EMO-R3 and all other baselines on the in-domain dataset, and it achieves the highest overall average accuracy on the out-of-domain datasets. This empirical evidence val-idates that Cold-Start-Emo is a highly effective initialization strategy that generates higher-quality rollouts and mitigat-ing reward sparsity during subsequent GRPO training. 
+
+4.3. Ablation Experiments 
+
+In Tab. 3, we begin by validating the effectiveness of our proposed components through their incremental integration. As shown, incorporating Structured Emotional Thinking (SET) consistently enhances performance compared with the baseline, indicating that explicitly organizing the emo-tional reasoning procedure helps the model produce more coherent, fine-grained, and interpretable emotion represen-<step 1>Identify what in the scene could trigger emotion (action, face, environment) .</step 1>                                                                                   
+
+> The scene triggers the emotion of contentment .The person sitting under the blooming flowers
+> appears relaxed and content, enjoying the serene environment .
+> <step 2>Describe how ahuman would feel about it .</step 2>
+> Ahuman would likely feel asense of peace and tranquility while sitting under the blooming
+> flowers, surrounded by nature's beauty .
+> <step 3>Conclude if the emotion is positive or negative, and if it's high or low arousal .</step 3>
+> The emotion is positive, specifically contentment, which is alow -arousal emotion .The person
+> seems to be at ease and happy in the peaceful setting .
+> Answer :contentment
+
+EMO -R3 
+
+GRPO 
+
+Label: contentment                                                                            
+
+> <think>
+> The image shows aperson sitting under atree with colorful flowers, near abody of water .The
+> scene appears peaceful and serene, with the person seemingly enjoying the natural surroundings .
+> This scene does not immediately suggest any strong emotions like anger, fear, or excitement .
+> However, the overall atmosphere seems calm and contemplative, which might lead to afeeling of
+> contentment or tranquility .
+> </think>
+> Answer :sadness
+> Which emotion best describes the image?
+> Answer the question using one emotional
+> category :amusement, anger, awe,
+> contentment, disgust, excitement, fear,
+> sadness .
+
+Emotional incoherence! Figure 4. Case study between GRPO and EMO-R3 on the EmoSet dataset. Please see Sec. 4.4 for details. 0         
+
+> 100
+> 200
+> 300
+> 400
+> 500
+> 600
+> 700
+> 010 20 30 40 50 60 70 80
+> Ours GRPO
+
+126% 
+
+Training Time Per Step (s) 
+
+Figure 5. Efficiency analysis on the training process. See Sec. 4.5. 
+
+tations. When the Reflective Emotional Reward (RER) is further introduced, the model achieves additional improve-ments, suggesting that reflective self-assessment encour-ages the model to better align its emotional reasoning with the underlying multimodal evidence. Taken together, these findings demonstrate that the combined use of SET and RER not only improves the interpretability of the reason-ing process but also substantially enhances the emotional intelligence of MLLMs. 
+
+4.4. Case Study 
+
+We evaluated the methods on the EmoSet dataset and se-lected a representative case for detailed analysis. We ob-served that the naive GRPO failed to attend to the most emotionally salient regions ( blooming flowers ), and its think and answer components exhibited emotional incoherence. In contrast, our proposed method ( EMO-R3 ) effectively ad-dresses this issue by producing emotionally coherent rea-soning and predictions. This case demonstrates that EMO-R3 
+
+can accurately capture subtle affective cues and exhibit emotionally coherent reasoning, thereby leading to better emotional understanding and overall performance. 
+
+4.5. Efficiency Analysis 
+
+Considering that we introduce an additional reflection stage, we conducts an efficiency analysis on the training process under the rollout-8 setting on the EmoSet dataset. As shown in Fig. 5, although our method introduces a certain amount of extra computation time, it does not lead to a proportional increase in training cost. Moreover, our inference process does not require the reflection module, so it introduces no additional inference-time cost . Thus, our approach main-tains high efficiency while achieving better performance. 
+
+## 5. Conclusion 
+
+In this work, we investigate the challenges of interpretabil-ity and generalization faced by Multimodal Large Lan-guage Models (MLLMs) in emotional understanding. Al-though general GRPO-based approaches can partially al-leviate these issues, existing models still struggle to accu-rately capture the subtle, subjective, and context-dependent nature of human emotions. To address this gap, We propose Reflective Reinforcement Learning for Emotional Reason-ing in Multimodal Large Language Models ( EMO-R3 ). Our method integrates a Structured Emotional Thinking mod-ule to guide step-by-step affective reasoning and employs a Reflective Emotional Reward mechanism to ensure vi-sual–textual consistency and coherent emotional expres-sion. Without requiring additional annotations, EMO-R3 sig-nificantly improves both the interpretability and generaliza-tion of MLLMs. We believe this work offers new insights for developing emotionally intelligent and human-aligned MLLMs. Building upon this foundation, future research may further explore the generalization of emotion recogni-tion with reasoning in more complex multimodal scenarios, including sequential or interactive task settings. References 
+
+[1] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, et al. Qwen2. 5-vl technical report. arXiv preprint arXiv:2502.13923 , 2025. 6 [2] Yang Bai, Yucheng Ji, Min Cao, Jinqiao Wang, and Mang Ye. Chat-based person retrieval via dialogue-refined cross-modal alignment. In CVPR , 2025. 3 [3] Jinhe Bi, Yujun Wang, Haokun Chen, Xun Xiao, Artur Hecker, Volker Tresp, and Yunpu Ma. Visual instruction tuning with 500x fewer parameters through modality linear representation-steering. arXiv preprint arXiv:2412.12359 ,2024. 3 [4] Minghan Chen, Guikun Chen, Wenguan Wang, and Yi Yang. Seed-grpo: Semantic entropy enhanced grpo for uncertainty-aware policy optimization. arXiv preprint arXiv:2505.12346 , 2025. 2 [5] Zhe Chen, Jiannan Wu, Wenhai Wang, Weijie Su, Guo Chen, Sen Xing, Muyan Zhong, Qinglong Zhang, Xizhou Zhu, Lewei Lu, et al. Internvl: Scaling up vision foundation mod-els and aligning for generic visual-linguistic tasks. In CVPR ,pages 24185–24198, 2024. 1, 2 [6] Zebang Cheng, Zhi-Qi Cheng, Jun-Yan He, Jingdong Sun, Kai Wang, Yuxiang Lin, Zheng Lian, Xiaojiang Peng, and Alexander Hauptmann. Emotion-llama: Multimodal emo-tion recognition and reasoning with instruction tuning. In 
+
+NeurIPS , 2024. 1, 3 [7] Yiyang Fang, Wenke Huang, Guancheng Wan, Kehua Su, and Mang Ye. Emoe: Modality-specific enhanced dynamic emotion experts. In CVPR , 2025. 1 [8] Yiyang Fang, Jian Liang, Wenke Huang, He Li, Kehua Su, and Mang Ye. Catch your emotion: Sharpening emotion perception in multimodal large language models. In ICML ,2025. 6 [9] Kaituo Feng, Kaixiong Gong, Bohao Li, Zonghao Guo, Yibing Wang, Tianshuo Peng, Junfei Wu, Xiaoying Zhang, Benyou Wang, and Xiangyu Yue. Video-r1: Reinforcing video reasoning in mllms. arXiv preprint arXiv:2503.21776 ,2025. 3 [10] Jiaxuan Gao, Shusheng Xu, Wenjie Ye, Weilin Liu, Chuyi He, Wei Fu, Zhiyu Mei, Guangju Wang, and Yi Wu. On de-signing effective rl reward at training time for llm reasoning. 
+
+arXiv preprint arXiv:2410.15115 , 2024. 3 [11] Yash Goyal, Tejas Khot, Douglas Summers-Stay, Dhruv Ba-tra, and Devi Parikh. Making the V in VQA matter: Ele-vating the role of image understanding in Visual Question Answering. In CVPR , 2017. 3 [12] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. 2, 3 [13] Jiaming Han, Kaixiong Gong, Yiyuan Zhang, Jiaqi Wang, Kaipeng Zhang, Dahua Lin, Yu Qiao, Peng Gao, and Xi-angyu Yue. Onellm: One framework to align all modalities with language. In CVPR , pages 26584–26595, 2024. 3 [14] Qihan Huang, Weilong Dai, Jinlong Liu, Wanggui He, Hao Jiang, Mingli Song, Jingyuan Chen, Chang Yao, and Jie Song. Boosting mllm reasoning with text-debiased hint-grpo. arXiv preprint arXiv:2503.23905 , 2025. 3 [15] Wenke Huang, Jian Liang, Xianda Guo, Yiyang Fang, Guancheng Wan, Xuankun Rong, Chi Wen, Zekun Shi, Qingyun Li, Didi Zhu, et al. Keeping yourself is important in downstream tuning multimodal large language model. arXiv preprint arXiv:2503.04543 , 2025. 1, 2 [16] Wenke Huang, Jian Liang, Zekun Shi, Didi Zhu, Guancheng Wan, He Li, Bo Du, Dacheng Tao, and Mang Ye. Learn from downstream and be yourself in multimodal large language model fine-tuning. In ICML , 2025. 1, 2 [17] Wenke Huang, Jian Liang, Guancheng Wan, Didi Zhu, He Li, Jiawei Shao, Mang Ye, Bo Du, and Dacheng Tao. Be confident: Uncovering overfitting in mllm multi-task tuning. In ICML , 2025. 3 [18] Wenke Huang, Quan Zhang, Yiyang Fang, Jian Liang, Xu-ankun Rong, Huanjin Yao, Guancheng Wan, Ke Liang, Wen-wen He, Mingjun Li, et al. Mapo: Mixed advantage policy optimization. arXiv preprint arXiv:2509.18849 , 2025. 2 [19] Drew A Hudson and Christopher D Manning. Gqa: A new dataset for real-world visual reasoning and compositional question answering. In CVPR , pages 6700–6709, 2019. 3 [20] Can Jin, Tong Che, Hongwu Peng, Yiyuan Li, Dimitris Metaxas, and Marco Pavone. Learning from teaching reg-ularization: Generalizable correlations should be easy to im-itate. NeurIPS , 37:966–994, 2024. 2 [21] Can Jin, Hongwu Peng, Qixin Zhang, Yujin Tang, Dimitris N Metaxas, and Tong Che. Two heads are better than one: Test-time scaling of multi-agent collaborative reasoning. arXiv preprint arXiv:2504.09772 , 2025. 2 [22] Bo Li, Yuanhan Zhang, Dong Guo, Renrui Zhang, Feng Li, Hao Zhang, Kaichen Zhang, Yanwei Li, Ziwei Liu, and Chunyuan Li. Llava-onevision: Easy visual task transfer. 
+
+arXiv preprint arXiv:2408.03326 , 2024. 1, 2 [23] Xinhao Li, Ziang Yan, Desen Meng, Lu Dong, Xiangyu Zeng, Yinan He, Yali Wang, Yu Qiao, Yi Wang, and Limin Wang. Videochat-r1: Enhancing spatio-temporal perception via reinforcement fine-tuning. arXiv preprint arXiv:2504.06958 , 2025. 3 [24] Zhang Li, Biao Yang, Qiang Liu, Zhiyin Ma, Shuo Zhang, Jingxu Yang, Yabo Sun, Yuliang Liu, and Xiang Bai. Mon-key: Image resolution and text label are important things for large multi-modal models. In CVPR , pages 26763–26773, 2024. 1, 2 [25] Zheng Lian, Haiyang Sun, Licai Sun, Hao Gu, Zhuofan Wen, Siyuan Zhang, Shun Chen, Mingyu Xu, Ke Xu, Kang Chen, et al. Explainable multimodal emotion recognition. arXiv preprint arXiv:2306.15401 , 2023. 3 [26] Zheng Lian, Licai Sun, Mingyu Xu, Haiyang Sun, Ke Xu, Zhuofan Wen, Shun Chen, Bin Liu, and Jianhua Tao. Ex-plainable multimodal emotion reasoning. CoRR , 2023. 3 [27] Zheng Lian, Haoyu Chen, Lan Chen, Haiyang Sun, Licai Sun, Yong Ren, Zebang Cheng, Bin Liu, Rui Liu, Xiaojiang Peng, et al. Affectgpt: A new dataset, model, and benchmark for emotion understanding with multimodal large language models. arXiv preprint arXiv:2501.16566 , 2025. 1, 2, 3 [28] Jian Liang, Wenke Huang, Guancheng Wan, Qu Yang, and Mang Ye. Lorasculpt: Sculpting lora for harmonizing gen-eral and specialized knowledge in multimodal large language models. In CVPR , 2025. 1, 2 [29] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Doll´ ar, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In 
+
+ECCV , pages 740–755, 2014. 3 [30] Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. Improved baselines with visual instruction tuning. In CVPR ,2023. 1, 2 [31] Keliang Liu, Dingkang Yang, Ziyun Qian, Weijie Yin, Yuchi Wang, Hongsheng Li, Jun Liu, Peng Zhai, Yang Liu, and Lihua Zhang. Reinforcement learning meets large language models: A survey of advancements and applications across the llm lifecycle. arXiv preprint arXiv:2509.16679 , 2025. 2, 3[32] Shih-Yang Liu, Chien-Yi Wang, Hongxu Yin, Pavlo Molchanov, Yu-Chiang Frank Wang, Kwang-Ting Cheng, and Min-Hung Chen. Dora: Weight-decomposed low-rank adaptation. arXiv preprint arXiv:2402.09353 , 2024. 3 [33] Yue Liu, Shengfang Zhai, Mingzhe Du, Yulin Chen, Tri Cao, Hongcheng Gao, Cheng Wang, Xinfeng Li, Kun Wang, Junfeng Fang, et al. Guardreasoner-vl: Safeguarding vlms via reinforced reasoning. arXiv preprint arXiv:2505.11049 ,2025. 2 [34] Ziyu Liu, Zeyi Sun, Yuhang Zang, Xiaoyi Dong, Yuhang Cao, Haodong Duan, Dahua Lin, and Jiaqi Wang. Visual-rft: Visual reinforcement fine-tuning. arXiv preprint arXiv:2503.01785 , 2025. 3 [35] Pan Lu, Swaroop Mishra, Tony Xia, Liang Qiu, Kai-Wei Chang, Song-Chun Zhu, Oyvind Tafjord, Peter Clark, and Ashwin Kalyan. Learn to explain: Multimodal reasoning via thought chains for science question answering. In NeurIPS ,2022. 3 [36] Ahmed Masry, Do Long, Jia Qing Tan, Shafiq Joty, and Ena-mul Hoque. ChartQA: A benchmark for question answering about charts with visual and logical reasoning. In ACL , 2022. 3[37] Rameswar Panda, Jianming Zhang, Haoxiang Li, Joon-Young Lee, Xin Lu, and Amit K Roy-Chowdhury. Con-templating visual emotions: Understanding and overcoming dataset bias. In ECCV , pages 579–595, 2018. 6 [38] Kuan-Chuan Peng, Tsuhan Chen, Amir Sadovnik, and An-drew C Gallagher. A mixed bag of emotions: Model, predict, and transfer emotion distributions. In CVPR , pages 860–868, 2015. 6 [39] Rafael Rafailov, Archit Sharma, Eric Mitchell, Christo-pher D Manning, Stefano Ermon, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. NeurIPS , 36:53728–53741, 2023. 2 [40] Neel Rajani, Aryo Pradipta Gema, Seraphina Goldfarb-Tarrant, and Ivan Titov. Scalpel vs. hammer: Grpo ampli-fies existing capabilities, sft replaces them. arXiv preprint arXiv:2507.10616 , 2025. 1 [41] Shyam Sundhar Ramesh, Yifan Hu, Iason Chaimalas, Viraj Mehta, Pier Giuseppe Sessa, Haitham Bou Ammar, and Ilija Bogunovic. Group robust preference optimization in reward-free rlhf. In NeurIPS , pages 37100–37137, 2024. 2, 3 [42] Maxime Robeyns and Laurence Aitchison. Improving llm-generated code quality with grpo. arXiv preprint arXiv:2506.02211 , 2025. 2 [43] Xuankun Rong, Wenke Huang, Jian Liang, Jinhe Bi, Xun Xiao, Yiming Li, Bo Du, and Mang Ye. Backdoor clean-ing without external guidance in mllm fine-tuning. arXiv preprint arXiv:2505.16916 , 2025. 1 [44] Xuankun Rong, Wenke Huang, Tingfeng Wang, Daiguo Zhou, Bo Du, and Mang Ye. Safegrpo: Self-rewarded mul-timodal safety alignment via rule-governed policy optimiza-tion. arXiv preprint arXiv:2511.12982 , 2025. 2 [45] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Rad-ford, and Oleg Klimov. Proximal policy optimization algo-rithms. arXiv preprint arXiv:1707.06347 , 2017. 2, 3 [46] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, YK Li, Yang Wu, et al. Deepseekmath: Pushing the limits of math-ematical reasoning in open language models. arXiv preprint arXiv:2402.03300 , 2024. 2, 3, 6 [47] Amanpreet Singh, Vivek Natarajan, Meet Shah, Yu Jiang, Xinlei Chen, Dhruv Batra, Devi Parikh, and Marcus Rohrbach. Towards vqa models that can read. In CVPR ,pages 8317–8326, 2019. 3 [48] Chengzhuo Tong, Ziyu Guo, Renrui Zhang, Wenyu Shan, Xinyu Wei, Zhenghao Xing, Hongsheng Li, and Pheng-Ann Heng. Delving into rl for image generation with cot: A study on dpo vs. grpo. arXiv preprint arXiv:2505.17017 , 2025. 2 [49] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timoth´ ee Lacroix, Baptiste Rozi` ere, Naman Goyal, Eric Hambro, Faisal Azhar, et al. Llama: Open and efficient foundation language models. 
+
+arXiv preprint arXiv:2302.13971 , 2023. 3 [50] Cheng Wang, Yue Liu, Baolong Li, Duzhen Zhang, Zhongzhi Li, and Junfeng Fang. Safety in large reasoning models: A survey. arXiv preprint arXiv:2504.17704 , 2025. 3[51] Peng Wang, Shuai Bai, Sinan Tan, Shijie Wang, Zhihao Fan, Jinze Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, et al. Qwen2-vl: Enhancing vision-language model’s perception of the world at any resolution. arXiv preprint arXiv:2409.12191 , 2024. 1, 2 [52] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large lan-guage models. NeurIPS , 35:24824–24837, 2022. 3 [53] Hongxia Xie, Chu-Jun Peng, Yu-Wen Tseng, Hung-Jen Chen, Chan-Feng Hsu, Hong-Han Shuai, and Wen-Huang Cheng. Emovit: Revolutionizing emotion insights with vi-sual instruction tuning. In CVPR , pages 26596–26605, 2024. 1, 3 [54] Bohao Xing, Zitong Yu, Xin Liu, Kaishen Yuan, Qi-lang Ye, Weicheng Xie, Huanjing Yue, Jingyu Yang, and Heikki K¨ alvi¨ ainen. Emo-llama: Enhancing facial emo-tion understanding with instruction tuning. arXiv preprint arXiv:2408.11424 , 2024. 1, 3 [55] Shusheng Xu, Wei Fu, Jiaxuan Gao, Wenjie Ye, Weilin Liu, Zhiyu Mei, Guangju Wang, Chao Yu, and Yi Wu. Is dpo superior to ppo for llm alignment? a comprehensive study. 
+
+arXiv preprint arXiv:2404.10719 , 2024. 2 [56] Dingkang Yang, Zhaoyu Chen, Yuzheng Wang, Shunli Wang, Mingcheng Li, Siao Liu, Xiao Zhao, Shuai Huang, Zhiyan Dong, Peng Zhai, et al. Context de-confounded emo-tion recognition. In CVPR , pages 19005–19015, 2023. 1 [57] Jingyuan Yang, Qirui Huang, Tingting Ding, Dani Lischin-ski, Danny Cohen-Or, and Hui Huang. Emoset: A large-scale visual emotion dataset with rich attributes. In ICCV , pages 20383–20394, 2023. 6 [58] Qu Yang, Mang Ye, and Bo Du. Emollm: Multimodal emo-tional understanding meets large language models. arXiv preprint arXiv:2406.16442 , 2024. 1, 3 [59] Zhicheng Yang, Zhijiang Guo, Yinya Huang, Xiaodan Liang, Yiwei Wang, and Jing Tang. Treerpo: Tree relative policy optimization. arXiv preprint arXiv:2506.05183 , 2025. 2 [60] Huanjin Yao, Qixiang Yin, Jingyi Zhang, Min Yang, Yibo Wang, Wenhao Wu, Fei Su, Li Shen, Minghui Qiu, Dacheng Tao, et al. R1-sharevl: Incentivizing reasoning capability of multimodal large language models via share-grpo. arXiv preprint arXiv:2505.16673 , 2025. 2 [61] Mang Ye, Xuankun Rong, Wenke Huang, Bo Du, Nenghai Yu, and Dacheng Tao. A survey of safety on large vision-language models: Attacks, defenses and evaluations. arXiv preprint arXiv:2502.14881 , 2025. 1 [62] Peter Young, Alice Lai, Micah Hodosh, and Julia Hocken-maier. From image descriptions to visual denotations: New similarity metrics for semantic inference over event descrip-tions. TACL , 2:67–78, 2014. 3 [63] Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xi-aochen Zuo, Yu Yue, Weinan Dai, Tiantian Fan, Gao-hong Liu, Lingjun Liu, et al. Dapo: An open-source llm reinforcement learning system at scale. arXiv preprint arXiv:2503.14476 , 2025. 2, 6 [64] Jingyi Zhang, Jiaxing Huang, Huanjin Yao, Shunyu Liu, Xikun Zhang, Shijian Lu, and Dacheng Tao. R1-vl: Learn-ing to reason with multimodal large language models via step-wise group relative policy optimization. arXiv preprint arXiv:2503.12937 , 2025. 2, 3 [65] Liyun Zhang, Zhaojie Luo, Shuqiong Wu, and Yuta Nakashima. Microemo: Time-sensitive multimodal emotion recognition with subtle clue dynamics in video dialogues. In 
+
+ACM MM Workshop , pages 110–115, 2024. 1, 3 [66] Shenao Zhang, Sirui Zheng, Shuqi Ke, Zhihan Liu, Wanxin Jin, Jianbo Yuan, Yingxiang Yang, Hongxia Yang, and Zhao-ran Wang. How can llm guide rl? a value-based approach. 
+
+arXiv preprint arXiv:2402.16181 , 2024. 3 [67] Hongjin Zhao, Zheyuan Liu, Yang Liu, Zhenyue Qin, Jiaxu Liu, and Tom Gedeon. Facephi: Lightweight multimodal large language model for facial landmark emotion recogni-tion. In ICLR Workshop , 2024. 1, 3 [68] Jiawei Zhao, Zhenyu Zhang, Beidi Chen, Zhangyang Wang, Anima Anandkumar, and Yuandong Tian. Galore: Memory-efficient llm training by gradient low-rank projection. arXiv preprint arXiv:2403.03507 , 2024. 3 [69] Jiaxing Zhao, Xihan Wei, and Liefeng Bo. R1-omni: Ex-plainable omni-multimodal emotion recognition with rein-forcement learning. arXiv preprint arXiv:2503.05379 , 2025. 2, 3 [70] Guanghao Zhou, Panjia Qiu, Cen Chen, Jie Wang, Zheming Yang, Jian Xu, and Minghui Qiu. Reinforced mllm: A survey on rl-based reasoning in multimodal large language models. 
+
+arXiv preprint arXiv:2504.21277 , 2025. 2, 3

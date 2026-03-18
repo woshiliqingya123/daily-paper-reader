@@ -1,0 +1,609 @@
+Title: Tri-Subspaces Disentanglement for Multimodal Sentiment Analysis
+
+URL Source: https://arxiv.org/pdf/2602.19585v1
+
+Published Time: Tue, 24 Feb 2026 02:30:41 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Tri-Subspaces Disentanglement for Multimodal Sentiment Analysis 
+
+# Chunlei Meng *†
+
+# Fudan University 
+
+clmeng23@m.fudan.edu.cn 
+
+# Jiabin Luo Peking University Zhenglin Yan Fudan University Zhenyu Yu Fudan University Rong Fu University of Macau Zhongxue Gan Fudan University Chun Ouyang ‡
+
+# Fudan University 
+
+# Abstract 
+
+Multimodal Sentiment Analysis (MSA) integrates language, visual, and acoustic modalities to infer human sentiment. Most existing methods either focus on globally shared rep-resentations or modality-specific features, while overlook-ing signals that are shared only by certain modality pairs. This limits the expressiveness and discriminative power of multimodal representations. To address this limitation, we propose a Tri-Subspace Disentanglement (TSD) frame-work that explicitly factorizes features into three comple-mentary subspaces: a common subspace capturing global consistency, submodally-shared subspaces modeling pair-wise cross-modal synergies, and private subspaces preserv-ing modality-specific cues. To keep these subspaces pure and independent, we introduce a decoupling supervisor to-gether with structured regularization losses. We further design a Subspace-Aware Cross-Attention (SACA) fusion module that adaptively models and integrates information from the three subspaces to obtain richer and more robust representations. Experiments on CMU-MOSI and CMU-MOSEI demonstrate that TSD achieves state-of-the-art per-formance across all key metrics, reaching 0.691 MAE on CMU-MOSI and 54.9% ACC 7 on CMU-MOSEI, and also transfers well to multimodal intent recognition tasks. Abla-tion studies confirm that tri-subspace disentanglement and SACA jointly enhance the modeling of multi-granular cross-modal sentiment cues. 
+
+# 1. Introduction 
+
+As human-centered AI applications such as empathetic chatbots, social robots, and virtual assistants become in-
+
+> *This study has been Accepted by CVPR 2026.
+> †The camera-ready version can be obtained from the official CVPR 2026 website.
+> ‡Corresponding Author
+
+Figure 1. An example of a submodally shared cue: the utterance “that’s really great” is delivered with a sarcastic tone and a disdain-ful facial expression. While the lexical content suggests positive sentiment, the conflicting acoustic and visual cues jointly convey negative affect (sarcasm). 
+
+creasingly pervasive, accurately modeling human emotions is becoming more critical [14, 24]. Consequently, Multi-modal Sentiment Analysis (MSA) has attracted growing at-tention in both academia and industry for its ability to in-terpret emotions by jointly leveraging acoustic, visual, and linguistic modalities [31]. However, MSA remains chal-lenging: different modalities follow heterogeneous feature distributions, emotional cues are often sparse or noisy, and informative signals are not always aligned across modali-ties. These issues call for more effective ways to represent and fuse complementary information across diverse modal-ities [10, 12, 13, 17, 22]. A major line of work addresses these challenges by fac-torizing features into common (modality-invariant) and pri-vate (modality-specific) subspaces. For example, MISA [6] explicitly separates a shared latent space from private spaces capturing each modality’s unique aspects. Follow-1  
+
+> arXiv:2602.19585v1 [cs.MM] 23 Feb 2026 Figure 2. Overview of the proposed TSD framework. Given multimodal inputs, TSD disentangles features into three complementary subspaces and fuses them via a Subspace-Aware Cross-Attention (SACA) module.
+
+up studies such as FDMER [24], FDRL [19], and DLF [22] refine this binary decomposition to obtain more fine-grained disentangled representations. Other approaches employ self-attention and dynamic fusion to model cross-modal in-teractions and adaptively combine modalities [1, 3, 9, 16], or incorporate contrastive learning and semi-supervised ob-jectives to better exploit data and auxiliary signals [5, 10, 23, 25]. While these methods have advanced MSA perfor-mance, they are built on an implicit two-subspace assump-tion: features are either fully shared across all modalities or entirely private to a single modality, leaving partially shared patterns under-explored. In practice, many sentiment cues are neither fully global nor strictly modality-specific, but are instead shared across only a subset of modalities. Ignoring these submodally shared signals can lead to incomplete or even mislead-ing sentiment interpretation. As illustrated in Fig. 1, a speaker may say “That’s really great” with a sarcastic tone and a disdainful facial expression. The linguistic content alone suggests positive sentiment, whereas the combina-tion of vocal and facial cues clearly expresses a negative attitude. Here, the true emotion is revealed by the audio– visual pair: these two modalities share a negative senti-ment cue (sarcasm) that is not reflected in the language. Prior works [2, 28] have shown that such intermediate, sub-modally shared features are semantically meaningful and should be preserved. However, existing common-vs-private frameworks tend to push any signal not present in all modal-ities into private channels, effectively discarding valuable pairwise or subgroup correlations. To address this limitation, we propose a Tri-Subspace Disentanglement (TSD) framework that explicitly factor-izes the multimodal feature space into three complemen-tary subspaces: (1) a common subspace capturing globally consistent information shared by all modalities, (2) sub-modally shared subspaces modeling synergies between specific modality pairs, and (3) private subspaces retain-ing modality-specific characteristics. We introduce a tri-subspace decoupling supervisor together with structured regularization losses to encourage each subspace to remain distinct, i.e., to focus on its designated type of informa-tion with minimal leakage. On top of these disentangled representations, we introduce a Subspace-Aware Cross-Attention (SACA) module that dynamically attends to and fuses information from the three subspaces, enabling the model to exploit high-level commonalities, intermediate cross-modal cues, and fine-grained modality-specific de-tails within a unified prediction framework. Experiments on CMU-MOSI, CMU-MOSEI, and a multimodal intent recognition benchmark show that TSD achieves state-of-the-art performance and generalizes well across tasks, while ablation studies further verify the contributions of both tri-subspace disentanglement and SACA fusion. Overall, our contribution lies in an architectural and representation design that explicitly models submodally shared signals, rather than in proposing a new theoretical framework. 
+
+# 2. Related Work 
+
+Multimodal Sentiment Analysis. MSA aims to recog-nize emotions by leveraging language, visual, and acous-tic signals. Early methods relied on simple feature-level fusion (e.g., concatenation or summation), which struggles to capture complex cross-modal dependencies. Subsequent works introduced tensor-based models such as TFN [28] and attention mechanisms to better model intra- and inter-modal interactions. However, MSA remains challeng-ing due to modality-specific noise, temporal misalignment, and semantic inconsistencies across modalities, which can severely degrade fusion quality. 
+
+Disentangled Representation Learning. To mitigate modality heterogeneity, recent approaches adopt disentan-2gled representations that separate shared and modality-specific components [15]. MISA [6], for example, employs a shared-private framework to align modality-invariant features while preserving modality-specific signals, and FDMER [24] further introduces contrastive objectives to strengthen this separation. These methods improve robust-ness and generalization, but typically impose a binary parti-tion (common vs. private) and overlook partially shared sig-nals. In practice, many sentiment cues (e.g., the intensity of anger in speech and facial expressions) are expressed only through specific modality pairs, which cannot be adequately modeled by purely global or purely private subspaces. 
+
+Fusion Strategies. Fusion design is another key compo-nent in MSA. Beyond early fusion by concatenation or sum-mation, attention-based fusion, modality-specific transfor-mations, and decision-level fusion with gating have been proposed to better capture cross-modal interactions. Rep-resentative methods include EMOE [3], which employs emotion-specific experts, DEVA [23], which uses auxiliary textual prompts for contextual reasoning, and CMAF [24], which performs cross-modal alignment fusion. Most of these methods, however, still assume that modality con-tributions are either fully shared or independent, implic-itly collapsing partially shared signals into private spaces or enforcing global sharing. In contrast, our TSD frame-work explicitly introduces pairwise shared subspaces be-tween modalities and couples them with the SACA fusion module, which performs subspace-level cross-attention and channel re-weighting over common, pairwise shared, and private representations, enabling a more fine-grained mod-eling of multimodal sentiment cues. 
+
+# 3. Proposed Method 
+
+3.1. Model Overview 
+
+Given an utterance U , our goal is to predict its sentiment polarity by jointly modeling three modalities: linguistic ( l), visual ( v), and acoustic ( a). Different from previous meth-ods [3, 22], and as illustrated in Fig. 2, our framework ex-plicitly disentangles multimodal representations into three complementary subspaces: (i) a fully shared ( common ) sub-space that captures global semantic cues shared across all modalities, (ii) submodally shared subspaces that model in-teractions present only in subsets of modalities, and (iii) modality-specific ( private ) subspaces that preserve unique and discriminative information for each modality. Concretely, we first encode Ul, Uv , and Ua into modality-specific high-level representations and project them into a unified feature space. Dedicated decoupling modules then map these representations into the three subspaces. The common subspace aggregates modality-invariant information critical for overall affective infer-ence. The submodally shared subspaces capture associ-ations present in two out of three modalities, enabling the model to exploit pairwise correlations. The private subspaces retain complementary features unique to each modality, ensuring that unimodal cues are not lost. Given the representations from all three subspaces, we fuse their outputs and map the fused representation to either a cat-egorical label ( y ∈ RC ) or a continuous sentiment score (y ∈ R). The following sections formalize the feature ex-traction, tri-subspace construction, and their fusion in detail. 
+
+3.2. Feature Representation 
+
+To capture temporal patterns within each modality, we pro-cess the visual and acoustic inputs using independent tem-poral convolutional networks, while language features are extracted by a pre-trained BERT encoder. For each modal-ity m ∈ { v, a, l }, the input sequence is denoted as Xm ∈
+
+RTm×d, where Tm is the sequence length and d is the fea-ture dimension. Each modality-specific encoder produces a sequence of hidden representations: 
+
+Hm = Encoder m(Xm; θenc  
+
+> m
+
+) ∈ RTm×dm , (1) where θenc  
+
+> m
+
+are the learnable parameters of the encoder for modality m.We then project the encoder outputs into a unified feature space via a linear layer: 
+
+Zm = Proj m(Hm) ∈ RTm×dz , (2) where Proj m is a modality-specific fully connected layer and dz is the shared feature dimension. These unified rep-resentations Zm serve as the inputs to the tri-subspace dis-entanglement module. 
+
+3.3. Tri-Subspaces Disentanglement 
+
+Existing multimodal representation learning methods can capture both global consistency and modality-specific in-formation, but often overlook collaborative signals that are shared only by subsets of modalities. Without explicit mod-eling, these submodally shared cues may be misattributed to either common or private subspaces, limiting the ex-pressiveness and discriminative power of the learned fea-tures. We therefore introduce a tri-subspace disentangle-ment framework that factorizes multimodal representations into common, submodally shared, and private subspaces, enabling multi-granular modeling of global consistency, pairwise collaboration, and individual modality character-istics. Let M = {l, v, a } denote the set of modalities with 
+
+|M| = M = 3 , and let P2(M) be the set of all unordered modality pairs. 
+
+3.3.1. Tri-Subspaces Encoders Common encoder I(·; θc). This encoder extracts modality-invariant, globally consistent features and is shared across 3all modalities. It consists of two fully connected layers with GELU activation and LayerNorm. The output is 
+
+Cm = I(Zm; θc) ∈ RTm×dc . (3) 
+
+Submodally shared encoder Smn (·; θmn ). This encoder captures specific correlations between a modality pair 
+
+(m, n ) and extracts the information shared only between the two modalities. For each unordered modality pair (m, n ) ∈P2({l, v, a }), we define a shared-parameter encoder with one fully connected layer followed by a sigmoid activation. Its outputs are 
+
+S(m) 
+
+> mn
+
+= Smn (Zm; θmn ), S(n) 
+
+> mn
+
+= Smn (Zn; θmn ), (4) where the superscript (m) indicates that the representation is derived from modality m but lives in the subspace shared with modality n. in practice, we construct Sij by concate-nating Sij (i) and S(j) 
+
+> ij
+
+along the temporal dimension. 
+
+Private encoder Pm(·; θm). For each modality, we also define a private encoder composed of one fully connected layer and a sigmoid activation, which extracts modality-specific representations: 
+
+Pm = Pm(Zm; θm). (5) 
+
+3.3.2. Decoupling Supervisor 
+
+To prevent representation mixing across subspaces, we pro-pose a tri-subspace decoupling supervisor. The supervi-sor contains three discriminative branches corresponding to the common, submodally shared, and private subspaces, respectively. Each branch is a two-layer perceptron with GELU activation [7], taking the corresponding subspace embedding as input. During training, embeddings from the three subspaces are pooled over time and mixed within a mini-batch, and the supervisor predicts the true source sub-space of each embedding. Let ρ(·) be a temporal pooling operator (e.g., mean pool-ing) that maps a token sequence to an utterance-level vector. We define 
+
+cm = ρ(Cm), s(m) 
+
+> mn
+
+= ρ(S(m) 
+
+> mn
+
+), pm = ρ(Pm). (6) Let Dcom , Dsub , and Dpri denote the probabilities assigned by the supervisor to the “common”, “submodally shared”, and “private” labels, respectively. The supervision loss is defined as 
+
+Lsup = − 1
+
+M
+
+> M
+
+X
+
+> m=1
+
+"
+
+Ex∼D [log Dcom (cm)] + X
+
+> n̸=m
+
+Ex∼D 
+
+h
+
+log Dsub 
+
+ s(m)
+
+> mn
+
+i
+
++ Ex∼D [log Dpri (pm)] 
+
+#
+
+,
+
+(7) where D denotes the data distribution (in practice, expecta-tions are approximated by mini-batch averages). Backprop-agation through this loss explicitly enforces clear bound-aries among the three subspaces and suppresses information leakage. Compared with the modality discriminators used in FDMER and related methods, our supervisor jointly dis-criminates between three subspaces, enforcing stricter dis-entanglement beyond the shared private dichotomy. 
+
+3.3.3. Subspace Loss Functions 
+
+To further regularize each subspace and capture multi-granular relationships, we design a set of subspace-specific losses. All losses are computed on utterance-level represen-tations obtained via ρ(·).
+
+Common consistency loss. For the common subspace, we adopt a consistency loss Lcom that encourages alignment of modality-invariant features and reduces distribution gaps across modalities: 
+
+Lcom = 1
+
+|P 2(M)|
+
+X
+
+> (m,n )∈P 2(M)
+
+cm − cn
+
+> 22
+
+. (8) 
+
+Pairwise collaboration loss. To model the pairwise col-laboration between modalities, we introduce a pairwise consistency loss Lpair that encourages submodally shared representations from the two directions to encode only joint information of each modality pair while suppressing modality-specific noise: 
+
+Lpair = 1
+
+|P 2(M)|
+
+X
+
+> (m,n )∈P 2(M)
+
+s(m) 
+
+> mn
+
+− s(n)
+
+> mn
+> 22
+
+. (9) 
+
+Private disparity loss. For the private subspaces, we employ the Hilbert–Schmidt Independence Criterion (HSIC) [4] to encourage independence between private rep-resentations of different modalities and prevent contamina-tion from shared information. Given two private feature sets 
+
+pm1 and pm2 from a mini-batch of size n, HSIC is defined as 
+
+HSIC( pm1 , pm2 ) = ( n − 1) −2 Tr( U K m1 U K m2 ), (10) where Km1 and Km2 are the n×n Gram matrices of private features under a linear kernel, U = I − 1 
+
+> n
+
+ee ⊤, I is the iden-tity matrix, and e is an all-ones vector. The overall private disparity loss aggregates HSIC over all modality pairs: 
+
+Lpri = 1
+
+|P 2(M)|
+
+X
+
+> (m1,m 2)∈P 2(M)
+
+HSIC( pm1 , pm2 ). (11) 
+
+Orthogonality loss. To further disentangle the three sub-spaces within each modality, we introduce an orthogonality constraint Lort that penalizes overlap among common, sub-4modally shared, and private representations: 
+
+Lort = 1
+
+M
+
+X
+
+> m∈M
+
+h
+
+C⊤
+
+> m
+
+Pm
+
+> 2
+> F
+
++ X
+
+> n̸=m
+
+  S(m)⊤ 
+
+> mn
+
+Pm 
+
+> 2
+> F
+
++ S(m)⊤ 
+
+> mn
+
+Cm
+
+> 2
+> F
+
+i
+
+,
+
+(12) where ∥ · ∥ F denotes the Frobenius norm. 
+
+Tri-subspace training objective. The overall objective for tri-subspace disentanglement combines all the above losses: 
+
+LTS = Lcom +λ1Lpair +λ2Lpri +λ3Lort +λ4Lsup , (13) where λ1–4 are hyperparameters controlling the contribu-tion of each regularization term. 
+
+3.4. Subspace-Aware Cross-Attention Fusion 
+
+The three types of feature subspaces (common, submodally shared, and private) capture complementary aspects of mul-timodal information, and their contributions to the final de-cision are generally unequal. Simple feature concatenation ignores these structural differences, leading to redundancy and loss of discriminative cues. To address this, we pro-pose a Subspace-Aware Cross-Attention (SACA) module that performs context-aware interaction and adaptive fusion among all subspaces. Let Cm, S(m) 
+
+> ij
+
+, and Pm be the tri-subspace represen-tations from Sec. 3.3. We first apply self-attention for subspace-wise refinement: 
+
+
+
+˜Cm = SelfAtt  LN( Cm), m ∈ M ,
+
+˜Sij = SelfAtt  LN( Sij ), (i, j ) ∈ P 2(M),
+
+˜Pm = SelfAtt  LN( Pm), m ∈ M ,
+
+(14) where Sij denotes the subspace shared between modalities 
+
+i and j; in practice, we construct Sij by concatenating S(i)
+
+> ij
+
+and S(j) 
+
+> ij
+
+along the temporal dimension, and LN is layer nor-malization. 
+
+Context construction for cross-subspace attention. For each subspace, we dynamically construct a context set that collects the most relevant complementary signals: 
+
+F ˜Sij  
+
+> ctx
+
+= ˜Sij ; ˜Ci; ˜Cj ; ˜Pi; ˜Pj
+
+,F ˜Cm 
+
+> ctx
+
+=  ˜Cm; {˜Smj | j̸ = m}; ˜Pm
+
+,F ˜Pm 
+
+> ctx
+
+=  ˜Pm; {˜Smj | j̸ = m}; ˜Cm
+
+,
+
+(15) where [ · ] denotes concatenation along the temporal (token) dimension. 
+
+Cross-subspace attention enhancement. Taking the sub-modally shared subspace ˜Sij as an example, we define 
+
+Q = WQ ˜Sij , K = WK F ˜Sij  
+
+> ctx
+
+, V = WV F ˜Sij  
+
+> ctx
+
+, (16) where WQ, WK , and WV are learnable projection matrices. The cross-attention output is computed as 
+
+O = softmax 
+
+ QK ⊤
+
+√dk
+
+
+
+V, (17) where dk is the key dimension. For richer modeling, we use multi-head attention and obtain the enhanced subspace representation via a residual connection: 
+
+S∗ 
+
+> ij
+
+= LN  ˜Sij + MultiHeadAttn( ˜Sij , F ˜Sij  
+
+> ctx
+
+, F ˜Sij  
+
+> ctx
+
+),
+
+(18) where MultiHeadAttn denotes the standard multi-head at-tention operator. The same procedure is applied to the com-mon and private subspaces to obtain C∗ 
+
+> m
+
+and P∗
+
+> m
+
+. The residual connections preserve the original information of each subspace while injecting cross-subspace context. 
+
+Hierarchical gated fusion. All context-enhanced sub-spaces are then aggregated: 
+
+FS = C∗ 
+
+> l
+
+, C∗
+
+> a
+
+, C∗ 
+
+> v
+
+, S∗
+
+> la
+
+, S∗ 
+
+> lv
+
+, S∗ 
+
+> av
+
+, P∗ 
+
+> l
+
+, P∗
+
+> a
+
+, P∗ 
+
+> v
+
+. (19) A gating network computes the adaptive weight ψk for each subspace: 
+
+ψk = exp  gk(FS )P 
+
+> k′∈K
+
+exp  gk′ (FS ) , (20) where gk(·) is a learnable scoring function and K indexes all subspaces (here |K| = 9 ). The final multimodal repre-sentation is obtained as a weighted sum: 
+
+Yfinal = X
+
+> k∈K
+
+ψk · F (k) 
+
+> S
+
+, (21) where F (k) 
+
+> S
+
+denotes the enhanced output of the k-th sub-space. Finally, Yfinal is fed into fully connected layers for sentiment prediction. 
+
+3.5. Objective Optimization 
+
+For classification tasks, we use the cross-entropy loss, while for regression tasks the mean squared error serves as the task loss Ltask . The final optimization objective combines the task loss with the tri-subspace regularization terms: 
+
+Lall = Ltask + LTS . (22) 
+
+# 4. Experiments 
+
+4.1. Experimental Settings 
+
+Datasets. We evaluate TSD on three widely used multi-modal benchmarks. CMU-MOSI [27] contains 2,199 opin-ion video segments with aligned acoustic and visual fea-tures, split into 1,284 training, 229 validation, and 686 test 5Table 1. Performance comparison on CMU-MOSI and CMU-MOSEI. Each cell reports results under aligned/unaligned settings as a/b (a:aligned, b: unaligned). *: values from EMOE [3]. The last row lists the ± standard deviation of TSD over n = 5 random seeds. 
+
+Methods CMU-MOSI CMU-MOSEI 
+
+MAE( ↓) ACC 7(%) ACC 2(%) F1(%) MAE( ↓) ACC 7(%) ACC 2(%) F1(%) EF-LSTM* 1.386 / 1.420 33.7 / 31.0 75.3 / 73.6 75.2 / 74.5 0.620 / 0.594 47.4 / 46.3 78.2 / 76.1 77.9 / 75.9 TFN* [28] 0.953 / 0.995 31.9 / 35.3 78.8 / 76.5 78.9 / 76.6 0.574 / 0.573 50.9 / 50.2 80.4 / 84.2 80.7 / 84.0 LMF* [11] 0.931 / 0.963 36.9 / 31.1 78.7 / 79.1 78.7 / 79.1 0.564 / 0.565 52.3 / 51.9 84.7 / 83.8 84.5 / 83.9 MFN* [3] 0.964 / 0.971 35.6 / 34.7 78.4 / 80.0 78.4 / 80.1 0.574 / 0.567 50.8 / 51.3 84.0 / 83.2 84.0 / 83.3 MuLT [21] 0.936 / 0.933 35.1 / 33.2 80.0 / 80.3 80.1 / 80.3 0.572 / 0.556 52.3 / 53.2 82.7 / 84.0 82.8 / 84.0 MISA [6] 0.754 / 0.742 41.8 / 43.6 84.2 / 83.8 84.2 / 83.9 0.543 / 0.557 52.3 / 51.0 85.3 / 84.8 85.1 / 84.8 FDMER [24] - / 0.725 - / 44.2 - / 84.6 - / 84.7 - / 0.536 - / 53.8 - / 84.1 - / 84.0 ConFEDE [25] - / 0.742 - / 46.3 - / 84.2 - / 84.2 - / 0.523 - / 54.9 - / 81.8 - / 82.3 Self-MM* [26] 0.738 / 0.724 45.3 / 45.7 84.9 / 83.4 84.9 / 83.6 0.540 / 0.535 53.2 / 52.9 84.5 / 85.3 84.3 / 84.8 DMD* [9] 0.721 / 0.721 46.2 / 46.7 83.2 / 84.0 83.2 / 84.0 0.546 / 0.536 52.4 / 53.1 84.8 / 84.7 84.7 / 84.7 DEVA [23] - / 0.730 - / 46.3 - / 84.4 - / 84.5 - / 0.541 - / 52.3 - / 83.3 - / 82.9 DLF [22] - / 0.731 - / 47.1 - / 85.1 - / 85.1 - / 0.536 - / 53.9 - / 84.4 - / 85.3 EMOE* [3] 0.710 / 0.697 47.7 / 47.8 85.4 / 85.4 85.4 / 85.3 0.536 / 0.530 54.1 / 53.9 85.3 / 85.5 85.3 / 85.5 
+
+TSD (Ours) 0.701 / 0.691 48.8 / 49.0 86.3 / 86.5 86.3 / 86.6 0.529 / 0.525 54.9 / 54.6 85.8 / 86.2 85.9 / 86.2 
+
+±Std. Dev. ±0.005 / ±0.005 ±0.3/±0.3 ±0.1/±0.1 ±0.3/±0.3 ±0.005 / ±0.006 ±0.2/±0.2 ±0.1/±0.1 ±0.4/±0.4
+
+samples. CMU-MOSEI [29] includes 22,856 segments, with 16,326 for training, 1,871 for validation, and 4,659 for testing. Both datasets provide sentiment scores in [−3, 3] ,where −3 and 3 denote strongly negative and strongly pos-itive, respectively. MIntRec [30] is a Multimodal Intent Recognition (MIR) benchmark with 2,224 samples from 20 intent categories and standard train/validation/test splits. 
+
+Evaluation Metrics. Following prior work [3], we eval-uate MSA on CMU-MOSI and CMU-MOSEI with Acc-2, Acc-7, F1-score, and Mean Absolute Error (MAE). For MIR on MIntRec, we report Accuracy, F1-score, Precision, and Recall. 
+
+Implementation Details. All models are implemented in PyTorch and trained on an NVIDIA A100 GPU. We use a batch size of 16, a weight decay of 1 × 10 −5, and the Adam optimizer, and train up to 50 epochs with early stopping on validation performance. To reduce randomness, each method is run with n = 5 different random seeds, and we report averaged results. 
+
+4.2. Comparison with State-of-the-Art Methods 
+
+We compare TSD with a broad range of representative base-lines, including early fusion methods, attention-based fu-sion models, and recent disentanglement-based approaches (we provide a Model Zoo, details in the Appendix). 
+
+Results on MSA benchmarks. We follow the stan-dard practice and evaluate all methods under aligned and 
+
+unaligned settings. The aligned setting assumes perfect temporal synchronization across modalities, while the un-aligned setting simulates more realistic asynchrony. In all tables, we report results as a/b , where a is the aligned score and b is the unaligned score. Table 1 summarizes the results on CMU-MOSI and CMU-MOSEI. TSD consistently achieves the best perfor-mance across all metrics and both settings. On CMU-MOSI (aligned), TSD reaches an MAE of 0.703 and an Acc-2 of 
+
+85 .7% , outperforming the strongest baseline EMOE [3] by 
+
+0.007 MAE and 0.3% Acc-2. Under the unaligned setting, TSD further improves MAE to 0.691 and Acc-2 to 86 .5% ,showing strong robustness to temporal perturbations. We also observe consistent gains in Acc-7 and F1-score, indi-cating better fine-grained sentiment modeling. On CMU-MOSEI, TSD exhibits similar advantages. In the unaligned setting, TSD achieves an MAE of 0.535 and an Acc-2 of 
+
+85 .6% , surpassing EMOE [3] by 0.001 MAE and 0.1% 
+
+Acc-2 while also improving Acc-7 and F1. These im-provements demonstrate that simply separating shared and private spaces is not sufficient: explicitly modeling com-mon, submodally shared, and private subspaces, together with SACA fusion, yields more expressive and robust mul-timodal sentiment representations. 
+
+MIR benchmark results. Table 2 reports results on the MIntRec MIR task. TSD outperforms strong baselines on all metrics. In particular, it achieves 73.67% Accuracy and 71.76% F1, clearly outperforming EMOE [3] and other re-cent methods such as CAGC [20] and GsiT [8]. This con-firms that the proposed tri-subspace architecture generalizes beyond sentiment regression to broader multimodal classi-fication tasks. To verify that improvements are not due to random-ness, we perform seed-wise paired t-tests ( n = 5 , Holm-corrected) under both aligned and unaligned settings. The 6Table 2. Performance comparison on the MIntRec dataset (%). 
+
+Method Accuracy F1 Precision Recall 
+
+MAG-BERT [18] 70.34 68.19 68.31 69.36 MMIM [8] 71.21 68.70 69.20 68.90 MuLT [21] 72.58 69.36 70.73 69.47 MISA [6] 72.36 70.57 71.24 70.41 CAGC [20] 73.03 70.62 70.86 70.55 EMOE [3] 72.58 70.73 72.08 70.86 GsiT [8] 72.60 69.40 69.40 70.10 
+
+TSD (Ours) 73.67 71.76 72.86 71.90     
+
+> Table 3. Ablation studies of TSD on the three benchmarks. For MOSI and MOSEI we report MAE ( ↓) and ACC 7(%); for MIntRec we report ACC (%). †denotes the aligned setting.
+
+Model MOSI MOSEI MIntRec 
+
+MAE ACC 7 MAE ACC 7 ACC 
+
+TSD † (Ours) 0.703 47.9 0.535 54.3 –
+
+TSD (Ours) 0.691 48.0 0.530 54.2 73.67 
+
+Importance of Modality 
+
+w/o Linguistic 1.010 35.5 0.830 39.8 54.3 w/o Acoustic 0.810 45.0 0.620 51.2 69.3 w/o Visual 0.850 44.1 0.650 50.0 67.8 
+
+Importance of Representations 
+
+w/o Common 0.713 46.7 0.545 53.2 72.0 w/o Private 0.719 46.5 0.547 53.0 71.7 w/o Sub-Shared 0.705 46.9 0.543 53.4 72.3 Non-Disen. 0.722 46.1 0.550 52.6 71.1 
+
+Different Fusion Mechanisms 
+
+Sum † 0.724 47.6 0.542 53.8 73.1 Sum 0.713 47.7 0.537 54.0 73.3 Concat † 0.727 47.2 0.544 53.7 72.7 Concat 0.715 47.4 0.538 53.9 73.0 CMAF [24] 0.710 47.5 0.533 53.8 73.0 
+
+Importance of Regularization 
+
+w/o Lcom 0.719 46.7 0.546 53.0 71.9 w/o Lpair 0.710 47.0 0.539 53.5 72.4 w/o Lpri 0.712 47.2 0.541 53.6 72.6 w/o Lort 0.708 47.4 0.537 53.7 72.9 w/o Lsup 0.721 46.9 0.548 52.8 71.9 Only Task Loss 0.735 45.8 0.555 52.1 70.6 results show that TSD’s gains are statistically significant across most metrics and datasets (see Appendix for detailed statistics). 
+
+4.3. Ablation Studies 
+
+We conduct ablations along four axes: modality contribu-tion, representation spaces, fusion mechanisms, and regu-larization design (Table 3). 
+
+Importance of modality. Removing any modality causes a clear performance drop. Excluding the linguistic modality leads to the largest degradation (e.g., MAE 1.010 
+
+and ACC 7 35 .5 on MOSI), confirming its central role in sentiment and intent understanding. Dropping acoustic or visual inputs leads to milder but still substantial declines on all three benchmarks, showing that prosody and facial ex-pressions provide complementary cues and that three-way fusion is beneficial for robust performance. 
+
+Importance of representations. We then ablate the common (global), private (modality-specific), and sub-shared (submodally shared) subspaces by removing their outputs from the fusion and prediction heads while keep-ing the encoders unchanged. Removing the common sub-space harms performance across all benchmarks, indicating the importance of modality-invariant global semantics. Re-moving private subspaces also degrades performance, re-flecting the need to preserve unimodal nuances. Removing the sub-shared subspace further reduces accuracy compared with the full model, especially on MIntRec, highlighting that pairwise shared signals still contribute beyond purely global and purely private spaces. The Non-Disen. vari-ant bypasses disentanglement and directly fuses features; although it remains close to some single-subspace variants, it consistently underperforms the full tri-subspace design, supporting the effectiveness of tri-subspace factorization. 
+
+Different fusion mechanisms. We compare SACA with several common fusion strategies: simple summa-tion (Sum), concatenation (Concat), and the cross-modal alignment fusion CMAF [24], evaluating both aligned and unaligned variants for Sum and Concat. SACA consis-tently outperforms these baselines. For example, on MOSI (aligned), replacing SACA with Sum leads to higher MAE and lower ACC 7, and similar degradations are observed with Concat. Compared with CMAF, SACA also achieves lower MAE and higher ACC 7 on both MOSI and MOSEI, with consistent gains on MIntRec. These results indicate that SACA provides a more adaptive and discriminative in-tegration of tri-subspace representations. 
+
+Importance of regularization. We study the effect of each regularization term. Removing any structural loss re-sults in noticeable degradation. Dropping the common con-sistency loss Lcom or the decoupling supervisor loss Lsup 
+
+leads to the largest declines, showing their importance for global alignment and subspace purity. Removing pairwise consistency Lpair , private disparity Lpri , or orthogonality 
+
+Lort also harms performance, reflecting their roles in mod-eling pairwise interactions, preventing information leakage, and reducing redundancy. When all structural regularizers are removed and only the task loss is used (Only Task Loss), TSD degenerates into a generic fusion model and achieves the lowest performance on all three benchmarks, confirming 7Figure 3. Qualitative examples illustrating that incorporating the submodally shared subspace enables TSD to better capture cross-modal cues (e.g., sarcasm), producing sentiment predictions closer to the ground truth. 
+
+the necessity of our regularization design. 
+
+4.4. Further Analysis 
+
+Qualitative analysis. To qualitatively examine the effect of submodally shared subspaces, we visualize prediction trajectories on CMU-MOSI. For utterances such as “Oh, perfect timing!” , where the lexical content alone appears positive or nearly neutral but sarcasm is conveyed by tone and facial expression, variants that only use common and private subspaces tend to underestimate the negativity. In the w/o Sub-Shared variant, audio–visual cues are either over-smoothed in the common subspace or confined to pri-vate subspaces with limited influence on the final predic-tion, leading to clear deviations from the ground-truth score. With explicit sub-shared subspaces, TSD can preserve these cross-modal interactions and allow SACA to emphasize them when they are informative, yielding trajectories that follow the reference more closely. Similar behavior is ob-served in examples such as “Great, just what I needed.” ,where non-verbal signals dominate. 
+
+Visualization of feature distributions. We also visual-ize learned representations on CMU-MOSI using t-SNE [3], shown in Fig. 4. The variant without SACA and Sub-Shared produces scattered, irregular distributions with weak sen-timent structure. In contrast, the full TSD model yields a more compact and continuous gradient from negative to positive sentiment. Since MSA is a regression task, such gradient-like patterns are more desirable than discrete clus-ters, suggesting that TSD learns more coherent and seman-tically ordered representations. 
+
+Visualization of subspace weights and importance. 
+
+Finally, we analyze how TSD allocates attention across  
+
+> Figure 4. t-SNE visualization of feature distributions on CMU-MOSI. Colors indicate sentiment polarity from negative (dark) to positive (yellow). The full TSD model exhibits a clearer sentiment gradient than the variant without SACA and sub-shared subspaces.
+> Figure 5. (a) Average fusion weights of each subspace (Common, Private, Sub-Shared) in TSD on CMU-MOSI and CMU-MOSEI. (b) Estimated contribution of each subspace during fusion. Higher values and darker colors denote greater subspace significance.
+
+subspaces subspaces by visualizing learned fusion weights and estimated subspace contributions on MOSI and MO-SEI (Fig. 5). On MOSI, the common and private sub-spaces receive higher average weights, whereas on MOSEI the weights are more balanced, reflecting the richer cross-modal patterns and the adaptive nature of SACA. The con-tribution analysis further shows that TSD tends to rely on private subspaces when one modality is dominant, and on common or Sub-Shared subspaces when multimodal cues are complementary. The strong agreement between learned weights and actual contributions supports both the effective-ness and interpretability of the tri-subspace design. In addition, we conduct sensitivity analyses on key hy-perparameters (e.g., subspace dimensionality and loss co-efficients) and observe that TSD maintains strong perfor-mance over a wide range of settings, indicating robustness without heavy tuning. Full results, see Appendix. 
+
+# 5. Conclusion 
+
+This study presented the Tri-Subspace Disentanglement (TSD) framework to address submodally shared signals in 8multimodal sentiment analysis. TSD factorizes multimodal features into common, submodally shared, and private sub-spaces, and uses a decoupling supervisor with structured regularization to keep them distinct, enabling unified mod-eling of global, intermediate, and modality-specific cues. Built on these representations, a subspace-aware cross-attention module adaptively fuses information across sub-spaces. Experiments on MSA and MIR benchmarks show that TSD achieves state-of-the-art performance and trans-fers well to related tasks. In the future, we will expand TSD to a wider range of human-computer interaction scenarios. 
+
+# References 
+
+[1] Yifan Chen, Kuntao Li, Weixing Mai, Qiaofeng Wu, Yun Xue, and Fenghuan Li. D2r: Dual-branch dynamic routing network for multimodal sentiment detection. In Proceed-ings of the 2024 Conference on Empirical Methods in Natu-ral Language Processing , pages 3536–3547, 2024. 2 [2] Weichen Dai, Xingyu Li, Zeyu Wang, Pengbo Hu, Ji Qi, Jianlin Peng, and Yi Zhou. Mind: improving multimodal sentiment analysis via multimodal information disentangle-ment. arXiv preprint arXiv:2401.11818 , 2024. 2 [3] Yiyang Fang, Wenke Huang, Guancheng Wan, Kehua Su, and Mang Ye. Emoe: Modality-specific enhanced dynamic emotion experts. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 14314–14324, 2025. 2, 3, 6, 7, 8, 1 [4] Arthur Gretton, Olivier Bousquet, Alex Smola, and Bernhard Sch¨ olkopf. Measuring statistical dependence with hilbert-schmidt norms. In International conference on algorithmic learning theory , pages 63–77. Springer, 2005. 4 [5] Zirun Guo, Tao Jin, Jingyuan Chen, and Zhou Zhao. Classifier-guided gradient modulation for enhanced multi-modal learning. Advances in Neural Information Processing Systems , 37:133328–133344, 2024. 2 [6] Devamanyu Hazarika, Roger Zimmermann, and Soujanya Poria. Misa: Modality-invariant and-specific representations for multimodal sentiment analysis. In Proceedings of the 28th ACM international conference on multimedia , pages 1122–1131, 2020. 1, 3, 6, 7 [7] Dan Hendrycks and Kevin Gimpel. Gaussian error linear units (gelus). arXiv preprint arXiv:1606.08415 , 2016. 4 [8] Yijie in, Junjie Peng, Xuanchao Lin, Haochen Yuan, Lan Wang, and Cangzhi Zheng. Multimodal transformers are hi-erarchical modal-wise heterogeneous graphs. In Proceedings of the 63rd Annual Meeting of the Association for Computa-tional Linguistics (Volume 1: Long Papers) , 2025. 6, 7 [9] Yong Li, Yuanzhi Wang, and Zhen Cui. Decoupled multi-modal distilling for emotion recognition. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 6631–6640, 2023. 2, 6, 1 [10] Jinhao Lin, Yifei Wang, Yanwu Xu, and Qi Liu. Semi-iin: Semi-supervised intra-inter modal interaction learning net-work for multimodal sentiment analysis. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 1411– 1419, 2025. 1, 2 [11] Zhun Liu, Ying Shen, Varun Bharadhwaj Lakshmi-narasimhan, Paul Pu Liang, Amir Zadeh, and Louis-Philippe Morency. Efficient low-rank multimodal fusion with modality-specific factors. arXiv preprint arXiv:1806.00064 ,2018. 6, 1 [12] Chunlei Meng, Jiacheng Yang, Wei Lin, Bowen Liu, Hongda Zhang, Zhongxue Gan, et al. Cta-net: A cnn-transformer ag-gregation network for improving multi-scale feature extrac-tion. arXiv preprint arXiv:2410.11428 , 2024. 1 [13] Chunlei Meng, Wei Lin, Bowen Liu, Hongda Zhang, Zhongxue Gan, and Chun Ouyang. Rts-vit: Real-time share vision transformer for image classification. IEEE Journal of Biomedical and Health Informatics , 29(5):3576–3586, 2025. 1[14] Chunlei Meng, Wei Lin, Jiacheng Yang, Yi Liu, Hongda Zhang, Yuning Chen, Bowen Liu, Ziqin Zhou, Chun Ouyang, Zhongxue Gan, Dunzhao Wu, and Zhihua Nie. Cf-vit: Cross-feature vision transformer for improving feature learning on tiny datasets. In 2025 IEEE International Con-ference on Systems, Man, and Cybernetics (SMC) , pages 6919–6926, 2025. 1 [15] Chunlei Meng, Jiacheng Yang, Wei Lin, Linqiang Hu, Bowen Liu, Zhuo Zou, LiDa Xu, Zhongxue Gan, and Chun Ouyang. Multi-grained teacher–student joint representation learning for surface defect classification. Journal of Indus-trial Information Integration , 48:100958, 2025. 3 [16] Chunlei Meng, Ziyang Zhou, Lucas He, Xiaojing Du, Chun Ouyang, and Zhongxue Gan. Temporal-spatial decouple before act: Disentangled representation learning for multi-modal sentiment analysis. arXiv preprint arXiv:2601.13659 ,2026. 2 [17] Runqi Qiao, Qiuna Tan, Guanting Dong, Minhui Wu, Chong Sun, Xiaoshuai Song, Zhuoma GongQue, Shanglin Lei, Zhe Wei, Miaoxuan Zhang, et al. We-math: Does your large mul-timodal model achieve human-like mathematical reasoning? 
+
+arXiv preprint arXiv:2407.01284 , 2024. 1 [18] Wasifur Rahman, Md. Kamrul Hasan, Sangwu Lee, AmirAli Bagher Zadeh, Chengfeng Mao, Louis-Philippe Morency, and Mohammed E. Hoque. Integrating multimodal information in large pretrained transformers. In Proceedings of the 58th Annual Meeting of the Association for Computa-tional Linguistics , pages 2359–2369, 2020. 7 [19] Haoqin Sun, Shiwan Zhao, Xuechen Wang, Wenjia Zeng, Yong Chen, and Yong Qin. Fine-grained disentangled rep-resentation learning for multimodal emotion recognition. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 11051–11055. IEEE, 2024. 2 [20] Kaili Sun, Zhiwen Xie, Mang Ye, and Huyin Zhang. Contex-tual augmented global contrast for multimodal intent recog-nition. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pages 26963–26973, 2024. 6, 7 [21] Yao-Hung Hubert Tsai, Shaojie Bai, Paul Pu Liang, J Zico Kolter, Louis-Philippe Morency, and Ruslan Salakhutdinov. Multimodal transformer for unaligned multimodal language sequences. In Proceedings of the conference. Association for computational linguistics. Meeting , page 6558, 2019. 6, 7, 1 
+
+9[22] Pan Wang, Qiang Zhou, Yawen Wu, Tianlong Chen, and Jingtong Hu. Dlf: Disentangled-language-focused multi-modal sentiment analysis. In Proceedings of the AAAI Con-ference on Artificial Intelligence , pages 21180–21188, 2025. 1, 2, 3, 6 [23] Sheng Wu, Dongxiao He, Xiaobao Wang, Longbiao Wang, and Jianwu Dang. Enriching multimodal sentiment analysis through textual emotional descriptions of visual-audio con-tent. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 1601–1609, 2025. 2, 3, 6, 1 [24] Dingkang Yang, Shuai Huang, Haopeng Kuang, Yangtao Du, and Lihua Zhang. Disentangled representation learning for multimodal emotion recognition. In Proceedings of the 30th ACM international conference on multimedia , pages 1642– 1651, 2022. 1, 2, 3, 6, 7 [25] Jiuding Yang, Yakun Yu, Di Niu, Weidong Guo, and Yu Xu. Confede: Contrastive feature decomposition for multimodal sentiment analysis. In Proceedings of the 61st Annual Meet-ing of the Association for Computational Linguistics , pages 7617–7630, 2023. 2, 6, 1 [26] Wenmeng Yu, Hua Xu, Ziqi Yuan, and Jiele Wu. Learning modality-specific representations with self-supervised multi-task learning for multimodal sentiment analysis. In Proceed-ings of the AAAI conference on artificial intelligence , pages 10790–10797, 2021. 6 [27] Amir Zadeh, Rowan Zellers, Eli Pincus, and Louis-Philippe Morency. Multimodal sentiment intensity analysis in videos: Facial gestures and verbal messages. IEEE Intelligent Sys-tems , pages 82–88, 2016. 5 [28] Amir Zadeh, Minghai Chen, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Tensor fusion network for mul-timodal sentiment analysis. In Proceedings of the 2017 Con-ference on Empirical Methods in Natural Language Process-ing , pages 1103–1114, 2017. 2, 6, 1 [29] AmirAli Bagher Zadeh, Paul Pu Liang, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Multimodal lan-guage analysis in the wild: Cmu-mosei dataset and inter-pretable dynamic fusion graph. In Proceedings of the 56th Annual Meeting of the Association for Computational Lin-guistics , pages 2236–2246, 2018. 6 [30] Hanlei Zhang, Hua Xu, Xin Wang, Qianrui Zhou, Shaojie Zhao, and Jiayan Teng. Mintrec: A new dataset for multi-modal intent recognition. In Proceedings of the 30th ACM International Conference on Multimedia , page 1688–1697, 2022. 6 [31] Haoyu Zhang, Yu Wang, Guanghao Yin, Kejun Liu, Yuanyuan Liu, and Tianshu Yu. Learning language-guided adaptive hyper-modality representation for multimodal sen-timent analysis. arXiv preprint arXiv:2310.05804 , 2023. 1 
+
+10 Tri-Subspaces Disentanglement for Multimodal Sentiment Analysis 
+
+# Supplementary Material 
+
+# A. Model Zoo 
+
+To evaluate the performance of our proposed Tri-Subspace Disentanglement (TSD) framework, we compare it with a selection of state-of-the-art methods in Multimodal Sen-timent Analysis (MSA). We categorize these models into three main groups based on their approaches: traditional fu-sion methods, disentanglement-based methods, and recent fusion module designs. 
+
+Traditional MSA Methods. Early methods in multi-modal sentiment analysis focus on directly combining fea-tures from different modalities. EF-LSTM [3] is a recurrent model that uses LSTM networks for early fusion, integrat-ing multimodal signals at the input level. TFN [28] applies tensor decomposition to model inter-modal interactions and integrate features from different modalities. LMF [11] adopts a low-rank matrix factorization technique to fuse multimodal information at an intermediate stage. These methods lay the foundation for multimodal fusion but are limited by their simplicity, often struggling to capture com-plex interactions between modalities, particularly in chal-lenging tasks like sentiment analysis. 
+
+Disentanglement-based Approaches. More recent methods in multimodal sentiment analysis focus on disen-tangling modality-invariant and modality-specific compo-nents. This approach enables the model to better capture both shared and private features across different modali-ties. MISA [6] introduces a shared-private disentanglement framework that aligns modality-specific features while pre-serving common features, aiming to improve cross-modal alignment. FDMER [24] and ConFEDE [25] propose sim-ilar disentanglement strategies but incorporate additional contrastive learning or fusion mechanisms to enhance align-ment between modalities. DMD [9] and DLF [22] use distillation-based methods and contrastive learning to en-hance multimodal fusion and reduce redundancy. 
+
+Recent Fusion Module Designs. Recent advancements have introduced more sophisticated fusion mechanisms. These methods aim to model complex inter-modal inter-actions more effectively. For instance, MFN [3] uses a memory-based fusion network that captures temporal re-lations across modalities, enabling the model to handle long-range dependencies. MuLT [21] adopts a multimodal transformer architecture to explicitly model interactions be-tween different modalities over time. Other models, such as EMOE [3] and DEVA [23], use decision-level fusion and gating mechanisms to dynamically aggregate unimodal out-puts. 
+
+# B. Statistical Significance Tests 
+
+We assess the statistical significance of TSD by repeating all experiments with n = 5 independent random seeds shared across methods under both aligned and unaligned settings on CMU-MOSI, CMU-MOSEI, and MIntRec. For each metric, we compute the mean and standard deviation and perform seed-wise paired t-tests comparing TSD against the strongest prior method on that metric within the same setting (as reported in Tables 1 and 2 in the main text.). p-values are adjusted for multiple comparisons within each ta-ble using Holm correction. The resulting statistics are sum-marized in Table 4. 
+
+Findings on MOSI/MOSEI. On both datasets and un-der both preprocessing regimes, TSD achieves statistically significant improvements on classification-oriented metrics (ACC 2/ACC 7/F1) after Holm correction, with all p-values at or below 0.05 . The corresponding standard deviations across seeds are small (typically around 0.1–0.4 percentage points for ACC/F1), indicating limited sensitivity to random initialization. For MAE, the improvements are smaller in magnitude and several settings yield p-values slightly above 
+
+0.05 , which is consistent with the higher variability and lower effect size commonly observed on regression losses. Overall, these results indicate that TSD brings the largest and most reliable gains on decision-centric metrics while remaining directionally favorable on MAE. 
+
+Findings on MIntRec. On MIntRec, TSD improves Accuracy, F1, Precision, and Recall over the best prior method, with Holm-corrected p-values between 0.01 and 
+
+0.04 and modest standard deviations. This shows that the proposed tri-subspace disentanglement and subspace-aware fusion transfer beyond sentiment regression/classification to multimodal intent recognition, supporting both accuracy-and discrimination-oriented metrics. 
+
+Reproducibility. For all datasets, the Holm-corrected significance on classification metrics holds in both aligned and unaligned pipelines, showing that the conclusions are robust to the choice of preprocessing. Taken together, TSD yields statistically reliable and empirically stable improve-ments across datasets, alignment regimes, and evaluation metrics of primary interest. 
+
+# C. Sensitivity Analysis 
+
+To assess the robustness of the proposed TSD framework, we conduct a sensitivity analysis of the primary loss co-efficients ( λ1, λ 2, λ 3, λ 4) on both CMU-MOSI and CMU-MOSEI datasets. For each parameter, we vary its value across a reasonable range while keeping the others fixed to 1Figure 6. Sensitivity analysis of loss coefficients ( λ1, λ 2, λ 3, λ 4) on the CMU-MOSI dataset. Model performance (MAE and ACC 7)remains stable as each parameter is varied, illustrating the robustness of TSD to hyperparameter selection. 
+
+Figure 7. Sensitivity analysis of loss coefficients ( λ1, λ 2, λ 3, λ 4) on the CMU-MOSEI dataset. Model performance (MAE and ACC 7)remains stable as each parameter is varied, illustrating the robustness of TSD to hyperparameter selection. 
+
+2Metric TSD p-value (Holm) 
+
+CMU-MOSI (unaligned) 
+
+MAE ( ↓) 0.691 ±0.005 0.08 ACC 7 (%) 49.0 ±0.3 0.006 ACC 2 (%) 86.5 ±0.1 0.001 F1 (%) 86.6 ±0.3 0.002 
+
+CMU-MOSEI (unaligned) 
+
+MAE ( ↓) 0.525 ±0.006 0.11 ACC 7 (%) 54.6 ±0.2 0.040 ACC 2 (%) 86.2 ±0.1 0.004 F1 (%) 86.2 ±0.4 0.020 
+
+CMU-MOSI (aligned) 
+
+MAE ( ↓) 0.701 ±0.005 0.040 ACC 7 (%) 48.8 ±0.3 0.010 ACC 2 (%) 86.3 ±0.1 0.001 F1 (%) 86.3 ±0.3 0.004 
+
+CMU-MOSEI (aligned) 
+
+MAE ( ↓) 0.529 ±0.005 0.090 ACC 7 (%) 54.9 ±0.2 0.025 ACC 2 (%) 85.8 ±0.1 0.006 F1 (%) 85.9 ±0.4 0.035 
+
+MIntRec 
+
+Accuracy (%) 73.67 ±0.50 0.040 F1 (%) 71.76 ±0.45 0.010 Precision (%) 72.86 ±0.45 0.020 Recall (%) 71.90 ±0.50 0.015        
+
+> Table 4. Statistical significance of TSD. Means and standard de-viations for TSD are computed over n= 5 independent seeds. p-values are obtained from seed-wise paired t-tests comparing TSD against the strongest prior method on the same metric and setting, followed by Holm correction for multiple comparisons within each block.
+
+their default settings. The results, summarized in the Fig. 6 and Fig. 7, indicate that the model’s performance in terms of MAE and ACC 7 remains stable under different parameter choices. No significant fluctuations or performance degra-dation are observed within the tested ranges, which demon-strates that TSD is not overly sensitive to the selection of these hyperparameters. This robustness confirms the relia-bility of our loss design and highlights the practical applica-bility of the proposed framework in real-world multimodal sentiment analysis scenarios. 3

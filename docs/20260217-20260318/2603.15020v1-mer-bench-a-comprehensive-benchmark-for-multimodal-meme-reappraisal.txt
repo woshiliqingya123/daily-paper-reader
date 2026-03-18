@@ -1,0 +1,576 @@
+Title: MER-Bench: A Comprehensive Benchmark for Multimodal Meme Reappraisal
+
+URL Source: https://arxiv.org/pdf/2603.15020v1
+
+Published Time: Tue, 17 Mar 2026 03:44:22 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 1
+
+# MER-Bench: A Comprehensive Benchmark for Multimodal Meme Reappraisal 
+
+Yiqi Nie, Fei Wang, Junjie Chen, Kun Li, Yudi Cai, Dan Guo, Senior Member, IEEE ,Chenglong Li ∗, Senior Member, IEEE , and Meng Wang ∗, Fellow, IEEE 
+
+Abstract —Memes represent a tightly coupled, multimodal form of social expression, in which visual context and overlaid text jointly convey nuanced affect and commentary. Inspired by cog-nitive reappraisal in psychology, we introduce Meme Reappraisal ,a novel multimodal generation task that aims to transform nega-tively framed memes into constructive ones while preserving their underlying scenario, entities, and structural layout. Unlike prior works on meme understanding or generation, Meme Reappraisal requires emotion-controllable, structure-preserving multimodal transformation under multiple semantic and stylistic constraints. To support this task, we construct MER-Bench , a benchmark of real-world memes with fine-grained multimodal annotations, including source and target emotions, positively rewritten meme text, visual editing specifications, and taxonomy labels covering visual type, sentiment polarity, and layout structure. We fur-ther propose a structured evaluation framework based on a multimodal large language model (MLLM)-as-a-Judge paradigm, decomposing performance into modality-level generation quality, affect controllability, structural fidelity, and global affective alignment. Extensive experiments across representative image-editing and multimodal-generation systems reveal substantial gaps in satisfying the constraints of structural preservation, semantic consistency, and affective transformation. We believe MER-Bench establishes a foundation for research on controllable meme editing and emotion-aware multimodal generation. Our code is available at: https://github.com/one-seven17/MER-Bench. 
+
+Index Terms —Meme reappraisal, Social media, Multimodal generation benchmark 
+
+I. I NTRODUCTION 
+
+# MEMES are visually grounded image-text artifacts and a prevalent communication medium on social media [1]– [3]. By combining images with concise, stylized captions, 
+
+This work was supported by the Key Science & Technology Project of Anhui Province (202304a05020068), and the New Generation of Artificial In-telligence National Science and Technology Major Project (2025ZD0123303). 
+
+> ∗
+
+Corresponding author: Chenglong Li; Meng Wang 
+
+Y. Nie is with the School of Artificial Intelligence, Anhui University, Hefei, 230039, China, and also with the Institute of Artificial Intelligence, Hefei Comprehensive National Science Center, Hefei, 230026, China. (e-mails: nieyiqi5@gmail.com) F. Wang, J. Chen, D. Guo, and M. Wang are with the School of Com-puter Science and Information Engineering, Hefei University of Technology, Hefei, 230601, China, and also with the Institute of Artificial Intelligence, Hefei Comprehensive National Science Center, Hefei, 230026, China. (e-mails: ifei17.hfut@gmail.com; jorji.chen@gmail.com; guodan@hfut.edu.cn; eric.mengwang@gmail.com). K. Li is with the College of Information Technology, United Arab Emirates University, Al Ain, Abu Dhabi, United Arab Emirates. (email: kunli.hfut@gmail.com) Y. Cai is with the Institute of Advanced Technology, University of Science and Technology of China, Hefei, 230031, China. (email: cyd1596215368@gmail.com) C. Li is with the School of Artificial Intelligence, Anhui University, Hefei, 230039, China. (e-mails: lcl1314@foxmail.com). (a) Text -to -Image  Meme Generation 
+
+(b) Meme Caption Generation 
+
+(c) Meme Punchline Generation 
+
+> MME
+> Meme
+> Reappraisal
+
+(d) Meme Reappraisal                 
+
+> Generate ameme, a
+> sad starfish staring at
+> acomputer, with text :
+> top “WHEN YOU
+> ONLY GOT”, bottom
+> “2VIEWS ON YOUR
+> MEME” .
+
+Negative 
+
+Positive            
+
+> As Input Psychology
+> Knowledge
+> Output
+> “When you post a
+> meme and refresh for
+> half an hour :2views .”
+
+Fig. 1. Comparison of Meme Reappraisal with related tasks. Meme Reap-praisal leverages psychology-informed emotion regulation to shift affect while preserving scenario content and meme-style consistency. 
+
+memes convey emotions, opinions, and social commentary in highly contextualized, culturally embedded forms [4]. Beyond humor, memes frequently express frustration, anxiety, sarcasm, ridicule, and polarized attitudes, making them a prominent carrier of affective signals in online ecosystems [5]. While prior research [3], [6]–[11] has largely focused on detecting, classifying, or filtering harmful meme content, such approaches primarily aim at moderation rather than transformation. They [3], [8] do not address a more con-structive capability: reinterpreting a negative meme into a more positive, calm, or constructive one while preserving the original scenario and meme identity. Supporting such controlled reinterpretation may facilitate healthier emotional expression without suppressing user creativity. Despite rapid advances in multimodal meme analysis, existing works pre-dominantly target meme understanding [12], detection [13], [14], or generation [15]–[17], rather than affective trans-formation. Safety-oriented benchmarks, such as the Hateful Memes challenge [8], frame meme analysis as multimodal hate speech detection and have driven progress in image-text fusion and robustness modeling. Subsequent datasets, includ-ing GOAT-Bench [3] and ToxiCN [7], introduce more fine-grained and culturally grounded categories of harmfulness [3], [7]. Beyond classification settings, MemeReaCon [18] and MET-Meme [19] require reasoning over social context, user comments, and multimodal metaphors. On the generative side, systems such as MemeCap [15], XMeCap [16], and IterMeme [17] improve template-aware meme creation and  
+
+> arXiv:2603.15020v1 [cs.CV] 16 Mar 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 2
+
+caption generation, while recent works [20]–[24] explore affect-controllable generation in text and images. Collectively, these studies [12], [25], [26] substantially advance meme un-derstanding and synthesis, yet they leave open a fundamental question: can a model reinterpret a negative meme into a positive one while preserving its original scenario, structure, and communicative intent? 
+
+To address this problem, we introduce Meme Reappraisal ,as shown in Fig. 1, a novel multimodal generation task that transforms a negatively framed meme into a positively framed one while maintaining its visual layout, entities, and contextual setup. This formulation is inspired by cognitive reappraisal 
+
+in psychology [27]–[31], an emotion-regulation strategy in which emotional responses are modified by reinterpreting a situation rather than altering the situation itself. Analogously, Meme Reappraisal requires altering affective framing while preserving the underlying semantic and structural components. Viewed from this perspective, memes provide a particularly interesting testbed: their meanings are jointly constructed by image content, overlaid text, and culturally shared templates, so reappraisal must operate on multimodal expression rather than on text or images alone. Meme Reappraisal introduces several methodological chal-lenges. First , meme semantics are highly compressed and often rely on pragmatic inference, template conventions, and socio-cultural knowledge [32], requiring multimodal reasoning over both explicit and implicit cues. Second , affect transforma-tion demands structured modeling of emotional states and their directional shifts, whereas existing meme datasets typically provide only coarse sentiment or harmfulness labels without supervision for controlled affective change. Third , evaluation is inherently multi-objective. The valid output should (i) realize the intended emotional shift, (ii) preserve semantic consistency with the original scenario, and (iii) maintain structural fidelity in layout and entities. These challenges motivate the need for a dedicated bench-mark and evaluation protocol. To this end, we construct MER-Bench , a benchmark for Meme Reappraisal built from real-world social-media memes and annotated with structured mul-timodal and affective information. MER-Bench provides fine-grained multimodal annotations, including source and target emotions, positively rewritten meme text, visual editing speci-fications, and taxonomy labels covering visual type, sentiment polarity, and layout structure. Unlike prior meme datasets that only provide coarse sentiment or harmfulness labels, MER-Bench explicitly models controllable affect shifts while main-taining structural invariance, enabling systematic evaluation of Meme Reappraisal. To rigorously assess model performance, we further design a structured evaluation framework based on the MLLM-as-a-Judge paradigm. The framework decomposes performance into modality-level generation quality, structural preservation, emotion controllability, and global reinterpreta-tion coherence. To reflect the conjunctive and interdependent nature of Meme Reappraisal, we introduce the Reappraisal Fidelity Score (RFS) , a unified metric that aggregates these dimensions while explicitly penalizing violations of any crit-ical constraint. This formulation ensures that models cannot achieve high scores by optimizing a single objective at the                                           
+
+> TABLE I BENCHMARK COMPARISON ACROSS EMOTION -RELATED MULTIMODAL TASKS
+> Dataset Modality Emotion Recognition Emotion Reasoning / Regulation Emotion Generation Social Media
+> Memotion 3 [33] Image-Text ✓✗✗✓
+> MOOD [6] Image-Text ✓✗✗✓
+> GOAT-Bench [3] Image-Text ✓✗✗✓
+> EmotionBench [34] Text ✓✓✓✗
+> EmoBench [35] Text ✓✓✓✗
+> MOSABench [36] Image ✓✗✗✗
+> MM-InstructEval [37] Image ✓✗✓✗
+> MER-Bench (Ours) Image-Text ✓✓✓✓
+
+expense of others. In summary, our contributions are as follow:  
+
+> •
+
+We introduce Meme Reappraisal , a novel multimodal generation task that asks models to reinterpret negative memes into positive ones while preserving the underlying scenario and meme structure.  
+
+> •
+
+We construct MER-Bench , a real-world benchmark with structured multimodal and affective annotations that ex-plicitly model controllable emotional shifts.  
+
+> •
+
+We design a conjunctive evaluation protocol and propose 
+
+Reappraisal Fidelity Score (RFS) , which captures the multi-objective dependencies inherent in reappraisal.  
+
+> •
+
+We conduct a large-scale empirical study on leading multimodal systems, revealing systematic gaps in affect controllability under structural constraints. II. R ELATED WORK 
+
+A. Multimodal Meme Understanding 
+
+Early benchmarks, such as the Facebook Hateful Memes challenge, formulate meme analysis as multimodal hate speech detection, driving advances in image-text fusion and ro-bustness to spurious correlations [8]. Subsequent datasets, including MemeInterpret [38], GOAT-Bench [3], and Tox-iCN [7], extend this paradigm by incorporating culturally grounded categories and finer-grained labels that better capture real-world distribution shifts. Beyond classification settings, MemeReaCon [18] and MET-Meme [19] require reasoning over social context, user comments, communicative intent, and multimodal metaphors. Sharma et al. introduce MOOD(Meme emOtiOns Dataset), a meme emotion dataset with six basic emotions, and ALFRED, an emotion-aware multimodal fusion model that captures emotion-related visual cues and uses gated cross-modal fusion for emotion detection [6]. Memes have also been analyzed as socio-psychological signals reflecting collective attitudes and public discourse [5]. 
+
+B. Meme Generation 
+
+Meme generation spans template-aware captioning, text-to-image generation, and punchline generation. Layout-aware systems, e.g ., MemeCap [15], XMeCap [16], and Iter-Meme [17] jointly model template structures and humor-ous text via template-conditioned or cloze-style generation. MemeBot [39] frames meme creation as a translation-like process combining template images with captions. Large-scale resources such as Memeify [40] support caption gen-eration, while MemeCraft [41] leverages LLMs/VLMs for JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 3
+
+socially aligned meme synthesis. HUMOR introduces multi-path chain-of-thought reasoning with preference-based rein-forcement learning [42], and theory-guided frameworks [43] incorporate psychological models of humor and staged rea-soning. 
+
+C. Emotion-Controllable Generation 
+
+Emotion-controllable generation has been explored in both textual and visual domains. Text-based methods perform attribute-conditioned style transfer while approximately pre-serving semantic content [44], [45], with extensions addressing finer cues such as sarcasm [20]. Visual approaches manipulate affect through expression editing or prompt-guided condi-tioning, as in EmoGen [22] and EmoCtrl [21]. Diffusion-based models such as T2i-Adapter [46], IP-Adapter [47], Diffusion-DPO [48], and Instruct-Pix2Pix [49] enable struc-tured conditioning for layout and style control. As shown in Tab. I, existing approaches focus on coarse affect control in generic settings, which do not address structure-preserving affect transformation in memes, which requires simultaneous satisfaction of semantic, structural, and reappraisal constraints. III. T ASK DEFINITION 
+
+We define Meme Reappraisal as a multimodal conditional generation task grounded in emotion regulation theory [30], [31]. A meme is represented as an image-text pair (I, T ) with an associated negative source emotion e−. Given an input meme (I−, T −, e −), the goal is to generate a reappraised meme (I+, T +, e +), where the target emotion e+ is deter-mined by a predefined negative-to-positive mapping g(·), i.e ., 
+
+e+ = g(e−). The generated output should reinterpret the same underlying situation in a more positive, calm, or energizing way. The task is subject to three constraints. First, emotion shift : the output should align with the target emotion e+ rather than the original emotion e−. Second, content preservation :the core scenario, entities, and situational semantics of the input meme should remain intact. Third, meme consistency :the output should preserve meme-like properties, including concise captioning, informal style, and potential humor, rather than degenerating into explanation or motivational text. Formally, Meme Reappraisal can be written as 
+
+(I+, T +) = f (I−, T −, e +), (1) where f is expected to jointly optimize affective control, semantic fidelity, and meme-specific stylistic quality. IV. D ATASET CONSTRUCTION 
+
+To benchmark Meme Reappraisal in a controlled, compara-ble setting, we construct MER-Bench by assigning each meme a structured reappraisal target and an editing intent. Our meme corpus is derived from MOOD [6], and we retain memes that clearly express negative affect for reappraisal annotation. The overall construction process is illustrated in Fig. 2. 
+
+A. Psychological Foundations 
+
+To define the reappraisal target space, we adopt a compact emotion schema derived from Russell’s circumplex model of affect [50]. As illustrated in Fig. 2(A-1), we select four repre-sentative negative-to-positive emotion pairs that are common in social-media discourse and remain distinguishable in meme contexts: Sad → Happy , Angry → Calm , Tense → Relaxed ,and Bored → Excited . These pairs are designed to provide bal-anced coverage over valence and arousal while aligning with typical meme scenarios. Beyond label design, our annotation procedure is grounded in emotion regulation theory [30], [31]. As shown in Fig. 2(A-2), we follow Gross’s process model of emotion regulation to formulate a reappraisal-oriented rewriting protocol that motivates the subsequent rule-setting, annotator training, and structured meme-rewriting steps. 
+
+B. Construction Pipeline and Quality Control 
+
+Fig. 2(B) summarizes our iterative rule setting and an-notator training. We begin with Find: Pilot Annotation & Ambiguity Mining , where annotators perform a pilot round of labeling to surface ambiguous cases and recurring failure patterns in meme emotion interpretation. We then conduct 
+
+Resolve: Expert + LLM Clarification , in which psychology and computer-vision/NLP experts, together with an LLM assistant, iteratively cross-check the ambiguous samples to refine the label definitions and finalize the annotation guide-lines for the four emotion pairs. Finally, annotators undergo systematic training and calibration using the resolved rules before large-scale annotation. After the guidelines are fixed, we perform LLM-assisted human rewriting in Fig. 2(C). Each meme is processed through three prompted stages: (i) emotion detection and image description, and (ii) reappraisal planning with target emotion and editing intent specification, both supported by Gemini-2.5-Flash 1 for text-centric reasoning; and (iii) final positive meme generation supported by Gemini-2.5-Flash-Image 2 for multimodal genera-tion. Human annotators verify and calibrate the outputs at each stage, and ambiguous or inconsistent samples are revised or removed, ensuring that the released annotations are human-verified rather than purely model-generated. The final MER-Bench annotations include the source emotion, the mapped target emotion, the rewritten positive caption, the visual editing specification, and auxiliary taxonomy labels (visual type, sen-timent polarity, and layout structure), providing standardized signals for controlled benchmarking. 
+
+C. Data Statistics 
+
+Fig. 3 summarizes the distribution of the 3,117 meme pairs in MER-Bench across three taxonomy axes: Visual Modality Category , Structural Layout Category , and Affective Polarity ,where Affective Polarity denotes the sentiment polarity of the original meme caption. Most samples fall into the negative and neutral groups, consistent with our focus on negative-affect inputs, although visually negative memes may sometimes carry 
+
+> 1https://deepmind.google/technologies/gemini/flash/
+> 2https://ai.google.dev/gemini-api/docs/models/gemini-2.5-flash-image
+
+JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 4Step A -1: Russell ’s Circumplex Model of Affect 
+
+Happy 
+
+Sad  Calm 
+
+Angry 
+
+Relaxed 
+
+Tense  Excited 
+
+Bored 
+
+Negative  Positive 
+
+2
+
+> High -Arousal
+> Negative -Valence
+
+3
+
+> Low -Arousal
+> Negative -Valence
+
+1
+
+> High -Arousal
+> Positive -Valence
+
+4
+
+> Low -Arousal
+> Positive -Valence
+
+Neutral   
+
+> Antecedent Focused Response
+> Focused
+> Situation
+> Modification
+> Attention
+> Situation
+> Selection
+> Situation Appraisal/
+> Meaning
+> Attentional
+> Deployment
+> Response
+> Tendencies
+> Cognitive Change
+> Reappraisal
+> Response
+> Modulation
+> Emotional
+> Responses
+
+Step A -2: Gross ’s Process Model of Emotion Regulation 
+
+Psychological Foundations  Iterative Rule Setting & Annotator Training  LLM -Human Meme Rewriting 
+
+Step C -1: Emotion Detection & Image Description 
+
+Step C -2: Positive Solution & Target Emotion 
+
+Step C -3: Positive Meme Generation                 
+
+> •Detect emotion
+> •Describe meme
+> Content
+> Input :
+> •Detect Emotion
+> •Describe Meme Content Prompt Ⅱ
+> •Positive Description
+> •Generate Positive Text
+> Input :
+> •Positive Description
+> •Generate Positive Text
+> Input Meme
+> Human Check
+> Human Check
+> Human Check
+> ①Final Meme Image,
+> ②Positive Description,
+> ③Positive Text
+
+Step B -1: Find: Pilot Annotation & Ambiguity Mining 
+
+> Ambiguous Memes
+> Systematic
+> Disagreements
+> Refine
+> Guideline
+> Guideline
+> (Clarified Rules
+> & Examples)
+> Qualified Annotators
+> & Calibrated Guideline
+> Pilot Set
+
+Step B -2: Resolve: Expert + LLM Clarification 
+
+> Prompt Ⅲ
+> Prompt Ⅰ
+> Expert
+
+Step B -3: Label / Calibrate: Training & Qualification    
+
+> Annotators
+> Annotators
+> Valence (-)Valence (+)
+> Arousal (+)
+> Arousal ( -)
+
+Fig. 2. Overview of MER-Bench construction. (A) Psychological foundations ground the annotation protocol: the Russell circumplex specifies the emotion space, and the reappraisal-based rewriting task is derived from established emotion regulation theory. ( B) Iterative rule setting and annotator training follow a Find-Resolve-Label pipeline with expert clarification and calibration. ( C) LLM-assisted human rewriting adopts a three-step workflow: emotion detection and image description, positive solution and target emotion specification, and final meme generation. Evaluation Metrics  Aggregated Evaluation Score   
+
+> Visual Generation Quality
+> (VGQ)
+> Text Generation Quality
+> (TGQ)
+> Text Emotion
+> Alignment (TEA)
+> Layout Consistency
+> (LC)
+> Perceived Emotion
+> Shift (PES)
+> Perceived Primary
+> Emotion (PPE)
+> Holistic Generation Quality
+> (HGQ)
+> Shift Strength Score
+> (SSS)
+> Content Fidelity
+> Score (CFS)
+> Target Alignment
+> Score (TAS)
+> Reappraisal Fidelity
+> Score (RFS)
+> Structural
+> Layout
+> Visual
+> Modality
+> Affective Polarity
+> Single -Panel
+> < 2,521 >
+> Multi -Panel
+> < 596 >
+> Object/
+> Animal -Centric
+> < 596 > Photographic
+> Human
+> < 581 > Illustrated/
+> Cartoon
+> < 223 >
+> Template Stylized
+> < 1.674 >
+> Positive Valence
+> < 146 >
+> Negative Valence
+> < 1,888 >
+> Neutral Valence
+> < 1,083 >
+
+# MER -Bench 
+
+Fig. 3. MER-Bench provides a unified taxonomy and evaluation metrics for meme reappraisal. 
+
+neutral or even positive captions. Among Visual Modality Category , Template Stylized constitutes the largest share, re-flecting the prevalence of template-based meme creation. For 
+
+Structural Layout Category , single-panel memes dominate, in line with the most common meme format on social media. Due to space limitations, more examples are provided on the benchmark homepage. V. E VALUATION PROTOCOL 
+
+A. MLLM-as-a-Judge 
+
+Evaluating Meme Reappraisal is challenging because it is inherently multi-objective. A successful output must align with the target emotion while preserving the original scenario, enti-ties, humor, and meme-specific structure, such as panel layout and caption placement. Conventional single-axis metrics [3], [6], [51], e.g ., sentiment accuracy, semantic similarity alone, cannot fully capture these intertwined requirements. We there-fore propose a structured and interpretable evaluation protocol tailored to the compositional nature of Meme Reappraisal. Given the recent advances of MLLMs in cross-modal rea-soning, affect recognition, and structured output generation, we adopt an MLLM-as-a-Judge paradigm [52] for evaluation. Concretely, we employ Gemini-3-Pro-Preview 3 as the judging model due to its strong multimodal reasoning ca-pability and stable structured output performance. Instead of relying solely on pretrained classifiers or heuristic similarity scores, we cast evaluation as a constrained reasoning problem: the judge model is presented with the SOURCE meme, the EDITED meme, and the TARGET emotion, and is required to output a JSON object following a strict schema. This design ensures interpretability, reproducibility, and controllability of the evaluation process. To reduce free-form bias and enforce task-specific con-straints, we introduce three structural mechanisms. First, emo-tion alignment scores are target-gated, meaning that if the perceived emotion of the edited meme does not match the target emotion, the alignment score is bound to the lower range. Second, each metric requires a localized rationale tied explicitly to that dimension, preventing global explanation leakage across criteria. Third, layout preservation is veri-fied, including single-panel versus multi-panel consistency and caption region alignment. Collectively, these mechanisms constrain the reasoning space of the judge model and ensure that evaluation remains faithful to the core objectives of the Meme Reappraisal task. Under this structured judging framework, we define a set of evaluation metrics organized into four macro-dimensions (Fig. 3): modality-level generation quality, emotion controlla-bility, structural preservation, and global affective outcome. 
+
+All scalar ratings are measured on a 1 to 5 Likert scale [53] unless otherwise specified. Specifically, (1) Visual Generation Quality (VGQ) measures the perceptual and stylistic integrity of the edited image, including artifact presence, realism or 
+
+> 3
+
+https://deepmind.google/models/gemini/pro/ JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 5        
+
+> Fig. 4. Human validation and prompt ablation results for the proposed MLLM-as-a-Judge evaluation protocol on 100 randomly sampled Meme Reappraisal outputs.
+
+stylistic coherence, visual cleanliness, and clarity of visual de-tails; (2) Visual Emotion Alignment (VEA) evaluates whether visual affective cues such as facial expressions, posture, light-ing, color tone, and overall atmosphere correspond to the target emotion; (3) Text Generation Quality (TGQ) assesses caption legibility, formatting correctness, fluency, and natural meme-style presentation without garbling or cropping artifacts; (4) 
+
+Text Emotion Alignment (TEA) measures whether the rewrit-ten caption conveys the target emotion while preserving the original scenario and humorous intent; (5) Layout Consistency (LC) verifies structural faithfulness and is marked consistent only if the edited meme preserves panel type, panel order when applicable, and caption placement regions; (6) Holistic Generation Quality (HGQ) provides a global quality score that integrates emotion success, content preservation, structural fidelity, and overall readability; (7) Perceived Primary Emo-tion (PPE) records the single dominant emotion perceived in the edited meme using a nine-way classification scheme that includes eight predefined emotions and an other category; and (8) Perceived Emotion Shift (PES) quantifies the magni-tude of emotional change from SOURCE to EDITED, where a score of 1 indicates minimal shift and a score of 5 indicates substantial shift. In summary, these metrics explicitly disentangle generation quality, emotion controllability, structural preservation, and affective transformation, forming a unified and interpretable evaluation protocol for the Meme Reappraisal task. 
+
+B. Prompt Design and Human Validation 
+
+Although MLLM-as-a-Judge provides strong multimodal reasoning capabilities, prompt construction critically influ-ences evaluation stability. We systematically investigate two orthogonal prompt design factors. The first concerns the or-dering of multimodal evidence: whether the reference image is presented before the textual context ( Visual-First , VF ) or after it ( Visual-Last , VL ). The second concerns reasoning order: whether the model generates structured rationales before producing numeric scores ( Rationale-First , RF ) or produces scores prior to explanations ( Rationale-Last , RL ). This results in four configurations: RF-VF, RF-VL, RL-VF, and RL-VL. To validate the reliability of the MLLM-based evaluation and identify the most human-aligned configuration, we conduct a controlled human study on 100 randomly sampled Meme Reappraisal outputs. Human annotators rate each dimension on a 1-6 Likert scale. In Fig. 4, human ratings are con-sistently positive across all dimensions, indicating that the proposed evaluation axes capture meaningful aspects of mul-timodal quality and affective transformation. Among the four prompting strategies, the RF-VF configuration achieves the highest win rate against alternatives. This finding suggests that presenting visual evidence early and enforcing structured rea-soning before scoring enhances alignment between automated judgment and human perception. Overall, the proposed evaluation framework demonstrates that MLLM-as-a-Judge, when equipped with schema-level constraints and carefully designed prompting strategies, pro-vides a stable, interpretable, and human-aligned assessment protocol for the Meme Reappraisal task. 
+
+C. Aggregated Evaluation Score 
+
+While the previously introduced metrics provide fine-grained and interpretable assessments, reporting eight separate indicators does not directly reflect a model’s overall capability in the Meme Reappraisal task. The task fundamentally re-quires the joint satisfaction of three core objectives: accurate realization of the target emotion, faithful preservation of the original scenario and meme structure, and perceptible emotional transformation from the source to the edited version. 
+
+A model that excels in visual quality but fails to achieve the target emotion, or one that shifts emotion at the cost of altering the underlying joke, should not receive a high overall score. Therefore, we design a principled aggregation framework that consolidates multiple evaluation signals into a unified metric while preserving the conjunctive nature of the task. We first define three intermediate component scores corre-sponding to the essential requirements of Meme Reappraisal. All underlying metrics are normalized to the range [0 , 1] 
+
+before aggregation. Specifically, all 1-5 Likert ratings are linearly mapped to [0 , 1] via min-max normalization. Layout consistency L ∈ [0 , 1] denotes structural preservation accuracy, where higher values indicate stronger agreement between SOURCE and EDITED layout types and caption regions. The target emotion hit indicator H ∈ [0 , 1] equals 1 when the perceived primary emotion matches the specified target emotion and 0 otherwise; when averaged across multiple evaluation runs, it may take fractional values within [0 , 1] .
+
+Target Alignment Score (TAS) It measures whether the edited meme successfully realizes the specified target emotion across modalities. Let Ev ∈ [0 , 1] and Et ∈ [0 , 1] denote the normalized visual and textual emotion alignment scores. 
+
+TAS = H · HM( Ev , E t), (2) where HM( ·) denotes the harmonic mean. The harmonic mean penalizes modality imbalance, ensuring that high alignment in only one channel cannot compensate for failure in the other. Multiplication by H further enforces strict target consistency, causing TAS to approach zero if the perceived emotion devi-ates from the specified target. 
+
+Content Fidelity Score (CFS) It captures structural and semantic preservation. Let Qv , Q t, Q o ∈ [0 , 1] denote the JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 6
+
+TABLE II MODEL PERFORMANCE ACROSS EVALUATION METRICS 
+
+Model VGQ ↑ VEA ↑ TGQ ↑ TEA ↑ LC ↑ HGQ ↑ PPE ↑ PES ↑ TAS ↑ CFS ↑ SSS ↑ RFS ↑
+
+Flux9B [54] 91 .10 ±1.16 98 .12 ±0.98 58 .27 ±2.00 92 .47 ±1.57 87 .90 ±2.33 68 .77 ±1.61 79 .50 ±2.99 99 .70 ±0.28 75 .70 ±3.07 62 .81 ±1.61 94 .98 ±0.04 76 .78 ±1.16 
+
+QwenEdit [55] 84 .08 ±2.20 91 .70 ±2.33 50 .68 ±4.01 80 .92 ±2.57 85 .80 ±3.33 61 .25 ±3.21 75 .10 ±3.03 94 .75 ±2.06 64 .57 ±3.30 54 .84 ±3.99 94 .16 ±0.35 69 .38 ±2.77 
+
+Flux4B [54] 78 .50 ±1.53 95 .98 ±1.82 25 .37 ±1.49 74 .42 ±2.22 84 .60 ±4.03 47 .35 ±1.47 74 .30 ±4.32 98 .85 ±0.76 62 .29 ±4.05 38 .49 ±2.05 94 .85 ±0.12 61 .06 ±1.75 
+
+UniPic [56] 74 .78 ±1.24 61 .72 ±2.92 42 .88 ±3.35 62 .85 ±4.39 81 .50 ±1.72 40 .27 ±2.58 50 .50 ±4.74 70 .13 ±2.92 31 .45 ±3.76 41 .17 ±2.09 87 .76 ±1.10 48 .43 ±2.48 
+
+DreamO2 [57] 68 .47 ±2.54 46 .25 ±4.77 27 .80 ±2.70 48 .30 ±3.50 89 .00 ±2.94 25 .45 ±2.39 43 .60 ±4.84 55 .45 ±4.99 20 .69 ±3.70 32 .37 ±1.63 80 .87 ±2.69 37 .79 ±2.92 
+
+ZTurbo [58] 85 .10 ±1.29 76 .42 ±4.38 70 .38 ±2.07 93 .92 ±1.79 9.00 ±2.54 45 .90 ±2.06 65 .70 ±3.50 88 .52 ±2.62 55 .40 ±4.51 5.87 ±1.71 92 .96 ±0.58 31 .04 ±3.34 
+
+LongCat [59] 73 .75 ±1.80 83 .97 ±2.55 28 .90 ±5.11 5.58 ±1.60 93 .30 ±1.83 29 .23 ±1.71 58 .50 ±4.35 67 .88 ±3.31 6.08 ±1.66 36 .89 ±3.21 86 .89 ±1.32 26 .74 ±2.54 
+
+Step1X [60] 69 .95 ±2.39 71 .20 ±3.68 49 .47 ±5.06 5.20 ±1.53 97 .90 ±1.52 28 .55 ±2.74 45 .50 ±4.81 54 .65 ±3.42 4.41 ±1.32 45 .22 ±3.29 80 .50 ±2.03 25 .13 ±3.06 
+
+Bagel7B [61] 32 .55 ±3.62 23 .07 ±3.35 5.10 ±2.37 0.58 ±0.26 82 .00 ±3.27 4.55 ±1.25 21 .20 ±3.36 23 .40 ±3.61 0.24 ±0.11 7.29 ±1.74 50 .17 ±5.75 4.86 ±0.86 
+
+GoT [62] 26 .77 ±2.71 28 .18 ±4.20 34 .88 ±3.87 1.53 ±0.89 65 .70 ±3.09 5.88 ±1.33 24 .10 ±4.70 33 .35 ±4.57 0.74 ±0.51 11 .52 ±1.46 62 .92 ±5.15 8.12 ±1.98 
+
+IP2P [49] 26 .47 ±2.64 17 .88 ±1.90 42 .15 ±4.50 1.05 ±0.72 98 .20 ±1.87 4.47 ±0.87 13 .20 ±2.74 23 .03 ±2.94 0.26 ±0.21 16 .72 ±1.81 49 .70 ±4.58 6.37 ±1.49 
+
+OmniG2 [63] 22 .00 ±2.25 6.15 ±2.91 42 .37 ±3.18 9.72 ±2.99 84 .40 ±4.60 2.48 ±1.17 9.40 ±3.50 9.45 ±3.22 0.78 ±0.55 10 .86 ±1.48 24 .37 ±7.13 5.93 ±2.13 
+
+ICEdit [64] 28 .82 ±3.79 4.80 ±0.70 10 .85 ±2.95 0.48 ±0.48 89 .70 ±2.63 0.68 ±0.44 5.40 ±2.37 6.17 ±1.05 0.04 ±0.05 4.53 ±2.57 16 .87 ±2.64 1.94 ±0.82 
+
+SD [65] 93 .92 ±1.01 84 .88 ±3.07 0.28 ±0.25 1.20 ±0.59 0.40 ±0.52 18 .93 ±1.71 51 .90 ±7.19 91 .00 ±1.55 1.22 ±0.63 0.03 ±0.04 93 .47 ±0.31 2.32 ±0.64 
+
+Notes: Results are reported on the filtered evaluation subset with ˜N = 2711 memes. For each of the 10 runs, we first randomly sample 100 memes from the full subset and then evaluate all models on this shared sample set. All values are normalized to the range [0 , 100] and reported as mean ± standard deviation over the 10 runs. Colors are applied independently within each metric, and darker shading indicates better performance in that column. 
+
+normalized visual generation quality, text generation quality, and holistic generation quality scores. We define 
+
+CFS = L · GM( Qv , Q t, Q o), (3) where GM( ·) is the geometric mean. The geometric mean discourages extreme compensation by any single quality di-mension and promotes balanced multimodal fidelity, while multiplication by L ensures that structural inconsistency di-rectly suppresses the fidelity score. 
+
+Shift Strength Score (SSS) It quantifies the perceptual magnitude of emotional transformation. Let S ∈ [0 , 1] denote the normalized Perceived Emotion Shift score. To emphasize meaningful affective changes while avoiding linear scaling bias, we apply a nonlinear transformation: 
+
+SSS = 1 − exp( −αS ), (4) where α > 0 controls sensitivity to larger shifts and modulates saturation behavior. Finally, the three components are combined using a soft conjunctive operator to obtain the overall metric, termed the 
+
+Reappraisal Fidelity Score (RFS) :
+
+RFS = SoftAND(TAS , CFS , SSS) . (5) where SoftAND( ·) function is implemented as a geometric conjunction that preserves conjunctive behavior while prevent-ing numerical collapse when one component is near zero. This formulation reflects the logical structure of Meme Reappraisal: strong performance requires simultaneous achievement of tar-get alignment, content fidelity, and emotional transformation. 
+
+D. Model Benchmarking and Evaluation Procedure 
+
+To evaluate performance on Meme Reappraisal , we bench-mark a diverse set of 14 SOTA image editing and multimodal generation models [49], [54]–[65]. These models cover diverse architectural paradigms, including diffusion-based editors, instruction-guided frameworks, MLLM-conditioned genera-tors, and large-scale image transformation systems, enabling a broad comparison across heterogeneous editing strategies. Given M models and N source memes, the benchmark yields up to M × N edited outputs, each evaluated indepen-dently under the MLLM-as-a-Judge protocol in Section V-A. In our setting, M = 14 and N = 3117 . Since some models fail on particular inputs, not all model-sample pairs produce valid outputs. To ensure fair comparison, we apply a global filtering step and retain only source memes with valid outputs under the benchmark protocol, resulting in a final comparable subset of ˜N = 2711 . All aggregate results are therefore reported on the filtered space M × ˜N .For reliable estimation, scores are computed at the sample level and then aggregated across three axes: across models for comparative evaluation, across taxonomy categories for conditional analysis, and across the full filtered subset for overall performance. When applicable, we report mean and standard deviation over repeated randomized subsets. This aggregation strategy helps ensure that the results reflect stable trends rather than sampling-specific variation. Overall, our benchmark covers 14 models, 3,117 source memes, and a final comparable subset of 2,711 memes for main evaluation. We next present quantitative comparisons across overall and category-specific settings, followed by qual-itative analysis of representative successes, failure modes, and core challenges in context-preserving meme reappraisal. VI. Q UANTITATIVE RESULTS 
+
+A. Model-wise Performance Analysis 
+
+Tab. II reports the complete metric-level performance of all evaluated models, and Fig. 5 (a)-(n) presents their RFS scores across dataset subcategories. The results reveal aclear performance hierarchy on the Meme Reappraisal task. 
+
+Flux9B [54] achieves the best overall performance with an RFS of 76.78, followed by QwenEdit [55], which obtains 69.38, and Flux4B [54], which reaches 61.06. These models consistently obtain strong scores across evaluation dimensions, including visual generation quality, emotional alignment, and semantic stability. Notably, Flux9B [54] attains the highest values in VGQ, VEA, TEA, and PES, demonstrating strong JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 7(i) Bagel7B  
+
+> (e) DreamO2
+> (c) Flux4B (a) Flux9B
+> (j) GoT
+> (m) ICEdit
+> (k) IP2P
+> (g) LongCat
+> (l) OmniG2
+> (b) QwenEdit
+> (n) SD
+> (h) Step1X
+> (d) UniPic
+> (f) ZTurbo
+> (o) Overall
+> Fig. 5. Subcategory-wise and overall analysis on Meme Reappraisal. In each run, 700 memes are sampled as evenly as possible from the edited outputs of different models, and scores are averaged over 10 runs. The bar colors in (o) are consistent with the metric-specific color scheme used in Tables II and III.
+
+capability in jointly preserving structure while performing effective reinterpretation. The second performance tier, including UniPic [56], 
+
+DreamO2 [57], and ZTurbo [58], exhibits partial strengths but lacks consistency. For instance, ZTurbo [58] performs well in text-related metrics and affective alignment but records extremely low layout consistency, indicating semantically plausible outputs with poor structural preservation. In con-trast, instruction-based editors, such as Step1X [60] and 
+
+IP2P [49], achieve very high layout consistency yet show limited affective transformation, suggesting structurally con-servative but emotionally weak edits. Traditional diffusion baselines and smaller MLLMs, includ-ing Bagel7B [61], GoT [62], OmniG2 [63], ICEdit [64], and SD [65], obtain substantially lower overall scores. Al-though some maintain reasonable visual generation quality, they generally fail to satisfy the joint requirements of meme reappraisal, particularly in text generation, affective alignment, and semantic preservation. Fig. 5(a)-(n) further illustrates that top-performing models exhibit stable performance across meme types, whereas weaker models show large fluctuations across subcategories. 
+
+Key Insights. The model-wise comparison reveals that Meme Reappraisal is not bottlenecked by raw image gener-ation quality, but by the ability to jointly satisfy three tightly coupled constraints: structural preservation, semantic stability, and affective reinterpretation. Current models tend to optimize only a subset of these requirements. Large unified editors such as Flux9B [54] and QwenEdit [55] are the only ones that remain competitive across all three aspects, indicating that successful meme reappraisal requires integrated multi-modal reasoning rather than isolated editing skill. In contrast, 
+
+ZTurbo [58] show that strong emotional alignment without layout preservation leads to semantically plausible yet meme-inconsistent outputs, while Step1X [60] and IP2P [49] show the opposite failure mode, namely preserving the template without actually changing the underlying affective framing. These results suggest that the core difficulty lies in preserving the original meme’s identity while changing its emotional interpretation, which is harder than either conventional image editing or unconstrained meme generation. 
+
+B. Category-wise Performance Analysis 
+
+Tab. III summarizes performance across dataset subcate-gories, and Fig. 5(a)-(n) illustrates the corresponding RFS distributions. The results provide fine-grained insights into how meme characteristics affect reappraisal difficulty. Across visual modality categories, object- or animal-centric memes achieve the highest overall performance with an RFS of JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 8
+
+TABLE III SUBCATEGORY LEVEL PERFORMANCE ACROSS EVALUATION METRICS 
+
+VGQ ↑ VEA ↑ TGQ ↑ TEA ↑ LC ↑ HGQ ↑ PPE ↑ PES TAS ↑ CFS ↑ SSS ↑ RFS ↑
+
+Visual Modality 
+
+Object/Animal-Centric 65 .65 ±0.00 59 .25 ±0.00 38 .75 ±0.00 37 .20 ±0.00 74 .00 ±5.66 30 .25 ±0.00 49 .60 ±8.68 61 .20 ±0.00 22 .65 ±4.13 31 .42 ±3.34 83 .99 ±1.50 38 .96 ±2.59 
+
+Photographic Human 61 .25 ±0.00 60 .05 ±0.00 36 .80 ±0.00 35 .75 ±0.00 77 .80 ±2.90 29 .60 ±0.00 46 .80 ±6.68 61 .65 ±0.00 21 .03 ±3.88 31 .48 ±2.06 84 .23 ±1.17 38 .14 ±2.90 
+
+Illustrated/Cartoon 61 .75 ±0.00 55 .30 ±0.00 36 .15 ±0.00 37 .20 ±0.00 77 .40 ±2.99 28 .60 ±0.00 48 .20 ±5.20 57 .25 ±0.00 21 .48 ±3.35 30 .90 ±2.06 81 .93 ±2.15 37 .86 ±2.64 
+
+Template Stylized 60 .05 ±0.00 58 .15 ±0.00 30 .75 ±0.00 32 .25 ±0.00 74 .20 ±3.71 26 .10 ±0.00 45 .00 ±7.50 60 .45 ±0.00 18 .60 ±3.18 26 .88 ±1.26 83 .61 ±1.75 34 .67 ±2.28 
+
+Structural Layout 
+
+Single-Panel 61 .95 ±0.00 56 .55 ±0.00 35 .95 ±0.00 34 .65 ±0.00 75 .40 ±3.13 28 .15 ±0.00 46 .80 ±5.01 58 .65 ±0.00 20 .10 ±3.29 29 .82 ±2.78 82 .70 ±1.91 36 .71 ±3.18 
+
+Multi-Panel 57 .05 ±0.00 54 .65 ±0.00 30 .80 ±0.00 33 .80 ±0.00 72 .60 ±5.74 23 .30 ±0.00 46 .60 ±7.78 56 .20 ±0.00 19 .62 ±4.79 24 .93 ±2.43 81 .37 ±2.11 34 .00 ±3.65 
+
+Affective Polarity 
+
+Positive Valence 64 .43 ±0.00 62 .07 ±0.00 34 .93 ±0.00 39 .89 ±0.00 74 .94 ±6.51 31 .42 ±0.00 54 .92 ±5.44 66 .68 ±0.00 26 .58 ±3.20 30 .92 ±3.92 86 .38 ±1.61 41 .35 ±2.86 
+
+Neutral Valence 60 .10 ±0.00 55 .95 ±0.00 32 .80 ±0.00 34 .30 ±0.00 72 .60 ±4.90 26 .90 ±0.00 44 .00 ±7.18 59 .40 ±0.00 18 .83 ±4.30 27 .23 ±3.35 82 .89 ±3.38 34 .73 ±3.45 
+
+Negative Valence 62 .80 ±0.00 59 .60 ±0.00 34 .60 ±0.00 33 .25 ±0.00 75 .80 ±4.26 27 .10 ±0.00 49 .40 ±9.71 59 .85 ±0.00 21 .16 ±5.21 29 .47 ±3.44 83 .25 ±2.28 37 .16 ±4.22 
+
+Notes: Results report aggregated performance for each dataset subcategory. For each category, we sample 50 memes as evenly as possible from the edited outputs produced by different models, ensuring balanced coverage across models. This sampling procedure is repeated 10 times. All values are normalized to the range [0 , 100] and reported as mean ± standard deviation across the 10 runs. Colors are applied independently within each metric, and darker shading indicates better performance within that column. 
+
+38.96, followed by photographic human memes at 38.14 and illustrated or cartoon memes at 37.86. Template-stylized memes perform noticeably worse, reaching only 34.67. The gap is primarily reflected in text-related metrics such as TGQ and TEA. Template memes typically rely on fixed layouts and stylized captions, where minor textual modifications can disrupt the original semantic alignment, making controlled reinterpretation more difficult. A similar pattern is observed in structural layout categories. Single-panel memes achieve an RFS of 36.71, whereas multi-panel memes decline to 34.00. Multi-panel memes often encode humor through sequential composition and narrative progression, requiring models to preserve both spatial structure and inter-panel coherence dur-ing editing, which substantially increases complexity. Af-fective polarity further influences performance. Memes with positive valence achieve the highest RFS at 41.35, followed by negative-valence memes at 37.16 and neutral memes at 34.73. Positive memes also score higher in emotion-related metrics such as VEA, TEA, and TAS. This suggests that current models more reliably amplify positive affect, whereas neutral memes, which often feature ambiguous emotional signals, pose greater challenges for controlled transformation. 
+
+Key Insights. The category-level analysis reveals three consistent patterns. First, template-based memes are signifi-cantly harder to reinterpret than other visual modalities, as their meaning strongly depends on rigid layout and caption structures. Second, multi-panel memes introduce additional structural complexity because humor often emerges from sequential narrative relationships across panels. Third, memes with positive affective polarity are generally easier to rein-terpret, suggesting that current generative models are more effective at producing positive emotional transformations than neutral or negative ones. 
+
+C. Overall Benchmark Analysis 
+
+We examine the overall benchmark statistics aggregated across the full evaluation subset. Fig. 5(o) summarizes the distribution of all evaluation metrics when sampling results from different models across the filtered dataset. Compared with the category-level analysis, this global view provides a more comprehensive perspective on the current capability of image editing systems on the Meme Reappraisal task. Overall, visual quality-related metrics such as VGQ and LC remain relatively high across models, indicating that modern image generation systems are generally capable of producing visually coherent outputs and preserving basic structural layouts. In contrast, metrics associated with affective transformation and text generation, including TGQ, TEA, and TAS, show signifi-cantly lower scores. This gap highlights the difficulty of jointly performing semantic reinterpretation and caption generation while maintaining the original meme context. The aggre-gated results, therefore, suggest that the primary challenge of Meme Reappraisal lies not in low-level visual editing but in higher-level multimodal reasoning and affective reinterpre-tation. Models must simultaneously understand the semantic structure of the meme, preserve the original visual context, and generate coherent emotional transformations expressed through both image content and embedded text. 
+
+Key Insights. While modern generative models are capa-ble of producing high-quality images and preserving visual structure, they still struggle to perform coherent affective reinterpretation of memes. This finding suggests that Meme Reappraisal is fundamentally a multimodal reasoning problem rather than a purely visual editing task. VII. Q UALITATIVE ANALYSIS 
+
+Fig. 6 presents representative cases that expose common failure modes, consistent with the trends observed in our quantitative metrics. One typical failure mode arises when models preserve the original meme template and layout but fail to induce a meaningful affective shift toward the target emo-tion. This behavior is observed in models such as Bagel7B ,
+
+GoT , SD , and IP2P . Although structural integrity is largely maintained, emotional alignment remains weak, resulting in a low overall RFS despite high layout consistency. A contrast-ing pattern occurs when affective alignment improves at the expense of structural preservation. In such cases, the target emotion is partially achieved, but the meme template is vis-ibly disrupted. ZTurbo exemplifies this trade-off, exhibiting poor layout consistency and degraded content fidelity even when affective metrics increase. A more challenging scenario JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 9Detect emotion : “Angry",          
+
+> Target Emotion : “Calm",
+> Affective Polarity : "Negative",
+> Structural Layout Category :
+> “Single -Panel”,
+> Visual Modality Category :
+> "Template Stylized",
+> Original text : "EWW.ARE
+> THOSE FEELINGS?! GET
+> THAT SHIT AWAY FROM
+> ME. @Snark And Twisty",
+> Generate positive text : "Aww,
+> are those feelings? Come here,
+> let’s share them!"
+> Detect emotion :“Bored",
+> Target Emotion :“Excited",
+> Sentiment polarity :
+> "Positive",
+> Layout type :“Multi -Panel”,
+> Visual type : "Template
+> Stylized",
+> Original text :"RPE ASIA
+> MERE I HAVE A FUN
+> PROJECT FOR YOU
+> GUYS I'm bursting with joy
+> Anda ",
+> Generate positive text :“ I’ve
+> got a fun project for you
+> guys —it’s going to be
+> amazing! "
+> Detect emotion : “Tense",
+> Target Emotion : “Relaxed",
+> Sentiment polarity : "Neutral",
+> Layout type : "Single -Panel",
+> Visual type :
+> "Illustrated/Cartoon",
+> Original text : "The entire class
+> in the 3rd grade when 2 people
+> kiss in a movie: bon",
+> Generate positive text : "The
+> entire class in the 3rd grade
+> when 2 people hold hands in a
+> movie: all giggling together like
+> it’s the funniest thing ever! "
+> QwenEdit
+> ICEdit
+> QwenEdit
+> ICEdit
+> QwenEdit
+> ICEdit
+> ZTurbo
+> IP2P
+> ZTurbo
+> IP2P
+> ZTurbo
+> IP2P
+> DreamO2
+> SD
+> DreamO2
+> SD
+> DreamO2
+> SD
+> Flux9B
+> GoT
+> Flux9B
+> GoT
+> Flux9B
+> GoT
+> Original
+> Bagel7B
+> Original
+> Bagel7B
+> Original
+> Bagel7B
+
+Fig. 6. Qualitative comparison of meme reappraisal results across models. 
+
+emerges in multi-panel memes, which require coherent cross-panel structure and narrative continuity. Many models struggle to maintain spatial relationships and semantic coherence across panels, either distorting the layout or generating inconsistent panel content. This highlights the increased difficulty of multi-panel meme reappraisal and reveals limitations in jointly preserving structural integrity and controlling affect. VIII. D ISCUSSION 
+
+Our results position Meme Reappraisal as a distinct ca-pability beyond meme understanding, meme generation, and generic emotion-controllable editing. Compared with safety-oriented benchmarks such as Hateful Memes and GOAT-Bench [3], [8], the task exposes a gap between recognition and transformation. Identifying emotional meaning is substantially easier than altering it under structural constraints. Relative to meme generation methods such as MemeCap, XMeCap, and IterMeme [15]–[17], Meme Reappraisal introduces an invariance requirement that preserves meme identity, layout, and semantic context during editing. This shifts the problem from open-ended generation to constrained transformation. Empirically, models strong in image synthesis or layout preser-vation alone do not reliably achieve affective reinterpretation when these objectives must be satisfied jointly. The benchmark also extends findings in emotion-controllable generation [21], [22], [49], [66]. While prior work demonstrates affect control in generic settings, our results show that emotion manipulation becomes markedly harder when affect is encoded through tightly coupled visual content, embedded text, and meme con-ventions. This multimodal interdependence creates a structural and affective trade-off, in which models often succeed in either preserving structure or modifying emotion, but rarely both. Overall, these findings suggest that structure-preserving affect transformation constitutes a distinct evaluation axis for multimodal systems. IX. C ONCLUSION 
+
+We introduce Meme Reappraisal, a novel benchmark task for context-preserving affect transformation in negative memes. Unlike prior work on meme understanding, safety detection, or meme generation, this task requires models to jointly preserve structure, maintain semantic consistency, and achieve coherent emotional reframing. To support our study, we construct MER-Bench, along with a structured evaluation framework for benchmarking modern image-editing and multimodal-generation models. Results show that current systems still struggle to balance visual quality, meme identity preservation, and positive reinterpretation, highlighting the need for stronger multimodal reasoning over image content, embedded text, and affective intent. We hope MER-Bench will facilitate future research on controllable meme editing and affect-aware multimodal generation. REFERENCES [1] S. Blackmore et al. , “Imitation and the definition of a meme,” Journal of Memetics-Evolutionary Models of Information Transmission , vol. 2, no. 11, pp. 159–170, 1998. [2] M. Mortensen and C. Neumayer, “The playful politics of memes,” pp. 2367–2377, 2021. [3] H. Lin, Z. Luo, B. Wang, R. Yang, and J. Ma, “Goat-bench: Safety insights to large multimodal models through meme-based social abuse,” 
+
+ACM Transactions on Intelligent Systems and Technology , 2024. [4] A. Denisova, Internet memes and society: Social, cultural, and political contexts , 2019. [5] P. J. Brubaker, S. H. Church, J. Hansen, S. Pelham, and A. Ostler, “One does not simply meme about organizations: Exploring the content creation strategies of user-generated memes on imgur,” Public relations review , vol. 44, no. 5, pp. 741–751, 2018. [6] S. Sharma, S. Ramaneswaran, M. S. Akhtar, and T. Chakraborty, “Emotion-aware multimodal fusion for meme emotion detection,” IEEE Transactions on Affective Computing , vol. 15, no. 3, pp. 1800–1811, 2024. [7] Z. Bai, L. Yang, S. Yin, J. Lu, J. Zeng, H. Zhu, Y. Sun, and H. Lin, “State toxicn: A benchmark for span-level target-aware toxicity extraction in chinese hate speech detection,” in Findings of the Association for Computational Linguistics: ACL 2025 , 2025, pp. 10 206–10 219. [8] D. Kiela, H. Firooz, A. Mohan, V. Goswami, A. Singh, P. Ringshia, and D. Testuggine, “The hateful memes challenge: Detecting hate speech in multimodal memes,” Advances in neural information processing systems ,vol. 33, pp. 2611–2624, 2020. [9] S. Yuan, Y. Wei, H. Zhou, Q. Xu, M. Chen, and X. He, “Enhancing semantic awareness by sentimental constraint with automatic outlier masking for multimodal sarcasm detection,” IEEE Transactions on Multimedia , 2025. [10] K. Ouyang, L. Jing, X. Song, M. Liu, Y. Hu, and L. Nie, “Sentiment-enhanced graph-based sarcasm explanation in dialogue,” IEEE Transac-tions on Multimedia , 2025. [11] J. Li, Y. Wang, and W. Li, “Mhrn: A multimodal hierarchical reasoning network for topic detection,” IEEE Transactions on Multimedia , vol. 26, pp. 6968–6980, 2024. [12] K. P. Nguyen and V. Ng, “Computational meme understanding: asurvey,” in Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , 2024, pp. 21 251–21 267. [13] P. C. d. Q. Hermida and E. M. d. Santos, “Detecting hate speech in memes: a review,” Artificial Intelligence Review , vol. 56, no. 11, pp. 12 833–12 851, 2023. [14] M. Wang, Z. Liu, K. Li, Y. Wang, Y. Wang, Y. Wei, and F. Wang, “Task-generalized adaptive cross-domain learning for multimodal image fusion,” IEEE Transactions on Multimedia , 2026. JOURNAL OF L ATEX CLASS FILES, VOL. 18, NO. 9, SEPTEMBER 2020 10 
+
+[15] E. Hwang and V. Shwartz, “Memecap: A dataset for captioning and interpreting memes,” arXiv preprint arXiv:2305.13703 , 2023. [16] Y. Chen, S. Yan, Z. Zhu, Z. Li, and Y. Xiao, “Xmecap: Meme caption generation with sub-image adaptability,” in Proceedings of the 32nd ACM International Conference on Multimedia , 2024, pp. 3352–3361. [17] Y. Cai, S. Fang, Y. Qu, X. Wang, M. Shao, and H. Xie, “Itermeme: Expert-guided multimodal llm for interactive meme creation with layout-aware generation,” in Proceedings of the Thirty-Fourth International Joint Conference on Artificial Intelligence , 2025, pp. 720–728. [18] Z. Zhao, S. Zhang, Y. Zhang, Y. Zhao et al. , “Memereacon: Probing contextual meme understanding in large vision-language models,” arXiv preprint arXiv:2505.17433 , 2025. [19] B. Xu, T. Li, J. Zheng, M. Naseriparsa, Z. Zhao, H. Lin, and F. Xia, “Met-meme: A multimodal meme dataset rich in metaphors,” in Pro-ceedings of the 45th international ACM SIGIR conference on research and development in information retrieval , 2022, pp. 2887–2899. [20] T. Khurana, K. Pillalamarri, V. Pande, and M. Singh, “Lolgorithm: Integrating semantic, syntactic and contextual elements for humor clas-sification,” arXiv preprint arXiv:2408.06335 , 2024. [21] J. Yang, W. Luo, and H. Huang, “Emoctrl: Controllable emotional image content generation,” arXiv preprint arXiv:2512.22437 , 2025. [22] J. Yang, J. Feng, and H. Huang, “Emogen: Emotional image content generation with text-to-image diffusion models,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024, pp. 6358–6368. [23] J. Yang, J. Feng, W. Luo, D. Lischinski, D. Cohen-Or, and H. Huang, “Emoedit: Evoking emotions through image manipulation,” in Proceed-ings of the Computer Vision and Pattern Recognition Conference , 2025, pp. 24 690–24 699. [24] F. Wang, D. Guo, K. Li, Z. Zhong, and M. Wang, “Frequency decoupling for motion magnification via multi-level isomorphic architecture,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 18 984–18 994. [25] A. O. Smith, J. Hemsley, and Z. Y. Tacheva, “Reinforming memes: A literature review of the status of memetic information,” Journal of Documentation , vol. 80, no. 4, pp. 1003–1021, 2024. [26] D. S. M. Pandiani, E. T. K. Sang, and D. Ceolin, “Toxic memes: A survey of computational perspectives on the detection and explanation of meme toxicities,” arXiv preprint arXiv:2406.07353 , 2024. [27] R. S. Lazarus, Stress, appraisal, and coping . Springer, 1984, vol. 445. [28] ——, Emotion and adaptation . Oxford University Press, 1991. [29] F. Wang, J. Yang, J. Chen, Y. Liu, K. Li, Y. Wei, D. Guo, and M. Wang, “Xinsight: Integrative stage-consistent psychological counseling support agents for digital well-being,” arXiv preprint arXiv:2603.06583 , 2026. [30] J. J. Gross, “The emerging field of emotion regulation: An integrative review,” Review of general psychology , vol. 2, no. 3, pp. 271–299, 1998. [31] J. J. Gross et al. , “Emotion regulation: Conceptual and empirical foundations,” Handbook of emotion regulation , vol. 2, no. 1, pp. 3–20, 2014. [32] B. E. Wiggins, The discursive power of memes in digital culture: Ideology, semiotics, and intertextuality , 2019. [33] S. Mishra, S. Suryavardan et al. , “Memotion 3: Dataset on sentiment and emotion analysis of codemixed hindi-english memes,” arXiv preprint arXiv:2303.09892 , 2023. [34] J.-t. Huang, M. H. Lam et al. , “Emotionally numb or empa-thetic? evaluating how llms feel using emotionbench,” arXiv preprint arXiv:2308.03656 , 2023. [35] S. Sabour, S. Liu, Z. Zhang, J. Liu, J. Zhou, A. Sunaryo, T. Lee, R. Mihalcea, and M. Huang, “Emobench: Evaluating the emotional intelligence of large language models,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics , 2024, pp. 5986–6004. [36] S. Song, C. He et al. , “Mosabench: Multi-object sentiment analysis benchmark for evaluating multimodal large language models understand-ing of complex image,” arXiv preprint arXiv:2412.00060 , 2024. [37] X. Yang, W. Wu, S. Feng et al. , “Mm-instructeval: Zero-shot evaluation of (multimodal) large language models on multimodal reasoning tasks,” 
+
+Information Fusion , p. 103204, 2025. [38] J. Park, K. P. Nguyen et al. , “Memeinterpret: Towards an all-in-one dataset for meme understanding,” in Findings of the Association for Computational Linguistics: EMNLP 2025 , 2025, pp. 16 073–16 087. [39] A. Sadasivam, K. Gunasekar, H. Davulcu, and Y. Yang, “Meme-bot: Towards automatic image meme generation,” arXiv preprint arXiv:2004.14571 , 2020. [40] S. R. Vyalla and V. Udandarao, “Memeify: A large-scale meme gener-ation system,” in Proceedings of the 7th ACM IKDD CoDS and 25th COMAD , 2020, pp. 307–311. [41] H. Wang and R. K.-W. Lee, “Memecraft: Contextual and stance-driven multimodal meme generation,” in Proceedings of the ACM Web Conference 2024 , 2024, pp. 4642–4652. [42] X. Li, Y. Xue, M. Jiang, Q. Zhu, and Y. Niu, “From perception to punchline: Empowering vlm with the art of in-the-wild meme,” arXiv preprint arXiv:2512.24555 , 2025. [43] J. Zhang, S. Luo, R. Zhang, and Q. Su, “Humorchain: Theory-guided multi-stage reasoning for interpretable multimodal humor generation,” 
+
+arXiv preprint arXiv:2511.21732 , 2025. [44] J. Chen, Y. Huang, T. Lv, L. Cui, Q. Chen, and F. Wei, “Textdiffuser-2: Unleashing the power of language models for text rendering,” in 
+
+European Conference on Computer Vision , 2024, pp. 386–402. [45] Y. Tuo, W. Xiang, J.-Y. He, Y. Geng, and X. Xie, “Anytext: Multilingual visual text generation and editing,” arXiv preprint arXiv:2311.03054 ,2023. [46] C. Mou, X. Wang, L. Xie, Y. Wu, J. Zhang, Z. Qi, and Y. Shan, “T2i-adapter: Learning adapters to dig out more controllable ability for text-to-image diffusion models,” in Proceedings of the AAAI conference on artificial intelligence , vol. 38, no. 5, 2024, pp. 4296–4304. [47] H. Ye, J. Zhang, S. Liu, X. Han, and W. Yang, “Ip-adapter: Text compatible image prompt adapter for text-to-image diffusion models,” 
+
+arXiv preprint arXiv:2308.06721 , 2023. [48] B. Wallace, M. Dang, R. Rafailov et al. , “Diffusion model alignment using direct preference optimization,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 8228–8238. [49] T. Brooks, A. Holynski, and A. A. Efros, “Instructpix2pix: Learning to follow image editing instructions,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 18 392–18 402. [50] J. A. Russell, “A circumplex model of affect.” Journal of personality and social psychology , vol. 39, no. 6, p. 1161, 1980. [51] A. Sharma and P. W. Patil, “Memetag: Keyword-driven meme clas-sification through tag embedding reconstruction,” in Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision ,2026, pp. 7679–7688. [52] D. Chen, R. Chen, S. Zhang et al. , “Mllm-as-a-judge: Assessing mul-timodal llm-as-a-judge with vision-language benchmark,” in Forty-first International Conference on Machine Learning , 2024. [53] D. Mellor and K. A. Moore, “The use of likert scales with children,” 
+
+Journal of pediatric psychology , vol. 39, no. 3, pp. 369–379, 2014. [54] B. F. Labs, “FLUX.2: Frontier Visual Intelligence,” https://bfl.ai/blog/ flux-2, 2025. [55] C. Wu, J. Li, J. Zhou et al. , “Qwen-image technical report,” arXiv preprint arXiv:2508.02324 , 2025. [56] H. Wei, H. Liu, Z. Wang, Y. Peng, B. Xu et al. , “Skywork unipic 3.0: Unified multi-image composition via sequence modeling,” arXiv preprint arXiv:2601.15664 , 2026. [57] B. Xia, B. Peng, Y. Zhang et al. , “Dreamomni2: Multimodal instruction-based editing and generation,” arXiv preprint arXiv:2510.06679 , 2025. [58] H. Cai, S. Cao, R. Du et al. , “Z-image: An efficient image genera-tion foundation model with single-stream diffusion transformer,” arXiv preprint arXiv:2511.22699 , 2025. [59] M. L. Team, H. Ma, H. Tan, J. Huang et al. , “Longcat-image technical report,” arXiv preprint arXiv:2512.07584 , 2025. [60] S. Liu, Y. Han, P. Xing et al. , “Step1x-edit: A practical framework for general image editing,” arXiv preprint arXiv:2504.17761 , 2025. [61] C. Deng, D. Zhu, K. Li, C. Gou et al. , “Emerging properties in unified multimodal pretraining,” arXiv preprint arXiv:2505.14683 , 2025. [62] R. Fang, C. Duan, K. Wang et al. , “Got: Unleashing reasoning capability of multimodal large language model for visual generation and editing,” 
+
+arXiv preprint arXiv:2503.10639 , 2025. [63] C. Wu, P. Zheng, R. Yan et al. , “Omnigen2: Exploration to advanced multimodal generation,” arXiv preprint arXiv:2506.18871 , 2025. [64] Z. Zhang, J. Xie, Y. Lu, Z. Yang, and Y. Yang, “Enabling instructional image editing with in-context generation in large scale diffusion trans-former,” in The Thirty-ninth Annual Conference on Neural Information Processing Systems , 2025. [65] R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Ommer, “High-resolution image synthesis with latent diffusion models,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2022, pp. 10 684–10 695. [66] Y. Zhang, K. Xu, C. Xie, and Z. Gao, “Emotion inference in conversa-tions based on commonsense enhancement and graph structures,” PloS One , vol. 19, no. 12, p. e0315039, 2024.

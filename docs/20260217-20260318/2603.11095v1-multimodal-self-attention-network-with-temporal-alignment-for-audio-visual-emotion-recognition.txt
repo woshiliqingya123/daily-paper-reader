@@ -1,0 +1,284 @@
+Title: Multimodal Self-Attention Network with Temporal Alignment for Audio-Visual Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2603.11095v1
+
+Published Time: Fri, 13 Mar 2026 00:01:52 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+## MULTIMODAL SELF-ATTENTION NETWORK WITH TEMPORAL ALIGNMENT FOR AUDIO-VISUAL EMOTION RECOGNITION 
+
+## Inyong Koo 1 Yeeun Seong 2 Minseok Son 1 Jaehyuk Jang 1 Changick Kim 1
+
+## Korea Advanced Institute of Science and Technology (KAIST) 
+
+> 1
+
+## School of Electrical Engineering 2Graduate School of Green Growth and Sustainability Daejeon, South Korea 
+
+ABSTRACT 
+
+Audio-visual emotion recognition (AVER) methods typically fuse utterance-level features, and even frame-level atten-tion models seldom address the frame-rate mismatch across modalities. In this paper, we propose a Transformer-based framework focusing on the temporal alignment of multimodal features. Our design employs a multimodal self-attention en-coder that simultaneously captures intra- and inter-modal de-pendencies within a shared feature space. To address hetero-geneous sampling rates, we incorporate Temporally-aligned Rotary Position Embeddings (TaRoPE), which implicitly syn-chronize audio and video tokens. Furthermore, we introduce a Cross-Temporal Matching (CTM) loss that enforces consis-tency among temporally proximate pairs, guiding the encoder toward better alignment. Experiments on CREMA-D and RAVDESS datasets demonstrate consistent improvements over recent baselines, suggesting that explicitly addressing frame-rate mismatch helps preserve temporal cues and en-hances cross-modal fusion. 
+
+Index Terms — Multimodal emotion recognition, Trans-former encoder, temporal alignment, Rotary Position Embed-ding (RoPE), cross-temporal matching loss 
+
+1. INTRODUCTION 
+
+Understanding human emotion from multimodal signals such as speech and facial expressions is a central challenge in affective computing and human–computer interaction [1]. Audio-visual emotion recognition (AVER) benefits from complementary cues across modalities: prosody and into-nation in speech often co-occur with facial action units and expressions in video. However, effectively modeling and synchronizing these heterogeneous signals remains a long-standing problem. Early AVER systems typically extract modality-specific representations at the utterance level, and then fuse them with simple concatenation for classification [2, 3, 4, 5, 6]. This design is simple and robust, but collapses modality-specific temporal dynamics into a global embedding, limiting fine-grained cross-modal interactions. More recent works attempt to exploit cross-modal dependencies between au-dio and video sequences using a variety of cross-attention architectures [7, 8, 9, 10], yet they typically rely only on feature-level similarity and do not incorporate temporal cues. In particular, Transformer-based architectures [11, 12] cap-ture ordering within each modality through positional embed-dings, but remain agnostic to the relative temporal structure across modalities, leaving cross-modal synchronization in-sufficiently modeled. This challenge becomes evident when we consider the dif-ferent temporal granularities of audio and video representa-tions. Audio features are extracted at a finer temporal res-olution (e.g., 50 FPS), whereas video features are typically coarser (e.g., 30 FPS), which leads to asynchronous token se-quences. In the absence of synchronization, cross-modal at-tention can scatter over irrelevant positions, weakening fine-grained multimodal associations. In this paper, we focus on multimodal fusion from the per-spective of temporal alignment. We propose a Transformer-based framework that projects audio and video features into a shared embedding space, where a unified multimodal self-attention encoder simultaneously captures intra- and inter-modal dependencies. To resolve the frame-rate disparity be-tween streams, we incorporate Temporally-aligned Rotary Position Embeddings (TaRoPE), a variant of RoPE [13] de-signed to implicitly synchronize tokens along a consistent temporal axis. In addition, we introduce a Cross-Temporal Matching (CTM) loss that leverages timestamp-aware Gaus-sian affinities to encourage similarity among temporally prox-imate audio-visual pairs. We validate our approach on two benchmark datasets, CREMA-D [14] and RAVDESS [15]. Experimental results show that our method outperforms strong attention-based baselines, demonstrating that explicitly modeling frame-rate mismatch achieves more effective multimodal fusion. 
+
+2. METHODOLOGY 
+
+This section describes the architecture for extracting and fus-ing audio-visual features, Temporally-aligned RoPE (TaRoPE)       
+
+> arXiv:2603.11095v1 [cs.MM] 11 Mar 2026 ⁝
+> [𝑇𝑇 𝑎𝑎 ,𝑑𝑑 model ]
+> 1D CNN
+> LayerNorm
+> [𝑇𝑇 𝑣𝑣 ,𝑑𝑑 model ]
+> 1D CNN
+> LayerNorm
+> 1D CNN
+> L2-Norm
+> 1D CNN
+> L2-Norm
+> Embedding similarity Temporal Proximity
+> ℒctm
+> Cross-Temporal Matching Loss
+
+Video Encoder 
+
+Audio Encoder                                      
+
+> AvgPool
+> Classifier
+> ℒcls
+> Prediction Label
+> [𝑇𝑇 𝑎𝑎 +𝑇𝑇 𝑣𝑣 ,𝑑𝑑 model ]
+> Temporally-aligned RoPE
+> 𝜃𝜃 𝑎𝑎 𝜃𝜃 𝑣𝑣
+> TaRoPE( 𝑞𝑞 𝑛𝑛 𝑎𝑎 ,𝑘𝑘 𝑛𝑛 𝑎𝑎 ) = 𝑞𝑞 𝑛𝑛 𝑎𝑎 𝑒𝑒 𝑖𝑖 𝑛𝑛 𝑖𝑖 𝑎𝑎 ,𝑘𝑘 𝑛𝑛 𝑎𝑎 𝑒𝑒 𝑖𝑖 𝑛𝑛 𝑖𝑖 𝑎𝑎
+> MHA
+> FFN
+> KQV
+> TaRoPE
+> MHA
+> FFN
+> KQV
+> TaRoPE
+> Transformer Encoder
+> TaRoPE( 𝑞𝑞 𝑚𝑚 𝑣𝑣 ,𝑘𝑘 𝑚𝑚 𝑣𝑣 ) = 𝑞𝑞 𝑚𝑚 𝑣𝑣 𝑒𝑒 𝑖𝑖 𝑚𝑚 𝑖𝑖 𝑣𝑣 ,𝑘𝑘 𝑚𝑚 𝑣𝑣 𝑒𝑒 𝑖𝑖 𝑚𝑚 𝑖𝑖 𝑣𝑣
+> 𝜂𝜂 𝑎𝑎 𝜃𝜃 𝑎𝑎 =𝜂𝜂 𝑣𝑣 𝜃𝜃 𝑣𝑣
+> Audio features
+> [𝑇𝑇 𝑎𝑎 ,𝑑𝑑 𝑎𝑎 ]Video features [𝑇𝑇 𝑣𝑣 ,𝑑𝑑 𝑣𝑣 ]
+
+Fig. 1 . Audio and video features are first extracted by modality-specific encoders and projected into a shared embedding space. Temporally-aligned RoPE (TaRoPE) implicitly synchronizes heterogeneous audio–visual sequences within the unified Transformer encoder by adapting rotary positional embeddings to different temporal resolutions. The Cross-Temporal Matching (CTM) loss explicitly enforces temporal consistency by aligning audio–video feature pairs that are temporally proximal along a shared time axis. The final representation is pooled for emotion classification. for implicit synchronization, and the Cross-Temporal Match-ing (CTM) loss for explicit temporal consistency. Figure 1 presents an overview of the proposed framework. 
+
+2.1. Architecture 
+
+The framework first processes raw audio and video inputs with dedicated encoders to extract modality-specific features. For the audio modality, we employ a pretrained xlsr-Wav2Vec 2.0 encoder [16], which produces 1024-dimensional frame-level embeddings. Given an input sampled at 16kHz, the en-coder’s internal downsampling factor of 320 results in an ef-fective frame rate of ηa = 50 FPS. For the video modality, we extract 35 Action Unit feature descriptors, which are muscle-based features defined by the Facial Action Coding System (FACS) [17], using the OpenFace library [18] from each face frame at ηv = 30 FPS. To facilitate multimodal integration, both audio and video features are first linearly projected into a shared dmodel -dimensional embedding space: 
+
+Fa = [ f a 
+
+> 1
+
+, f a 
+
+> 2
+
+, . . . , f aTa ] ∈ RTa×dmodel , (1) 
+
+Fv = [ f v 
+
+> 1
+
+, f v 
+
+> 2
+
+, . . . , f vTv ] ∈ RTv ×dmodel , (2) where Fa and Fv are sequences of frame-level audio and video features of lengths Ta and Tv , respectively. These se-quences serve as the token embeddings fed into the unified Transformer encoder, which incorporates two multimodal self-attention blocks with TaRoPE to ensure temporal align-ment during attention. Temporal average pooling is then applied to obtain an utterance-level representation. Finally, this representation is passed to a softmax classifier to predict the target emotion. 
+
+2.2. Temporally-aligned RoPE 
+
+A fundamental yet underexplored issue in multimodal fusion is the mismatch in temporal resolution between audio and video sequences. To address this, we propose Temporally-aligned Rotary Position Embeddings (TaRoPE), which adapt RoPE [13] to synchronize heterogeneous frame rates. In the standard RoPE formulation, positional information is injected into the query and key vectors qn, k n ∈ Rdmodel 
+
+(projected from the token embedding xn) by rotating them according to their indices: 
+
+(qn, k n) 7 → (qneinθ base , k neinθ base ), (3) where n denotes token positions and θbase is the base fre-quency. This construction ensures that the attention score be-tween positions n and m, ⟨RoPE (qn), RoPE (km)⟩, depends only on their index distance (n − m), thereby encoding rela-tive positional information directly in the self-attention mech-anism. Let f an and f vm denote the features of n-th audio frame and the m-th video frame, from which query and key vectors are derived. TaRoPE applies modality-specific rotations as 
+
+(qan, k an) 7 → (qaneinθ a , k aneinθ a ), (4) 
+
+(qvm, k vm) 7 → (qvmeimθ v , k vmeimθ v ), (5) with θv = ηa 
+
+> ηv
+
+θa. This rescales video positions to the audio timeline, ensuring that cross-modal attention depends on con-sistent temporal distances. 2.3. Cross-Temporal Matching Loss 
+
+To explicitly enforce temporal consistency, we introduce a Cross-Temporal Matching (CTM) loss that encourages audio and video frames that are temporally proximal along a shared physical time axis to share similar representations. Before the Transformer encoder, both modalities are projected into an L2-normalized embedding space Rdemb .Given embeddings Ea = [A1, A 2, . . . , A Ta ] and Ev =[V1, V 2, . . . , V Tv ] with timestamps tai and tvj defined on a common timeline, we define a temporal Gaussian affinity as: 
+
+gij = exp 
+
+
+
+− (tai −tvj )2
+
+> 2σ2
+
+
+
+, (6) where σ controls the tolerance to misalignment. Feature sim-ilarity is measured as sij = A⊤ 
+
+> i
+
+Vj , which is normalized via a temperature-scaled softmax ( τ > 0). The predicted distribu-tions p are thus obtained from {sij }, while the target distribu-tions q are derived from {gij }:
+
+pa→vij = exp( sij /τ )
+
+P 
+
+> j′
+
+exp( sij ′ /τ ) , qa→vij = gij 
+
+P 
+
+> j′
+
+gij ′
+
+, (7) 
+
+pv→aij = exp( sij /τ )
+
+P 
+
+> i′
+
+exp( si′j /τ ) , qv→aij = gij 
+
+P 
+
+> i′
+
+gi′j
+
+. (8) The CTM loss aligns these distributions using bidirec-tional cross-entropy: 
+
+La→v = 1
+
+> Ta
+> Ta
+
+X
+
+> i=1
+
+CrossEntropy  qa→vi· , p a→vi·
+
+, (9) 
+
+Lv→a = 1
+
+> Tv
+> Tv
+
+X
+
+> j=1
+
+CrossEntropy  qv→a 
+
+> ·j
+
+, p v→a
+
+> ·j
+
+, (10) 
+
+Lctm = 12
+
+ La→v + Lv→a
+
+. (11) Here, the notation qa→vi· and pa→vi· refer to the i-th row distri-butions over all video frames, while qv→a 
+
+> ·j
+
+and pv→a 
+
+> ·j
+
+denote the j-th column distributions over all audio frames. The final training objective combines this with the classi-fication loss: 
+
+Ltotal = Lcls + λctm Lctm , (12) where λctm denotes the weight for CTM loss. 
+
+3. EXPERIMENTS 3.1. Datasets and Evaluation Metrics 
+
+The CREMA-D dataset [14] contains 7,442 clips of short sen-tences spoken by 91 actors (48 female, 43 male) with diverse age and ethnic backgrounds. Each utterance is labeled with one of six basic emotions: anger, disgust, fear, happy, neutral, and sad. For evaluation, we adopt the speaker-independent train/validation split provided by [19]. 
+
+Table 1 . Comparison of audio-visual emotion recognition performance (%) on CREMA-D and RAVDESS datasets. Method Year CREMA-D RAVDESS Ghaleb et al. [20] 2019 74.00 67.70 MATER [21] 2020 67.20 76.30 TA-AVN [4] 2021 84.00 78.70 Luna-Jim´ enez et al. [2] 2021 - 80.08 Luna-Jim´ enez et al. [5] 2021 - 86.70 V8 + A4 [6] 2022 - 86.00 Mocanu et al. [8] 2023 84.57 87.85 Lei et al. [3] 2023 85.06 -AttA-Net [7] 2024 - 88.00 HiCMAE [9] 2024 84.91 87.96 VQ-MAE-AV [10] 2025 80.40 84.80 ATTSF-Net [12] 2025 - 88.67 
+
+Ours 2025 89.49 89.25 
+
+The RAVDESS dataset [15] consists of 1,440 utterances produced by 24 professional actors (12 female, 12 male), cov-ering eight categorical emotions: neutral, calm, happy, sad, angry, fearful, surprise, and disgust. For evaluation, we em-ploy a speaker-independent 5-fold cross-validation protocol following [2]. Reported performance is given as the average accuracy over the five folds. 
+
+3.2. Implementation Details 
+
+We trained all models for 50 epochs with a batch size of 4, using the AdamW optimizer. The learning rate was initial-ized at 5 × 10 −5 and linearly decayed to zero over the course of training. Our Transformer encoder was configured with 
+
+dmodel = 512 , while projection layers mapped features into a demb = 128 -dimensional embedding space. For the cross-temporal matching loss, we set the Gaussian bandwidth to 
+
+σ = 0 .5, the temperature to τ = 0 .07 , and the weighting coefficient to λctm = 0 .5.
+
+3.3. Comparison with State-of-the-Art Methods 
+
+Table 1 compares audio-visual emotion recognition perfor-mance on CREMA-D and RAVDESS. Our method achieves 89.49% on CREMA-D and 89.25% on RAVDESS, setting new state-of-the-art results on both datasets. On CREMA-D, we surpass the previous best method [3] (85.06%) by 4.43 percentage points, while on RAVDESS, we improve upon ATTSF-Net [12] (88.67%) by 0.58 percentage points. 
+
+3.4. Ablation Studies 
+
+To verify that the unified Transformer encoder can serve as an effective fusion module, we experiment with several de-sign variants illustrated in Fig. 2. Prior approaches rely on either intra-modal self-attention (ISA) or inter-modal cross-attention (ICA), whereas our design introduces multimodal Ablation study on Architecture                     
+
+> (a) Intra-modal SA
+> MHA MHA
+> (c) Multimodal SA
+> MHA
+> A+V
+> (b) Inter-modal CA
+> MHA MHA
+> FFN FFN FFN FFN FFN
+> A
+> QKVKV
+> V
+> QKV
+> AV
+> QKVQKVQ
+
+Fig. 2 . Illustration of differenta fusion strategies using atten-tion mechanisms. 
+
+Table 2 . Ablation study on different fusion strategies con-ducted on CREMA-D. Fusion Module # of parameters Acc. Concat. - 85.71 ISA + ISA 12.61M 87.98 ICA + ICA 87.49 ISA + ICA 87.71 ICA + ISA 88.31 MSA + MSA (Ours) 6.83M 88.95 
+
+self-attention (MSA), which unifies both within a single Transformer block. For a fair comparison with stacking-based models such as ISA + ICA or ICA + ISA, each variant is configured with two blocks to ensure comparable model capacity. Table 2 compares different fusion strategies under the common setting of TaRoPE-based positional encoding. While concatenation provides a lightweight baseline, stacked ISA and ICA variants enhance performance by modeling richer dependencies, but incur greater complexity. By contrast, our model, which employs two MSA layers, attains the best accu-racy with fewer parameters, demonstrating the efficiency of jointly modeling intra- and inter-modal dependencies within a unified block. Moreover, ISA, ICA, and MSA layers exhibit comparable computational costs, each introducing approxi-mately 0.5 GFLOPs for a 2-second input. Table 3 provides a comprehensive comparison of posi-tional encoding strategies and the contribution of CTM loss. The proposed TaRoPE surpasses sinusoidal, learnable, and vanilla RoPE embeddings, underscoring the effectiveness of explicit temporal alignment in multimodal fusion. Moreover, incorporating the CTM loss yields consistent improvements across all variants, confirming its role as a complementary alignment objective. Overall, the results highlight the impor-tance of temporal alignment as a key design principle for ef-fective multimodal integration. 
+
+3.5. Analysis on Temporal Alignment 
+
+We further analyze how the proposed CTM loss influences temporal consistency between modalities. Figure 3 illustrates 
+
+Table 3 . Ablation study on positional encoding strategies and CTM loss conducted on CREMA-D. Positional Encoding w/o Lctm w/ Lctm 
+
+Sinusoidal 88.09 88.79 Learnable 87.44 88.79 RoPE 87.76 89.00 TaRoPE 88.95 89.49 (a) Frame -wise Feature Magnitude  (b)  Comparison of d erivative  sign 
+
+> agreement distributions
+
+Fig. 3 . Effect of CTM loss on feature dynamics. feature dynamics and agreement statistics with and without CTM loss. In Fig. 3 (a), we present an example from the CREMA-D test set (utterance 1087 MTIANG XX ), where audio and video features are min–max normalized and visualized on the same temporal axis. When CTM loss is applied, the audio and video feature magnitudes evolve with similar frame-wise tra-jectories, suggesting that the auxiliary loss encourages con-sistent temporal dynamics across modalities. To ensure this observation is not limited to a single case, Fig. 3 (b) reports derivative sign agreement distributions across the entire test set. We find a stronger concentration around high agreement levels when using CTM loss, suggest-ing that temporal trends between audio and video streams are more consistently synchronized at scale. These results confirm that CTM loss not only improves recognition ac-curacy but also enhances temporal alignment by enforcing consistency in cross-modal dynamics. 
+
+4. CONCLUSION 
+
+In this paper, we presented a Transformer framework for audio-visual emotion recognition with Temporally-aligned RoPE and a Cross-Temporal Matching loss. Our framework achieved state-of-the-art performance on CREMA-D and RAVDESS, while ablation studies highlighted the efficiency of the unified architecture and the benefits of temporal align-ment. While this work focuses on controlled benchmarks, extending the proposed framework to large-scale in-the-wild datasets remains an important direction for future work. 5. REFERENCES 
+
+[1] Hailun Lian, Cheng Lu, Sunan Li, Yan Zhao, Chuan-gao Tang, and Yuan Zong, “A survey of deep learning-based multimodal emotion recognition: Speech, text, and face,” Entropy , vol. 25, no. 10, pp. 1440, 2023. [2] Cristina Luna-Jim´ enez, David Griol, Zoraida Calle-jas, Ricardo Kleinlein, Juan M Montero, and Fernando Fern´ andez-Mart´ ınez, “Multimodal emotion recognition on ravdess dataset using transfer learning,” Sensors , vol. 21, no. 22, pp. 7665, 2021. [3] Yuanyuan Lei and Houwei Cao, “Audio-visual emotion recognition with preference learning based on intended and multi-modal perceived labels,” IEEE Transactions on Affective Computing , vol. 14, no. 4, pp. 2954–2969, 2023. [4] Anamaria Radoi, Andreea Birhala, Nicolae-Catalin Ris-tea, and Liviu-Cristian Dutu, “An end-to-end emotion recognition framework based on temporal aggregation of multimodal information,” IEEE Access , vol. 9, pp. 135559–135570, 2021. [5] Cristina Luna-Jim´ enez, Ricardo Kleinlein, David Griol, Zoraida Callejas, Juan M Montero, and Fernando Fern´ andez-Mart´ ınez, “A proposal for multimodal emo-tion recognition using aural transformers and action units on ravdess dataset,” Applied Sciences , vol. 12, no. 1, pp. 327, 2021. [6] Asif Iqbal Middya, Baibhav Nag, and Sarbani Roy, “Deep learning based multimodal emotion recognition using model-level fusion of audio–visual modalities,” 
+
+Knowledge-based Systems , vol. 244, pp. 108580, 2022. [7] Ruijia Fan, Hong Liu, Yidi Li, Peini Guo, Guoquan Wang, and Ti Wang, “Atta-net: attention aggregation network for audio-visual emotion recognition,” in IEEE International Conference on Acoustics, Speech and Sig-nal Processing (ICASSP) . IEEE, 2024, pp. 8030–8034. [8] Bogdan Mocanu, Ruxandra Tapu, and Titus Zaharia, “Multimodal emotion recognition using cross modal audio-video fusion with attention and deep metric learn-ing,” Image and Vision Computing , vol. 133, pp. 104676, 2023. [9] Licai Sun, Zheng Lian, Bin Liu, and Jianhua Tao, “Hic-mae: Hierarchical contrastive masked autoencoder for self-supervised audio-visual emotion recognition,” In-formation Fusion , vol. 108, pp. 102382, 2024. [10] Samir Sadok, Simon Leglaive, and Renaud S´ eguier, “A vector quantized masked autoencoder for audiovisual speech emotion recognition,” Computer Vision and Im-age Understanding , vol. 257, pp. 104362, 2025. [11] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Illia Polosukhin, “Attention is all you need,” 
+
+Advances in Neural Information Processing Systems (NeurIPS) , vol. 30, 2017. [12] Jiaming Zhang, Zhijia Zhang, and Zhaojie Ju, “Attsf-net: Attention-based similarity fusion network for audio-visual emotion recognition,” IEEE Transactions on Affective Computing , 2025. [13] Jianlin Su, Murtadha Ahmed, Yu Lu, Shengfeng Pan, Wen Bo, and Yunfeng Liu, “Roformer: Enhanced trans-former with rotary position embedding,” Neurocomput-ing , vol. 568, pp. 127063, 2024. [14] Houwei Cao, David G Cooper, Michael K Keut-mann, Ruben C Gur, Ani Nenkova, and Ragini Verma, “Crema-d: Crowd-sourced emotional multimodal actors dataset,” IEEE Transactions on Affective Computing ,vol. 5, no. 4, pp. 377–390, 2014. [15] Steven R Livingstone and Frank A Russo, “The ryer-son audio-visual database of emotional speech and song (ravdess): A dynamic, multimodal set of facial and vocal expressions in north american english,” PloS one , vol. 13, no. 5, pp. e0196391, 2018. [16] Alexis Conneau, Alexei Baevski, Ronan Collobert, Ab-delrahman Mohamed, and Michael Auli, “Unsupervised cross-lingual representation learning for speech recogni-tion,” arXiv preprint arXiv:2006.13979 , 2020. [17] E Friesen and Paul Ekman, “Facial action coding sys-tem: a technique for the measurement of facial move-ment,” Palo Alto , vol. 3, no. 2, pp. 5, 1978. [18] Tadas Baltrusaitis, Amir Zadeh, Yao Chong Lim, and Louis-Philippe Morency, “Openface 2.0: Facial behav-ior analysis toolkit,” in 2018 13th IEEE International Conference on Automatic Face & Gesture Recognition (FG 2018) , 2018, pp. 59–66. [19] Ziyang Ma, Mingjie Chen, Hezhao Zhang, Zhisheng Zheng, Wenxi Chen, Xiquan Li, Jiaxin Ye, Xie Chen, and Thomas Hain, “Emobox: Multilingual multi-corpus speech emotion recognition toolkit and benchmark,” in 
+
+Proc. INTERSPEECH , 2024. [20] Esam Ghaleb, Mirela Popa, and Stylianos Asteriadis, “Multimodal and temporal perception of audio-visual cues for emotion recognition,” in 2019 8th International Conference on Affective Computing and Intelligent In-teraction (ACII) . IEEE, 2019, pp. 552–558. [21] Esam Ghaleb, Jan Niehues, and Stylianos Asteriadis, “Multimodal attention-mechanism for temporal emo-tion recognition,” in 2020 IEEE International Confer-ence on Image Processing (ICIP) . IEEE, 2020, pp. 251– 255.

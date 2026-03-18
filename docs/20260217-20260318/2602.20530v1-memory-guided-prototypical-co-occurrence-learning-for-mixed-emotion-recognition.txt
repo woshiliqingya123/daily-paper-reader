@@ -1,0 +1,1338 @@
+Title: Memory-guided Prototypical Co-occurrence Learning for Mixed Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2602.20530v1
+
+Published Time: Wed, 25 Feb 2026 01:29:14 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+> JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+
+# Memory-guided Prototypical Co-occurrence Learning for Mixed Emotion Recognition 
+
+Ming Li, Yong-Jin Liu, Senior Member, IEEE , Fang Liu, Huankun Sheng, Yeying Fan, Yixiang Wei, Minnan Luo, Weizhan Zhang, Wenping Wang, Fellow, IEEE 
+
+Abstract —Emotion recognition from multi-modal physiological and behavioral signals plays a pivotal role in affective computing, yet most existing models remain constrained to the prediction of singular emotions in controlled laboratory settings. Real-world human emotional experiences, by contrast, are often characterized by the simultaneous presence of multiple affective states, spurring recent interest in mixed emotion recognition as an emotion distribution learning problem. Current approaches, however, often neglect the valence consistency and structured correlations inherent among coexisting emotions. To address this limitation, we propose a Memory-guided Prototypical Co-occurrence Learning (MPCL) framework that explicitly models emotion co-occurrence patterns. Specifically, we first fuse multi-modal signals via a multi-scale associative memory mechanism. To capture cross-modal semantic relationships, we construct emotion-specific prototype memory banks, yielding rich physi-ological and behavioral representations, and employ prototype relation distillation to ensure cross-modal alignment in the latent prototype space. Furthermore, inspired by human cognitive memory systems, we introduce a memory retrieval strategy to extract semantic-level co-occurrence associations across emotion categories. Through this bottom-up hierarchical abstraction pro-cess, our model learns affectively informative representations for accurate emotion distribution prediction. Comprehensive experiments on two public datasets demonstrate that MPCL con-sistently outperforms state-of-the-art methods in mixed emotion recognition, both quantitatively and qualitatively. 
+
+Index Terms —Mixed-emotion recognition, associative memory, prototypical co-occurrence, multi-modal physiological signals. 
+
+I. I NTRODUCTION 
+
+# AFFECTIVE Intelligence seeks to equip machines with the ability to perceive and understand human emotions, a crucial step toward enabling natural and empathetic human-computer interaction. Achieving this goal requires both precise emotion recognition and a deeper comprehension of affective states. Emotions are psychophysiological responses to external 
+
+Ming Li, Yong-Jin Liu, Huankun Sheng, Yeying Fan, and Yixiang Wei are with MOE-Key Laboratory of Pervasive Computing, Department of Computer Science and Technology, Tsinghua University, Beijing, China. Yong-Jin Liu is the corresponding author (e-mail: mingli thu, liuyongjin, shenghk, fanyeying@tsinghua.edu.cn, yx-wei22@mails.tsinghua.edu.cn). Fang Liu is with the Key State Laboratory of Media Convergence and Communication, Communication University of China, Beijing 100024, China (e-mail: fangliu@cuc.edu.cn). Minnan Luo and Weizhan Zhang are with the School of Computer Science and Technology, and Shaanxi Province Key Laboratory of Big Data Knowl-edge Engineering, Xi’an Jiaotong University, Xi’an, Shaanxi 710049, China (e-mail: minnluo, zhangwzh@xjtu.edu.cn). Wenping Wang is with the Department of Computer Science and Computer Engineering, Texas A&M University, College Station, TX 77840 USA (e-mail: wenping@tamu.edu). This work was supported by the Natural Science Foundation of China (U2336214). 
+
+stimuli, and their accurate decoding has significant impli-cations for fields such as healthcare and education [1]–[3]. Current research in emotion modeling primarily follows two theoretical frameworks: (1) discrete models, which classify emotions into a set of basic categories [4]; and (2) dimen-sional models, which represent emotions as points within a continuous affective space, such as the Valence-Arousal (VA) model [5] and the Valence-Arousal-Dominance (VAD) model [6]. Due to the inherent complexity and nuanced mechanisms underlying emotions, most studies have been conducted in controlled laboratory settings [7], [8]. While these efforts have generated high-quality datasets (e.g., [9]–[11]) and effective recognition models (e.g., [12]–[14]), they typically simplify emotions into mutually exclusive, singular states. In real-world scenarios—such as ambiguous situations, social interac-tions, or conflicting events—humans often experience multiple emotions simultaneously, a phenomenon referred to as mixed emotions .Mixed emotions are defined as the co-activation of two or more emotional states [15]. Growing psychological and neuroscientific evidence indicates that human affective ex-perience is rarely singular; rather, it involves the interplay of multiple emotions, leading to richer and more complex psychological profiles [16], [17]. This poses a significant challenge for computational methods, as it requires not only identifying which emotions are present, but also quantifying their respective intensities. Physiologically, mixed emotions in-volve coordinated activations across distributed brain regions, exhibiting intricate spatiotemporal dynamics [18], [19]. As a result, mixed emotion recognition has emerged as a growing research focus [20], representing a shift from basic emotion classification toward more realistic and nuanced models of human affect. This advancement is essential for uncovering the neural underpinnings and computational principles of complex emotional experiences. Mixed emotion recognition can be approached through multi-label classification [21], which identifies the presence of emotions, or through emotion distribution learning (EDL), which estimates the intensity of each emotion. EDL has been used to model emotional diversity in images [22] and to capture subtle emotional semantics in text [23]. However, single-modal data often fail to fully capture the complexity of mixed emotions. Recent studies have therefore turned to multimodal approaches that combine physiological and behavioral signals, supported by publicly available datasets. For example, EDLConV Network [24] uses peripheral phys-iological signals—including electrocardiogram (ECG), heart  
+
+> arXiv:2602.20530v1 [cs.LG] 24 Feb 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+
+rate (HR), galvanic skin response (GSR), and skin temperature (SKT)—to decode the distribution of basic emotions. Emo-tionDict [25] further integrates electroencephalogram (EEG), peripheral signals, and facial videos to decompose mixed emotions into basic emotional components in a latent space. While these methods capture the presence and intensity of individual emotions, they largely treat emotion categories as independent, overlooking the intrinsic relationships among them. Helo [26] addresses this issue by modeling label cor-relations and exploiting cross-modal heterogeneity. However, it still relies on statistical dependencies derived from label distributions, without incorporating valence consistency and mutual exclusivity priors inherent in the affective space. Psychological studies [27] indicate that emotions exhibit structured relationships based on valence. Emotions sharing the same valence (e.g., both positive or both negative) are often positively correlated and tend to manifest simultaneously, a phenomenon known as co-occurrence [28]. In contrast, emo-tions with opposite valences typically engage in competitive or inhibitory interactions, making their simultaneous activation less likely [29]. This reflects the fact that same-valence emo-tions are proximal in affective space, whereas opposite-valence emotions are more mutually exclusive [30]. Mixed emotions thus arise from combinations of basic emotions governed by these co-occurrence patterns. Nevertheless, most existing computational approaches overlook this intrinsic structure [31], [32] and instead focus on holistic and salient feature representations for distribution prediction. As a result, they fail to capture the internal co-occurrence relationships present in raw multimodal data, hindering the modeling of emotion interaction relationships and latent compositional structures. Moreover, each basic emotion within a mixed state is associ-ated with specific feature activations [33], yet raw data often consist of low-level statistical features entangled with noise, rather than semantically disentangled representations. In such a feature-entangled space, directly modeling co-occurrence patterns may capture superficial data correlations rather than psychologically meaningful affective structures. Inspired by the psychological principle of emotion co-occurrence, we propose a novel Memory-guided Prototypi-cal Co-occurrence Learning (MPCL) framework to model the semantic structural associations among emotions. Our framework is organized into three interconnected stages. (1) 
+
+Multimodal Feature Extraction and Fusion : this stage employs a multi-scale associative memory strategy to fuse multimodal physiological and behavioral signals, capturing intrinsic cor-relations and complementary information. (2) Prototypical Alignment and Co-occurrence Learning : we extract fine-grained emotion prototypes to construct an emotion memory bank, yielding semantically rich embeddings by reconstructing physiological and behavioral features as weighted combi-nations of these prototypes. Prototype Relation Distillation (PRD) is employed to enforce structural alignment within the prototype-relational space, thereby ensuring semantic consis-tency across heterogeneous modalities. In this stage, drawing on human association memory mechanisms [34], [35], we further present Prototypical Co-occurrence Learning (PCL). PCL employs a memory retrieval strategy to aggregate similar samples within semantic neighborhoods, realizing semantic-level prototype co-occurrence, complemented by a contrastive learning objective to ensure cross-modal consistency. (3) Hi-erarchical Semantic Compression and Distribution Prediction :we derive highly condensed emotion representations via a bottom-up hierarchical abstraction strategy, enabling precise mixed emotion distribution prediction. The main contributions of this paper include:  
+
+> •
+
+We propose a multi-scale associative memory fusion strategy to capture intrinsic emotion correlations in mul-timodal physiological data, and introduce a content-addressable memory mechanism to construct fine-grained prototype memory banks, generating semantically rich and structurally consistent representations.  
+
+> •
+
+Inspired by human cognitive memory mechanisms, we design a memory retrieval strategy to extract prototype-level semantic co-occurrences, effectively uncovering la-tent structural associations among distinct emotions.  
+
+> •
+
+We develop a hierarchical semantic compression method that progressively abstracts affective representations through bottom-up processing, enabling accurate emotion distribution learning. Extensive experiments on two pub-lic benchmarks demonstrate that our approach achieves state-of-the-art performance in mixed emotion recogni-tion, both quantitatively and qualitatively. II. R ELATED WORK 
+
+A. Multimodal Emotion Distribution Learning 
+
+Emotion recognition plays a central role in affective intel-ligence and commonly processes inputs from multiple modal-ities, including visual, auditory, textual, and physiological signals [36]. Among these, physiological signals are less susceptible to intentional control or masking, offering a more direct reflection of genuine emotional states. In particular, electroencephalogram (EEG) has been widely adopted in af-fective computing due to its millisecond temporal resolution in capturing cortical dynamics [37]. Compared to unimodal methods, multimodal emotion recognition (MER) achieves su-perior performance by integrating complementary information across modalities, leading to the development of diverse fusion strategies [38], [39]. MER can be broadly categorized into single-label and multi-label recognition. While the majority of existing studies focus on single-label recognition—assuming each data sample is associated with one dominant emotion [40]—multi-label recognition aims to detect multiple coexisting emotions. The latter aligns more closely with psychological reality, where emotional experiences are often ambiguous and complex; individuals in real-world situations frequently undergo mixed emotions, characterized by the simultaneous presence of mul-tiple affective states [41]. For instance, MAGDRA [42] models cross-modal interactions among visual, audio, and textual data, and incorporates a reinforced multi-label detection module to learn label correlations. Similarly, SeMuLPCD [43] employs a multimodal peer collaborative distillation mechanism to transfer complementary knowledge from unimodal networks to a fusion network for multi-label emotion prediction. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3
+
+Traditional multi-label emotion recognition typically for-mulates the task as multiple independent binary classification problems, thereby only identifying the presence or absence of each emotion. In contrast, multimodal emotion distribution learning (EDL) extends this by further quantifying the inten-sity of each emotional state. This perspective resonates with the General Psycho-evolutionary Theory [44], which posits that a set of basic emotion prototypes exists with varying intensities, and that complex emotions arise from mixtures of these prototypes. Following this notion, Shu et al. [24] designed the EDLConV model, which leverages feature corre-lations and temporal dynamics from peripheral physiological signals to decode mixed emotion distributions. EmotionDict [25] integrates peripheral physiology, EEG, and facial video features, using a dictionary learning module to decompose them into weighted combinations of basic emotional com-ponents. MEDL [45] learns emotion distributions and label correlations separately for video and audio modalities, and enforces consistency between cross-modal correlation matri-ces to predict the final emotion distribution. More recently, HeLo [26] incorporates Optimal Transport theory to facilitate heterogeneous interactions between physiological and behav-ioral signals, and adopts a label correlation-driven attention mechanism for distribution prediction. Although these methods effectively exploit cross-modal complementarity and label correlations, they primarily rely on data-driven statistical associations to model inter-label dependencies. However, psychological studies [46] confirm that emotions sharing the same valence are more likely to co-activate than those with opposite valences—a phenomenon known as emotion co-occurrence. Therefore, in this paper, we aim to incorporate this psychological prior to guide the learning of structured correlations among different emotional states. 
+
+B. Prototype-based Representation Learning 
+
+Prototype learning aims to identify a representative center for each class, referred to as a prototype or centroid, and has been widely studied in pattern recognition and machine learning [47]. Early prototype-based methods predominantly relied on geometric distance metrics. For example, k-nearest neighbors (KNN) [48] determines the class of a query sample by its distance to training instances, while k-means clustering [49] and learning vector quantization (LVQ) [50] assign sam-ples to the nearest cluster centroids. Although such approaches reduce dependency on the full training set during inference, distance-based measures in high-dimensional feature spaces are often vulnerable to the curse of dimensionality and may fail to capture semantically meaningful relations. With the advancement of deep learning, prototype learn-ing has emerged as a powerful framework for automatically learning discriminative representations. Initially proposed for few-shot image classification, Snell et al. [51] introduced pro-totypes as class-wise representatives in a learned embedding space, where classification is performed by measuring the distance between a query sample and each prototype. This idea was later extended to few-shot semantic segmentation [52]. Inspired by these visual applications, prototype learning has been successfully adapted to emotion recognition. For instance, MapleNet [53] employs a shared encoder to align textual and visual features with emotion-specific prototypes, achieving cross-modal semantic alignment. PR-PL [54] uses prototype representations to model the latent semantic struc-ture of emotion categories in EEG signals, obtaining subject-invariant and generalizable affective representations. Another important line of research integrates prototypes into contrastive learning frameworks. While conventional instance-wise contrastive methods focus on discriminating between augmented views of the same sample, they often overlook higher-level semantic structures. To address this, prototypi-cal contrastive learning [55] introduces cluster centroids as prototypes and encourages samples to align with their cor-responding prototypes, thereby injecting semantic structures into the learned representation space. Likewise, ProtoCLIP [56] uses prototypes as stable anchors to cluster semanti-cally similar instances, improving grouping performance in vision–language contrastive learning. In the emotion recog-nition domain, SRMCL [57] proposes supervised prototype memory contrastive learning (PMCL) to enhance intra-class compactness for micro-expression recognition by contrasting current and historical prototypes. SCCL [58] leverages sen-timent lexicon–derived coordinates as predefined prototypes to perform cluster-level contrastive learning, capturing fine-grained emotional semantics. EmotionDict [25] incorporates a dictionary learning module that decomposes mixed emotions into linear combinations of basic emotion elements, strength-ening the expressiveness of multimodal features. Despite their effectiveness, existing prototype-based meth-ods in emotion recognition suffer from several limitations. Many rely on predefined prototypes, simple averaging over samples, or implicit basis representations, which are sensi-tive to noise and prone to prototype drift. This often leads to semantically blurred representations that fail to capture fine-grained affective nuances and intra-class diversity. Fur-thermore, current cross-modal prototype alignment strategies typically neglect the global relational structure among proto-types, resulting in poor geometric consistency across modal-ities in the shared semantic space. In contrast, our approach presented in this paper reconstructs multimodal features as weighted combinations of fine-grained emotion prototypes to obtain semantically rich embeddings, and enforces cross-modal structural consistency through prototype relation dis-tillation, thereby preserving both local discriminability and global relational semantics. 
+
+C. Associative Memory and Modern Hopfield Networks 
+
+Associative memory networks are computational models that emulate the human brain’s ability to store and retrieve patterns, allowing for the recovery of complete memories from partial or noisy inputs [59]. The classic Hopfield network, introduced in the 1980s, is an energy-based fully connected neural network that stores and retrieves information through a symmetric weight matrix [60]. Recognized for its stability and associative recall properties, it has found broad application in JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4
+
+pattern recognition tasks [61]. However, the storage capacity of traditional binary Hopfield networks is notably limited. To address this, researchers have proposed modern Hopfield networks (MHNs), also referred to as dense associative mem-ories (DAMs), primarily by redesigning the energy function. Krotov and Hopfield [62] generalized the neuron interaction from F (x) = x2 to F (x) = xn, achieving a storage capacity that scales polynomially with dimension as dn−1. Demircigil et al. [63] further improved capacity to an exponential scale using F (x) = exp( x). More recently, Ramsauer et al. [64] extended the exponential energy formulation to continuous states, introducing the continuous modern Hopfield network. Its retrieval update rule permits single-step memory recall and is mathematically equivalent to the attention mechanism in Transformers, enabling seamless integration into deep learning frameworks for tasks such as feature aggregation, memory-augmented learning, prototype representation, and structured attention. Continuous MHNs have demonstrated strong performance across diverse applications, including immune repertoire clas-sification [65], chemical reaction prediction [66], and rein-forcement learning [67], owing to several key properties. First, their associative memory mechanism supports effective multi-modal fusion by modeling interactions between query patterns (states) and stored memory patterns (keys), thereby capturing intrinsic cross-modal correlations and complementary infor-mation. Second, MHNs possess notable feature aggregation capabilities, summarizing input representations within a mem-ory space via static, learnable state patterns. Moreover, MHNs facilitate memory representation learning by parameterizing the memory space as a trainable matrix — often constructed from training samples, reference sets, or prototypes — that can be optimized to encode the underlying structure of the data. Recently, MHNs have also been incorporated into con-trastive learning frameworks to address the explaining-away problem. Methods such as CLOOB [68] and CLOOME [69] employ MHNs to enrich the covariance structure of the original embeddings. By substituting original features with their retrieved counterparts from the memory, these approaches reinforce frequently co-occurring feature patterns. However, existing retrieval strategies are largely confined to feature-level similarity aggregation, often overlooking deeper, semantically structured relationships. In contrast, our work leverages the memory retrieval mechanism of MHNs to model cross-modal co-occurrence consistency within a memory-augmented se-mantic space, thereby capturing richer and more structured affective associations. III. M ETHODS 
+
+A. Preliminaries: Energy-Based Hopfield Networks 1) Energy Function: The energy-based continuous mod-ern Hopfield network [64] serves as the unified theoretical foundation for our proposed MPCL framework. Unlike the traditional attention mechanism in Transformers, MHNs al-low the iterative optimization process to be interpreted as energy minimization. Formally, consider a state pattern (query) 
+
+ξ ∈ Rd and a set of M stored patterns (memory) X =(x1, . . . , xM ) ∈ Rd×M . The network dynamics are governed by an energy function E, defined via the Log-Sum-Exp (lse) function as: 
+
+E(ξ) = −lse (β, XT ξ) + 12 ξT ξ + C0
+
+= − 1
+
+β log 
+
+
+
+> M
+
+X
+
+> j=1
+
+exp( βxTj ξ)
+
+ + 12 ξT ξ + C0,
+
+(1) where β > 0 is the inverse temperature parameter that controls the sharpness of the energy landscape, and C0 is a normalization constant. The first term promotes alignment of the state vector ξ with the stored patterns (associative recall), while the quadratic term acts as a regularizer that constrains the norm of the state vector. 
+
+2) Update Rule and Unified Hopfield Operator: The update rule that minimizes the energy function in Eq. (1) in a single step is mathematically equivalent to the well-known attention mechanism in Transformers [64], [70]: 
+
+ξnew = X softmax (βXT ξ). (2) To provide a modular and concise description of our MPCL framework, we generalize this update rule into a matrix formulation and abstract it into a unified Hopfield operator. Given state patterns R ∈ RS×dk as queries, stored patterns 
+
+Y ∈ RN ×dk as keys, and pattern projections V ∈ RN ×dv as values, the operator is defined as: Hopfield (R, Y, V, β ) := softmax  βRY T  V. (3) 
+
+3) Physical Interpretation: From a dynamical systems viewpoint, this operator implements content-addressable mem-ory retrieval, in which patterns stored in Y act as attractors (or metastable states) within the energy landscape. Although mathematically equivalent to Transformer attention, this up-date rule is rigorously proven to converge to stationary points of the energy function, i.e., local minima or saddle points [64]. Within our framework, by configuring R, Y, V and β, we leverage this operator to realize four key functional modules: cross-modal association (Section III-C), prototype memory bank construction (Section III-D1), prototype co-occurrence (Section III-D3), and semantic compression (Section III-E). 
+
+B. Task Formulation and Framework Overview 1) Task Formulation: We formulate multimodal mixed emotion recognition as an emotion distribution learning prob-lem. Let D = {(xi, yi)}Ti=1 denote a dataset containing 
+
+T samples, where each sample xi = {xphy  
+
+> i
+
+, xbeha  
+
+> i
+
+} consists of physiological signals and behavioral observations. Specif-ically, xphy  
+
+> i
+
+∈ RCphy ×dphy represents the set of physiological signals (e.g., EEG, GSR, or ECG), and xbeha  
+
+> i
+
+∈ RCbeha ×dbeha 
+
+corresponds to behavioral data such as facial videos. Here, 
+
+C(·) and d(·) denote the number of channels and feature dimension per modality, respectively. The label yi ∈ RE is a probability distribution over E emotion categories, satisfying the normalization constraint PEj=1 yi,j = 1 . Our objective is to learn a mapping function F(x; θ) parameterized by θ that minimizes the divergence between the predicted distribution 
+
+ˆyi and the ground truth yi.JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5Prototypical Co-occurrence Learning (PCL) 
+
+EEG 
+
+GSR 
+
+> Multi-modal
+> Physiological Signals
+> Behavioral Signals
+
+PPG      
+
+> Low
+> Scale
+> Medium
+> Scale
+> Multi-scale
+> Associative Fusion (MSAF)
+> Behavioral
+> Encoder
+> Prototype
+> Extraction
+> Prototype
+> Extraction
+> Memory Bank
+> 𝑾𝑾 𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎 𝒑𝒑𝒑𝒑 𝒎𝒎
+> Memory Bank
+> 𝑾𝑾 𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎𝒎 𝒃𝒃 𝒎𝒎𝒑𝒑 𝒃𝒃
+> Reconstruction
+> Reconstruction
+> Prototype Relation Distillation (PRD)
+> Hopfield Layer 1
+> Self-Attention Layer 1
+> …
+> Hopfield Layer 2
+> Self-Attention Layer 2
+> Hopfield Layer n
+> Self-Attention Layer n
+> Classifier
+> Memory Retrieval with V
+> Memory Retrieval with U
+> Predicted Emotion Distribution
+> 𝑾𝑾 𝒃𝒃 𝒂𝒂𝒂𝒂 𝒎𝒎𝒎𝒎 𝒂𝒂𝒂𝒂 𝒑𝒑𝒑𝒑 𝒎𝒎
+> 𝑾𝑾 𝒃𝒃 𝒂𝒂𝒂𝒂 𝒎𝒎𝒎𝒎 𝒂𝒂𝒂𝒂 𝒃𝒃 𝒎𝒎𝒑𝒑 𝒃𝒃
+> Prototype-enhanced
+> representation
+> Prototype-enhanced
+> representation
+> High scale
+> (a) Multimodal Feature Extraction and Fusion (b) Prototypical Alignment and Co-occurrence Learning (c) Hierarchical Semantic Compression
+> and Distribution Prediction
+> Memory Retrieval with U
+> Memory Retrieval with V
+
+Fig. 1. Overview of the MPCL Framework, which consists of three stages. (a) Multimodal Feature Extraction and Fusion: the Multi-Scale Associative Fusion (MSAF) module fuses multi-modal physiological signals, while a separate behavioral encoder extracts structured behavioral feature. (b) Prototypical Alignment and Co-occurrence Learning: emotion prototype memory banks are constructed from both modalities. The Prototype Relation Distillation (PRD) module enforces cross-modal structural alignment, and the Prototypical Co-occurrence Learning (PCL) module captures semantic-level co-occurrence patterns through memory retrieval. (c) Hierarchical Semantic Compression and Distribution Prediction: the Hierarchical Semantic Compression (HSC) module abstracts affective representations via a bottom-up strategy, followed by a classifier that outputs the final emotion distribution. 
+
+2) Framework Overview: As illustrated in Fig. 1, our proposed MPCL framework consists of three core stages: 1) 
+
+Multimodal Feature Extraction and Fusion : The Multi-Scale Associative Fusion (MSAF) module encodes and in-tegrates multimodal physiological signals into a unified em-bedding through an associative memory mechanism. Con-currently, a behavior encoder maps input raw signals into structured behavioral embeddings. 2) Prototypical Alignment and Co-occurrence Learning : Emotion prototype memory banks are constructed from both physiological and behavioral embeddings. Prototype Relation Distillation (PRD) is utilized to perform prototype-based denoising and to enforce cross-modal structural alignment between the two modalities. Subse-quently, the Prototypical Co-occurrence Learning (PCL) mod-ule reinforces cross-modal semantic co-occurrence consistency via memory retrieval and contrastive learning. 3) Hierarchical semantic compression and distribution prediction : The 
+
+Hierarchical Semantic Compression (HSC) module abstracts high-level affective concepts from the co-occurrence-enhanced representations. Finally, a classifier predicts the emotion dis-tribution for each sample. 
+
+C. Multimodal Feature Extraction and Fusion 
+
+Our framework processes both physiological and behavioral signals. Distinct from externally observable behavioral signals (such as facial videos or accelerometer data), physiological signals capture a broad range of internal biological activi-ties—from central nervous activity (e.g., EEG) to cardiovas-cular (e.g., ECG or photoplethysmogram, PPG), electrodermal (e.g., GSR or electrodermal activity, EDA) and muscular (e.g., electromyography, EMG) dynamics. These continuous time series signals collectively reflect the subject’s intrinsic physi-ological state. To exploit their inherent synergy, we prioritize the fusion of these modalities, as illustrated in Fig. 2. After standard pre-processing (Section IV-B), we denote the physiological signals as xphy ∈ RCphy ×dphy and the behav-ioral signal as xbeha ∈ RCbeha ×dbeha . Based on the acquisition characteristics and typical precision of the recording devices, we further partition the physiological set xphy into a primary modality xpri ∈ RCpri ×dpri (e.g., EEG) and a set of auxiliary modalities {xm}m∈M aux , where Maux indexes the auxiliary signals (e.g., Maux = {GSR , PPG }). To mitigate feature discrepancies across heterogeneous modalities, we employ modality-specific encoders f(·) to project all raw inputs into a unified latent space with feature dimension D and a standardized sequence length C. The projection process is formulated as: 
+
+hpri = fpri (xpri ), hm = fm(xm), hbeha = fbeha (xbeha ) (4) where hpri , hm ∈ RC×D are the projected physiological embeddings. For structural symmetry in later cross-modal interaction, the behavioral input is encoded and projected into hbeha ∈ RK×D , where K = |M aux | · C, matching the aggregated sequence length of the physiological modality. To fully exploit the complementary information across modalities, we propose a multi-scale fusion strategy gov-erned by a set of scaling parameters B = {βlow , β mid , β high }
+
+(Fig. 2). Unlike standard attention that uses a fixed scaling JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6EEG 
+
+> GSR
+> PPG
+> Low scale
+> Medium scale
+> High scale
+> Concat
+> Projection
+> Medium scale
+> High scale
+> Concat
+> Projection
+> F
+> F
+> Concat
+> Layernorm Layernorm  𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑 Low scale
+> Multi-modal Physiological Signals Fusion
+> Fusion F
+> primary modality
+
+Fig. 2. Fusion of multimodal physiological signals. EEG serves as the primary modality to integrate complementary information from auxiliary modalities (PPG and GSR) via a multi-scale associative memory mechanism. Three distinct scaling factors B = {βlow , β mid , β high } are employed to modulate the granularity of information aggregation. 
+
+factor mainly for gradient stability, our strategy leverages 
+
+β to modulate the granularity of information aggregation, framing multimodal fusion as an energy minimization process. A smaller β promotes global context aggregation while sup-pressing modality-specific noise, whereas a larger β enforces precise local-feature alignment. For each scale β ∈ B , the Hopfield operator is applied as: 
+
+hmβ = Hopfield (hpri , hm, hm, β ) (5) Granularity-specific representations are then concatenated along the feature dimension and projected back to the la-tent space D. Defining the concatenated feature as hm
+
+cat ∈
+
+RC×(|B|· D), the final fused representation zm
+
+phy ∈ RC×D is obtained via a learnable projection Wproj ∈ R(|B|· D)×D and a residual connection: 
+
+hm
+
+cat = Concat  {hmβ | β ∈ B}  (6) 
+
+zphy ,m = hpri + hm
+
+cat Wproj (7) Finally, we aggregate the fused physiological representations from all auxiliary modalities. The resulting physiological and behavioral representations are: 
+
+zphy = Concat  {zphy ,m | m ∈ M aux } , zbeha = hbeha (8) 
+
+D. Prototypical Alignment and Co-occurrence Learning 
+
+While we have obtained fused physiological and behavioral embeddings, these representations essentially remain in a low-level feature space that lacks explicit semantic disentangle-ment. Directly modeling co-occurrence in such a space risks capturing spurious, data-level correlations rather than psycho-logically grounded emotional structures. To address this, we introduce a prototypical modern Hopfield network that learns a set of fine-grained emotion prototypes and constructs a global emotion memory bank. As shown in Fig. 3, our goal is to map heterogeneous multimodal signals into a unified, semantics-enhanced prototype space. Prototype            
+
+> Extraction
+> Prototype
+> Extraction
+> 𝑾𝑾 𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂 𝒑𝒑𝒑𝒑𝒑𝒑 ∈ 𝑹𝑹 𝑴𝑴 ×𝑫𝑫
+> Softmax
+> 𝑨𝑨 𝒑𝒑𝒑𝒑𝒑𝒑 ∈ 𝑹𝑹 K×M
+> 𝑾𝑾 𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂𝒂 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂 ∈ 𝑹𝑹 𝑴𝑴 ×𝑫𝑫
+> Memory Bank
+> 𝑾𝑾 𝒎𝒎 𝒂𝒂 𝒎𝒎𝒎𝒎 𝒂𝒂𝒑𝒑
+> 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂 ∈ 𝑹𝑹 M×D
+> Softmax
+> 𝑨𝑨 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂 ∈ 𝑹𝑹 K×M
+> 𝑺𝑺 𝒑𝒑𝒑𝒑𝒑𝒑 ∈ 𝑹𝑹 M×M
+> 𝑺𝑺 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂 ∈ 𝑹𝑹 M×M
+> 𝓛𝓛 𝑷𝑷 𝑹𝑹𝑫𝑫 : Prototype
+> Relation Distillation
+> 𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑 ∈ 𝑹𝑹 K×D
+> 𝒛𝒛 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂 ∈ 𝑹𝑹 K×D
+
+Prototypical Alignment   
+
+> 𝒛𝒛 𝒑𝒑 𝒂𝒂𝒎𝒎 𝒑𝒑 𝒎𝒎
+> 𝒃𝒃 𝒂𝒂𝒑𝒑𝒂𝒂
+> 𝒛𝒛 𝒑𝒑 𝒂𝒂𝒎𝒎 𝒑𝒑 𝒎𝒎
+> 𝒑𝒑𝒑𝒑𝒑𝒑
+> Memory Bank
+> 𝑾𝑾 𝒎𝒎 𝒂𝒂 𝒎𝒎𝒎𝒎 𝒂𝒂𝒑𝒑
+> 𝒑𝒑𝒑𝒑𝒑𝒑 ∈ 𝑹𝑹 M×D
+
+Fig. 3. Prototype alignment process. Prototype memory banks are first constructed separately for the physiological and behavioral modalities, re-spectively. A semantics-enriched representation is then obtained as a weighted combination of prototypes from each bank. Meanwhile, the Prototype Relation Distillation (PRD) strategy enforces semantic structural consistency across the two modalities. 
+
+1) Prototype Memory Bank: Let z ∈ RK×D denote a generic input embedding (either zphy or zbeha ). To learn and extract prototypes, we employ two trainable parameter matri-ces: one for prototype addressing and the other for prototype storage. 
+
+• Prototype Address Matrix Waddress ∈ RM ×D stores representative signatures used for associative addressing. It defines the latent addressing space of the memory bank, where each row act as a reference pattern that interacts with the input query z to compute the prototype assignment weights. 
+
+• Prototype Memory Matrix Wmemory ∈ RM ×D stores the semantic content of each prototype. It provides the semantic basis for feature reconstruction, with each row corresponding to a learned prototype. The input embed-ding z is represented as a weighted aggregation of these prototype contents. Here, M denotes the memory capacity (i.e., the number of prototypes). First, we compute the addressing distribution A ∈
+
+RK×M as: 
+
+A = softmax (βzWT
+
+address ) (9) where β = 1 /√D is a scaling factor. This distribution repre-sents the weight (or probability) of each prototype, quantifying its contribution to the input sample. Next, we reconstruct the input z as a weighted combination of the prototype memories stored in Wmemory , yielding the semantics-enriched embedding 
+
+zproto ∈ RK×D :
+
+zproto = AW memory = Hopfield (z, Waddress , Wmemory , β )
+
+(10) Notably, this learned prototype bank is subsequently used to initialize the hierarchical semantic compression module. 
+
+2) Prototype Relation Distillation (PRD): To mitigate cross-modal heterogeneity and enforce semantic structural consistency, we propose a PRD strategy that leverages the extracted prototypes for cross-modal supervision. First, the JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+
+addressing weight matrix A from Eq. (9) serves as the student distribution, representing the instance-wise assignment probabilities over all prototypes. Concurrently, we construct a ”ground truth” relational structure among the learned proto-types to provide a teacher distribution. The semantic correla-tion matrix S ∈ RM ×M is defined as: 
+
+S = softmax 
+
+ Wmemory WT
+
+> address
+
+τdist 
+
+
+
+(11) where τdist is a temperature parameter. Each row Si captures the semantic distribution of the i-th prototype relative to the entire memory bank, offering structure-aware soft labels for cross-modal distillation. We then use the topological structure of the dominant proto-type from one modality to supervise the addressing distribution of the other modality. For each sample in a mini-batch of size N , we first identify the pseudo-label prototype indices based on the maximum activation of the respective teacher modalities: 
+
+p∗ 
+
+> i
+
+= arg max 
+
+> j
+
+(Abeha  
+
+> i,j
+
+), q∗ 
+
+> i
+
+= arg max 
+
+> j
+
+(Aphy  
+
+> i,j
+
+) (12) Subsequently, Kullback-Leibler (KL) divergence [71] is em-ployed to enforce cross-modal semantic consistency. By min-imizing the divergence between the student’s addressing dis-tribution and the retrieved teacher topology, the PRD loss is formulated as: 
+
+LPRD = 12
+
+> N
+
+X
+
+> i=1
+
+
+
+DKL 
+
+
+
+Sbeha  
+
+> p∗
+> i
+
+∥ Aphy 
+
+> i
+
+
+
++ DKL 
+
+
+
+Sphy 
+
+> q∗
+> i
+
+∥ Abeha 
+
+> i
+
+ 
+
+(13) 
+
+3) Prototypical Co-occurrence Learning (PCL): To un-cover the relational structure of basic emotions within mixed emotional states, we leverage the memory retrieval mecha-nism of Hopfield networks to amplify semantic co-occurrence patterns. As shown in Fig. 4, this design is inspired by the brain’s ability to extract co-occurrence regularities through visual perception and memory. Specifically, we first augment the raw input features z with the learned prototype features 
+
+zproto , yielding prototype-enhanced representations: 
+
+˜zphy = zphy + zphy proto , ˜zbeha = zbeha + zbeha proto (14) where ˜z(·) ∈ RK×D denotes the prototype-enhanced represen-tation that preserves both instance-specific details from the raw input and the rich semantic context captured by the prototypes. Consider a mini-batch of N pairs of enhanced embed-dings {( ˜ zphy  
+
+> i
+
+, ˜zbeha  
+
+> i
+
+)}Ni=1 . We organize them into batch ma-trices ˜Zphy = [ ˜ zphy  
+
+> 1
+
+, . . . , ˜zphy  
+
+> N
+
+] and ˜Zbeha = [ ˜ zbeha  
+
+> 1
+
+, . . . , ˜zbeha  
+
+> N
+
+].These matrices simultaneously serve as stored embeddings: 
+
+U = ˜Zphy = [ u1, . . . , uN ] and V = ˜Zbeha = [ v1, . . . , vN ].Before retrieval, all embeddings are normalized to unit length: 
+
+∥ ˜zphy  
+
+> i
+
+∥ = ∥ ˜zbeha  
+
+> i
+
+∥ = ∥ui∥ = ∥vi∥ = 1 . Each individual embedding ˜zphy  
+
+> i
+
+and ˜zbeha  
+
+> i
+
+acts as state patterns (queries) to …y 1 y 2 y N …y 1 y 2 y N           
+
+> x1x2xNx1x2xN
+> Hopfield Retrieval with V
+> Hopfield Retrieval with U
+> Hopfield Retrieval with U
+
+… UyN   
+
+> …
+> Vy1 Vy2 VyN
+
+…    
+
+> Ux2 UxN Vx1 Vx2 VxN
+
+… 
+
+> … …
+> Ux1
+> Uy1 Uy2
+
+�− �− �−
+
+�− �− �−   
+
+> 𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑
+> 𝒛𝒛 𝒃𝒃𝒃𝒃 𝒑𝒑 𝒃𝒃
+> 𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑 𝒃𝒃𝒃𝒃 𝒑𝒑 𝒃𝒃
+> 𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑𝒑 𝒑𝒑𝒑𝒑𝒑𝒑
+> �𝒛𝒛 𝒑𝒑𝒑𝒑𝒑𝒑
+> �𝒛𝒛 𝒃𝒃𝒃𝒃 𝒑𝒑 𝒃𝒃
+> �−Similarity to anchor
+> Positive sample
+> Negative sample
+
+Prototypical Co-occurrence Learning (PCL) 
+
+> Hopfield Retrieval with V
+
+Fig. 4. Architecture of Prototypical Co-occurrence Learning (PCL). The phys-iological embedding xi and the behavioral embedding yi retrieve associated representations Uxi and Uyi , respectively, via the Hopfield network. Within the physiological embedding space, Uxi (retrieved via the physiological query) serves as an anchor that is contrasted with the positive sample Uyi
+
+(retrieved from the corresponding behavioral query) and with negative samples 
+
+Uyj (retrieved from mismatched behavioral queries, where j̸ = i). The same procedure is applied symmetrically in the behavioral embedding space V .
+
+retrieve associated features from the stored patterns in U and 
+
+V, respectively: 
+
+U˜zphy 
+
+> i
+
+= Hopfield ( ˜ zphy  
+
+> i
+
+, U, U, β ) (15) 
+
+U˜zbeha  
+
+> i
+
+= Hopfield ( ˜ zbeha  
+
+> i
+
+, U, U, β ) (16) 
+
+V˜zphy 
+
+> i
+
+= Hopfield ( ˜ zphy  
+
+> i
+
+, V, V, β ) (17) 
+
+V˜zbeha  
+
+> i
+
+= Hopfield ( ˜ zbeha  
+
+> i
+
+, V, V, β ) (18) where β is the scaling parameter of the Hopfield net-work. Here, U˜zphy 
+
+> i
+
+denotes a physiological-retrieved physi-ological embedding, while U˜zbeha  
+
+> i
+
+is a behavioral-retrieved physiological embedding. Similarly, V˜zphy 
+
+> i
+
+corresponds to a physiological-retrieved behavioral embedding, and V˜zbeha  
+
+> i
+
+is a behavioral-retrieved behavioral embedding. Guided by this memory retrieval mechanism, features that exhibit semantic consistency between the query and stored samples are reinforced, while spurious correlations are sup-pressed. After retrieval, all retrieved embeddings are re-normalized: ∥U˜zphy 
+
+> i
+
+∥ = ∥U˜zbeha  
+
+> i
+
+∥ = ∥V˜zphy 
+
+> i
+
+∥ = ∥V˜zbeha  
+
+> i
+
+∥ = 1 .Drawing inspiration from the CLOOB objective [68], we define the Semantic-Level Leave One Out Boost (SemLOOB) loss as: 
+
+LSemLOOB = − 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ln exp( τ −1 
+
+> pcl
+
+UT
+
+> ˜zphy
+> i
+
+U˜zbeha  
+
+> i
+
+)
+
+PNj̸ =i exp( τ −1 
+
+> pcl
+
+UT
+
+> ˜zphy
+> i
+
+U˜zbeha  
+
+> j
+
+)
+
+− 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+ln exp( τ −1 
+
+> pcl
+
+VT
+
+> ˜zphy
+> i
+
+V˜zbeha  
+
+> i
+
+)
+
+PNj̸ =i exp( τ −1 
+
+> pcl
+
+VT
+
+> ˜zphy
+> j
+
+V˜zbeha  
+
+> i
+
+)
+
+(19) where τpcl is a temperature parameter that scales the logits. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8
+
+E. Hierarchical Semantic Compression and Distribution Pre-diction 
+
+After amplifying semantic-level co-occurrences, we con-catenate the prototype-enhanced physiological and behavioral features to obtain the fused representation ˜zfuse ∈ R2K×D :
+
+˜zfuse = Concat ([ ˜ zphy , ˜zbeha ]) (20) We then introduce a Hierarchical Semantic Compression (HSC) strategy that iteratively abstracts high-level affective concepts from the fine-grained prototype space. Specifically, we stack L compression blocks, each containing a prototype abstraction layer followed by a multi-head self-attention layer (MHSA). Let H(0) = zfuse ∈ R2K×D denote the initial state. The update for the l-th layer ( 1 ≤ l ≤ L) is: 
+
+˜H(l) = Hopfield (H(l−1) , W(l)
+
+> lookup
+
+, W(l)
+
+> content
+
+, β ) + H(l−1) 
+
+(21) 
+
+H(l) = MHSA ( ˜H(l)) + ˜H(l) (22) where ˜H(l) is the hidden state of the l-th layer. At each layer, the learnable content matrix W(l) 
+
+> content
+
+∈ RMl×D serves as a set of semantic slots with variable capacity Ml. Specifically, the slots of the first layer W(1)  
+
+> content
+
+are initialized from the prototype memory bank ( Wmemory ∈ RM ×D ) (Section III-D1), and the slot capacity Ml is progressively reduced across layers. This design gradually compresses fine-grained prototypes into highly abstract semantic representations whose structure aligns with the target emotion categories. The output of the final block is mapped into the emotion probability space to obtain the predicted distribution ˆyi ∈ RE ,where E is the number of emotion classes. We use KL divergence as the task loss to measure the discrepancy between the prediction ˆyi and the ground truth distribution yi:
+
+Ltask = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+DKL (yi∥ ˆyi) (23) The overall training objective combines the three loss terms: 
+
+Ltotal = Ltask + LPRD + LSemLOOB (24) where Ltask aligns predictions with ground truth emotion distribution, LPRD enforces cross-modal semantic structural consistency, and LSemLOOB promotes cross-modal semantic co-occurrence consistency. IV. E XPERIMENTS 
+
+A. Datasets 
+
+To the best of our knowledge, only two public multimodal datasets contain both physiological and behavioral signals available for emotion distribution learning: DMER [72] and WESAD [73]. We evaluate our MPCL framework on both. 
+
+1) DMER: This dataset contains multimodal recording from 80 participants across four modalities: EEG, GSR, PPG, and frontal facial videos. Each participant watched 32 video clips and subsequently rated their emotional states using the 10-item short form of the Positive and Negative Affect Sched-ule (PANAS) [74]. The PANAS scale includes five positive emotions (inspired, alert, excited, enthusiastic, determined) and five negative emotions (afraid, upset, nervous, scared, distressed), each rated on a 5-point Likert scale from 1 (very slightly or not at all) to 5 (extremely). The raw scores are normalized to form emotion distributions, which serve as the ground-truth emotion labels. Due to incomplete physiological recordings for 7 participants, our experiments are conducted on the remaining 73 subjects. 
+
+2) WESAD: This dataset includes multimodal signals col-lected from 17 participants using wrist- and chest-worn sen-sors. The recorded modalities include ECG, EMG, EDA, and 3-axis accelerometer (ACC). Participants underwent stimulus-based inductions designed to elicit four emotional states: neutral, stress, amusement, and meditation. After each induction, the PANAS scale was used to obtain ground-truth emotion labels. Data from two subjects were excluded because of sensor failures, leaving 15 participants for our experiments. 
+
+B. Data Processing and Feature Extraction 
+
+To ensure a fair comparison, we follow the preprocessing and feature extraction protocols described in the original dataset publications. 
+
+1) DMER: EEG signals were filtered using a 1–50Hz band-pass filter and a 50Hz notch filter to remove noise. Artifact components were subsequently eliminated using independent component analysis (ICA) [75]. Differential entropy (DE) fea-tures were extracted via Short-Time Fourier Transform (STFT) over five frequency bands: δ (1–3Hz), θ (4–7Hz), α (8–13Hz), 
+
+β (14–30Hz), and γ (31–50Hz). GSR signals were band-pass filtered with a lower cutoff of 0.01Hz and an upper cutoff of 49Hz, while PPG signals were filtered in the 0.01–1.9Hz range. For facial video recordings, Local Binary Patterns on Three-Orthogonal Planes (LBP-TOP) features were computed on each 1-second video segment. In total, we obtained 90 EEG features, 28 GSR features, 27 PPG features, and 768 video features per sample. 
+
+2) WESAD: ECG signals were processed with a peak-detection algorithm to identify heartbeats, from which heart rate (HR) and heart rate variability (HRV) features were de-rived. For EDA, we computed the mean and standard deviation of the signal, then decomposed it into skin conductance level (SCL) and skin conductance response (SCR) components; the number of SCR peaks and their mean amplitude were recorded. For EMG, the mean, standard deviation, range, inte-gral, median, peak frequency and power spectral density (PSD) of the signal were computed. Additionally, the number of peaks and the mean, standard deviation, sum, and normalized sum of peak amplitudes were extracted. For ACC data, the mean, standard deviation, and absolute integral per axis were computed, as well as the magnitude (and sum) across all axes, together with the peak frequency for each axis. Overall, each sample yields 73 ECG features, 4 EDA features, 14 EMG features, and 12 ACC features. 
+
+C. Evaluation Metrics and Protocols 
+
+To ensure comparability with previous emotion distribu-tion learning research [25], [26], we evaluate MPCL using six standard metrics. These include four distance measures: JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9
+
+TABLE I QUANTITATIVE COMPARISON WITH BASELINE METHODS ON THE DMER AND WESAD DATASETS UNDER THE SUBJECT -DEPENDENT SETTING .Dataset Mesure LDL MER Single-modal EDL MMER Multimodal EDL PT-SVM [76] AA-KNN [76] SA-CPNN [77] MAET [78] LDL-LRR [79] TLR-DL [80] CAD [81] CARAT [33] EmotionDict [25] HeLo [26] MPCL                                                                                                                                                           
+
+> DMER Chebyshev ( ↓)0.0851 (7) 0.0949 (10) 0.0917 (8) 0.0522 (3) 0.0936 (9) 0.0847 (6) 0.1017 (11) 0.0752 (4) 0.0753 (5) 0.0446 (2) 0.0346 (1)
+> Clark ( ↓)0.5787 (6) 0.6649 (10) 0.6333 (8) 0.3762 (3) 0.6529 (9) 0.5380 (4) 0.7517 (11) 0.5951 (7) 0.5463 (5) 0.3256 (2) 0.2369 (1)
+> Canberra ( ↓)1.5294 (7) 1.2357 (3) 1.8092 (9) 0.9875 (3) 1.8224 (10) 1.3271 (5) 1.9415 (11) 1.5965 (8) 1.4771 (6) 0.8664 (2) 0.6068 (1)
+> KL ( ↓)0.0837 (6) 0.1409 (10) 0.1048 (8) 0.0288 (2) 0.0644 (4) 0.0925 (7) 0.1460 (11) 0.1137 (9) 0.0766 (5) 0.0323 (3) 0.0177 (1)
+> Cosine ( ↑)0.9237 (8) 0.9315 (6) 0.9058 (9) 0.9688 (3) 0.9016 (10) 0.9339 (4) 0.8923 (11) 0.9332 (5) 0.9313 (7) 0.9714 (2) 0.9874 (1)
+> Intersection ( ↑)0.8417 (8) 0.8425 (7) 0.8150 (9) 0.9113 (3) 0.8136 (10) 0.8537 (5) 0.8077 (11) 0.8474 (6) 0.8492 (5) 0.9128 (2) 0.9427 (1)
+> Average Rank ( ↓)7.00 (7) 7.67 (8) 8.50 (9) 2.83 (3) 8.67 (10) 5.17 (4) 11.00 (11) 6.50 (6) 5.50 (5) 2.17 (2) 1.00 (1)
+> WESAD Chebyshev ( ↓)0.0515 (8) 0.0346 (4) 0.0998 (11) 0.0347 (5) 0.0357 (7) 0.0622 (10) 0.0569 (9) 0.0354 (6) 0.0090 (3) 0.0073 (2) 0.0046 (1)
+> Clark ( ↓)0.3940 (8) 0.2779 (4) 0.7285 (11) 0.3503 (7) 0.2822 (6) 0.5381 (10) 0.4618 (9) 0.2812 (5) 0.0733 (3) 0.0653 (2) 0.0417 (1)
+> Canberra ( ↓)1.0249 (8) 0.7381 (4) 2.0746 (11) 0.9100 (7) 0.7466 (6) 1.3586 (10) 1.2199 (9) 0.7430 (5) 0.1876 (3) 0.1614 (2) 0.1026 (1)
+> KL ( ↓)0.0320 (8) 0.0243 (5) 0.1226 (10) 0.0251 (6) 0.0273 (7) 0.2051 (11) 0.0440 (9) 0.0210 (4) 0.0017 (3) 0.0010 (2) 0.0003 (1)
+> Cosine ( ↑)0.9728 (8) 0.9793 (7) 0.8918 (11) 0.9867 (4) 0.9821 (6) 0.9541 (10) 0.9624 (9) 0.9824 (5) 0.9985 (3) 0.9992 (2) 0.9998 (1)
+> Intersection ( ↑)0.9024 (8) 0.9297 (4) 0.7896 (11) 0.9213 (7) 0.9292 (6) 0.8746 (10) 0.8812 (9) 0.9296 (5) 0.9820 (3) 0.9905 (2) 0.9974 (1)
+> Average Rank ( ↓)8.00 (8) 4.67 (4) 10.83 (11) 6.00 (6) 6.33 (7) 10.17 (10) 9.00 (9) 5.00 (5) 3.00 (3) 2.00 (2) 1.00 (1)
+
+Arrows ↓ and ↑ indicate “lower is better” and “higher is better”, respectively. Parenthesized values denote per-metric rankings and the average rank. The best result is highlighted in bold. 
+
+Chebyshev ( ↓), Clark ( ↓), Canberra ( ↓), and Kullback-Leibler (KL) divergence ( ↓), and two similarity coefficients: Cosine (↑) and Intersection ( ↑). An Average Rank is also reported to summarize overall performance across all six metrics. To comprehensively evaluate our model on the DMER and WESAD datasets, we adopt both subject-dependent and 
+
+subject-independent settings. In the subject-dependent setting, each subject’s data are randomly split into 80% for training and 20% for testing, and the final performance is averaged over all subjects. For the subject-independent evaluation, we employ a Leave-One-Subject-Out (LOSO) scheme, where one subject is held out for testing in each fold while the remaining subjects form the training set. The reported results are averaged over all folds. 
+
+D. Implementation Details 
+
+Our method is implemented in PyTorch and trained on an NVIDIA GeForce RTX 4090 GPU. We use the Adam optimizer with a learning rate of 0.001, a batch size of 128, and train for 400 epochs. For the DMER dataset, EEG is treated as the primary modality, with GSR and PPG as auxiliary physiological modalities; facial videos constitute the behavioral signal. For the WESAD dataset, ECG serves as the primary modality, while EDA and EMG are auxiliary modalities; ACC data is used as the behavioral signal. In the MSAF module, embedding dimension D = 128 , and the scaling set B = {βlow , β mid , β high } is {8, 14 .3, 22 }. For the prototype memory bank, the number of prototypes M = 100 ,and the temperature parameter τdist = 0.07 . For the PCL module, the scaling β = 14 .3, and the inverse temperature parameter τ −1
+
+pcl = 50 . In the HSC module, the number of compression blocks L = 10 , and the capacity Ml of the content matrix is progressively reduced from 100 in the first layer to the number of emotion classes in the last layer. 
+
+E. Experimental Results 1) Baselines: To evaluate the effectiveness of MPCL, we compare it against a comprehensive set of representative baselines on both the DMER and WESAD datasets. These baselines span five categories: 
+
+• Classical label distribution learning (LDL): PT-SVM [76], AA-KNN [76], SA-CPNN [77]. 
+
+• Multimodal emotion recognition (MER): MAET [78]. 
+
+• Single-modal emotion distribution learning (single-modal EDL): LDL-LRR [79], TLRLDL [80], CAD [81]. 
+
+• Multimodal multi-label emotion recognition (MMER): CARAT [33]. 
+
+• Recent multimodal EDL (Multimodal EDL): Emotion-Dict [25], Helo [26]). As MER and MMER methods are originally designed for categorical classification, we apply a softmax function to their output layer to generate probability distributions. 
+
+2) Subject-dependent Experiments: Table I reports the quantitative results under the subject-dependent setting. MPCL consistently outperforms the all baselines across all six eval-uation metrics on both datasets. In general, deep-learning-based approaches (MER, single-modal LDL, MMLER, and multimodal EDL) surpass classical LDL methods. We further visualize the ground-truth and predicted emotion distributions for selected samples from the DMER dataset (Fig. 5). The emotion distributions exhibit clear semantic de-pendencies, reflected in the co-occurrence of emotions sharing the same valence. For instance, the first row shows simulta-neous activation of positive emotions (including inspired, ex-cited, enthusiastic, determined), while the second row presents a cluster of negative emotions (afraid, upset, nervous, scared). Most baselines fail to capture these intrinsic correlations and produce predictions with noticeable fluctuations. In contrast, MPCL effectively models the distribution patterns of co-occurring emotions, yielding predictions that align closely with the ground truth. 
+
+3) Subject-independent Experiments: Table II presents the results under the more challenging subject-independent set-ting, where inter-subject variability—especially in EEG sig-nals—poses significant difficulties. MPCL again achieves the best performance on both datasets, demonstrating its ability to extract stable emotion-related features across different in-dividuals. Overall, by enhancing semantic-level co-occurrence among emotion prototypes, MPCL effectively captures the global topological structure of emotions. Both quantitative and qual-JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 10 1:Inspired 2:Alert 3:Excited 4:Enthusiastic 5:Determined 6:Afraid 7:Upset 8:Nervous 9:Scared 10:Distressed                                                        
+
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> GT
+> 0.00
+> 0.15
+> 0.30
+> 0.45
+> PT-SVM
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> AA-KNN
+> 0.00
+> 0.15
+> 0.30
+> 0.45
+> SA-CPNN
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> MAET
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> LDL-LRR
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> TLR-DL
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> CAD
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> CARAT
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> EmotionDict
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> HeLo
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> MPCL
+> 0.00
+> 0.06
+> 0.12
+> 0.18
+> GT
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> PT-SVM
+> 0.00
+> 0.15
+> 0.30
+> 0.45
+> AA-KNN
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> SA-CPNN
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> MAET
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> LDL-LRR
+> 12345678910
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> TLR-DL
+> 12345678910
+> 0.00
+> 0.15
+> 0.30
+> CAD
+> 12345678910
+> 0.00
+> 0.08
+> 0.16
+> 0.24
+> CARAT
+> 12345678910
+> 0.00
+> 0.06
+> 0.12
+> 0.18
+> EmotionDict
+> 12345678910
+> 0.00
+> 0.08
+> 0.16
+> 0.24 HeLo
+> 12345678910
+> 0.00
+> 0.06
+> 0.12
+> 0.18
+> MPCL
+
+Fig. 5. Comparison of emotion distribution predictions between MPCL and state-of-the-art baselines on two representative samples (Subject 26). GT denotes the ground-truth distribution. Emotion indices 1–10 correspond to: inspired, alert, excited, enthusiastic, determined, afraid, upset, nervous, scared, and distressed. TABLE II QUANTITATIVE COMPARISON WITH BASELINE METHODS ON THE DMER AND WESAD DATASETS UNDER THE SUBJECT -INDEPENDENT SETTING .Dataset Measure LDL MER Single-modal EDL MMER Multimodal EDL PT-SVM [76] AA-KNN [76] SA-CPNN [77] MAET [78] LDL-LRR [79] TLR-DL [80] CAD [81] CARAT [33] EmotionDict [25] HeLo [26] MPCL 
+
+DMER Chebyshev ( ↓) 0.1462 (11) 0.1070 (10) 0.0928 (4) 0.0939 (5) 0.1012 (8) 0.0964 (7) 0.0925 (3) 0.1023 (9) 0.0945 (6) 0.0882 (2) 0.0763 (1) 
+
+Clark ( ↓) 1.2877 (11) 0.6860 (9) 0.6440 (4) 0.6605 (5) 0.6856 (8) 0.6702 (7) 0.6379 (3) 0.6909 (10) 0.6676 (6) 0.6289 (2) 0.5932 (1) 
+
+Canberra ( ↓) 2.0459 (11) 1.8308 (7) 1.8542 (8) 1.7863 (3) 1.9071 (9) 1.8244 (6) 1.8104 (5) 1.9161 (10) 1.8092 (4) 1.7603 (2) 1.5843 (1) 
+
+KL ( ↓) 0.5528 (11) 0.1227 (9) 0.1089 (5) 0.1088 (4) 0.1222 (8) 0.1142 (7) 0.1076 (3) 0.1245 (10) 0.1104 (6) 0.1027 (2) 0.1009 (1) 
+
+Cosine ( ↑) 0.8295 (11) 0.8843 (10) 0.9022 (4) 0.9016 (5) 0.8917 (8) 0.8964 (7) 0.9036 (3) 0.8899 (9) 0.9001 (6) 0.9148 (2) 0.9273 (1) 
+
+Intersection ( ↑) 0.7762 (11) 0.8050 (8) 0.8102 (6) 0.8147 (3) 0.8037 (9) 0.8087 (7) 0.8122 (4) 0.8026 (10) 0.8119 (5) 0.8194 (2) 0.8496 (1) 
+
+Average Rank ( ↓) 11.00 (11) 8.83 (9) 5.17 (5) 4.17 (4) 8.33 (8) 6.83 (7) 3.50 (3) 9.67 (10) 5.50 (6) 2.00 (2) 1.00 (1) 
+
+WESAD Chebyshev ( ↓) 0.0471 (7) 0.0500 (9) 0.0894 (11) 0.0516 (10) 0.0466 (6) 0.0441 (4) 0.0481 (8) 0.0454 (5) 0.0421 (3) 0.0403 (2) 0.0314 (1) 
+
+Clark ( ↓) 0.4506 (8) 0.4516 (10) 0.6394 (11) 0.4514 (9) 0.4471 (6) 0.4145 (4) 0.4488 (7) 0.4270 (5) 0.3631 (3) 0.3455 (2) 0.2973 (1) 
+
+Canberra ( ↓) 1.1928 (10) 1.1762 (7) 1.7384 (11) 1.1666 (6) 1.1817 (8) 1.0746 (4) 1.1647 (5) 1.1874 (9) 0.9530 (3) 0.9329 (2) 0.8685 (1) 
+
+KL ( ↓) 0.0347 (6) 0.0423 (9) 0.0944 (11) 0.0445 (10) 0.0343 (4) 0.0372 (8) 0.0366 (7) 0.0345 (5) 0.0282 (2) 0.0283 (3) 0.0228 (1) 
+
+Cosine ( ↑) 0.9727 (6) 0.9663 (10) 0.9154 (11) 0.9678 (9) 0.9731 (4) 0.9695 (8) 0.9711 (7) 0.9731 (4) 0.9773 (3) 0.9790 (2) 0.9857 (1) 
+
+Intersection ( ↑) 0.8935 (7) 0.8933 (9) 0.8254 (11) 0.8967 (4) 0.8945 (5) 0.8917 (10) 0.8935 (8) 0.8944 (6) 0.9126 (3) 0.9154 (2) 0.9371 (1) 
+
+Average Rank ( ↓) 7.33 (8) 9.00 (10) 11.00 (11) 8.00 (9) 5.50 (4) 6.33 (6) 7.00 (7) 5.67 (5) 2.83 (3) 2.17 (2) 1.00 (1) 
+
+Arrows ↓ and ↑ indicate “lower is better” and “higher is better”, respectively. Parenthesized values denote per-metric rankings and the average rank. The best result is highlighted in bold. 
+
+itative experiments confirm the superior predictive capability of our method. 
+
+F. Ablation Study 1) Ablation on Main Components: To validate the effec-tiveness of each core component in the MPCL framework, we conducted ablation studies on four key modules: multi-scale associative fusion (MSAF), prototype relation distillation (PRD), prototypical co-occurrence learning (PCL), and hierar-chical semantic compression (HSC). Tables III and IV summa-rize the results (without each component) on DMER and WE-SAD under both subject-dependent and subject-independent settings. The results indicate that each component con-tributes significantly to overall performance. Specifically, PRD and PCL are the most influential modules—PRD enforces cross-modal prototype-topology alignment, while PCL am-plifies semantic-level co-occurrence among prototypes. HSC follows as a strong secondary contributor, progressively ab-stracting fine-grained prototypes into compact emotion rep-resentations. Although MSAF exhibits a relatively moderate impact, it remains essential for effectively fusing multimodal physiological data. 
+
+2) Ablation on Modalities: We further evaluate the con-tribution of each individual modality through ablation studies (Tables V and VI). All modalities consistently improve perfor-mance under both subject-dependent and subject-independent settings. For physiological signals, the primary modality (EEG on DMER, ECG on WESAD) contributes more substantially than the auxiliary ones (PPG/GSR on DMER, EMG/EDA on WESAD). The behavioral modality also yields significant gains, confirming that the integration of multimodal data is JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 11 
+
+TABLE III ABLATION STUDY OF DIFFERENT COMPONENTS ON THE DMER DATASET .“w/o ” INDICATES THE REMOVAL OF THE CORRESPONDING MODULE .Settings Measure w/o w/o w/o w/o 
+
+MSAF PRD PCL HSC MPCL 
+
+Subject-Dependent Chebyshev ( ↓) 0.0385 0.0425 0.0396 0.0388 0.0346 
+
+Clark ( ↓) 0.2643 0.2952 0.2914 0.2704 0.2369 
+
+Canberra ( ↓) 0.6652 0.7759 0.7466 0.6861 0.6068 
+
+KL ( ↓) 0.0258 0.0332 0.0317 0.0284 0.0177 
+
+Cosine ( ↑) 0.9766 0.9714 0.9702 0.9743 0.9874 
+
+Intersection ( ↑) 0.9326 0.9186 0.9221 0.9297 0.9427 
+
+Subject-Independent Chebyshev ( ↓) 0.0804 0.0885 0.0871 0.0824 0.0763 
+
+Clark ( ↓) 0.6253 0.6843 0.6759 0.6381 0.5932 
+
+Canberra ( ↓) 1.6681 1.7925 1.7638 1.6952 1.5843 
+
+KL ( ↓) 0.1138 0.1342 0.1296 0.1173 0.1009 
+
+Cosine ( ↑) 0.9145 0.8924 0.8967 0.9085 0.9273 
+
+Intersection ( ↑) 0.8362 0.8125 0.8168 0.8294 0.8496 
+
+TABLE IV ABLATION STUDY OF DIFFERENT COMPONENTS ON WESAD DATASET .“w/o ” INDICATES THE REMOVAL OF THE CORRESPONDING MODULE .Settings Measure w/o w/o w/o w/o 
+
+MSAF PRD PCL HSC MPCL 
+
+Subject-Dependent Chebyshev ( ↓) 0.0062 0.0081 0.0083 0.0068 0.0046 
+
+Clark ( ↓) 0.0525 0.0692 0.0674 0.0563 0.0417 
+
+Canberra ( ↓) 0.1263 0.1682 0.1625 0.1342 0.1026 
+
+KL ( ↓) 0.0007 0.0015 0.0014 0.0009 0.0003 
+
+Cosine ( ↑) 0.9984 0.9961 0.9954 0.9980 0.9998 
+
+Intersection ( ↑) 0.9937 0.9842 0.9865 0.9912 0.9974 
+
+Subject-Independent Chebyshev ( ↓) 0.0382 0.0486 0.0475 0.0412 0.0314 
+
+Clark ( ↓) 0.3247 0.3642 0.3598 0.3325 0.2973 
+
+Canberra ( ↓) 0.9356 1.0542 1.0268 0.9584 0.8685 
+
+KL ( ↓) 0.0292 0.0385 0.0372 0.0315 0.0228 
+
+Cosine ( ↑) 0.9783 0.9654 0.9682 0.9745 0.9857 
+
+Intersection ( ↑) 0.9211 0.8954 0.9012 0.9156 0.9371 
+
+crucial for robust emotion distribution learning. 
+
+3) Comparison with Alternative Designs: To demonstrate the advantages of the Hopfield-based modules in MPCL, we compare them against standard alternative designs. The following configurations are evaluated: 
+
+• MSAF vs. Transformer cross-attention Fusion: MSAF is replaced with standard Transformer cross-attention (EEG/ECG as Query, auxiliary physiological signals as Key/Value). 
+
+• Prototype-level vs. Feature-level Co-occurrence: The prototype-enhanced representations ˜zphy and ˜zbeha in PCL are replaced with raw features zphy and zbeha . This modification degrades prototype-level co-occurrence to feature-level co-occurrence. 
+
+• Memory-guided Retrieval vs. InfoNCE Alignment: 
+
+The memory-retrieval mechanism is removed and the SemLOOB loss is replaced by InfoNCE loss (adapted from CLIP), i.e., directly performing cross-modal align-ment on the prototype-enhanced representations ˜zphy and 
+
+˜zbeha .
+
+• HSC vs. Transformer Encoder: HSC is replaced with standard Transformer encoder layers while keeping the same number of layers L.Quantitative results (Table VII) show the following: 
+
+• MSAF outperforms Transformer cross-attention fusion, benefiting from its energy-minimization formulation and multi-scale associative memory retrieval. Unlike standard 
+
+TABLE V ABLATION STUDY OF DIFFERENT MODALITIES ON DMER. “ w/o ” MEANS THE REMOVAL OF THE CORRESPONDING MODALITY FROM THE INPUT .Settings Measure w/o w/o w/o w/o 
+
+PPG GSR EEG Video MPCL 
+
+Subject-Dependent Chebyshev ( ↓) 0.0362 0.0371 0.0412 0.0465 0.0346 
+
+Clark ( ↓) 0.2485 0.2533 0.2847 0.3105 0.2369 
+
+Canberra ( ↓) 0.6250 0.6384 0.7259 0.8214 0.6068 
+
+KL ( ↓) 0.0198 0.0215 0.0296 0.0368 0.0177 
+
+Cosine ( ↑) 0.9825 0.9804 0.9735 0.9668 0.9874 
+
+Intersection ( ↑) 0.9385 0.9356 0.9242 0.9135 0.9427 
+
+Subject-Independent Chebyshev ( ↓) 0.0782 0.0805 0.0894 0.0965 0.0763 
+
+Clark ( ↓) 0.6085 0.6174 0.6628 0.7012 0.5932 
+
+Canberra ( ↓) 1.6150 1.6423 1.7456 1.8845 1.5843 
+
+KL ( ↓) 0.1065 0.1102 0.1287 0.1453 0.1009 
+
+Cosine ( ↑) 0.9215 0.9184 0.9015 0.8842 0.9273 
+
+Intersection ( ↑) 0.8425 0.8386 0.8205 0.8043 0.8496 
+
+TABLE VI ABLATION STUDY OF DIFFERENT MODALITIES ON WESAD. “ w/o ” MEANS THE REMOVAL OF THE CORRESPONDING MODALITY FROM THE INPUT .Settings Measure w/o w/o w/o w/o 
+
+EMG EDA ECG ACC MPCL 
+
+Subject-Dependent Chebyshev ( ↓) 0.0052 0.0055 0.0075 0.0092 0.0046 
+
+Clark ( ↓) 0.0458 0.0472 0.0585 0.0734 0.0417 
+
+Canberra ( ↓) 0.1105 0.1142 0.1428 0.1856 0.1026 
+
+KL ( ↓) 0.0004 0.0005 0.0011 0.0019 0.0003 
+
+Cosine ( ↑) 0.9992 0.9990 0.9972 0.9954 0.9998 
+
+Intersection ( ↑) 0.9962 0.9958 0.9885 0.9812 0.9974 
+
+Subject-Independent Chebyshev ( ↓) 0.0352 0.0361 0.0425 0.0515 0.0314 
+
+Clark ( ↓) 0.3105 0.3142 0.3426 0.3758 0.2973 
+
+Canberra ( ↓) 0.8950 0.9025 0.9854 1.0865 0.8685 
+
+KL ( ↓) 0.0256 0.0268 0.0345 0.0415 0.0228 
+
+Cosine ( ↑) 0.9815 0.9802 0.9715 0.9604 0.9857 
+
+Intersection ( ↑) 0.9285 0.9264 0.9085 0.8872 0.9371 
+
+attention mechanisms, Hopfield networks allow flexible tuning of the inverse temperature β, since the fixed-point dynamics is not strictly coupled to the dimension of the associative space dk. Consequently, this flexibil-ity enables MSAF to effectively capture complementary information across heterogeneous signals at varying gran-ularities. 
+
+• Prototype-level co-occurrence surpasses feature-level co-occurrence, confirming that prototypes effectively disen-tangle semantics and suppress noise, and amplifying co-occurrence within this space effectively captures more meaningful emotion representations. 
+
+• Memory-guided retrieval yields better results than global contrastive alignment, indicating that the Hopfield re-trieval process effectively amplifies features exhibiting semantic consistency between input and stored patterns while suppressing spurious correlations, thereby revealing latent structural associations among emotions at a seman-tic level. 
+
+• HSC is more effective than a plain Transformer encoder in simulating the cognitive progression from concrete signals to abstract affective concepts. Its bottom-up com-pression strategy—progressively reducing semantic-slot capacity ( Ml) across layers—forces the model to con-dense fine-grained prototypes into highly abstract repre-sentations, thereby enabling accurate emotion distribution prediction. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 12 
+
+TABLE VII COMPARISON WITH ALTERNATIVE DESIGNS ON DMER AND WESAD. “ w/ ” INDICATES THAT THE CORRESPONDING MPCL MODULE IS REPLACED BY THE SPECIFIED ALTERNATIVE : C ROSS ATTN (REPLACING MSAF), F EAT -C O (REPLACING PROTOTYPE -LEVEL CO -OCCURRENCE ), I NFO NCE ( REPLACING MEMORY -GUIDED RETRIEVAL ), AND TRANS ENC (REPLACING HSC). 
+
+Protocol Measure DMER Dataset WESAD Dataset 
+
+w/ CrossAttn w/ Feat-Co w/ InfoNCE w/ TransEnc MPCL w/ CrossAttn w/ Feat-Co w/ InfoNCE w/ TransEnc MPCL 
+
+Subject-Dependent Chebyshev ( ↓) 0.0363 0.0382 0.0374 0.0368 0.0346 0.0054 0.0067 0.0064 0.0059 0.0046 
+
+Clark ( ↓) 0.2497 0.2743 0.2648 0.2541 0.2369 0.0483 0.0556 0.0537 0.0498 0.0417 
+
+Canberra ( ↓) 0.6358 0.7012 0.6784 0.6486 0.6068 0.1147 0.1384 0.1319 0.1217 0.1026 
+
+KL ( ↓) 0.0213 0.0287 0.0246 0.0238 0.0177 0.0006 0.0011 0.0009 0.0007 0.0003 
+
+Cosine ( ↑) 0.9823 0.9748 0.9782 0.9791 0.9874 0.9989 0.9972 0.9976 0.9984 0.9998 
+
+Intersection ( ↑) 0.9367 0.9284 0.9316 0.9352 0.9427 0.9961 0.9918 0.9924 0.9953 0.9974 
+
+Subject-Independent Chebyshev ( ↓) 0.0794 0.0846 0.0817 0.0803 0.0763 0.0346 0.0414 0.0378 0.0367 0.0314 
+
+Clark ( ↓) 0.6124 0.6542 0.6389 0.6217 0.5932 0.3118 0.3456 0.3294 0.3207 0.2973 
+
+Canberra ( ↓) 1.6356 1.7248 1.6892 1.6583 1.5843 0.8943 0.9654 0.9287 0.9248 0.8685 
+
+KL ( ↓) 0.1087 0.1243 0.1164 0.1126 0.1009 0.0264 0.0326 0.0298 0.0282 0.0228 
+
+Cosine ( ↑) 0.9214 0.9056 0.9123 0.9158 0.9273 0.9813 0.9718 0.9746 0.9782 0.9857 
+
+Intersection ( ↑) 0.8423 0.8264 0.8327 0.8356 0.8496 0.9294 0.9153 0.9196 0.9224 0.9371 
+
+TABLE VIII ABLATION STUDY OF DIFFERENT SCALING STRATEGIES (β) IN THE MSAF MODULE ON THE DMER DATASET UNDER BOTH SUBJECT -D EPENDENT AND 
+
+SUBJECT -I NDEPENDENT PROTOCOLS .
+
+Configuration Subject-Dependent Subject-Independent 
+
+Chebyshev ( ↓) Clark ( ↓) Canberra ( ↓) KL ( ↓) Cosine ( ↑) Intersection ( ↑) Chebyshev ( ↓) Clark ( ↓) Canberra ( ↓) KL ( ↓) Cosine ( ↑) Intersection ( ↑)
+
+βlow 0.0368 0.2548 0.6477 0.0234 0.9782 0.9362 0.0794 0.6153 1.6458 0.1106 0.9167 0.8384 
+
+βmid 0.0364 0.2519 0.6423 0.0227 0.9793 0.9374 0.0787 0.6121 1.6376 0.1092 0.9182 0.8403 
+
+βhigh 0.0369 0.2576 0.6546 0.0243 0.9776 0.9358 0.0799 0.6184 1.6521 0.1114 0.9156 0.8372 
+
+{βlow , β mid } 0.0353 0.2447 0.6245 0.0204 0.9824 0.9403 0.0774 0.6023 1.6102 0.1051 0.9221 0.8453 
+
+{βmid , β high } 0.0357 0.2468 0.6281 0.0209 0.9817 0.9392 0.0779 0.6051 1.6149 0.1062 0.9213 0.8441 
+
+{βlow , β high } 0.0359 0.2492 0.6318 0.0216 0.9804 0.9383 0.0783 0.6082 1.6197 0.1073 0.9201 0.8426 
+
+B = {βlow , β mid , β high } 0.0346 0.2369 0.6068 0.0177 0.9874 0.9427 0.0763 0.5932 1.5843 0.1009 0.9273 0.8496 Canberra ( ↓)
+
+KL ( ↓) Cosine ( ↑) Intersection ( ↑)
+
+Chebyshev ( ↓) Clark ( ↓)            
+
+> 10 50 100 500 1000
+> 0.02
+> 0.03
+> 0.04
+> 0.05
+> 0.06
+> 0.07
+> 0.08
+> 0.09
+> 10 50 100 500 1000
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 10 50 100 500 1000
+> 0.5
+> 0.7
+> 0.9
+> 1.1
+> 1.3
+> 1.5
+> 1.7
+> 1.9
+
+Subject-Dependent  Subject-Independent             
+
+> 10 50 100 500 1000
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.1
+> 0.12
+> 0.14
+> 10 50 100 500 1000
+> 0.88
+> 0.9
+> 0.92
+> 0.94
+> 0.96
+> 0.98
+> 1
+> 10 50 100 500 1000
+> 0.8
+> 0.82
+> 0.84
+> 0.86
+> 0.88
+> 0.9
+> 0.92
+> 0.94
+
+Fig. 6. Ablation study of the number of prototypes M on the DMER dataset under subject-dependent and subject-independent settings. 
+
+4) Hyperparameter Analysis: We ablate key hyperparame-ters of MPCL on the DMER dataset. 
+
+• Scales in MSAF: Table VIII shows that the three-scale setting B = {βlow , β mid , β high } performs best. Smaller β
+
+values promote global commonality aggregation, while larger ones emphasize local similarity. 
+
+• Number of prototypes M : Fig. 6 indicates optimal perfor-mance at M = 100 . Too few prototypes cannot capture rich semantics, whereas too many lead to redundancy and sparsity. 
+
+• Parameters in PCL: Fig. 7 shows the optimal combi-nation β = 14 .31 and τ −1
+
+pcl = 50 , among vary values 
+
+1The value 14.3 is the reciprocal of τ = 0 .07 , which is the commonly used parameter value in contrastive learning [82]. Canberra ( ↓)
+
+KL ( ↓) Cosine ( ↑) Intersection ( ↑)
+
+Chebyshev ( ↓) Clark ( ↓)                  
+
+> 14.3 30 50 70
+> 0.034
+> 0.0345
+> 0.035
+> 0.0355
+> 0.036
+> 0.0365
+> 0.037
+> 0.0375
+> 0.038
+> 0.0385
+> β = 22
+> β = 8
+> β = 14.3
+> 14.3 30 50 70
+> 0.235
+> 0.24
+> 0.245
+> 0.25
+> 0.255
+> 0.26
+> 14.3 30 50 70
+> 0.605
+> 0.615
+> 0.625
+> 0.635
+> 0.645
+> 0.655
+> 0.665
+> 14.3 30 50 70
+> 0.017
+> 0.018
+> 0.019
+> 0.02
+> 0.021
+> 0.022
+> 0.023
+> 0.024
+> 14.3 30 50 70
+> 0.98
+> 0.982
+> 0.984
+> 0.986
+> 0.988
+> 0.99
+> 14.3 30 50 70
+> 0.93
+> 0.932
+> 0.934
+> 0.936
+> 0.938
+> 0.94
+> 0.942
+> 0.944
+> β = 22
+> β = 8
+> β = 14.3
+> β = 22
+> β = 8
+> β = 14.3
+> β = 22
+> β = 8
+> β = 14.3
+> β = 22
+> β = 8
+> β = 14.3
+> β = 22
+> β = 8
+> β = 14.3
+
+Fig. 7. Ablation study of the PCL module on the DMER dataset over different values of β and τ −1
+
+pcl . The horizontal axis shows τ −1
+
+pcl ; distinct curves correspond to different β values. 
+
+β ∈ (8 , 14 .3, 22) and τ −1
+
+pcl ∈ (14 .3, 30 , 50 , 70) .
+
+• Number of compression blocks L: Fig. 8 demonstrates that L = 10 yields the best trade-off between ab-straction capacity and computational cost. Fewer layers under-abstract features, while more layers offer diminish-ing returns. 
+
+G. Visualization Analysis 
+
+To examine the ability of MPCL in capturing complex co-occurrence relationships among emotions, we compute the Pearson correlation coefficients between predicted emotion distributions across all test samples and visualize the resulting JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 13 Canberra ( ↓)                            
+
+> KL ( ↓)Cosine ( ↑)Intersection ( ↑)
+> Chebyshev ( ↓)Clark ( ↓)
+> 1510 15 20
+> 0.02
+> 0.03
+> 0.04
+> 0.05
+> 0.06
+> 0.07
+> 0.08
+> 0.09
+> 1510 15 20
+> 0.02
+> 0.12
+> 0.22
+> 0.32
+> 0.42
+> 0.52
+> 0.62
+> 0.72
+> 1510 15 20
+> 0.4
+> 0.6
+> 0.8
+> 1
+> 1.2
+> 1.4
+> 1.6
+> 1.8
+> 1510 15 20
+> 0
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> 0.1
+> 0.12
+> 0.14
+> 1510 15 20
+> 0.9
+> 0.92
+> 0.94
+> 0.96
+> 0.98
+> 1
+> 1510 15 20
+> 0.8
+> 0.82
+> 0.84
+> 0.86
+> 0.88
+> 0.9
+> 0.92
+> 0.94
+> 0.96
+> Subject-Dependent Subject-Independent
+
+Fig. 8. Ablation study of the number of compression blocks L in the HSC module on DMER under subject-dependent and subject-independent setting. Ground Truth  Helo  MPCL 
+
+> Subject 2 Subject 14
+
+Fig. 9. Visualization of emotion-label correlation matrices. Red intensity indicates the strength of correlation. 
+
+label-correlation matrix. Fig. 9 presents a comparison for two subjects. Compared to the HeLo method [26], the correlation matrix produced by MPCL aligns more closely with the ground truth (GT) in both pattern structure and intensity distribu-tion. HeLo primarily models label dependencies by intro-ducing learnable label embeddings and utilizing true label correlations as supervision signals. In contrast, MPCL lever-ages a Hopfield memory retrieval mechanism to amplify co-occurrence patterns among emotion prototypes, thereby learning semantic structural relations among emotions without explicit label-correlation supervision. The results show that MPCL effectively recovers the intrinsic affective structure, highlighting its advantage in emotion distribution learning. V. C ONCLUSION 
+
+In this paper, we introduced the memory-guided proto-typical co-occurrence learning (MPCL) framework, a novel approach that leverages associative memory mechanisms to mine prototype co-occurrence patterns and semantic structural relationships in mixed-emotion recognition. By employing associative memory networks, MPCL achieves multi-scale fusion of multimodal physiological data. To capture cross-modal semantic associations, we construct emotion prototype memory banks from both physiological and behavioral sig-nals, producing semantically enriched representations through prototype-weighted reconstruction. Inspired by the interplay between human perception and memory retrieval, we de-sign a memory retrieval mechanism that reinforces frequently co-occurring emotion prototypes, thereby modeling prototype co-occurrence at a semantic level. Finally, a hierarchical se-mantic compression module further refines the affective repre-sentations, enabling accurate emotion-distribution prediction. Extensive subject-dependent and subject-independent experi-ments on two public datasets (DMER and WESAD) demon-strate that MPCL consistently outperforms state-of-the-art baselines in mixed-emotion distribution learning. REFERENCES [1] W. Wang, F. Qi, D. P. Wipf, C. Cai, T. Yu, Y. Li, Y. Zhang, Z. Yu, and W. Wu, “Sparse bayesian learning for end-to-end eeg decoding,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 45, no. 12, pp. 15 632–15 649, 2023. [2] W. Wu, Y. Zhang, J. Jiang, M. V. Lucas, G. A. Fonzo, C. E. Rolle, C. Cooper, C. Chin-Fatt, N. Krepel, C. A. Cornelssen et al. , “An electroencephalographic signature predicts antidepressant response in major depression,” Nature biotechnology , vol. 38, no. 4, pp. 439–447, 2020. [3] D. Liu, W. Dai, H. Zhang, X. Jin, J. Cao, and W. Kong, “Brain-machine coupled learning method for facial emotion recognition,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 45, no. 9, pp. 10 703–10 717, 2023. [4] R. Plutchik, Emotions and life: Perspectives from psychology, biology, and evolution. American Psychological Association, 2003. [5] J. A. Russell, “A circumplex model of affect.” Journal of personality and social psychology , vol. 39, no. 6, p. 1161, 1980. [6] A. Mehrabian, “Pleasure-arousal-dominance: A general framework for describing and measuring individual differences in temperament,” Cur-rent psychology , vol. 14, no. 4, pp. 261–292, 1996. [7] K. Fu, C. Du, S. Wang, and H. He, “Multi-view multi-label fine-grained emotion decoding from human brain activity,” IEEE Transactions on Neural Networks and Learning Systems , vol. 35, no. 7, pp. 9026–9040, 2022. [8] M. Li, J. Pan, Y. Gao, Y. Shen, F. Luo, J. Dai, A. Hao, and H. Qin, “Neurophysiological and subjective analysis of vr emotion induction paradigm,” IEEE Transactions on Visualization and Computer Graphics ,vol. 28, no. 11, pp. 3832–3842, 2022. [9] Y.-J. Liu, M. Yu, G. Zhao, J. Song, Y. Ge, and Y. Shi, “Real-time movie-induced discrete emotion recognition from eeg signals,” IEEE Transactions on Affective Computing , vol. 9, no. 4, pp. 550–562, 2017. [10] R. Kosti, J. M. Alvarez, A. Recasens, and A. Lapedriza, “Context based emotion recognition using emotic dataset,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 42, no. 11, pp. 2755–2766, 2019. [11] S. Zhao, X. Yao, J. Yang, G. Jia, G. Ding, T.-S. Chua, B. W. Schuller, and K. Keutzer, “Affective image content analysis: Two decades review and new perspectives,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 44, no. 10, pp. 6729–6751, 2021. [12] X. Wang and C. Zong, “Learning emotion category representation to detect emotion relations across languages,” IEEE Transactions on Pattern Analysis and Machine Intelligence , 2025. [13] Y. Yang, Z. Wang, Y. Song, Z. Jia, B. Wang, T.-P. Jung, and F. Wan, “Exploiting the intrinsic neighborhood semantic structure for domain adaptation in eeg-based emotion recognition,” IEEE Transactions on Affective Computing , vol. 16, no. 3, pp. 2466–2478, 2025. [14] Z. Cheng, Z.-Q. Cheng, J.-Y. He, K. Wang, Y. Lin, Z. Lian, X. Peng, and A. Hauptmann, “Emotion-llama: Multimodal emotion recognition and reasoning with instruction tuning,” Advances in Neural Information Processing Systems , vol. 37, pp. 110 805–110 853, 2024. [15] P. Williams and J. L. Aaker, “Can mixed emotions peacefully coexist?” 
+
+Journal of consumer research , vol. 28, no. 4, pp. 636–649, 2002. [16] V. Y. Oh and E. M. Tong, “Specificity in the study of mixed emotions: A theoretical framework,” Personality and Social Psychology Review ,vol. 26, no. 4, pp. 283–314, 2022. [17] G. Zhao, Y. Zhang, G. Zhang, D. Zhang, and Y.-J. Liu, “Multi-target positive emotion recognition from eeg signals,” IEEE Transactions on Affective Computing , vol. 14, no. 1, pp. 370–381, 2020. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 14 
+
+[18] V. Man, H. U. Nohlen, H. Melo, and W. A. Cunningham, “Hierarchical brain systems support multiple representations of valence and mixed affect,” Emotion Review , vol. 9, no. 2, pp. 124–132, 2017. [19] K. C. Berridge, “Affective valence in the brain: modules or modes?” 
+
+Nature Reviews Neuroscience , vol. 20, no. 4, pp. 225–234, 2019. [20] S. D. Kreibig and J. J. Gross, “Understanding mixed emotions: paradigms and measures,” Current opinion in behavioral sciences ,vol. 15, pp. 62–71, 2017. [21] Y. Kang and Y.-S. Cho, “Beyond single emotion: Multi-label approach to conversational emotion recognition,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 39, no. 23, 2025, pp. 24 321– 24 329. [22] Q. Xu, S. Yuan, Y. Wei, J. Wu, L. Wang, and C. Wu, “Multiple feature refining network for visual emotion distribution learning,” in 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , vol. 39, no. 9, 2025, pp. 8924–8932. [23] Y. Zhang, J. Fu, D. She, Y. Zhang, S. Wang, and J. Yang, “Text emotion distribution learning via multi-task convolutional neural network.” in 
+
+IJCAI , 2018, pp. 4595–4601. [24] Y. Shu, P. Yang, N. Liu, S. Zhang, G. Zhao, and Y.-J. Liu, “Emotion distribution learning based on peripheral physiological signals,” IEEE Transactions on Affective Computing , vol. 14, no. 3, pp. 2470–2483, 2023. [25] F. Liu, P. Yang, Y. Shu, F. Yan, G. Zhang, and Y.-J. Liu, “Emotion dictionary learning with modality attentions for mixed emotion explo-ration,” IEEE Transactions on Affective Computing , vol. 15, no. 3, pp. 1289–1302, 2024. [26] C. Zheng, C. Tian, J. Wen, D. Zhang, and Q. Zhu, “Helo: Heteroge-neous multi-modal fusion with label correlation for emotion distribution learning,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5519–5527. [27] M. M. Moore and E. A. Martin, “Taking stock and moving forward: A personalized perspective on mixed emotions,” Perspectives on Psycho-logical Science , vol. 17, no. 5, pp. 1258–1275, 2022. [28] “The co-occurrence of emotions in daily life: A multilevel approach,” 
+
+Journal of Research in Personality , vol. 39, no. 3, pp. 325–335, 2005. [29] P. Primoceri and J. Ullrich, “Cross-valence inhibition in forming and retrieving ambivalent attitudes,” British Journal of Social Psychology ,vol. 62, no. 1, pp. 540–560, 2023. [30] M. Malezieux, A. S. Klein, and N. Gogolla, “Neural circuits for emotion,” Annual review of neuroscience , vol. 46, no. 1, pp. 211–231, 2023. [31] J. Yang, J. Li, L. Li, X. Wang, and X. Gao, “A circular-structured rep-resentation for visual emotion distribution learning,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2021, pp. 4237–4246. [32] Z. Zhao and X. Ma, “Text emotion distribution learning from small sample: A meta-learning approach,” in Proceedings of the 2019 Confer-ence on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , 2019, pp. 3957–3967. [33] C. Peng, K. Chen, L. Shou, and G. Chen, “Carat: contrastive feature reconstruction and aggregation for multi-modal multi-label emotion recognition,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 38, no. 13, 2024, pp. 14 581–14 589. [34] M. F. Bonner and R. A. Epstein, “Object representations in the human brain reflect the co-occurrence statistics of vision and language,” Nature communications , vol. 12, no. 1, p. 4081, 2021. [35] M. C. Potter, “Conceptual short term memory in perception and thought,” Frontiers in Psychology , vol. 3, p. 113, 2012. [36] H. Liu, S. Yang, Y. Zhang, M. Wang, F. Gong, C. Xie, G. Liu, Z. Liu, Y.-J. Liu, B.-L. Lu, and D. Zhang, “Libeer: A comprehensive benchmark and algorithm library for eeg-based emotion recognition,” 
+
+IEEE Transactions on Affective Computing , vol. 16, no. 4, pp. 3596– 3613, 2025. [37] M. Ye, C. L. P. Chen, and T. Zhang, “Hierarchical dynamic graph convolutional network with interpretability for eeg-based emotion recog-nition,” IEEE Transactions on Neural Networks and Learning Systems ,vol. 36, no. 11, pp. 19 489–19 500, 2025. [38] J. Li, X. Wang, and Z. Zeng, “Tracing intricate cues in dialogue: Joint graph structure and sentiment dynamics for multimodal emotion recogni-tion,” IEEE Transactions on Pattern Analysis and Machine Intelligence ,2025. [39] Y. Li, Y. Wang, and Z. Cui, “Decoupled multimodal distilling for emotion recognition,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 6631–6640. [40] W.-B. Jiang, X.-H. Liu, W.-L. Zheng, and B.-L. Lu, “Seed-vii: A multi-modal dataset of six basic emotions with continuous labels for emotion recognition,” IEEE Transactions on Affective Computing , vol. 16, no. 2, pp. 969–985, 2025. [41] I. Grossmann and P. C. Ellsworth, “What are mixed emotions and what conditions foster them? life-span experiences, culture and social awareness,” Current Opinion in Behavioral Sciences , vol. 15, pp. 1–5, 2017. [42] X. Li, J. Liu, Y. Xie, P. Gong, X. Zhang, and H. He, “Magdra: a multi-modal attention graph network with dynamic routing-by-agreement for multi-label emotion recognition,” Knowledge-Based Systems , vol. 283, p. 111126, 2024. [43] S. Anand, N. K. Devulapally, S. D. Bhattacharjee, and J. Yuan, “Multi-label emotion analysis in conversation via multimodal knowledge dis-tillation,” in Proceedings of the 31st ACM international conference on multimedia , 2023, pp. 6090–6100. [44] R. Plutchik, “A general psychoevolutionary theory of emotion,” in 
+
+Theories of emotion . Elsevier, 1980, pp. 3–33. [45] X. Jia and X. Shen, “Multimodal emotion distribution learning,” Cog-nitive Computation , vol. 14, no. 6, pp. 2141–2152, 2022. [46] H.-C. Chou, C.-C. Lee, and C. Busso, “Exploiting co-occurrence fre-quency of emotions in perceptual evaluations to train a speech emotion classifier,” Interspeech 2022 , 2022. [47] C.-L. Liu and M. Nakagawa, “Evaluation of prototype learning al-gorithms for nearest-neighbor classifier in application to handwritten character recognition,” Pattern Recognition , vol. 34, no. 3, pp. 601–615, 2001. [48] S. A. Dudani, “The distance-weighted k-nearest-neighbor rule,” IEEE Transactions on Systems, Man, and Cybernetics , no. 4, pp. 325–327, 1976. [49] M. Caron, P. Bojanowski, A. Joulin, and M. Douze, “Deep clustering for unsupervised learning of visual features,” in Proceedings of the European conference on computer vision (ECCV) , 2018, pp. 132–149. [50] T. Kohonen, “The self-organizing map,” Proceedings of the IEEE ,vol. 78, no. 9, pp. 1464–1480, 2002. [51] J. Snell, K. Swersky, and R. Zemel, “Prototypical networks for few-shot learning,” Advances in neural information processing systems , vol. 30, 2017. [52] N. Dong and E. P. Xing, “Few-shot semantic segmentation with proto-type learning.” in BMVC , vol. 3, no. 4, 2018, p. 4. [53] K. Yang, Y. Luo, Z. Zhang, C. L. P. Chen, and T. Zhang, “Multimodal affect perception with large language model enhancement network,” 
+
+IEEE Transactions on Affective Computing , pp. 1–17, 2025. [54] R. Zhou, Z. Zhang, H. Fu, L. Zhang, L. Li, G. Huang, F. Li, X. Yang, Y. Dong, Y.-T. Zhang et al. , “Pr-pl: A novel prototypical representation based pairwise learning framework for emotion recognition using eeg signals,” IEEE Transactions on Affective Computing , vol. 15, no. 2, pp. 657–670, 2023. [55] J. Li, P. Zhou, C. Xiong, and S. C. Hoi, “Prototypical contrastive learn-ing of unsupervised representations,” arXiv preprint arXiv:2005.04966 ,2020. [56] D. Chen, Z. Wu, F. Liu, Z. Yang, S. Zheng, Y. Tan, and E. Zhou, “Protoclip: Prototypical contrastive language image pretraining,” IEEE Transactions on Neural Networks and Learning Systems , vol. 36, no. 1, pp. 610–624, 2025. [57] Y. Bao, C. Wu, P. Zhang, C. Shan, Y. Qi, and X. Ben, “Boosting micro-expression recognition via self-expression reconstruction and mem-ory contrastive learning,” IEEE Transactions on Affective Computing ,vol. 15, no. 4, pp. 2083–2096, 2024. [58] K. Yang, T. Zhang, H. Alhuzali, and S. Ananiadou, “Cluster-level contrastive learning for emotion recognition in conversations,” IEEE Transactions on Affective Computing , vol. 14, no. 4, pp. 3269–3280, 2023. [59] R. McEliece, E. Posner, E. Rodemich, and S. Venkatesh, “The capacity of the hopfield associative memory,” IEEE transactions on Information Theory , vol. 33, no. 4, pp. 461–482, 2003. [60] J. J. Hopfield, “Neurons with graded response have collective compu-tational properties like those of two-state neurons.” Proceedings of the national academy of sciences , vol. 81, no. 10, pp. 3088–3092, 1984. [61] J. Zhang, Q. Fu, X. Chen, L. Du, Z. Li, G. Wang, S. Han, D. Zhang 
+
+et al. , “Out-of-distribution detection based on in-distribution data pat-terns memorization with modern hopfield energy,” in The Eleventh International Conference on Learning Representations , 2022. [62] D. Krotov and J. J. Hopfield, “Dense associative memory for pat-tern recognition,” Advances in neural information processing systems ,vol. 29, 2016. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 15 
+
+[63] M. Demircigil, J. Heusel, M. L¨ owe, S. Upgang, and F. Vermet, “On a model of associative memory with huge storage capacity,” Journal of Statistical Physics , vol. 168, no. 2, pp. 288–299, 2017. [64] H. Ramsauer, B. Sch¨ afl, J. Lehner, P. Seidl, M. Widrich, L. Gruber, M. Holzleitner, T. Adler, D. Kreil, M. K. Kopp et al. , “Hopfield networks is all you need,” in International Conference on Learning Representations , 2021. [65] M. Widrich, B. Sch¨ afl, M. Pavlovi´ c, H. Ramsauer, L. Gruber, M. Hol-zleitner, J. Brandstetter, G. K. Sandve, V. Greiff, S. Hochreiter et al. ,“Modern hopfield networks and attention for immune repertoire classi-fication,” Advances in neural information processing systems , vol. 33, pp. 18 832–18 845, 2020. [66] P. Seidl, P. Renz, N. Dyubankova, P. Neves, J. Verhoeven, J. K. Wegner, M. Segler, S. Hochreiter, and G. Klambauer, “Improving few-and zero-shot reaction template prediction using modern hopfield networks,” 
+
+Journal of chemical information and modeling , vol. 62, no. 9, pp. 2111– 2120, 2022. [67] M. Widrich, M. Hofmarcher, V. P. Patil, A. Bitto-Nemling, and S. Hochreiter, “Modern hopfield networks for return decomposition for delayed rewards,” in Deep RL Workshop NeurIPS 2021 , 2021. [68] A. F¨ urst, E. Rumetshofer, J. Lehner, V. T. Tran, F. Tang, H. Ramsauer, D. Kreil, M. Kopp, G. Klambauer, A. Bitto et al. , “Cloob: Modern hopfield networks with infoloob outperform clip,” Advances in neural information processing systems , vol. 35, pp. 20 450–20 468, 2022. [69] A. Sanchez-Fernandez, E. Rumetshofer, S. Hochreiter, and G. Klam-bauer, “Cloome: contrastive learning unlocks bioimaging databases for queries with chemical structures,” Nature Communications , vol. 14, no. 1, p. 7339, 2023. [70] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” Advances in neural information processing systems , vol. 30, 2017. [71] S. Kullback and R. A. Leibler, “On information and sufficiency,” The annals of mathematical statistics , vol. 22, no. 1, pp. 79–86, 1951. [72] P. Yang, N. Liu, X. Liu, Y. Shu, W. Ji, Z. Ren, J. Sheng, M. Yu, R. Yi, D. Zhang et al. , “A multimodal dataset for mixed emotion recognition,” 
+
+Scientific Data , vol. 11, no. 1, p. 847, 2024. [73] P. Schmidt, A. Reiss, R. Duerichen, C. Marberger, and K. Van Laer-hoven, “Introducing wesad, a multimodal dataset for wearable stress and affect detection,” in Proceedings of the 20th ACM international conference on multimodal interaction , 2018, pp. 400–408. [74] A. Mackinnon, A. F. Jorm, H. Christensen, A. E. Korten, P. A. Jacomb, and B. Rodgers, “A short form of the positive and negative affect schedule: Evaluation of factorial validity and invariance across demo-graphic variables in a community sample,” Personality and Individual differences , vol. 27, no. 3, pp. 405–416, 1999. [75] T.-W. Lee, “Independent component analysis,” in Independent compo-nent analysis: Theory and applications . Springer, 1998, pp. 27–66. [76] X. Geng, “Label distribution learning,” IEEE Transactions on Knowl-edge and Data Engineering , vol. 28, no. 7, pp. 1734–1748, 2016. [77] X. Geng, C. Yin, and Z.-H. Zhou, “Facial age estimation by learning from label distributions,” IEEE Transactions on Pattern Analysis and Machine Intelligence , vol. 35, no. 10, pp. 2401–2412, 2013. [78] W.-B. Jiang, X.-H. Liu, W.-L. Zheng, and B.-L. Lu, “Multimodal adap-tive emotion transformer with flexible modality inputs on a novel dataset with continuous labels,” in proceedings of the 31st ACM international conference on multimedia , 2023, pp. 5975–5984. [79] X. Jia, X. Shen, W. Li, Y. Lu, and J. Zhu, “Label distribution learning by maintaining label ranking relation,” IEEE Transactions on Knowledge and Data Engineering , vol. 35, no. 2, pp. 1695–1707, 2021. [80] Z. Kou, J. Wang, J. Tang, Y. Jia, B. Shi, and X. Geng, “Exploiting multi-label correlation in label distribution learning,” in Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence ,2024, pp. 4326–4334. [81] C. Wen, X. Zhang, X. Yao, and J. Yang, “Ordinal label distribution learning,” in Proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 23 481–23 491. [82] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in International conference on machine learning . PmLR, 2021, pp. 8748–8763.

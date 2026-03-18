@@ -1,0 +1,276 @@
+Title: QuadAI at SemEval-2026 Task 3: Ensemble Learning of Hybrid RoBERTa and LLMs for Dimensional Aspect-Based Sentiment Analysis
+
+URL Source: https://arxiv.org/pdf/2603.07766v1
+
+Published Time: Tue, 10 Mar 2026 01:27:53 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# QuadAI at SemEval-2026 Task 3: Ensemble Learning of Hybrid RoBERTa and LLMs for Dimensional Aspect-Based Sentiment Analysis 
+
+A.J.W. de Vink 1, Filippos Karolos Ventirozos 2, Natalia Amat-Lefort 1, Lifeng Han ∗,1,31 LIACS, Leiden University, NL  
+
+> 2
+
+Manchester Metropolitan University, UK  
+
+> 3
+
+Leiden University Medical Center, NL 
+
+> ∗
+
+Corresponding Author: l.han@liacs.leidenuniv.nl 
+
+Abstract 
+
+We present our system for SemEval-2026 Task 3 on dimensional aspect-based sentiment re-gression. Our approach combines a hybrid RoBERTa encoder, which jointly predicts sen-timent using regression and discretized clas-sification heads, with large language models (LLMs) via prediction-level ensemble learn-ing. The hybrid encoder improves predic-tion stability by combining continuous and dis-cretized sentiment representations. We further explore in-context learning with LLMs and ridge-regression stacking to combine encoder and LLM predictions. Experimental results on the development set show that ensemble learning significantly improves performance over individual models, achieving substantial reductions in RMSE and improvements in cor-relation scores. Our findings demonstrate the complementary strengths of encoder-based and LLM-based approaches for dimensional sen-timent analysis. Our development code and resources will be shared at https://github. com/aaronlifenghan/ABSentiment .
+
+1 Introduction 
+
+Aspect-based sentiment analysis (ABSA) is a nat-ural language processing (NLP) task that involves a few sub-tasks that include aspect term extrac-tion, aspect category detection, opinion extraction, and aspect sentiment classification (Zhang et al., 2022). It has witnessed the traditional ML, deep learning, and pretrained language model (PLM) approaches. The Transformer-based models (both encoders (Liao et al., 2021; Chauhan et al., 2025) and decoders (Mughal et al., 2024; Ventirozos et al., 2025b,a)) have been the dominant methods nowa-days for such tasks, while challenges remain, such as data scarcity, domain application, and modeling complex aspect-opinion relationships (Nazir et al., 2020; Zhang et al., 2022). The shared task we attended this year has two tracks: Track-A “Dimensional Aspect-Based Senti-ment Analysis (DimABSA)” and Track-B “Dimen-sional Stance Analysis (DimStance)”. We attended Trask-A.1 “DimASR - Valence-Arousal (VA) Pre-diction” and Track-B, leaving “A.2: DimASTE -Triplet Extraction” and “A.3: DimASQP - Quadru-plet Extraction” into our future work. The shared task data is described at (Lee et al., 2026; Becker et al., 2026) As examples of Task-A1 and Task-B, we list the text format of input and output in Figure 4 and 5. Valence indicates positivity and negativity with more dimensions. Arousal indi-cates emotional intensity from high to low. For instance, (Happy, Delight, Excited) can be located in the corner of “positive and high” emotion, while (depressed, bored, tired) can be in the “negative and low” emotion 1.In this work, we introduce related work to our proposed method, the methodology design and de-velopment (Hybrid RoBERTa, LLMs, ensemble), the evaluation results from development sets, and our submissions to the shared task. Due to unfore-seen circumstances, we did not manage to submit all the methods we developed; however, we will continue our testing for offline development, and our codes and resources will be shared publicly for open science. 
+
+2 Related Work 
+
+2.1 Beyond VA Scores 
+
+In addition to the Valance and Arousal (VA) score, Shi et al. (2025) tried to use another psychological emotion dimension “Dominance”, i.e., the degree of control or influence. To address the issues of standard ABSA models that rely on word embed-dings and attention but do not use structured emo-tion knowledge, they proposed the Graph Atten-tion Network (GAT) method to model relationships between words and capture the syntactic depen-dencies. Similarly, there are other recent works    
+
+> 1https://github.com/DimABSA/DimABSA2026
+> arXiv:2603.07766v1 [cs.CL] 8 Mar 2026 ReBERTa Embeddings
+> Regression head
+> classification head
+> bin1 bin2 …bin-n
+> hybrid(avg)
+
+Figure 1: Hybrid RoBERTa 
+
+using graph knowledge to address sentiment analy-sis, such as ReviewGraph (de Vink et al., 2025). 
+
+2.2 Language/Domain Specific ABSA 
+
+For language-specific ABSA, Lee et al. (2024) in-troduced a shared task for the Chinese language, which attracted 11 teams, focusing on intensity pre-diction, triplet extraction and quadruple extraction. For domain specific work on ABSA, Chakraborty et al. (2020) used active learn-ing on scientific reviews, using 8,000 peer reviews from ICLR conference, including (re-view text, score, paper decision). The work focused on the relationship between aspect sentiment (positive/negative) and paper outcome (accept/reject). 
+
+2.3 Hybrid Models for ABSA 
+
+Zhang et al. (2024) used hybrid setting of BERT based encoder models and LLMs. They first use BERT pipeline to extract aspects, categories, and opinions, then use LLM with QLoRA fine-tuning to predict sentiment intensity based on the BERT outputs. Another hybrid model conducted by Liang et al. (2022) combines neural networks and contextual feature representations. Their model integrates word embeddings with attention mechanisms to capture aspect-specific contextual information. Ex-perimental results demonstrated that the hybrid ap-proach outperforms traditional neural models on benchmark datasets. This work highlights the ef-fectiveness of hybrid architectures for fine-grained sentiment prediction. More challenges, tasks, and methodologies on ABSA can be found in earlier surveys (Nazir et al., 2020; Zhang et al., 2022). Training data 
+
+> LLM-1
+> Cleaned data
+> agreed(judge)
+> LLM-3
+> LLM
+> (winner)
+> 0-shot
+> few-shot
+> Semantically similar examples
+> LLM-2
+> Bad examples?
+
+Figure 2: Triple-LLMs workflow 
+
+3 Methodology 
+
+3.1 Hybrid RoBERTa 
+
+We designed a hybrid encoder-based model using averaged scores from regression and discretized bin integrated classification, as showin in Figure 1. We firstly used RoBERTa embedding as the encoder. Then, in parallel, we trained a regression head and a discretized classification head. The core idea of discretizing the target space is that we take the continuous embedding variable and split it into n bins. The final layer outputs an n-dimensional logit vector then applied with softmax and trained with cross-entropy loss. The advantage of discretized classification is that it is expected to be a more stable training than regression and expresses confidence over bins. Lastly, the final prediction of Hybrid RoBERTa is obtained by averaging both outputs ( w = 0 .5). We list the equations below. Regression output: 
+
+ˆyreg (1) Classification expected value: 
+
+ˆycls =
+
+> B
+
+X
+
+> i=1
+
+pici (2) Final prediction: 
+
+ˆy = wˆyreg + (1 − w)ˆ ycls (3) Training objective: 
+
+L = Lreg + αL cls (4) 
+
+3.2 LLMs 
+
+As a starting point, we explore the difference be-tween: • zero-shot prompting (no examples) • random examples (40, 60) • semantically picking similar examples (40, 60, 100, 200, 600) The semantical similarity is according to the em-bedding similarity scores at sentence level. We utilized the OpenAI’s model for sentence embed-dings 2.Looking into some examples, we also decided to filter out low quality ones, such as cases where the labels do not look right. We call this step as Data Cleaning. The step involved firstly using HDB-Scan 3 to cluster all the ones used for in-context learning (i.e. training-set) instances according to the two dimensions of valence and arousal. HDB-Scan uses the DBScan approach but converts it into hierarchical clustering, for which we used the given, default, hyper-parameters for the clustering. Following for each cluster we had separate three LLMs be presented each cluster, similar VA scores, and ask in the prompt to pinpoint which one of these is an outlier or not. The prompt for that can be found under Appendix C. Finally, if all three LLMs agree that a specific instance(s) in a cluster is at outlier, we would remove them from the available pool of in-context learning candidates. This is shown in Figure 2. Exact LLMs we used for this task are “gemini”, “claude”, and “gpt5.2” for data cleaning with cross validation, and “gem-ini” for last stage prompting as the best performing LLM. To reduce variance and improve model robust-ness, we explore the ensemble learning strategy, which will be described below. 
+
+3.3 Ensemble Learning 
+
+For Ensemble Learning, we design the prediction-level fusion ( aka late fusion or model stacking) of Hybrid RoBERTa and LLMs with optional other features, as in Figure 3. For this work, we in-corporate lexical sentiment features derived from VADER (Hutto and Gilbert, 2014), including com-pound, positive, negative, and neutral polarity scores, as auxiliary inputs to the ensemble com-biner. We detail the ensemble prediction into mathe-matical formulas below: Given K base models, 
+
+> 2text-embedding-3-large
+> 3https://github.com/scikit-learn-contrib/ hdbscan
+> Input Text
+> Model 1
+> ˆy1
+> Model 2
+> ˆy2
+> VADER features
+> Combiner (avg / weighted / ridge)
+> Final prediction
+> ˆy
+> Figure 3: Prediction-level ensemble architecture com-bining base models and optional VADER features.
+
+each producing a prediction ˆyk for an input x, the final prediction is obtained via a combiner g(·):
+
+ˆy = g(ˆ y1, ˆy2, . . . , ˆyK , f ), (5) where f denotes optional external features (e.g., VADER scores). 
+
+Simple averaging: 
+
+ˆy = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+ˆyk (6) 
+
+Weighted averaging: 
+
+ˆy =
+
+> K
+
+X
+
+> k=1
+
+wk ˆyk,
+
+> K
+
+X
+
+> k=1
+
+wk = 1 (7) 
+
+Ridge stacking: 
+
+ˆy = w⊤[ˆ y1, ˆy2, . . . , ˆyK , f ] + b (8) The VADER features include: compound (con-tinuous [-1,1]), pos, neu, neg. So the stacking vec-tor becomes: 
+
+x = [ˆ y1, ˆy2, compound , pos , neu , neg ]
+
+The rationale for including VADER as a feature is that the ensemble combines a lexicon and rule-based component, which is domain-robust and fast, with neural-based encoder models and LLMs. 
+
+Training objective (ridge stacking). Given training targets y ∈ Rn and the design ma-trix X ∈ Rn×(K+F ) whose i-th row is x(i) =[ˆ y(i)1 , . . . , ˆy(i) 
+
+> K
+
+, f (i)], we learn w and b by: 
+
+min 
+
+> w, b
+
+1
+
+n ∥y − (Xw + b1)∥22 + λ∥w∥22, (9) We construct X using out-of-fold predictions of the base models to avoid label leakage. Table 1: Performance of the Hybrid RoBERTa model on SemEval Task 1 ( Laptop , Dev set). The model combines a regression head and a discretized classification head (31 bins), with the final prediction obtained by averaging both outputs ( w = 0 .5). Error catergories: lower is better; in 3 catergories hyrid is much better, except for RMSE that is comparable to Bin. Pearson correation ρ higher is better rho( Regress>Hybrid>Bin)                                    
+
+> Model Variant MSE ↓RMSE ↓RMSE v↓RMSE a↓ρv↑ρa↑ρmean ↑
+> Regression only 0.6140 0.7836 0.7201 0.8423 0.9102 0.5505 0.7304 Bin (expected value) 0.6238 0.7898 0.8340 0.7430 0.8974 0.5126 0.7050 Hybrid (average) 0.5419 0.7361 0.7214 0.7506 0.9074 0.5388 0.7231
+
+Table 2: Top-10 Hybrid configurations ranked by aver-age RMSE on the Laptop Dev set. num _bins denotes the number of discretization bins, α the classification loss weight, and w the regression–classification averag-ing weight.                                                           
+
+> num _bins αwRMSE avg ↓ρmean ↑ρa↑
+> 31 0.5 0.5 0.7361 0.7231 0.5388 11 1.0 0.5 0.7368 0.7182 0.5277 31 0.5 0.4 0.7376 0.7252 0.5421 70.2 0.5 0.7405 0.7287 0.5473 31 0.5 0.3 0.7431 0.7270 0.5448 11 1.0 0.4 0.7448 0.7185 0.5278 70.2 0.4 0.7473 0.7293 0.5485 11 0.5 0.5 0.7481 0.7251 0.5523 31 1.0 0.5 0.7488 0.7138 0.5278 31 0.2 0.4 0.7516 0.7151 0.5234
+
+4 Model Training and Development 
+
+4.1 Hybrid ReBERTa for Track-A1 
+
+The system performance on the development set of laptop category from encoder-based models is shown in Table 1 and 2. Table 1 presents the overall comparisons among regression-only, discretization-bin, and hybrid (averaging two). From the Error score metrics, we can see that the Hybrid model produced much better output on two metrics, MSE and RMSE, which have a bigger margin decrease in the error scores. However, it produced similar (or comparable) scores on RMSE(v) and RMSE(a), to regression-only and Bin models, respectively. For Pearson correlation scores, the Regression-only model produced the highest scores, though not much difference from the Hybrid model. Table 2 displays the Top-10 hybrid configurations ranked by averaging RMSE on the Laptop Dev set. We tried different sets of triple values for the parame-ters exhaustively; however, for future development, it would be more suitable to carry out automated hy-perparameter tuning, e.g., OPTUNA (Akiba et al., 2019) to explore. In addition, Table 3 shows the Hybrid RoBERTa performance on Task-A1 restaurant dev data. We can see from the scores that the hybrid model achieved the best performance on this data across all tested metrics, including both error scores and correlations. Importantly, the MSE score of the hybrid model is almost down to half that of the re-gression model (0.4919 vs 0.8176). Large improve-ment margins can also be observed from RMSE scores. 
+
+4.2 LLMs on Track-A Laptop Dev 
+
+The LLM output evaluation on the laptop Dev set is shown in Table 6, where we can see that, in com-parison to Hybrid RoBERT in Table 2, the LLMs produced an even lower RMSE score of 0.695, vs 0.7361. In addition, it increased the correlation mean score from 0.7231 to 0.757. 
+
+4.3 Ensemble on TrackA Laptop Dev 
+
+Table 4 shows the results from ensemble learning of two models, with/without the VADER feature on the laptop data, which show much improvement in comparison to individual models (hybrid RoBERTa and LLMs), especially on RMSE scores. For the weighted ensemble, weights were selected via grid search over the interval [0,1] with step size 0.1, optimizing RMSE on the development set. The goal is that 1) better models get more influence; 2) it reduces bias compared to equal averaging. The experimental results show that average weighting produced RMSE score 0.6399 vs Weighted 0.6344 (lower and better). The results also show that the VADER feature did not make an improvement in the evaluation scores, even a slight degradation, which indicates that VADER probably adds noise or a redundant signal. In addition, the weighted avg and stacking produced the same RMSE scores (0.6344), although other scores are different. This might suggest that the linear ridge basically learned weights approximately [0.3, 0.7], so stacking ap-proximately a weighted average. This often hap-pens with only 2 models. To explore this, future work shall explore more models for the ensemble. 
+
+4.4 Hybrid RoBERTa on Track-B 
+
+Table 5 shows the performance of Hybrid RoBERTa on Track-B English data - Environmen-tal Protection. The best hybrid configuration and the evaluation metrics are listed. Once again, the Table 3: Hybrid RoBERTa results on the Restaurant development set for SemEval Task 1 (Valence/Arousal). The model combines a regression head and a hard-bin classification head; the average prediction is a weighted combination with pred_weight = 0 .5. Best configuration and detailed dev metrics are shown.                                       
+
+> Domain Variant MSE ↓RMSE ↓RMSE v↓RMSE a↓ρv↑ρa↑ρmean ↑
+> Restaurant Regression 0.8176 0.9042 0.8212 0.9802 0.9205 0.6458 0.7832 Bin-expected 0.5369 0.7327 0.8154 0.6395 0.9130 0.6408 0.7769 Average ( w= 0 .5)0.4919 0.7013 0.6692 0.7320 0.9217 0.6679 0.7948
+> Best config (Restaurant): num_bins = 11 ,alpha_cls = 0 .2,pred_weight = 0 .5.
+
+Table 4: Ensemble results on the Laptop Dev set for SemEval Task 1 (Valence/Arousal). We compare simple averaging, weighted averaging, and ridge-regression stacking (out-of-fold, OOF) with and without additional VADER-based features. Best (lowest) RMSE among valid (non-leaking) settings is highlighted.                                                     
+
+> Setting Method MSE ↓RMSE ↓RMSE v↓RMSE a↓ρv↑ρa↑ρmean ↑
+> Without VADER Avg 0.4095 0.6399 0.5835 0.6918 0.9391 0.6105 0.7748 Weighted (w=[0.3,0.7]) 0.4025 0.6344 0.5629 0.6987 0.9421 0.6124 0.7773 Stacking (Ridge, OOF) 0.4025 0.6344 0.5713 0.6918 0.9397 0.5893 0.7645 With VADER Avg 0.4095 0.6399 0.5835 0.6918 0.9391 0.6105 0.7748 Weighted (w=[0.3,0.7]) 0.4025 0.6344 0.5629 0.6987 0.9421 0.6124 0.7773 Stacking (Ridge, OOF) 0.4079 0.6387 0.5718 0.6992 0.9396 0.5793 0.7594
+
+Table 5: Track B (English) Environmental Protection — best hybrid configuration and DEV results.                                              
+
+> Best config num_bins αcls pred_weight ( w)
+> 21 1.0 0.3
+> Variant MSE RMSE RMSE vRMSE aPearson vPearson a
+> Regression 2.0287 1.4243 1.7162 1.0546 0.5311 0.2221 Bin-Expected 2.2221 1.4907 1.8301 1.0464 0.5272 0.0664 Average ( w=0 .3)1.9661 1.4022 1.6932 1.0322 0.5312 0.2234
+> Note. Pearson mean: Regression = 0.3766, Bin-Expected = 0.2968, Average = 0.3773. Also: RMSE avg = 1 .4022 ,
+> RMSE reg = 1 .4243 ,RMSE cls = 1 .4907 .
+> †Full-fit stacking is trained on the full dev set and evaluated on the same dev set; it is therefore optimistic and should not be used for fair model selection. OOF stacking is the appropriate estimate. Model MSE RMSE RMSE vRMSE aρ
+> LLM (ICL) 0.484 0.695 0.633 0.752 0.757
+
+Table 6: LLM dev results (Laptop). 
+
+hybrid model performed the best over individual regression and bin-expected models. 
+
+5 Model Submissions 
+
+Due to unforeseen situations, we were only avail-able to submit the system output for TaskA.1 us-ing the Hybrid RoBERTa model, i.e., without the LLMs and ensemble-learning variations. In addition, we did not submit for Track-B. The initial/unofficial ranking from the organisers on our Hybrid ReBERTa (lightweight) shows that it achieved 16/30 and 22/33 on laptop and restaurant data, respectively. On laptop data, the best per-forming team has a score of 1,2408, while Hybrid RoBERTa has 1,4062 , which is closer to the best team and much better than the bottom-ranking team 1,8486 and baseline 2,8053. Similarly, on restau-rant data, the best performing team has 1,1035 error score, while Hybrid RoBERTa produced 1,3632 ,much better than the last team 1,9115 and baseline 2,791. Considering the very low cost from encoder-based Hybrid RoBERTa with constrained training, this performance is very promising, as shown in Figure 6 and 7 (Appendix). 
+
+6 Conclusions and Future Work 
+
+In this system paper, we introduced a hybrid en-coder model RoBERTa averaging the weighted per-formance of regression and discretized classifica-tion heads. In addition, we explored the prediction-level fusion (late fusion or model stacking) for en-sembling the output scores of the hybrid encoder and LLM; however, for future work, we would like to explore different kinds of ensemble methods, e.g., stacking ensemble from (Romero et al., 2025), as well as automatic hyper-parameter finetuning (Akiba et al., 2019). Limitations 
+
+Due to time limitations, we did not apply LLMs and ensembles on the test set, but on the dev set. We will explore our system performance on test sets offline. To test model generalisability, we plan to explore the performance on languages other than English, such as Chinese. 
+
+References 
+
+Takuya Akiba, Shotaro Sano, Toshihiko Yanase, Takeru Ohta, and Masanori Koyama. 2019. Optuna: A next-generation hyperparameter optimization framework. 
+
+Preprint , arXiv:1907.10902. Jonas Becker, Liang-Chih Yu, Shamsuddeen Hassan Muhammad, Jan Philip Wahle, Terry Ruas, Idris Ab-dulmumin, Lung-Hao Lee, Nelson Odhiambo, Lilian Wanzare, Wen-Ni Liu, Tzu-Mi Lin, Zhe-Yu Xu, Ying-Lung Lin, Jin Wang, Maryam Ibrahim Mukhtar, Bela Gipp, and Saif M. Mohammad. 2026. Dimstance: Multilingual datasets for dimensional stance analysis. 
+
+Preprint , arXiv:2601.21483. Souvic Chakraborty, Pawan Goyal, and Animesh Mukherjee. 2020. Aspect-based sentiment analy-sis of scientific reviews. In Proceedings of the ACM/IEEE Joint Conference on Digital Libraries in 2020 , pages 207–216. Amit Chauhan, Aman Sharma, and Rajni Mohana. 2025. An enhanced aspect-based sentiment analysis model based on roberta for text sentiment analysis. Infor-matica , 49(14). AJW de Vink, Natalia Amat-Lefort, and Lifeng Han. 2025. Reviewgraph: A knowledge graph em-bedding based framework for review rating pre-diction with sentiment features. arXiv preprint arXiv:2508.13953 .C. J. Hutto and Eric Gilbert. 2014. Vader: A parsi-monious rule-based model for sentiment analysis of social media text. In Proceedings of the 8th Inter-national Conference on Weblogs and Social Media (ICWSM) .Lung-Hao Lee, Liang-Chih Yu, Natalia Loukashe-vich, Ilseyar Alimova, Alexander Panchenko, Tzu-Mi Lin, Zhe-Yu Xu, Jian-Yu Zhou, Guangmin Zheng, Jin Wang, Sharanya Awasthi, Jonas Becker, Jan Philip Wahle, Terry Ruas, Shamsuddeen Has-san Muhammad, and Saif M. Mohammad. 2026. Dimabsa: Building multilingual and multidomain datasets for dimensional aspect-based sentiment anal-ysis. Preprint , arXiv:2601.23022. Lung-Hao Lee, Liang-Chih Yu, Suge Wang, and Jian Liao. 2024. Overview of the SIGHAN 2024 shared task for Chinese dimensional aspect-based sentiment analysis. In Proceedings of the 10th SIGHAN Work-shop on Chinese Language Processing (SIGHAN-10) ,pages 165–174, Bangkok, Thailand. Association for Computational Linguistics. Bin Liang, Hang Su, Lin Gui, Erik Cambria, and Ruifeng Xu. 2022. Aspect-based sentiment anal-ysis via affective knowledge enhanced graph con-volutional networks. Knowledge-based systems ,235:107643. Wenxiong Liao, Bi Zeng, Xiuwen Yin, and Pengfei Wei. 2021. An improved aspect-category sentiment analysis model for text sentiment analysis based on roberta. Applied Intelligence , 51(6):3522–3533. Nimra Mughal, Ghulam Mujtaba, Sarang Shaikh, Aveenash Kumar, and Sher Muhammad Daudpota. 2024. Comparative analysis of deep natural networks and large language models for aspect-based senti-ment analysis. Ieee Access , 12:60943–60959. Ambreen Nazir, Yuan Rao, Lianwei Wu, and Ling Sun. 2020. Issues and challenges of aspect-based senti-ment analysis: A comprehensive survey. IEEE Trans-actions on Affective Computing , 13(2):845–863. Pablo Romero, Lifeng Han, and Goran Nenadic. 2025. Medication extraction and entity linking using stacked and voted ensembles on LLMs. In Proceed-ings of the Second Workshop on Patient-Oriented Language Processing (CL4Health) , pages 303–315, Albuquerque, New Mexico. Association for Compu-tational Linguistics. Xuefeng Shi, Weiping Ding, Min Hu, Xin Kang, and Fuji Ren. 2025. Triple dimensional psychology knowledge encouraging graph attention networks to exploit aspect-based sentiment analysis. Scientific Reports , 15(1):27109. Filippos Ventirozos, Peter A. Appleby, and Matthew Shardlow. 2025a. Are you sure you’re positive? con-solidating chain-of-thought agents with uncertainty quantification for aspect-category sentiment analysis. In Proceedings of the 1st Workshop for Research on Agent Language Models (REALM 2025) , pages 309– 326, Vienna, Austria. Association for Computational Linguistics. Filippos Karolos Ventirozos, Peter Appleby, and Matthew Shardlow. 2025b. Aspect–sentiment quad prediction with distilled large language models. In 
+
+Proceedings of the 15th International Conference on Recent Advances in Natural Language Processing -Natural Language Processing in the Generative AI Era , pages 1309–1319, Varna, Bulgaria. INCOMA Ltd., Shoumen, Bulgaria. Wenxuan Zhang, Xin Li, Yang Deng, Lidong Bing, and Wai Lam. 2022. A survey on aspect-based senti-ment analysis: Tasks, methods, and challenges. IEEE Transactions on Knowledge and Data Engineering ,35(11):11019–11038. Yice Zhang, Hongling Xu, Delong Zhang, and Ruifeng Xu. 2024. A hybrid approach to dimensional aspect-based sentiment analysis using bert and large lan-guage models. Electronics , 13(18):3724. Input: {"ID": "R001", "Text ": "average to good thai food, but terrible delivery.", "Aspect ": ["thai food", "delivery"] }Output: {"ID": "R001", "Aspect_VA ": [{"Aspect": "thai food", "VA": "6.75#6.38"}, {"Aspect": "delivery", "VA": "2.88#6.62"} ]}
+
+> Valence, Arousal
+
+Figure 4: Example of TaskA1 data Input : {"ID": "stance26_aspect_va_dev_10", "Text": "Say somehow we succeed and now have access to unlimited clean energy. What happens then ? Do we swap over to this new energy ? Do politicians in the pocket of oil and gas companies stop it from progressing ? Does having no energy limits lead to an even greater population problem around the world ? Could it lead to space exploration with rockets thats have unlimited fuel ? I’m far too dumb to understand the science but it is crazy to me that it is something I could potentially see in my lifetime.", "Aspect": ["unlimited clean energy", "space exploration"] } 
+
+Output : {"ID": "stance26_aspect_va_dev_10", "Aspect_VA": [{"Aspect": "unlimited clean energy", "VA": "7.33#6.83"}, {"Aspect": "space exploration", "VA": "6.50#6.00"}] } 
+
+Figure 5: Example of TaskB data 
+
+A Example of Shared Task Data 
+
+Figure 4 and 5 display the example data of Track A and B. 
+
+B QuadAI Ranking Among Teams 
+
+We list the initial/un-official ranking we received for reference in Figure 6 and 7 on Track-A1 laptop and restaurant data respectively. 
+
+C Data Cleaning Prompt 
+
+The data cleaning prompt includes: Persona, Met-ric Definitions, Cluster examples, and Returns, which are detailed below. 
+
+ 
+
+CLUSTER_CRITIQUE_PROMPT = """ You are an expert in sentiment analysis . Below is a cluster of aspect - sentiment examples grouped by similar Valence - Arousal ( VA ) values . DEFINITIONS : - Valence : 1= very negative to 9= very positive - Arousal : 1= very calm to 9= very intense CLUSTER EXAMPLES : { examples_text } 
+
+Figure 6: English Laptop Data Track-A1 
+
+TASK : Identify which examples ( if any ) have spurious / incorrect VA labels that don 't match the text sentiment . An example is spurious if : 1. The VA values don 't match the sentiment expressed in the text 2. The aspect sentiment is clearly different from the labeled values 3. The label seems inconsistent with similar examples in this cluster Return ONLY valid JSON with NO extra text : {{ " spurious_indices ": [0 , 5, 12] , " reasoning ": " Example 0: Text is very negative but valence is too high . Example 5: ... " }} If no examples are spurious , return : {{ " spurious_indices ": [] , " reasoning ": "All labels appear correct " }} """ 
+
+ 
+
+Listing 1: Cluster Critique Prompt for VA-based Sentiment Analysis Figure 7: English Restaurant Data Track-A1

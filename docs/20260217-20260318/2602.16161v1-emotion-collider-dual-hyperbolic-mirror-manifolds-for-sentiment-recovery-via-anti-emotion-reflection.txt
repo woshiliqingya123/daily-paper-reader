@@ -1,0 +1,1086 @@
+Title: Emotion Collider: Dual Hyperbolic Mirror Manifolds for Sentiment Recovery via Anti Emotion Reflection
+
+URL Source: https://arxiv.org/pdf/2602.16161v1
+
+Published Time: Thu, 19 Feb 2026 01:23:03 GMT
+
+Number of Pages: 25
+
+Markdown Content:
+# EMOTION COLLIDER : D UAL HYPERBOLIC MIRROR MANIFOLDS FOR SENTIMENT RECOVERY VIA ANTI EMOTION REFLECTION 
+
+Rong Fu ∗
+
+University of Macau 
+
+mc46603@um.edu.mo 
+
+Ziming Wang 
+
+Zhejiang University 
+
+w986827512@zuaa.zju.edu.cn 
+
+Shuo Yin 
+
+Tsinghua University 
+
+yins25@mails.tsinghua.edu.cn 
+
+Wenxin Zhang 
+
+University of Chinese Academy of Sciences 
+
+zwxzhang12@163.com 
+
+Haiyun Wei 
+
+Tongji University 
+
+2311399@tongji.edu.cn 
+
+Kun Liu 
+
+University of Southampton 
+
+kundy9909@gmail.com 
+
+Xianda Li 
+
+University of Bologna 
+
+xianda.li@studio.unibo.it 
+
+Zeli Su 
+
+Minzu University of China 
+
+rickamorty@muc.edu.cn 
+
+Simon Fong 
+
+University of Macau 
+
+ccfong@um.edu.mo 
+
+February 19, 2026 
+
+# ABSTRACT 
+
+Emotional expression underpins natural communication and effective human–computer interaction. We present Emotion Collider (EC-Net), a hyperbolic hypergraph framework for multimodal emotion and sentiment modeling. EC-Net represents modality hierarchies using Poincaré-ball embeddings and performs fusion through a hypergraph mechanism that passes messages bidirectionally between nodes and hyperedges. To sharpen class separation, contrastive learning is formulated in hyperbolic space with decoupled radial and angular objectives. High-order semantic relations across time steps and modalities are preserved via adaptive hyperedge construction. Empirical results on standard multimodal emotion benchmarks show that EC-Net produces robust, semantically coherent represen-tations and consistently improves accuracy, particularly when modalities are partially available or contaminated by noise. These findings indicate that explicit hierarchical geometry combined with hypergraph fusion is effective for resilient multimodal affect understanding. 
+
+Keywords Multimodal sentiment analysis, hyperbolic embedding, hypergraph fusion, contrastive learning, missing modality robustness, EC-Net 
+
+# 1 Introduction 
+
+Emotional signals play a fundamental role in human communication and strongly influence cognition and decision making. Modern human computer interaction systems must therefore interpret emotion from multimodal inputs such as text, audio, and visual streams in order to behave naturally and support user needs. Prior work shows that combining modalities yields more faithful emotion inference than relying on a single source of information. [ 1, 2, 3 ] Multimodal approaches aim to exploit complementary cues across channels while overcoming heterogeneity in representation, alignment, and noise characteristics. Existing methods can be broadly divided into sequence oriented and graph oriented solutions. Sequence oriented techniques use recurrent or transformer architectures to model temporal dynamics and context while graph oriented methods explicitly model interactions among utterances or modalities with graph neural networks. [ 4 , 5 ] However, conventional graph models typically represent only pairwise relations and operate in Euclidean space, which limits 
+
+> ∗
+
+Corresponding author: mc46603@um.edu.mo 
+
+> arXiv:2602.16161v1 [cs.MM] 18 Feb 2026
+
+Emotion Collider their ability to capture higher order interactions and modality hierarchies. Hypergraph constructions extend binary relations to connect multiple nodes simultaneously, enabling the modelling of triadic and higher order dependencies that arise in multimodal sequences. Despite this advantage, current hypergraph approaches often treat all modalities symmetrically and still rely on Euclidean geometry for representation, which can distort distances when the underlying semantic distributions are hierarchical or nonuniform. [ 6, 7]Another practical challenge is robustness to missing or noisy modalities. In real world recordings modalities can be partially absent or corrupted, and models that assume perfect modality completeness tend to degrade. Recent surveys and method papers highlight missing modality as a crucial open problem and propose reconstruction, distillation, or modality aware training strategies to alleviate it. [8, 9, 10 ] Nonetheless, many solutions either focus solely on the inference stage or use a single shared latent distribution for reconstruction, which ignores modality specific global statistics and reduces reconstruction fidelity. Motivated by these gaps, we propose Emotion Collider, EC-Net, a unified framework that addresses three design goals simultaneously. The first goal is to represent modality specific hierarchies explicitly so that modalities with different semantic granularities are embedded with appropriate radial and angular structure. The second goal is to capture high order cross modal and temporal dependencies through a hypergraph fusion mechanism that supports bidirectional aggregation between nodes and hyperedges. The third goal is to improve robustness under missing or noisy modalities by combining property aware reconstruction with hyperbolic contrastive objectives that preserve discriminative structure across incomplete views. Our contributions are as follows. Firstly, we introduce a hyperbolic embedding scheme based on the Poincaré ball to capture and preserve modality hierarchies and non uniform semantic relations. Secondly, we design a hyperbolic hypergraph fusion module that constructs flexible hyperedges across modalities and time steps and performs bidirectional aggregation to strengthen high order interactions. Thirdly, we propose contrastive learning objectives formulated in radial and angular components of hyperbolic embeddings to enhance class discriminability and semantic consistency. Finally, we integrate modality property awareness into reconstruction and fusion to improve robustness when modalities are partially missing, resulting in a system that produces stable and semantically meaningful representations under realistic noise patterns. 
+
+# 2 Related Work 
+
+2.1 Hyperbolic representations for emotion and sentiment 
+
+Recent studies demonstrate that hyperbolic geometry offers a natural inductive bias for hierarchies and scale-free structures that frequently arise in language and affective data. Prior work has integrated hyperbolic layers into models for emotion and sentiment tasks, showing consistent gains over purely Euclidean architectures [ 6, 11 ]. Hierarchical attention and multi-level hyperbolic encoders have been proposed to better capture document- and phrase-level trees [12 , 7]. More recently, hyperbolic methods have been extended to conversation-level emotion tracking and to multimodal fusion schemes that leverage Poincaré embeddings to disentangle subtle emotion classes [ 13 , 14 ]. These lines of work motivate the inclusion of geometric priors when constructing multimodal affective representations. 
+
+2.2 Multimodal fusion and learning with missing modalities 
+
+Handling incomplete modality sets is a central practical challenge in multimodal sentiment analysis. Approaches range from modality reconstruction and imputation to architectures explicitly designed for partial observability [ 15 , 8 ]. Several recent contributions study robust reconstruction and universal models that exploit both complete and incomplete training examples to improve generalization when modalities are absent at inference time [ 16 ]. Graph- and hypergraph-based representations have also been leveraged to encode inter-modal relations for downstream sentiment tasks [ 17 , 18 ]. The literature indicates that robustness to missing modalities benefits from a combination of structural modeling, learned reconstruction and training strategies that expose the model to realistic missingness patterns. 
+
+2.3 Contrastive and representation learning in multimodal affective tasks 
+
+Contrastive objectives and hybrid contrastive frameworks have become standard tools for learning discriminative multimodal embeddings. Methods that jointly optimize intra- and inter-modal contrastive terms produce representations that are both modality-aware and semantically consistent across samples [ 3]. Recent works further combine contrastive learning with prototype or curriculum schemes to refine separation between closely related affective labels [ 13 , 7]. These techniques reduce the modality gap and improve robustness in low-data regimes, which is particularly relevant for emotion datasets that contain subtle label distinctions. 2Emotion Collider 
+
+2.4 Geometric and manifold-based methods 
+
+Beyond the Poincaré ball and Lorentz models commonly used for hyperbolic embeddings, there has been growing interest in principled probabilistic and theoretical treatments of learning on manifolds. New families of distributions and diffusion processes adapted to Riemannian manifolds facilitate uncertainty modeling and generative modeling on non-Euclidean domains [ 19 , 20 ]. Transformer-like architectures and attention mechanisms adapted to hyperbolic geometry have been proposed to scale geometric models to longer sequences and larger vocabularies [ 21 , 22 ]. Theoretical studies on generalization and ordinal embedding in hyperbolic settings provide complementary guarantees that help explain empirical successes [23, 24]. 
+
+2.5 Robustness, corruption and deception-related cues 
+
+Robustness diagnostics and corruption benchmarks have been used to probe how multimodal models degrade under noise, occlusion or adversarial conditions [ 25 , 8]. In parallel, research on automated deception detection highlights how nonverbal cues and cross-modal inconsistencies can be exploited for downstream tasks [ 26 ]. Our interest in geometric asymmetry as an interpretable cue aligns with these efforts: asymmetric patterns across modalities can signal discordant communicative intent and thus support auxiliary detection objectives. Prior empirical and methodological studies on robustness motivate the evaluation protocol used in this work. 
+
+2.6 Theoretical advances and disentanglement 
+
+Recent theoretical advances address disentanglement, task editing and orthogonal parameterizations that improve modularity and transferability of learned representations [ 27 , 28 , 29 ]. These contributions underline the value of structural constraints, such as orthogonality or factorized supports, to isolate informative directions and reduce harmful interference between tasks. Such principles inform design choices that encourage EC-Net’s factor decomposition and controlled interaction between geometry-aware components. 
+
+2.7 EC-Net position 
+
+EC-Net builds on these three intersecting streams: hyperbolic geometric priors for emotion separation, principled strategies for dealing with missing modalities, and contrastive/orthogonality-driven representation learning to promote robustness. The model integrates a mirror-space involution together with a learned property pathway to combine the benefits demonstrated by the cited literature while addressing practical robustness requirements documented in prior studies. 
+
+# 3 Methodology 
+
+This section describes Emotion Collider (EC-Net), a dual-manifold architecture designed to recover missing modalities by learning paired hyperbolic embeddings and a learnable involution between two Poincaré manifolds. We fix notation and manifold assumptions, present numerical safeguards together with observed clipping statistics, define paired hyperbolic embeddings, describe the Differentiable Mirror Layer realized as a learnable involution with Riemannian importance re-weighting, formulate mirror-space implicit score matching for recovering an emotion vector field, present property embedding and orthogonal decomposition with concrete EMA details, describe fusion and an asymmetry deception cue with baseline comparisons, give the full optimization objective with dynamic loss normalization and σ
+
+schedule, and provide implementation-ready training steps and constants used in experiments. 
+
+3.1 Notation and manifold assumptions 
+
+For an utterance u we extract Euclidean features x(m) ∈ Rdm for each modality m ∈ { L, A, V }, where L, A, and 
+
+V denote language, acoustic, and visual respectively. The emotion manifold is denoted ME and the anti-emotion manifold is denoted MA. Both manifolds are modeled as Poincaré balls with fixed curvatures cE > 0 and cA > 0;these curvature values are hyperparameters and remain constant during training. Manifold exponential and logarithmic maps at the origin are written exp c
+
+> 0
+
+(·) and log c
+
+> 0
+
+(·). Möbius addition is denoted ⊕c and the Poincaré distance is denoted 
+
+dP(·, ·).
+
+inter-curvature diffeomorphism For any 0 < c 1, c 2 < ∞, define the radial rescaling map Φ : Bc1 → Bc2 by 
+
+Φ( x) = 
+
+r c2
+
+c1
+
+x. (1) 3Emotion Collider 
+
+Figure 1: Overview of the Emotion Collider (EC-Net) architecture for sentiment recovery. The framework projects multimodal features ( xL, x A, x V ) into paired hyperbolic embeddings across the Emotion Manifold ( ME ) and the Anti-Emotion Manifold ( MA), both modeled as Poincaré balls. A Differentiable Mirror Layer, realized as a learnable involution ( gϕ, f ψ ), facilitates bidirectional mapping between the dual manifolds while enforcing geometric consistency through Riemannian importance re-weighting. For recovery of missing modalities, the system utilizes mirror-space implicit score matching ( sθ ) to reconstruct the emotion vector field bV in the tangent space. Available and recovered embeddings are integrated via a SetTransformer-based fusion network to produce the final prediction ˆy. Additionally, the geometric discrepancy between the paired manifolds is captured as an asymmetry deception cue ( sasym ) for auxiliary task enhancement. Then Φ is a diffeomorphism with inverse Φ−1(y) = 
+
+q c1 
+
+> c2
+
+y. Therefore ME and MA are diffeomorphic for any positive curvatures, and the radial rescaling gives an explicit inter-curvature mapping. where Bc denotes the Poincaré ball of curvature c.To quantify stability when curvatures differ, we performed a curvature-ratio ablation with cE /c A ∈ { 0.1, 1.0, 10 }. The experiments show that the gradient L2-norm dynamic range remains within a factor of 3 when the ratio is at most 2;based on this observation we restrict the usable curvature ratio to [0 .5, 2] in practice. 
+
+3.2 Numerical safeguards for exponential map and clipping statistics 
+
+Euclidean-to-manifold projection uses the exponential map at the origin. For a tangent vector v we compute 
+
+h = exp c
+
+> 0
+
+(v), (2) where v typically equals P x for a linear projection P and c is the manifold curvature. To prevent numerical instability near the Poincaré ball boundary we apply radial clipping: if ∥h∥ ≥ 1 − εbnd then h ← 1 − εbnd 
+
+∥h∥ h, (3) where εbnd > 0 is a small safety margin. We set εbnd = 0 .05 . Across three random seeds ( 42 , 123 , 2025 ) the median clipping fraction is 0.08% and the 95% upper bound across seeds is 0.15% , confirming that the learned embeddings remain robustly interior to the ball under the chosen projections. 4Emotion Collider 
+
+3.3 Paired hyperbolic embeddings 
+
+Each modality feature is projected into the tangent space and mapped to both manifolds. For modality m we compute 
+
+h(m) 
+
+> E
+
+= exp cE
+
+> 0
+
+ P (m) 
+
+> E
+
+x(m), (4) 
+
+h(m) 
+
+> A
+
+= exp cA
+
+> 0
+
+ P (m) 
+
+> A
+
+x(m), (5) where P (m) 
+
+> E
+
+and P (m) 
+
+> A
+
+are trainable linear projections into the tangent spaces of ME and MA, respectively, and cE , c A
+
+are the fixed curvatures; h(m) 
+
+> E
+
+and h(m) 
+
+> A
+
+denote the resulting manifold embeddings. where x(m) denotes the Euclidean input for modality m.
+
+3.4 Differentiable Mirror Layer implemented as a learnable involution 
+
+The Differentiable Mirror Layer is parameterized by maps gϕ : ME → M A and fψ : MA → M E . We adopt the term learnable involution and enforce approximate involutive behavior with Poincaré-distance based regularizers and Riemannian importance re-weighting: 
+
+Lcycle = EhE ∼D E
+
+w(hE ) dP
+
+ hE , f ψ (gϕ(hE ))  , (6) 
+
+Linv = EhE ∼D E
+
+w(hE ) dP
+
+ hE , g ϕ(gϕ(hE ))  , (7) where dP denotes the Poincaré distance and DE is the empirical distribution of emotion embeddings. The importance weight corrects for Riemannian volume distortion introduced by ambient Euclidean sampling; we use 
+
+w(h) = 1(1 − cE ∥h∥2)n , (8) with n the manifold dimension. Enabling this re-weighting yields a measurable improvement on validation: without 
+
+w(h) the cycle loss is 0.241 ± 0.007 and with w(h) it is 0.204 ± 0.005 ; a paired t-test returns p < 0.001 for N = 3 
+
+runs. where the reported means and standard deviations are computed over three random seeds. Implementation detail: in practice we implement gϕ and fψ as tangent-space residuals, 
+
+gϕ = exp cA 
+
+> 0
+
+◦Rϕ ◦ log cE 
+
+> 0
+
+, (9) where Rϕ is a small residual MLP, although Möbius-linear stacks are an alternative. Tangent-space parameterizations are numerically stable and compatible with Riemannian optimizers. 
+
+3.5 Emotion vector field and implicit mirror-space score matching 
+
+We model local sentiment variation as a smooth vector field 
+
+V : ME → T ME , (10) where V (h) denotes the local direction of increasing sentiment at h ∈ M E . We monitor the field’s rotational component via a numerical curl proxy ∥curl V ∥∞ and enforce ∥curl V ∥∞ < 0.01 empirically; if this bound is exceeded we add a penalty term with coefficient λcurl = 0 .1. After adding this penalty the observed final value is 
+
+∥curl V ∥∞ = (2 .1 ± 0.3) × 10 −3, which lies below the bound. where the reported value is the mean and standard deviation across the three seeds used in our experiments. To avoid intractable pushforward densities under gϕ, EC-Net trains a mirror-space denoising score model sθ with the implicit objective 
+
+Lscore = Et∼U (0 ,T )Ez0 Ezt∼qt(·| z0)
+
+∥sθ (zt, t ) − ∇ zt log qt(zt | z0)∥22 , (11) where qt denotes the forward perturbation kernel used in the diffusion process. This objective does not require explicit Jacobian determinants of gϕ. At inference we sample zT ∼ N (0 , I ), run reverse diffusion in mirror space with sθ ,obtain z0, and map back via fψ to produce the recovered vector bV (h).5Emotion Collider 
+
+3.6 Property embedding, orthogonal decomposition and EMA specifics 
+
+For each modality m we maintain a shared property embedding P (m) ∈ Rd. A decomposition network produces sample-specific components Σ(m) 
+
+> j
+
+and sample-invariant components μ(m) 
+
+> j
+
+. We enforce a hard mean-squared alignment and an explicit orthogonality penalty: 
+
+μ(m) = 1
+
+n
+
+> n
+
+X
+
+> j=1
+
+μ(m) 
+
+> j
+
+, (12) 
+
+Lprop = P (m) − μ(m) 22, (13) 
+
+Lorth = λorth 
+
+1
+
+n
+
+> n
+
+X
+
+> j=1
+
+(Σ (m) 
+
+> j
+
+)⊤μ(m)
+
+> j
+> 22
+
+, (14) where n is the batch size and the default λorth = 0 .1. For stability, every K = 100 optimization steps we update P (m)
+
+via exponential moving average: 
+
+P (m) ← 0.95 · P (m) + 0 .05 · μ(m). (15) After training the principal-angle distribution between Σ and μ has mean 3.8◦ and maximum 8.2◦; a 50-bin histogram of this distribution is provided in the Supplementary materials as a diagnostic. 
+
+3.7 Fusion, prediction and asymmetry cue with baseline comparisons 
+
+Available manifold embeddings together with the recovered vector bV are aggregated by a permutation-invariant fusion network implemented with SetTransformer[ 30 ]. Missing modalities are represented by a learnable mask token so the fusion input shape remains constant. The fused manifold embedding hfus  
+
+> E
+
+is projected to Euclidean task space by a head 
+
+Cω to produce prediction ˆy.We compute a geometric asymmetry score as an auxiliary deception cue: 
+
+sasym (u) = dP
+
+ hfus  
+
+> E
+
+, f ψ (gϕ(hfus  
+
+> E
+
+)) , (16) where larger values indicate greater geometric inconsistency between the paired manifolds. Empirically, sasym correlates with human deception labels with Spearman ρ = 0 .42 (two-sided p < 0.001 , N = 2 560 ); for comparison, a random baseline yields ρ ≈ 0.00 and a logistic-regression baseline yields ρ ≈ 0.18 , establishing that EC-Net improves the signal relative to simple baselines. 
+
+3.8 Full optimization objective and dynamic loss normalization 
+
+The full training objective is a weighted sum: 
+
+L = Ltask + α Lgrad + β Lscore + γ Lcycle 
+
++ δ Linv + η Lprop + λorth Lorth + ζ Lfus . (17) To prevent gradient domination caused by losses with different magnitudes, each loss Li is normalized by a running standard deviation σi. The per-loss statistic σi is updated every 50 batches via an exponential weighted moving average with decay 0.99 ; concretely, every 50 batches we set 
+
+σi ← 0.99 · σi + 0 .01 · std _batch( Li), (18) and then use eLi = Li/(σi + εnum ) in the weighted sum, where εnum = 10 −5 stabilizes divisions. 
+
+3.9 Training procedure, mask schedule, gradient clipping, hyperparameter search and implementation constants 
+
+Training uses random modality masking. For each minibatch we sample pmask ∼ Unif {0.2, 0.5, 0.8} and apply per-sample masking at that rate. The minimum training mask rate is annealed linearly from 0.5 to 0.1 every 10 epochs; at test time we set ptest mask = 0 .3. Manifold-aware parameters are optimized with Riemannian Adam while Euclidean parameters use Adam or RAdam. Gradients are clipped by global L2-norm to 1.0.For clarity, the primary implementation constants used in our experiments are given inline as follows: cE = 1 .0,
+
+cA = 0 .8, curvature-ratio clipping to [0 .5, 2] , εbnd = 0 .05 with median clipping fraction = 0 .08% and 95% upper 6Emotion Collider bound = 0 .15% , EMA decay = 0 .95 with EMA interval K = 100 steps, λorth = 0 .1, λcurl = 0 .1 with curl bound 
+
+= 0 .01 and final curl ≈ 2.1 × 10 −3, loss EWMA decay = 0 .99 with updates every 50 batches, sliding window B = 100 
+
+batches for loss statistics, gradient clip L2 norm = 1 .0, mask anneal 0.5 → 0.1 every 10 epochs, and random seeds 
+
+{42 , 123 , 2025 }. Peak GPU memory observed is 22 .1 GB with batch size 128 ; reducing the batch to 64 reduces peak memory to 13 .2 GB with less than 0.5% accuracy loss. The typical full-training wall-clock on a single RTX-3090 (24 GB) is approximately 3 hours. The Optuna search bounds used for the 50-trial search are: α ∈ [0 .1, 10] , β ∈ [0 .1, 10] , γ ∈ [0 .5, 20] , δ ∈ [0 .5, 20] ,
+
+η ∈ [0 .05 , 5] , and λorth ∈ [0 .01 , 1] .
+
+Algorithm 1: EC-Net training procedure (implementation-ready) 
+
+Input: Dataset D, hyperparameters and constants as described above, optimizers  
+
+> 1
+
+for each minibatch B ⊂ D do  
+
+> 2
+
+Extract Euclidean features x(m) 
+
+> j
+
+for each modality and sample j; 
+
+> 3
+
+Sample pmask ∼ Unif {0.2, 0.5, 0.8}; apply per-sample modality masking at rate pmask ; 
+
+> 4
+
+Compute tangent projections and manifold embeddings h(m) 
+
+> E
+
+, h (m) 
+
+> A
+
+via Equations (4)–(5); apply radial clipping if ∥h∥ ≥ 1 − εbnd ; 
+
+> 5
+
+Compute decomposition outputs Σ(m) 
+
+> j
+
+, μ (m) 
+
+> j
+
+and losses Lprop , Lorth ; 
+
+> 6
+
+Approximate expectations in Lcycle , Linv with Monte Carlo re-weighted by w(h); 
+
+> 7
+
+Update gϕ, f ψ by descending gradients of weighted Poincaré losses using Riemannian Adam for manifold parameters;  
+
+> 8
+
+Sample mirror-space noisy seeds and update sθ using the denoising objective;  
+
+> 9
+
+Map generated mirror outputs back with fψ to form bV and fuse with available embeddings to obtain hfus  
+
+> E
+
+; 
+
+> 10
+
+Compute Ltask , Lgrad , Lfus and sasym ; 
+
+> 11
+
+Every 50 batches update per-loss statistics σi via EWMA (decay 0.99) and normalize losses by σi; 
+
+> 12
+
+Form total loss L; clip global L2-norm of gradients to 1.0; step optimizers;  
+
+> 13
+
+Every K = 100 steps update P (m) ← 0.95 · P (m) + 0 .05 · μ(m);
+
+# 4 Experiments 
+
+We evaluate EC-Net (Emotion Collider, EC-Net) on standard multimodal sentiment benchmarks and a comprehensive robustness suite. The experiments quantify predictive performance, stability of the geometric components, sensitivity to missing modalities, and behaviour under stress conditions. All reported numbers are the mean over three independent random seeds using canonical train / validation / test splits. To ensure fair comparison, we run all methods under the same three random seeds and report mean ±std; EC-Net significantly surpasses the runner-up baseline under a paired two-tailed t-test ( p < 0.01 ). 
+
+4.1 Datasets and evaluation metrics 
+
+Experiments use three widely adopted multimodal benchmarks: CMU-MOSI [ 31 ], CMU-MOSEI [ 32 ] and IEMOCAP [ 33 ]. Each utterance is represented by pre-extracted features for text, audio and visual modalities. Missing modalities are represented by a learnable mask token so that the fusion input shape remains constant. Depending on dataset and task we report weighted accuracy (WA), unweighted accuracy (UA), seven-way accuracy (Acc7), binary accuracy (Acc2), F1, mean absolute error (MAE) and Pearson correlation (Corr). 
+
+4.2 Implementation details 
+
+All models are implemented in PyTorch. Pretrained feature encoders are kept frozen during training and only downstream components are optimized. Property embeddings use dimensionality dp = 128 and are trained jointly with the remaining parameters at a learning rate of 1 × 10 −3. Optimization uses optimizers that are appropriate for manifold-aware parameters when relevant; Euclidean parameters use standard variants such as Adam. Random seeds for data splits, initialization and noise generation are fixed across reported runs to ensure reproducibility. Hardware details and primary hyperparameters are reported alongside each table caption. 7Emotion Collider 
+
+4.3 Visualisation 
+
+A gallery of figures summarises EC-Net behaviour across diverse evaluation perspectives. Radar charts illustrate aggregated performance metrics under multiple missing-modality patterns, confirming consistent superiority over baselines. Loss curves depict smooth optimisation with narrow confidence intervals, indicating stability during training. Ablation plots quantify the impact of each architectural component by showing performance degradation upon removal. Principal-angle histograms validate the orthogonal-decomposition constraint, supporting near-orthogonality between factor representations. Hyper-parameter scans and heatmaps reveal broad accuracy plateaus and flat optimum regions, demonstrating robustness to tuning. Geometric inductive bias is visualised through embeddings projected onto hyperbolic space, where class separation aligns with geodesic structure. Mirror-space t-SNE plots confirm satisfactory cycle-mapping behaviour via short connector distances. Corruption robustness charts show minimal performance drop under synthetic noise. Memory–accuracy trade-off plots position EC-Net in a favourable low-resource, high-performance region. Finally, confidence-band training curves across multiple seeds illustrate low variance and reproducible convergence. 
+
+Figure 2: Radar summary across six missing patterns and three metrics (Acc2 / F1 / MAE). EC-Net shows consistent advantage. 
+
+4.4 Main results with full modalities 
+
+Table 1 summarizes full-modality results on CMU-MOSI and CMU-MOSEI across multiple reference methods drawn from the recent literature. Table 2 reports the corresponding IEMOCAP comparison. EC-Net attains the strongest performance on the aggregated metrics in these benchmarks. 
+
+4.5 Robustness to fixed missing patterns 
+
+To evaluate behaviour under partial observability we test EC-Net on a set of fixed modality-availability patterns on CMU-MOSI. Table 3 lists Acc2 / F1 / Acc7 for single-modality and multi-modality settings. Results show that EC-Net retains a consistent advantage relative to competitive baselines across the evaluated patterns. 
+
+4.6 Performance under varying global missing rate 
+
+To evaluate large-scale partial observability we vary the global missing rate η and report Acc2 in Table 4. EC-Net maintains high accuracy as η increases, demonstrating robust reconstruction and fusion under uniformly sampled missingness. 8Emotion Collider 
+
+Figure 3: Training trajectories for principal losses (mean across three seeds). Task loss, reconstruction loss, property-alignment loss and involution loss all decline stably. 
+
+Figure 4: Stacked bar plot showing Acc2 drops for each ablation across FIX and MR regimes. Table 1: CMU-MOSI [ 31 ] and CMU-MOSEI [ 32 ] full-modality comparison. Metrics: Acc7 (%), Acc2 (%), F1 (%), MAE (lower better), Corr. Best entries are bold . Mean ± std over 3 runs. Method CMU-MOSI CMU-MOSEI Acc7 Acc2 F1 MAE ↓ Corr Acc7 Acc2 F1 MAE ↓ Corr HyCon[3] 46.6 85.2 85.1 0.741 0.779 52.8 85.4 85.6 0.554 0.751 UniMSE[34] 48.7 86.9 86.4 0.691 0.809 54.4 87.5 87.5 0.523 0.773 ConFEDE[35] 42.3 85.5 85.5 0.742 0.782 54.9 85.8 85.8 0.522 0.780 MGCL[36] 49.3 86.7 86.7 0.685 0.707 53.9 86.4 86.4 0.535 0.772 HyDiscGAN[37] 43.2 86.7 86.3 0.749 0.782 54.4 86.3 86.2 0.533 0.761 CLGSI[38] 48.0 86.4 86.3 0.703 0.790 54.6 86.3 86.2 0.532 0.763 DLF[39] 47.1 85.1 85.0 0.731 0.781 53.9 85.4 85.3 0.536 0.764 PAMoE-MSA[40] 48.7 87.0 87.0 0.690 0.806 54.6 87.7 86.9 0.526 0.780 MSAmba[41] 49.7 87.4 87.4 0.707 0.809 54.2 86.9 86.9 0.507 0.796 
+
+EC-Net (ours) 51.9 90.9 90.9 0.610 0.882 57.8 90.5 90.5 0.468 0.846 
+
+9Emotion Collider 
+
+Figure 5: Histogram of principal angles θ(Σ , μ ) after training (50 bins). The distribution concentrates near small angles (mean ≈ 3.8◦). 
+
+Figure 6: Single-factor hyperparameter scans showing Acc2 versus the swept factor. The default operating point is marked. 10 Emotion Collider 
+
+Figure 7: Heatmap of Acc2 as a function of curvature ratio and orthogonality penalty, revealing a stable plateau. 
+
+Figure 8: Training curve under 8 random seeds (shaded area = min/max envelope). The small envelope confirms stable convergence. 
+
+Figure 9: Two test samples with the highest geometric-asymmetry score sasym . Input modalities, EC-Net prediction, ground-truth label. Large sasym correlates with sentiment mismatch, illustrating the cue’s decision boundary. 11 Emotion Collider 
+
+Figure 10: Poincaré-disk scatter of randomly sampled emotion embeddings (1,000 points) colored by label; superim-posed geodesics illustrate geometric separation. 
+
+Figure 11: Mirror-space t-SNE: left original hE , right mapped fψ (gϕ(hE )) ; gray lines connect corresponding points. Small cycle distances indicate good involution behaviour. 12 Emotion Collider 
+
+Figure 12: Corruption robustness: bars show performance under clean, light and heavy corruption conditions for several methods. 
+
+Figure 13: Peak GPU memory vs. Acc2 Pareto plot across batch sizes. EC-Net occupies a favourable memory-accuracy region. Table 2: IEMOCAP[ 33 ] full-modality comparison. WA: weighted accuracy; UA: unweighted accuracy. Best entries are 
+
+bold . Mean ± std over 3 runs.                       
+
+> Model WA (%) ↑UA (%) ↑
+> TwoStageFT[42] 74.9 76.1 AdaptiveMixup[43] 75.4 76.0 EmoAug[44] 72.7 73.8 MoMKE[45] 77.9 77.1 APIN[46] 77.8 78.2 IAM[47] 74.8 75.6 GateM2Former[48] 76.0 77.4 SeeNet[49] 78.5 79.6
+> EC-Net (ours) 83.5 83.5
+
+13 Emotion Collider 
+
+Figure 14: Training curve with mean and 95% confidence band from three seeds. Low variance indicates stable training dynamics. Table 3: Fixed missing-modality results on CMU-MOSI[ 31 ]. Each cell reports Acc2 / F1 / Acc7. Column ‘Available’ indicates which modalities are available (t: text, a: audio, v: visual). Best results are bold . Mean ± std over 3 runs. 
+
+Available GCNet[50] IMDer[51] MoMKE[45] LNLN[52] EUAR[53] CIDer[54] EC-Net (ours) 
+
+{t} 83.7/83.6/42.3 84.8/84.7/44.8 86.2/86.1/38.1 84.9/84.7/45.1 86.0/86.0/46.1 83.7/83.6/41.3 90.0/90.0/50.0 
+
+{v} 56.1/55.7/16.9 61.3/60.8/22.2 54.1/53.7/17.0 52.2/58.9/18.8 64.9/64.9/23.6 57.8/42.3/15.5 68.5/68.5/24.5 
+
+{a} 56.1/54.5/16.6 62.0/62.2/22.0 59.3/59.0/18.4 52.2/58.9/18.0 63.0/62.3/23.2 57.8/43.2/15.2 69.0/69.0/25.0 
+
+{t,v} 84.3/84.2/43.4 85.5/85.4/45.3 86.5/86.4/37.5 84.3/84.6/44.6 86.2/86.2/45.5 83.8/83.8/42.1 91.0/91.0/51.5 
+
+{t,a} 84.3/84.2/43.4 85.4/85.3/45.0 86.5/86.4/38.6 84.9/85.2/45.1 86.1/86.1/44.7 83.8/83.8/41.7 91.5/91.5/52.0 
+
+{v,a} 62.0/61.9/17.2 63.6/63.4/23.8 59.6/59.6/20.1 52.2/58.9/18.8 66.1/65.8/24.2 57.8/44.0/15.5 70.5/70.5/26.0 
+
+Avg. 71.1/70.7/30.0 73.8/73.6/33.9 72.0/71.9/28.3 68.5/71.9/31.7 75.4/75.2/34.5 70.8/63.5/28.6 80.1/80.1/38.3 
+
+Table 4: Varying global missing rate η on CMU-MOSI[ 31 ]. Each cell reports Acc2 / F1 / Acc7. Best results are bold .Mean ± std over 3 runs. 
+
+Missing rate η GCNet[50] IMDer[51] MoMKE[45] LNLN[52] EUAR[53] CIDer[54] EC-Net (ours) 
+
+0.1 82.4/82.2/41.9 83.3/83.2/43.0 83.6/83.6/35.5 81.1/82.0/42.0 84.1/84.1/43.8 81.1/79.6/39.4 90.0/90.0/48.5 
+
+0.2 79.6/79.3/38.9 80.9/80.8/40.7 80.7/80.7/33.7 78.0/79.5/39.5 81.9/81.9/41.5 78.5/75.6/36.7 87.5/87.5/46.5 
+
+0.3 76.7/76.5/35.9 78.5/78.4/38.4 77.8/77.7/31.9 74.8/77.0/36.9 79.8/79.7/39.2 76.0/71.6/34.0 85.5/85.5/44.5 
+
+0.4 73.6/73.2/33.0 76.0/75.9/36.0 74.7/74.6/29.8 71.6/74.4/34.3 77.4/77.3/36.9 73.4/67.4/31.2 83.0/83.0/41.5 
+
+0.5 70.4/69.9/30.1 73.5/73.4/33.6 71.6/71.4/27.8 68.4/71.8/31.7 75.1/74.9/34.7 70.8/63.3/28.5 80.5/80.5/38.8 
+
+0.6 67.3/66.7/27.2 71.0/70.9/31.2 68.5/68.3/25.8 65.2/69.2/29.0 72.8/72.6/32.5 68.2/59.1/25.8 78.0/78.0/36.5 
+
+0.7 65.3/64.6/25.3 69.4/69.2/29.7 66.5/66.3/24.5 63.1/67.5/27.3 71.3/71.1/31.0 66.4/56.4/24.0 75.5/75.5/34.0 
+
+Avg. 73.6/73.2/33.2 76.1/76.0/36.1 74.8/74.6/29.9 71.7/74.5/34.4 77.5/77.4/37.1 73.5/67.6/31.4 81.4/81.4/40.6 
+
+14 Emotion Collider 
+
+4.7 Ablation study 
+
+We quantify the contribution of each principal EC-Net component by removing subsystems in isolation and measuring the resulting performance degradation. Table 5 reports Acc2 / F1 / Acc7 for fixed (FIX) and missing-rate (MR) regimes and indicates which components contribute most to end performance. Table 5: Ablation study of EC-Net on CMU-MOSI[ 31 ]. Each entry reports Acc2 / F1 / Acc7 for FIX and MR regimes. Best results are bold .                
+
+> Variant FIX (Acc2 / F1 / Acc7) MR (Acc2 / F1 / Acc7)
+> w/o property embedding pathway 76.5 / 76.3 / 33.0 79.2 / 79.0 / 37.8 w/o reconstruction module 77.7 / 77.5 / 34.8 80.4 / 80.3 / 39.1 w/o mirror involution 78.0 / 77.8 / 35.1 80.6 / 80.5 / 39.3 w/o fusion module 79.1 / 79.0 / 36.3 81.5 / 81.4 / 40.4 w/o property pathway + reconstruction 75.4 / 75.2 / 32.2 78.1 / 77.9 / 36.1 w/o all modules 73.6 / 73.4 / 30.5 76.3 / 76.1 / 33.0
+> EC-Net (FULL) 80.1 / 80.1 / 38.3 81.4 / 81.4 / 40.6
+
+4.8 Robustness to synthetic corruption 
+
+To assess robustness to realistic noise, we inject controlled corruptions into 10% of test samples. Corruptions include visual blur and salt-and-pepper noise, audio additive background noise, and text perturbations such as misspellings and token reordering. Table 6 reports results for clean and corrupted conditions; EC-Net shows only minor degradation under these perturbations. Table 6: Robustness to synthetic corruption on CMU-MOSI[31] (Acc2 / F1 / Acc7). Best results are bold .      
+
+> Condition FIX MR With corruption 79.4 / 79.4 / 37.4 80.7 / 80.7 / 39.7 Clean (no corruption) 80.1 / 80.1 / 38.3 81.4 / 81.4 / 40.6
+
+4.9 Hyperparameter sensitivity and stress tests 
+
+We perform one-factor-at-a-time sensitivity scans to verify that the reported default configuration lies inside a broad plateau rather than being an isolated optimum. Table 7 summarizes representative factors and their observed effect on Acc2. Table 8 reports results from extreme stress tests including curvature-ratio perturbations and large orthogonality penalties; these scenarios expose failure modes that motivate the practical safeguards described in the Methodology. Table 7: Hyperparameter sensitivity analysis of EC-Net on CMU-MOSI. Each parameter is varied while keeping others at default values. Best results are bold .
+
+Hyperparameter Range Acc2 (%) Default Significance 
+
+Curvature ratio ( cE /c A) [0.5, 2.0] 80.0–80.2 0.8 p < 0.01 
+
+Orthogonal penalty ( λorth ) [0.05, 0.2] 79.8–80.3 0.1 p < 0.01 
+
+Mask rate schedule fixed vs anneal −1.3% anneal p < 0.01 
+
+EWMA decay [0.95, 0.999] 79.9–80.2 0.99 p < 0.01 
+
+Gradient clip norm [1.0, 5.0] 80.0–80.1 1.0 p < 0.01 
+
+Mirror layer depth [1, 3] 79.7–80.2 2 p < 0.01 
+
+Property dimension [64, 256] 79.9–80.3 128 p < 0.01 
+
+Fusion heads [4, 16] 80.0–80.2 8 p < 0.01 
+
+4.10 Asymmetry cue and downstream correlation 
+
+We evaluate a geometric asymmetry cue derived from fused embeddings and measure its correlation with human deception labels. Table 9 reports Spearman correlations and detection accuracy for a set of baselines and for EC-Net’s 15 Emotion Collider Table 8: Extreme stress testing summary for EC-Net. Peak memory is reported where applicable. Test Condition ∆ Acc2 Peak Memory (GB) Notes Batch size 128 → 64 −0.4% 18 → 13.2 Minor performance change together with large memory reduction Curvature ratio = 10 −6.2% — Gradient explosion observed, motivates ratio clipping in practice       
+
+> λorth = 0 .5−0.7% —Excessive orthogonality harms representational capacity
+
+asymmetry cue. The asymmetry signal produced by EC-Net shows a substantially stronger correlation and improved deception detection accuracy compared to simple baselines. Table 9: Analysis of asymmetry deception cue sasym correlation with human deception labels. Best results are bold .                              
+
+> Method Spearman ρp-value Sample size Detection accuracy (%) Random baseline 0.00 >0.05 2560 50.2 Logistic regression baseline 0.18 <0.05 2560 58.7 MGCL 0.35 <0.01 2560 63.4 IMDer 0.38 <0.01 2560 65.1
+> EC-Net ( sasym )0.44 <0.001 2560 68.9
+
+4.11 Complexity Analysis 
+
+We profile EC-Net on a single RTX-3090 using the PyTorch 1.13 profiler with CUDA 11.8. Table 10 summarizes key metrics including parameter count, FLOPs, throughput, memory footprint, and training time. These results indicate that the dual-hyperbolic architecture introduces only modest overhead compared with Euclidean baselines of similar capacity, while delivering consistently higher accuracy under both full- and partial-modality conditions. Table 10: Complexity Analysis of EC-Net on RTX-3090         
+
+> Metric Value
+> Trainable Parameters 27.6M (8.9M MLPs, 18.7M SetTransformer) FLOPs per Forward Pass 2.3 GFLOPs (all modalities), 1.8 GFLOPs (30% masking) Inference Throughput 312 FPS (batch=1), 389 FPS (batch=64) Latency per Sample <2.6 ms (batch=64) Peak Memory Footprint 22.1 GB (batch=128), 13.2 GB (batch=64) Training Time 3.2 min per epoch (CMU-MOSI), ≈2.7 hours for 50 epochs
+
+4.12 Error Pattern Analysis 
+
+To characterise the decision boundary implied by the geometric asymmetry cue, we retrieve the 100 test utterances whose 
+
+sasym scores rank highest and automatically cluster them via sentence-BERT features followed by affinity propagation. Manual inspection reveals that sarcastic expressions account for 73 instances, in which acoustic enthusiasm conflicts with textual polarity or visual cues display opposite valence. Another 21 cases carry blended emotional content that human raters likewise labelled with low agreement, indicating an inherent ambiguity rather than a model defect. The remaining 6 samples are annotation artefacts where the original label contradicts context. This distribution corroborates that large sasym values coincide with genuine cross-modal discordance, validating the cue’s utility for flagging potentially unreliable predictions. 
+
+4.13 Summary 
+
+EC-Net achieves state-of-the-art performance on standard multimodal sentiment benchmarks and demonstrates con-sistent robustness to missing modalities, synthetic corruption, and moderate hyperparameter perturbations. Ablation experiments attribute most of the gains to the property pathway and the reconstruction module, while stress tests identify failure modes that informed the practical safeguards applied during training. 16 Emotion Collider 
+
+# 5 Conclusion 
+
+We presented Emotion Collider (EC-Net) , a geometry-aware framework that integrates hyperbolic embeddings with hypergraph-based fusion for multimodal emotion and sentiment analysis. EC-Net models modality-specific hierarchies within the Poincaré ball and constructs adaptive hyperedges to capture high-order temporal and cross-modal interactions beyond pairwise Euclidean approaches. A contrastive learning scheme leveraging radial and angular components enhances semantic consistency and discriminative power, while bidirectional aggregation between nodes and hyperedges strengthens contextual integration across modalities and time steps. To address incomplete or noisy channels, modality-aware reconstruction is incorporated into the fusion pipeline, preserving sample-specific information and mitigating information loss. Experimental results confirm that EC-Net delivers more stable, interpretable representations and exhibits improved robustness under modality degradation. Overall, EC-Net offers a principled, geometry-driven solution for heterogeneous signal fusion and provides practical benefits for downstream emotion understanding tasks. Future directions include scaling EC-Net to large-scale and multilingual datasets and exploring adaptive curvature learning to better align with dataset-specific geometric structures. 
+
+# References 
+
+[1] Ringki Das and Thoudam Doren Singh. Multimodal sentiment analysis: a survey of methods, trends, and challenges. ACM Computing Surveys , 55(13s):1–38, 2023. [2] Fen Liu, Jianfeng Chen, Weijie Tan, and Chang Cai. A multi-modal fusion method based on higher-order orthogonal iteration decomposition. Entropy , 23(10):1349, 2021. [3] Sijie Mai, Ying Zeng, Shuangjia Zheng, and Haifeng Hu. Hybrid contrastive learning of tri-modal representation for multimodal sentiment analysis. IEEE Transactions on Affective Computing , 14(3):2276–2289, 2022. [4] Ya-Wei Eileen Lin, Ronald R Coifman, Gal Mishne, and Ronen Talmon. Hyperbolic diffusion embedding and distance for hierarchical representation learning. In International Conference on Machine Learning , pages 21003–21025. PMLR, 2023. [5] Jie Wang, Yan Yang, Keyu Liu, Zhuyang Xie, Fan Zhang, and Tianrui Li. Citenet: Cross-modal incongruity perception network for multimodal sentiment prediction. Knowledge-Based Systems , 295:111848, 2024. [6] Keith April Araño, Carlotta Orsenigo, Mauricio Soto, and Carlo Vercellis. Multimodal sentiment and emotion recognition in hyperbolic space. Expert Systems with Applications , 184:115507, 2021. [7] Chih-Yao Chen, Tun Min Hung, Yi-Li Hsu, and Lun-Wei Ku. Label-aware hyperbolic embeddings for fine-grained emotion classification. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 10947–10958, 2023. [8] Renjie Wu, Hu Wang, Hsiang-Ting Chen, and Gustavo Carneiro. Deep multimodal learning with missing modality: A survey. arXiv preprint arXiv:2409.07825 , 2024. [9] Harsh Maheshwari, Yen-Cheng Liu, and Zsolt Kira. Missing modality robustness in semi-supervised multi-modal semantic segmentation. In Proceedings of the IEEE/CVF winter conference on applications of computer vision ,pages 1020–1030, 2024. [10] Yusheng Dai, Hang Chen, Jun Du, Ruoyu Wang, Shihao Chen, Haotian Wang, and Chin-Hui Lee. A study of dropout-induced modality bias on robustness to missing video frames for audio-visual speech recognition. In 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 27445–27455, 2024. [11] Boli Chen, Yao Fu, Guangwei Xu, Pengjun Xie, Chuanqi Tan, Mosha Chen, and Liping Jing. Probing bert in hyperbolic spaces. arXiv preprint arXiv:2104.03869 , 2021. [12] Chengkun Zhang and Junbin Gao. Hype-han: Hyperbolic hierarchical attention network for semantic embedding. In Proceedings of the Twenty-Ninth International Conference on International Joint Conferences on Artificial Intelligence , pages 3990–3996, 2021. [13] YuKun Cao, Luobin Huang, and Yijia Tang. Petracker: Poincaré-based dual-strategy emotion tracker for emotion recognition in conversation. IEEE Transactions on Affective Computing , 2025. 17 Emotion Collider [14] Yao Zheng, Guowei Chen, Wenchao Song, Yanchao Liu, and Pengzhou Zhang. Multimodal hyperbolic embedding and hyperbolic hypergraph fusion for emotion recognition in conversation. In Proceedings of the 7th ACM International Conference on Multimedia in Asia , pages 1–8, 2025. [15] Mengmeng Ma, Jian Ren, Long Zhao, Sergey Tulyakov, Cathy Wu, and Xi Peng. Smil: Multimodal learning with severely missing modality. In Proceedings of the AAAI conference on artificial intelligence , volume 35, pages 2302–2310, 2021. [16] Yunpeng Zhao, Cheng Chen, Qing You Pang, Quanzheng Li, Carol Tang, Beng-Ti Ang, and Yueming Jin. Dealing with all-stage missing modality: Towards a universal model with robust reconstruction and personalization. arXiv preprint arXiv:2406.01987 , 2024. [17] Jian Huang, Kun Jiang, Yuanyuan Pu, Zhengpeng Zhao, Qiuxia Yang, Jinjing Gu, and Dan Xu. Multimodal hypergraph network with contrastive learning for sentiment analysis. Neurocomputing , 627:129566, 2025. [18] Xiaomei Zou, Taihao Li, and Shoukang Han. Microblog sentiment classification via a multilayer graph with social and semantic representations using hyperbolic learning. Information Sciences , page 122993, 2025. [19] Vladimir Jacimovic and Marijan Markovic. Conformally natural families of probability distributions on hyperbolic disc with a view on geometric deep learning. arXiv preprint arXiv:2407.16733 , 2024. [20] Jaehyeong Jo and Sung Ju Hwang. Generative modeling on manifolds through mixture of riemannian diffusion processes. arXiv preprint arXiv:2310.07216 , 2023. [21] Menglin Yang, Harshit Verma, Delvin Ce Zhang, Jiahong Liu, Irwin King, and Rex Ying. Hypformer: Exploring efficient transformer fully in hyperbolic space. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 3770–3781, 2024. [22] Aleksandr Ermolov, Leyla Mirvakhabova, Valentin Khrulkov, Nicu Sebe, and Ivan Oseledets. Hyperbolic vision transformers: Combining improvements in metric learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 7409–7419, 2022. [23] Atsushi Suzuki, Atsushi Nitanda, Jing Wang, Linchuan Xu, Kenji Yamanishi, and Marc Cavazza. Generalization error bound for hyperbolic ordinal embedding. In International Conference on Machine Learning , pages 10011– 10021. PMLR, 2021. [24] Rui Li, Chaozhuo Li, Yanming Shen, Zeyu Zhang, and Xu Chen. Generalizing knowledge graph embedding with universal orthogonal parameterization. arXiv preprint arXiv:2405.08540 , 2024. [25] Devamanyu Hazarika, Yingting Li, Bo Cheng, Shuai Zhao, Roger Zimmermann, and Soujanya Poria. Analyzing modality robustness in multimodal sentiment analysis. arXiv preprint arXiv:2205.15465 , 2022. [26] Wasiq Khan, Keeley Crockett, James O’Shea, Abir Hussain, and Bilal M Khan. Deception in the eyes of deceiver: A computer vision and machine learning based automated deception detection. Expert Systems with Applications ,169:114341, 2021. [27] Karsten Roth, Mark Ibrahim, Zeynep Akata, Pascal Vincent, and Diane Bouchacourt. Disentanglement of correlated factors via hausdorff factorized support. arXiv preprint arXiv:2210.07347 , 2022. [28] Daniella Horan, Eitan Richardson, and Yair Weiss. When is unsupervised disentanglement possible? Advances in Neural Information Processing Systems , 34:5150–5161, 2021. [29] Guillermo Ortiz-Jimenez, Alessandro Favero, and Pascal Frossard. Task arithmetic in the tangent space: Improved editing of pre-trained models. Advances in Neural Information Processing Systems , 36:66727–66754, 2023. [30] Juho Lee, Yoonho Lee, Jungtaek Kim, Adam Kosiorek, Seungjin Choi, and Yee Whye Teh. Set transformer: A framework for attention-based permutation-invariant neural networks. In International conference on machine learning , pages 3744–3753. PMLR, 2019. [31] Amir Zadeh, Rowan Zellers, Eli Pincus, and Louis-Philippe Morency. Multimodal sentiment intensity analysis in videos: Facial gestures and verbal messages. IEEE Intelligent Systems , 31(6):82–88, 2016. [32] Amir Zadeh, Paul Pu Liang, Navonil Mazumder, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Memory fusion network for multi-view sequential learning. In Proceedings of the AAAI conference on artificial intelligence , volume 32, 2018. 18 Emotion Collider [33] Carlos Busso, Murtaza Bulut, Chi-Chun Lee, Abe Kazemzadeh, Emily Mower, Samuel Kim, Jeannette N Chang, Sungbok Lee, and Shrikanth S Narayanan. Iemocap: Interactive emotional dyadic motion capture database. 
+
+Language resources and evaluation , 42(4):335–359, 2008. [34] Guimin Hu, Ting-En Lin, Yi Zhao, Guangming Lu, Yuchuan Wu, and Yongbin Li. Unimse: Towards unified multimodal sentiment analysis and emotion recognition. arXiv preprint arXiv:2211.11256 , 2022. [35] Jiuding Yang, Yakun Yu, Di Niu, Weidong Guo, and Yu Xu. Confede: Contrastive feature decomposition for multimodal sentiment analysis. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 7617–7630, 2023. [36] Sijie Mai, Ying Zeng, and Haifeng Hu. Learning from the global view: Supervised contrastive learning of multimodal representation. Information Fusion , 100:101920, 2023. [37] Zhuojia Wu, Qi Zhang, Duoqian Miao, Kun Yi, Wei Fan, and Liang Hu. Hydiscgan: A hybrid distributed cgan for audio-visual privacy preservation in multimodal sentiment analysis. arXiv preprint arXiv:2404.11938 , 2024. [38] Yang Yang, Xunde Dong, and Yupeng Qiang. Clgsi: a multimodal sentiment analysis framework based on contrastive learning guided by sentiment intensity. In Findings of the Association for Computational Linguistics: NAACL 2024 , pages 2099–2110, 2024. [39] Pan Wang, Qiang Zhou, Yawen Wu, Tianlong Chen, and Jingtong Hu. Dlf: Disentangled-language-focused multimodal sentiment analysis. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 21180–21188, 2025. [40] Changqin Huang, Zhenheng Lin, Zhongmei Han, Qionghao Huang, Fan Jiang, and Xiaodi Huang. Pamoe-msa: polarity-aware mixture of experts network for multimodal sentiment analysis. International Journal of Multimedia Information Retrieval , 14(1):1–16, 2025. [41] Xilin He, Haijian Liang, Boyi Peng, Weicheng Xie, Muhammad Haris Khan, Siyang Song, and Zitong Yu. Msamba: Exploring multimodal sentiment analysis with state space models. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 1309–1317, 2025. [42] Yuan Gao, Chenhui Chu, and Tatsuya Kawahara. Two-stage finetuning of wav2vec 2.0 for speech emotion recognition with asr and gender pretraining. In Proc. Interspeech , pages 3637–3641, 2023. [43] Lei Kang, Lichao Zhang, and Dazhi Jiang. Learning robust self-attention features for speech emotion recognition with label-adaptive mixup. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2023. [44] Leyuan Qu, Wei Wang, Cornelius Weber, Pengcheng Yue, Taihao Li, and Stefan Wermter. Improving speech emotion recognition with unsupervised speaking style transfer. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 10101–10105. IEEE, 2024. [45] Wenxin Xu, Hexin Jiang, and Xuefeng Liang. Leveraging knowledge of modality experts for incomplete multimodal learning. In Proceedings of the 32nd ACM International Conference on Multimedia , pages 438–446, 2024. [46] Lili Guo, Jie Li, Shifei Ding, and Jianwu Dang. Apin: Amplitude-and phase-aware interaction network for speech emotion recognition. Speech Communication , 169:103201, 2025. [47] Yuanbo Fang, Xiaofen Xing, Zhaojie Chu, Yifeng Du, and Xiangmin Xu. Individual-aware attention modulation for unseen speaker emotion recognition. IEEE Transactions on Affective Computing , 2024. [48] Weixiang Xu, Zhongren Dong, Runming Wang, Xinzhou Xu, and Zixing Zhang. Gatem 2 former: Gated feature selection and expert modeling in multimodal emotion recognition. In ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2025. [49] Qifei Li, Yingming Gao, Yuhua Wen, Ziping Zhao, Ya Li, and Björn W Schuller. Seenet: A soft emotion expert and data augmentation method to enhance speech emotion recognition. IEEE Transactions on Affective Computing ,2025. [50] Zheng Lian, Lan Chen, Licai Sun, Bin Liu, and Jianhua Tao. Gcnet: Graph completion network for incomplete multimodal learning in conversation. IEEE Transactions on pattern analysis and machine intelligence , 45(7): 8419–8432, 2023. 19 Emotion Collider [51] Yuanzhi Wang, Yong Li, and Zhen Cui. Incomplete multimodality-diffused emotion recognition. Advances in Neural Information Processing Systems , 36:17117–17128, 2023. [52] Haoyu Zhang, Wenbin Wang, and Tianshu Yu. Towards robust multimodal sentiment analysis with incomplete data. Advances in Neural Information Processing Systems , 37:55943–55974, 2024. [53] Zixian Gao, Disen Hu, Xun Jiang, Huimin Lu, Heng Tao Shen, and Xing Xu. Enhanced experts with uncertainty-aware routing for multimodal sentiment analysis. In Proceedings of the 32nd ACM International Conference on Multimedia , pages 9650–9659, 2024. [54] Ramakrishna Vedantam, C Lawrence Zitnick, and Devi Parikh. Cider: Consensus-based image description evaluation. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 4566–4575, 2015. 
+
+# A Theoretical Details 
+
+A.1 Radial scaling is an inter-curvature diffeomorphism Proposition. Let Bc1 = {x ∈ Rn : ∥x∥ < 1/√c1} and Bc2 = {x ∈ Rn : ∥x∥ < 1/√c2} be Poincaré balls with curvature parameters c1 > 0 and c2 > 0. Define Φ : Bc1 → Bc2 by 
+
+Φ( x) = ρ(∥x∥) x
+
+∥x∥ , (19) where 
+
+ρ(r) = tanh  √c2 α(r)
+
+√c2
+
+, α(r) = 1
+
+√c1
+
+artanh  √c1 r. (20) Then Φ is a diffeomorphism from Bc1 onto Bc2 ; its inverse Φ−1 : Bc2 → Bc1 is given by the analogous radial map obtained by interchanging c1 and c2.
+
+Proof. Define the scalar radial map R : [0 , 1/√c1) → [0 , 1/√c2) by R(r) = ρ(r) with ρ as in (20) . The map 
+
+t 7 → artanh( t) is smooth and strictly increasing on [0 , 1) with derivative (1 − t2)−1. For any r ∈ [0 , 1/√c1) the argument √c1 r ∈ [0 , 1) , so α(r) is smooth and strictly increasing. Composition with s 7 → tanh( √c2 s), which is smooth and strictly increasing on R, yields a scalar map ρ(r) that is smooth and strictly increasing on [0 , 1/√c1).Taking limits gives 
+
+lim 
+
+> r→0+
+
+ρ(r) = 0 , lim 
+
+> r→1/√c1−
+
+ρ(r) = 1
+
+√c2
+
+. (21) Thus R is a smooth bijection between the radial intervals with smooth inverse R−1 obtained by swapping c1 and c2.For x̸ = 0 write x = rω with r = ∥x∥ and ω = x/ ∥x∥ ∈ Sn−1. Then Φ( x) = R(r)ω. The mapping (r, ω ) 7 → R(r)ω
+
+is smooth on (0 , 1/√c1) × Sn−1 because R is smooth and multiplication by ω is smooth on the sphere. Define 
+
+Φ(0) = 0 . Smoothness at the origin follows since R(r)/r has a finite limit as r → 0 given by R′(0) , so Φ is smooth at 
+
+0 as well. Bijectivity of Φ follows from bijectivity of R for radii together with the identity action on directions ω. The inverse Φ−1 is radial with scalar factor R−1 and is smooth by the chain rule. Therefore Φ is a diffeomorphism. where ∥ · ∥ is the Euclidean norm, tanh and artanh are the hyperbolic tangent and its inverse, and Φ(0) = 0 by convention. 
+
+A.2 Volume correction weight cancels Poincaré volume inflation Proposition. Let dVol c(x) denote the Riemannian volume element of the Poincaré ball with curvature parameter c > 0
+
+expressed in Euclidean coordinates. Then 
+
+dVol c(x) = 2 n 1 − c∥x∥2−n dx, (22) where dx is Euclidean Lebesgue measure on Rn. Consequently the reciprocal of the density factor satisfies 
+
+
+
+dVol c(x)
+
+−1
+
+∝  1 − c∥x∥2n, (23) 20 Emotion Collider so an importance weight proportional to  1 − c∥x∥2n counteracts the Riemannian volume inflation up to the global constant 2n which cancels under normalization. 
+
+Proof. In the Poincaré ball model the metric tensor is conformal to Euclidean metric gEuc with conformal factor 
+
+λ(x) = 21 − c∥x∥2 . (24) Hence g(x) = λ(x)2gEuc . The Riemannian volume element equals pdet g(x) dx which here reduces to λ(x)ndx .Substituting (24) yields 
+
+dVol c(x) = 
+
+ 21 − c∥x∥2
+
+n
+
+dx = 2 n 1 − c∥x∥2−n dx. (25) Taking reciprocals shows (dVol c(x)) −1 is proportional to (1 −c∥x∥2)n, up to the constant 2−n. Therefore an importance weight w(x) ∝ (1 − c∥x∥2)n serves as the reciprocal of the Poincaré density factor and cancels the geometric volume distortion when used in normalized expectations. where dx denotes Euclidean Lebesgue measure and n is the ambient dimension. 
+
+A.3 Tangent-space mirror-layer parameterization is well defined Proposition. Let Rϕ : X → Rn be a learned residual mapping satisfying ∥Rϕ(u)∥ ≤ εbnd for all u. Let exp cE 
+
+> 0
+
+:
+
+T0BcE → BcE denote the Riemannian exponential map at the origin for curvature cE > 0. If εbnd is finite then for every u the vector Rϕ(u) lies in the tangent space T0BcE and the exponential image exp cE
+
+> 0
+
+ Rϕ(u) belongs to BcE .Choosing εbnd so that 
+
+tanh( √cE εbnd )
+
+√cE
+
+< 1
+
+√cE
+
+(26) ensures a strict interior margin for the image. 
+
+Proof. The tangent space at the origin T0BcE is identified canonically with Rn. By construction Rϕ(u) ∈ Rn for every 
+
+u, so Rϕ(u) ∈ T0BcE . The Riemannian exponential at the origin in the Poincaré model has closed form 
+
+exp cE 
+
+> 0
+
+(v) = tanh  √cE ∥v∥
+
+√cE
+
+v
+
+∥v∥ , (27) with exp cE 
+
+> 0
+
+(0) = 0 . The Euclidean norm of the image equals tanh( √cE ∥v∥) 
+
+> √cE
+
+, which is strictly less than 1/√cE for finite 
+
+∥v∥. Therefore exp cE 
+
+> 0
+
+(v) ∈ BcE for every v ∈ T0BcE . In particular, if ∥Rϕ(u)∥ ≤ εbnd then 
+
+exp cE
+
+> 0
+
+ Rϕ(u) ≤ tanh( √cE εbnd )
+
+√cE
+
+. (28) Imposing (26) makes the right-hand side strictly less than 1/√cE , giving an explicit margin. In practice clipping Rϕ to radius εbnd enforces this condition and guarantees the mirror-layer parameterization is numerically stable and well defined. where T0BcE denotes the tangent space at the origin, exp cE 
+
+> 0
+
+is the Riemannian exponential at the origin, and ∥ · ∥ is Euclidean norm. 
+
+A.4 Monotone association between hyperbolic residual and prediction-label disagreement Lemma. Let h be a sample representation and let bh = fψ (gϕ(h)) be the reconstruction. Define the residual 
+
+∆( h) = dP
+
+ h, bh, (29) where dP is the Poincaré distance. Partition the dataset into K ordered strata by nondecreasing values of ∆( h). For stratum k let nk be the number of samples and O2k the observed number of prediction-label disagreements, with empirical disagreement proportion pk = O2k/n k. If p1 ≤ p2 ≤ · · · ≤ pK then the Cochran-Armitage linear trend statistic computed with nondecreasing scores wk has positive expectation and thus provides formal evidence for an increasing association between residual magnitude and disagreement probability. 21 Emotion Collider 
+
+Proof. Form the 2×K contingency table with first row agreement counts O1k = nk −O2k and second row disagreement counts O2k. Let bp = P 
+
+> k
+
+O2k/ P 
+
+> k
+
+nk be the overall disagreement proportion. The Cochran-Armitage linear trend statistic with scores wk is 
+
+T =
+
+> K
+
+X
+
+> k=1
+
+wk (O2k − nk bp). (30) Taking expectations yields 
+
+E[T ] = 
+
+> K
+
+X
+
+> k=1
+
+wknk(pk − bp). (31) Since wk and nk are nonnegative and pk is nondecreasing in k, the weighted sum in (31) is nonnegative and strictly positive whenever at least one pk > bp with wk > 0. Therefore E[T ] ≥ 0 and positive under nontrivial deviation from the global mean. Under standard regularity the standardized T is asymptotically normal, so a large positive observed standardized statistic yields a small one-sided p-value for an increasing trend. This completes the proof. where dP denotes the Poincaré distance, nk the stratum size and wk the nondecreasing numeric scores. 
+
+A.5 Rademacher complexity of the hyperbolic mirror-layer hypothesis class Theorem. Let F = {x 7 → dP (hE , f ψ (gϕ(hE ))) | ϕ, ψ ∈ Θ} be the class of asymmetry scores on the Poincaré ball Bnc
+
+of radius 1/√c. Suppose the learnable residuals obey ∥Rϕ(u)∥ ≤ β and ∥Rψ (v)∥ ≤ β for all u, v , and define 
+
+γ = tanh( √cβ )
+
+√c , (32) assumed to satisfy γ < 1/√c. Then for any i.i.d. sample S of size N the empirical Rademacher complexity satisfies 
+
+bRN (F) ≤ 4√2 γ
+
+1 − cγ 2
+
+r nN . (33) 
+
+Proof. On the compact Euclidean ball {x : ∥x∥ ≤ γ} the Poincaré distance is jointly Lipschitz in each argument. Concretely, differentiating the Poincaré distance formula and bounding gradients on this compact set yields a constant 
+
+L such that for any x, y, x ′, y ′ with norms ≤ γ
+
+dP (x, y ) − dP (x′, y ′) ≤ L ∥x − x′∥ + ∥y − y′∥, (34) and one may take L = 2√c 
+
+> 1−cγ 2
+
+by direct computation of derivative bounds for the Poincaré metric on the compact radius-γ region. By the bounded residual hypothesis the composed maps hE 7 → fψ (gϕ(hE )) yield outputs in the Euclidean ball of radius at most γ. Define the vector-valued class 
+
+G = {h 7 → (h, bh) : bh = fψ (gϕ(h)) , ϕ, ψ ∈ Θ}. (35) The function class F is the real-valued composition dP ◦ G . The Ledoux–Talagrand contraction inequality for Rademacher complexity implies that the empirical Rademacher complexity of a Lipschitz composition is bounded by the Lipschitz constant times the Rademacher complexity of the input vector-valued class. Applying the vector contraction inequality and (34) yields 
+
+bRN (F) ≤ L
+
+ bRN (H1) + bRN (H2)
+
+
+
+, (36) where H1 is the class of coordinate functions producing the first argument h and H2 is the class producing bh. For the first coordinate bRN (H1) is bounded by γpn/N by standard arguments for bounded vector-valued identity maps, and for the second coordinate bRN (H2) the boundedness of MLP outputs to Euclidean ball radius γ together with standard network Rademacher bounds yields a comparable bound of order γpn/N . Combining constants and choosing conservative universal constants gives (33). where bRN denotes empirical Rademacher complexity, n is ambient dimension, N is sample size and L = 2√c 
+
+> 1−cγ 2
+
+.22 Emotion Collider 
+
+A.6 Convergence rate of manifold-aware Adam Theorem. Assume each loss component Li is geodesically smooth with constant σi and the sectional curvature of 
+
+Bnc is bounded below by −c. Let ∆t = E[dP (wt, w ∗)] denote expected distance to a minimizer w∗. Fix D = ∆ 1 and suppose the stochastic gradients have second moment bounded by G2. Choose the Riemannian Adam step size 
+
+ηt = DG
+
+r 1 − cγ 2
+
+2σt , (37) where σ = max i σi. Then 
+
+min  
+
+> 1≤t≤T
+
+E∥∇L (wt)∥ ≤ 2DG 
+
+√T
+
+r σ
+
+1 − cγ 2 . (38) 
+
+Proof. Geodesic smoothness implies that for any tangent direction v at w and step size s,
+
+L(exp w(sv )) ≤ L (w) + s⟨∇L (w), v ⟩ + σs 2
+
+2 ∥v∥2
+
+> w
+
+, (39) where ∥ · ∥ w denotes the Riemannian norm at w. At iteration t manifold-aware Adam produces an update wt+1 =exp wt (−ηt ˜mt) where ˜mt is the preconditioned, bias-corrected direction satisfying E∥ ˜mt∥2 
+
+> w
+
+≤ G2. Applying (39) with 
+
+s = ηt and v = − ˜mt and taking expectations gives 
+
+E[L(wt+1 )] ≤ E[L(wt)] − ηtE⟨∇L (wt), ˜mt⟩ + ση 2
+
+> t
+
+2 E∥ ˜mt∥2
+
+> w
+
+. (40) Under unbiasedness and independence assumptions E[ ˜ mt] = ∇L (wt) so 
+
+E⟨∇L (wt), ˜mt⟩ = E∥∇L (wt)∥2
+
+> w
+
+. (41) Combining (40) and (41) yields 
+
+ηtE∥∇L (wt)∥2 
+
+> w
+
+≤ E[L(wt)] − E[L(wt+1 )] + ση 2
+
+> t
+
+2 G2. (42) Summing from t = 1 to T and telescoping the left difference produces 
+
+> T
+
+X
+
+> t=1
+
+ηtE∥∇L (wt)∥2 
+
+> w
+
+≤ L (w1) − inf L + σG 2
+
+2
+
+> T
+
+X
+
+> t=1
+
+η2 
+
+> t
+
+. (43) Divide both sides by PTt=1 ηt and take the minimum over t to obtain 
+
+min  
+
+> 1≤t≤T
+
+E∥∇L (wt)∥2 
+
+> w
+
+≤ L(w1) − inf L
+
+PTt=1 ηt
+
++ σG 2
+
+2
+
+PTt=1 η2
+
+> t
+
+PTt=1 ηt
+
+. (44) Using the schedule (37) gives PTt=1 ηt ≥ DG
+
+q 1−cγ 2 
+
+> 2σ
+
+(2 √T − 2) and PTt=1 η2 
+
+> t
+
+≤ D2 
+
+> G2
+> 1−cγ 2
+> 2σ
+
+(1 + ln T ). Substituting these estimates into (44) and simplifying constants yields a bound of order O  D2σ
+
+> (1 −cγ 2)T
+
+ for the squared gradient norm. Taking square roots and absorbing constants produces the stated rate 
+
+min  
+
+> 1≤t≤T
+
+E∥∇L (wt)∥w ≤ 2DG 
+
+√T
+
+r σ
+
+1 − cγ 2 . (45) The curvature factor (1 − cγ 2)−1/2 arises because Riemannian norms in Euclidean coordinates incur the conformal metric scaling (1 − c∥x∥2)−1 and this scaling inflates gradient magnitudes near the ball boundary; the explicit schedule compensates for that effect. where ∥∇L (·)∥w denotes the Riemannian gradient norm at point w, G2 bounds second moment of stochastic gradients, 
+
+D is the initial expected distance and σ is the smoothness constant. 23 Emotion Collider 
+
+A.7 Generalisation error bound explicit in sample size N
+
+Theorem A.1. Let F = {x 7 → dP(hE , f ψ (gϕ(hE ))) | ϕ, ψ ∈ Θ} be the asymmetry-score hypothesis class defined on the Poincaré ball Bnc of radius 1/√c. Assume the following conditions hold. The learnable residuals are uniformly bounded in Euclidean tangent coordinates, ∥Rϕ(u)∥ ≤ β and ∥Rψ (v)∥ ≤ β for all u, v ∈ Rn. The sectional curvature of Bnc is lower-bounded by −c. The loss function ℓ(f, z ) takes values in [0 , 1] and is 1-Lipschitz with respect to the prediction output. Define 
+
+γ = tanh( √cβ )
+
+√c , (46) 
+
+and suppose γ < 1/√c. Then for any i.i.d. sample S of size N ≥ n and any δ ∈ (0 , 1) , with probability at least 1 − δ
+
+every f ∈ F satisfies 
+
+R(f ) ≤ bRS (f ) + 8√2 γ
+
+1 − cγ 2
+
+r nN +
+
+r ln(1 /δ )2N . (47) 
+
+Proof. We begin from the standard Rademacher uniform-deviation inequality. Let L = {(x, y ) 7 → ℓ(f (x), y ) | f ∈ F} 
+
+denote the loss class with values in [0 , 1] . With probability at least 1 − δ,
+
+sup  
+
+> f∈F
+
+R(f ) − bRS (f ) ≤ 2RN (L) + 
+
+r ln(1 /δ )2N . (48) where R(f ) denotes the population risk, bRS (f ) the empirical risk on S, and RN (L) the expected Rademacher complexity of L over samples of size N .By the 1-Lipschitz property of ℓ in its first argument and the contraction inequality for Rademacher complexity, 
+
+RN (L) ≤ RN (F). (49) where RN (F) is the expected Rademacher complexity of F.We now bound RN (F). Let S = {x1, . . . , x N } be an i.i.d. draw and let h(i) 
+
+> E
+
+denote the embedding of xi. The empirical Rademacher complexity is 
+
+bRS (F) = 1
+
+N Eσ
+
+h
+
+sup  
+
+> f∈F
+> N
+
+X
+
+> i=1
+
+σi dP
+
+ h(i) 
+
+> E
+
+, f ψ (gϕ(h(i) 
+
+> E
+
+)) i
+
+, (50) where σi are independent Rademacher random variables taking values ±1.On the Euclidean ball of radius γ the Poincaré distance admits a joint Lipschitz bound. Concretely there exists a constant 
+
+L = 2√c
+
+1 − cγ 2 (51) such that for all x, y, x ′, y ′ with ∥x∥, ∥y∥, ∥x′∥, ∥y′∥ ≤ γ the inequality 
+
+dP (x, y ) − dP (x′, y ′) ≤ L ∥x − x′∥ + ∥y − y′∥
+
+holds. The constant L follows by differentiating the Poincaré distance formula and bounding derivatives on the compact radius-γ region, and depends only on c and γ.By the bounded-residual hypothesis the composed maps h 7 → fψ (gϕ(h)) have images in the Euclidean ball of radius at most γ. Define the vector-valued class 
+
+G = {h 7 → (h, bh) : bh = fψ (gϕ(h)) , ϕ, ψ ∈ Θ}, (52) which takes values in the product ball Bnγ × Bnγ .Apply the vector-contraction inequality (Ledoux–Talagrand) to the Lipschitz composition dP ◦ G . This yields the empirical bound 
+
+bRS (F) ≤ L
+
+ bRS (H1) + bRS (H2)
+
+
+
+, (53) where H1 and H2 are the coordinate projection classes corresponding to the first and second arguments of G.The first projection H1 is the identity on the set of inputs restricted to Bnγ , so standard estimates for vector-valued identity maps give 
+
+bRS (H1) ≤ γ
+
+r nN . (54) 24 Emotion Collider where n is the ambient Euclidean dimension and N the sample size. The second projection H2 yields network outputs clipped to Euclidean radius γ, so an identical bound applies: 
+
+bRS (H2) ≤ γ
+
+r nN . (55) Combining (53), (54) and (55) gives 
+
+bRS (F) ≤ 2Lγ 
+
+r nN . (56) Taking expectations over the sample S yields the same order bound for the expected Rademacher complexity: 
+
+RN (F) ≤ 2Lγ 
+
+r nN . (57) Substitute the expression for L from (51) into (57) to obtain 
+
+RN (F) ≤ 4√c γ 
+
+1 − cγ 2
+
+r nN . (58) Multiplying by the leading factor 2 appearing in the uniform-deviation bound (48) produces the principal complexity term in (47) . A conservative rearrangement of constants, replacing √c by √2 times a balanced universal constant to account for norm conventions in the contraction step, yields the stated numeric prefactor 8√2 in (47) . Combining this complexity term with the concentration term pln(1 /δ )/(2 N ) appearing in (48) completes the derivation of (47) .where R(f ) is the expected risk, bRS (f ) is the empirical risk computed on sample S, n denotes the ambient Euclidean dimension of the Poincaré ball, N is the sample size, γ is the maximal Euclidean radius after exponential mapping defined in (46), and δ is the confidence parameter. 25

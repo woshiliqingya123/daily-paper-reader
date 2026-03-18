@@ -1,0 +1,965 @@
+Title: A Mixture-of-Experts Model for Multimodal Emotion Recognition in Conversations
+
+URL Source: https://arxiv.org/pdf/2602.23300v1
+
+Published Time: Fri, 27 Feb 2026 02:24:54 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# A Mixture-of-Experts Model for Multimodal Emotion Recognition in Conversations 
+
+Soumya Dutta a, Smruthi Balaji a,b , Sriram Ganapathy a
+
+> aLEAP Lab, Department of Electrical Engineering, IISc Bangalore, Bangalore, 560012, Karnataka, India
+> bMicrosoft, Bangalore, Karnataka, India
+
+Abstract 
+
+Emotion Recognition in Conversations (ERC) presents unique challenges, requir-ing models to capture the temporal flow of multi-turn dialogues and to effectively integrate cues from multiple modalities. We propose Mi xture of Speech-Text 
+
+Experts for Recognition of Emotions (MiSTER-E), a modular Mixture-of-Experts (MoE) framework designed to decouple two core challenges in ERC: modality-specific context modeling and multimodal information fusion. MiSTER-E lever-ages large language models (LLMs) fine-tuned for both speech and text to provide rich utterance-level embeddings, which are then enhanced through a convolutional-recurrent context modeling layer. The system integrates predictions from three experts—speech-only, text-only, and cross-modal—using a learned gating mech-anism that dynamically weighs their outputs. To further encourage consistency and alignment across modalities, we introduce a supervised contrastive loss be-tween paired speech-text representations and a KL-divergence-based regulariza-tion across expert predictions. Importantly, MiSTER-E does not rely on speaker identity at any stage. Experiments on three benchmark datasets—IEMOCAP, MELD, and MOSI—show that our proposal achieves 70 .9% , 69 .5% , and 87 .9% 
+
+weighted F1-scores respectively, outperforming several baseline speech-text ERC systems. We also provide various ablations to highlight the contributions made in the proposed approach. 
+
+Keywords: Mixture-of-Experts, Co-attention models, Multi-modal fusion, Emotion recognition. 
+
+> arXiv:2602.23300v1 [cs.CL] 26 Feb 2026
+
+1. Introduction 
+
+Emotion Recognition in Conversation (ERC) is the task of inferring the emo-tional states of speakers engaged in multi-turn interactions, often involving mul-tiple modalities. As a key component in developing emotionally intelligent and socially aware AI systems, ERC plays a vital role in a wide array of real-world applications—ranging from empathetic dialogue agents and customer service bots to social media monitoring and mental health assessment systems [1, 2, 3]. In conversational settings, emotions are not expressed in isolation; they unfold over time and are communicated through a rich combination of signals, including tex-tual content, vocal prosody, and visual cues. These signals often interact in subtle, context-dependent ways, making it essential to capture both intra-modal dynamics and cross-modal dependencies. The inherently sequential and multimodal nature of conversations, along with the subjective and context-sensitive nature of emo-tions, makes ERC a complex and challenging task in affective computing. A wide range of approaches have been proposed to advance ERC, with notable progress in areas such as contextual modeling of dialogue [4, 5], speaker-aware representations that capture interpersonal dependencies [6, 7], and various strate-gies for multimodal fusion—from simple early concatenation [8] to more sophis-ticated attention-based [9] and tensor-based methods [10]. However, despite this progress, most existing systems adopt monolithic architectures that conflate two fundamentally distinct modeling challenges: (i) capturing the temporal context across multi-turn dialogues, and (ii) performing cross-modal fusion of information from different modalities. This entanglement can limit model performance, espe-cially when training data is scarce—a common scenario in ERC tasks. As a result, such designs often risk overfitting to dataset-specific patterns, rather than learning generalizable emotional cues. This leads us to a central research question: Can architectural modularity—specifically, the decoupling of context modeling from modality fusion—lead to more effective and generalizable emotion recognition in conversations? 
+
+In our earlier study (Dutta et al. [11]), a proposal towards addressing this ques-tion was attempted by developing a hierarchical modeling framework for ERC. This work separates the modeling pipeline into two stages: first, intra-modal con-text modeling, followed by inter-modal fusion. This structure introduces a degree of architectural decoupling and was shown to improve performance. However, a key limitation remains: in cases where there is a substantial performance gap between modalities, the overall system does not add additional value over the best uni-modal system. 2In this work, we introduce Mi xture of Speech-Text Experts for Recognition of Emotions (MiSTER-E), a modular architecture that enforces a combination of experts at the logit (decision) level rather than at the feature level. MiSTER-E adopts a Mixture-of-Experts (MoE) formulation with three independently opti-mized branches: a speech-only contextual expert, a text-only contextual expert, and a multimodal expert. The uni-modal systems capture modality-specific con-versational dynamics using temporal inception networks followed by a recur-rent layer, while the multimodal expert fuses speech and text features via cross-attention and self-attention layers. The outputs from these experts are combined using a gating mechanism, which computes a weighted sum before the softmax normalization. This logit-level fusion enables dynamic expert selection, allowing the model to combine complementary multimodal cues. To further stabilize ex-pert specialization, we incorporate contrastive and KL-based consistency losses, while supervising each expert with focal loss to address class imbalance. In par-ticular, when either modality (speech or text) has a dominant advantage over the other modality (text or speech), our modality decoupling followed by MoE based combination is shown to have a unique fusion advantage compared to other prior works. The following are the contributions from the work: • We propose MiSTER-E, a modular framework for emotion recognition in conversations that separates modality-specific contextual modeling from multimodal integration using a logit-level Mixture-of-Experts architecture. • We show that adaptive, per-utterance expert weighting enables effective handling of modality imbalance, allowing unimodal experts to dominate when cross-modal cues are unreliable. • We incorporate auxiliary training objectives, including a speech-text con-trastive loss and a KL-divergence-based consistency regularization, to sta-bilize expert specialization. • We demonstrate that MiSTER-E achieves state-of-the-art performance on three benchmark ERC datasets—IEMOCAP [12], MELD [13], and CMU-MOSI [14]—without using speaker identity. 
+
+2. Related Work Text embedding extraction : Early approaches to ERC relied on static word em-beddings such as Word2Vec [15] and GloVe [16], to encode utterances [17, 10, 318]. With the advent of transformer-based language models like BERT [19] and RoBERTa [20], ERC systems began adopting contextual encoders [21, 22, 23], re-sulting in improved text features. Recent text-only methods [24, 25] pose ERC as a generative task, where they fine-tune LLMs in an autoregressive manner. How-ever, the efficient use of LLMs when text is used alongside speech is unexplored. Towards this, we adapt LLMs as text encoders for the task of text emotion recog-nition, thereby harnessing the power of these models and enabling fusion with other modalities. 
+
+Speech embedding extraction : Speech features in ERC have traditionally relied on hand-crafted descriptors like OpenSMILE [26] and COVAREP [27], which, while effective, often fail to generalize across datasets with diverse acoustic con-ditions [5, 17]. Recent efforts have moved toward learnable frontends such as LEAF [28] and self-supervised models like HuBERT [29] and wav2vec [30], with demonstrated success [31, 32]. However, the utilization of multi-modal LLMs for ERC is relatively unexplored. Thus, we fine tune large speech language models (SLLMs) directly for emotional inference—an approach that has not been ex-plored for multimodal ERC before. 
+
+MoE in ERC : While Mixture-of-Experts (MoE) architectures have shown promise in scaling both language [33, 34] and vision models [35], their role in ERC has been limited. One recent example, MMGAT-EMO [36], combines MoE with graph attention for emotion modeling. In contrast, we use MoE to structure our model around three specialized experts—speech, text, and fused modalities — ex-plicitly targeting the separation of context modeling and cross-modal fusion. 
+
+Loss functions for ERC : Supervised contrastive learning [37] was introduced for ERC by Li et al.[38] and extended in later works [39, 40], using emotion class prototypes. Some approaches extend this to align modalities—e.g., aligning au-dio and visual cues to textual anchors [41]. In contrast, we adopt a multimodal supervised contrastive loss, where intra- and inter-modality representations of ut-terances belonging to the same emotion class are aligned. We further introduce a consistency loss to encourage agreement among experts, reinforcing modular cooperation. 
+
+LLM-based Context Modeling in ERC : Recent works have explored the use of large language models (LLMs) within speech-processing pipelines for emotion recognition. For example, LLM-based generative error correction frameworks have been proposed to refine ASR outputs and subsequently perform downstream tasks, including emotion recognition [42]. Stepachev et al. [43] leverage outputs from multiple ASR systems along with fixed conversational context windows as inputs to LLMs to improve post-ASR emotion recognition. Furthermore, Zhang 4SALMONN  
+
+> 7B
+> Avg.
+> Pool FC
+
+si1 FC 
+
+es 
+
+> i1
+> LLaMA-3.1-
+> 8B
+> Avg.
+> Pool FC
+
+ti1 FC 
+
+et
+
+> i1
+> Excuse me
+> Excuse me
+> Yeah
+> Is there a
+> problem?
+
+si1
+
+si2
+
+si3
+
+ti1
+
+ti2
+
+ti3
+
+> Speech
+> Embed.
+> Text
+> Embed.
+> Context
+> Addition
+> Network
+
+es
+
+> i1
+
+es
+
+> i2
+
+es
+
+> i3
+
+et
+
+> i1
+
+et
+
+> i2
+
+et
+
+> i3
+> Multimodal
+> Network
+> Context
+> Addition
+> Network
+
+ ̂ 
+
+ys
+
+> i1
+
+ ̂ 
+
+ys
+
+> i2
+
+ ̂ 
+
+ys
+
+> i3
+
+ ̂ 
+
+yt
+
+> i1
+
+ ̂ 
+
+yt
+
+> i2
+
+ ̂ 
+
+yt
+
+> i3
+
+ ̂ 
+
+ym
+
+> i1
+
+ ̂ 
+
+ym
+
+> i2
+
+ ̂ 
+
+ym
+
+> i3
+> MoE
+> gating
+
+ ̂ 
+
+yi1 ̂ 
+
+yi2 ̂ 
+
+yi3
+
+> (b) MiSTER-E pipeline
+> (a) Embedding Extraction
+> Speech
+> Embed.
+> Text
+> Embed.
+> Emo. Label
+> Emo. Label
+
+Figure 1: (a) Training of the unimodal feature extraction module (Sec. 3.2) (b) The entire pipeline of MiSTER-E. The speech and text embedding modules are frozen during training of the rest of the pipeline. Two context addition networks (Sec. 3.3.1) are trained for the two modalities along with a multimodal network (Sec. 3.3.2). Finally, a mixture of experts gating network (Sec. 3.4) is trained to predict the emotion category for each utterance. 
+
+et al. [44] demonstrate that careful selection of contextual utterances can enhance emotion recognition performance, even when transcripts are derived from noisy ASR systems. These approaches highlight the growing role of LLMs in contextual and post-ASR emotion recognition settings. In contrast, MiSTER-E incorporates LLMs as embedding encoders within a modular mixture-of-experts framework, where modality-specific contextual modeling and multimodal fusion are explic-itly decoupled and integrated at the decision level. 
+
+3. Proposed Method 
+
+A block diagram of our proposed method is shown in Fig. 1. 
+
+3.1. Problem Description 
+
+Let us consider an ERC dataset D consisting of P conversations, C = {c1, c2,
+
+c3, . . . , cP }, where each conversation ci consists of a set of utterances, Ui =
+
+5Symbol Description 
+
+D Emotion Recognition in Conversations (ERC) dataset 
+
+P Number of conversations in the dataset 
+
+C = {c1, c2, . . . , cP } Set of all conversations in D
+
+ci The i-th conversation 
+
+Ui = ( ui1, ui2, . . . , uiN i ) Sequence of utterances in conversation ci
+
+Ni Number of utterances in conversation ci
+
+uik The k-th utterance in conversation ci
+
+sik Speech modality of utterance uik 
+
+tik Text modality of utterance uik 
+
+yik Emotion label corresponding to utterance uik 
+
+Y Set of emotion categories in the dataset 
+
+yi = ( yi1, y i2, . . . , y iN i ) Sequence of emotion labels for conversation ci
+
+esik , etik Speech and text embeddings for utterance uik 
+
+ˆysik , ˆytik , ˆymik Pre-softmax logits from speech, text, and multimodal experts 
+
+ˆyik Final fused logit after mixture-of-experts gating 
+
+βik Mixture-of-experts weights for utterance uik 
+
+ˆpsik , ˆptik , ˆpmik Class probability distributions for speech, text and multimodal experts 
+
+Li 
+
+> CAN
+
+Focal loss for unimodal context addition networks 
+
+Li 
+
+> multi
+
+Multimodal classification and contrastive loss 
+
+Li 
+
+> moe
+
+MoE gating loss with KL-divergence consistency regularization 
+
+Ltot Overall training objective 
+
+Table 1: Notations used in the problem formulation and model description. 
+
+{ui1, ui2, , . . . , uiN i }, where Ni refers to the number of utterances in the conversa-tion ci. In this work, only the speech and text modalities are considered, which is notated as uik = {sik , tik }, k = 1 ..N i, where sik and tik are speech and text data respectively. Each utterance uik is associated with a corresponding emotion label 
+
+yik ∈ Y , with Y denoting the label set of emotion categories in D. The task of ERC is to map a sequence of utterances {ui1, ui2, . . . , uiN i } to their correspond-ing labels yi = {yi1, y i2, . . . , y iN i }. A summary of these notations is shown in Table 1. 
+
+3.2. Unimodal Feature Extraction 
+
+Text embeddings : While large language models (LLMs) excel in text gener-ation, their use in emotion recognition has been limited. Prior work typically uses them in autoregressive mode or as frozen feature extractors [45]. In this work, we fine-tune an LLM—specifically, LLaMA-3.1-8B —to act as a text encoder rather than a generator. Each utterance transcript tik is tokenized and processed through the LLM. Token-level hidden states are then pooled and passed 6through a two-layer feedforward classifier trained with task-specific supervision. To preserve the pretraining knowledge while enabling efficient adaptation, we ap-ply LoRA [46] to fine-tune the weights. We denote the resulting text embedding as: 
+
+etik = Text-Embed (tik ) (1) where etik is extracted from the first fully connected layer of the classifier. 
+
+Speech embeddings : For speech, we adopt a similar approach using SALMONN -7B [47], a speech large language model (SLLM) comprising a speech encoder, Q-former [48], and an LLM backbone. For ERC, we fine-tune this model by up-dating the Q-former, the LLM, and a classification head with LoRA. This allows the system to learn emotionally salient acoustic patterns while retaining the se-mantic features of the LLM backbone. Given a speech signal sik , we extract its representation as: 
+
+esik = Speech-Embed (sik ) (2) where the embedding is taken from the first fully connected layer of the speech classification head. Comparisons with alternative LLM and SLLM variants are provided in Sec. 4.8. 
+
+3.3. Conversational Modeling 
+
+For a conversation ci, the text and speech embedding sequences (Sec. 3.2) are denoted by Eti = ( eti1, . . . , etiN i ) and Esi = ( esi1, . . . , esiN i ) respectively. As shown in Figure 1, the fine-tuned speech and text embedding extractors are frozen. 
+
+3.3.1. Context Addition Network 
+
+To make utterance representations context-aware, we introduce a Context Ad-dition Network ( CAN ) that enhances both text and speech embeddings (Sec. 3.2) with conversational context. At its core is a Temporal Inception Network ( TIN ), which applies 1D convolutions with kernel sizes of 1, 3, and 5 to capture short-range dependencies—simulating varying receptive fields across local utterance neighborhoods. Inspired by the Inception architecture [49] originally developed for image classification, TIN enables multi-scale temporal context modeling within conversations. However, emotional signals in dialogue often evolve over longer durations. To capture such global dependencies, we append a Bi-GRU layer, allowing the model to integrate information across the entire conversational span. A residual con-nection links the original embedding with its context-enhanced version, enabling additive refinement while preserving the semantic grounding of the base LLM 71x1 
+
+> 1D-CNN
+> 3x1
+> 1D-CNN
+> 5x1
+> 1D-CNN
+> Bi-GRU
+> FC
+> FC
+
+ ̂ 
+
+ys
+
+> i1
+
+ ̂ ys
+
+> i2
+
+ ̂ ys
+
+> i3
+
+ ̂ ys        
+
+> iNi
+> Add & Norm
+> MHA
+> QSKSVSQTKTVT
+> Concat
+> FC
+> QKV
+> Nx Nx
+> (a) Context addition network (b) Multimodal network
+> TIN
+
+es 
+
+> i1
+
+es 
+
+> i2
+
+es 
+
+> i3
+
+es  
+
+> iNi
+> MHA
+> Add & Norm
+> Add & Norm
+> MHA
+> MHA
+> Add & Norm
+> QKV
+
+ ̂ 
+
+ym
+
+> i1
+
+ ̂ ym
+
+> i2
+
+ ̂ ym
+
+> i3
+
+ ̂ ym
+
+> iNi
+
+et 
+
+> i1
+
+et 
+
+> i2
+
+et 
+
+> i3
+
+et
+
+> iNi
+
+es 
+
+> i1
+
+es 
+
+> i2
+
+es 
+
+> i3
+
+es
+
+> iNi
+
+Figure 2: (a) The context addition network (for the speech modality) and (b) the multimodal net-work used in MiSTER-E. The inputs to both the blocks are derived from the uni-modal feature extractor modules. TIN stands for Temporal Inception Network, MHA stands for multi-head atten-tion. 
+
+features. Finally, a FC layer is used to map each utterance uik to its correspond-ing emotion category yik . We train two similar networks for the speech and text modalities, respectively. These operations are denoted as: 
+
+ˆysi = (ˆ ysi1, . . . , ˆysiN i ) = CAN (Esi ) (3) 
+
+ˆyti = (ˆ yti1, . . . , ˆytiN i ) = CAN (Eti ) (4) A schematic of the speech-side CAN is shown in Fig. 2(a). 
+
+3.3.2. Multimodal Network 
+
+To integrate information across modalities, we design a fusion module based on cross-attention between speech and text. This mechanism allows the model to align semantic cues from text with affective signals from audio. The speech and text embeddings, Esi and Eti , are first projected into query, key, and value spaces. Cross-attention is then applied bidirectionally: 
+
+Mt→si = LN (FC (Esi ) + MHA (Qsi , Kti , Vti )) (5) 
+
+Ms→ti = LN (FC (Eti ) + MHA (Qti , Ksi , Vsi )) (6) Here, MHA and LN refer to multi-head attention and layer normalization, respec-tively. 8While this enables inter-modal alignment, it overlooks cues from the conversa-tional context that are essential for ERC. To address this, we apply modality-specific self-attention layers over the aligned representations, capturing temporal context across the conversation: 
+
+Msi = Self-attn. (Mt→si ) (7) 
+
+Mti = Self-attn. (Ms→ti ) (8) The outputs Msi and Mti are concatenated and passed through a fully connected (FC) layer: 
+
+ˆymi = (ˆ ymi1 , ˆymi2 , . . . , ˆymiN i ) = FC ([ Msi ; Mti ]) (9) An overview is presented in Fig. 2(b). 
+
+3.4. Mixture-of-Experts Gating 
+
+We obtain pre-softmax logits from the three experts for each utterance uik : the speech expert ( ˆysik ), the text expert ( ˆytik ), and the multimodal expert ( ˆymik ). To combine the logits, we dynamically fuse the experts’ logits using a gating mechanism that learns to weigh them. To compute these weights, we concatenate the logits and feed them into a fully connected (FC) layer: 
+
+gik = FC ([ ˆysik ; ˆytik ; ˆymik ]) (10) The gating network outputs gik ∈ R3, which is transformed via a softmax opera-tion to produce adaptive mixture weights βik .The final logit is computed as a weighted sum of the expert predictions: 
+
+ˆyik = βsik · ˆysik + βtik · ˆytik + βmik · ˆymik (11) A softmax operation is applied to ˆyik to obtain the final predictive distribu-tion for utterance uik . This gating network is trained end-to-end, empowering the model to flexibly integrate modalities by emphasizing the most reliable expert. 
+
+3.5. Model Training 3.5.1. Loss Function 
+
+ERC is typically characterized by severe class imbalance, where rare emotion classes are often misclassified [50]. To address this, we employ the focal loss [51], which modulates the contribution of each training example based on its complex-ity, reducing the relative loss for well-classified examples while focusing on hard 9(possibly minority class) instances. In MiSTER-E, this loss is applied during the training of the uni-modal embedding extractors for text and speech as well as their respective context addition networks (CANs). The loss for the speech and text CAN networks is given by: 
+
+Li 
+
+> CAN
+
+=
+
+> Ni
+
+X
+
+> k=1
+
+FL (ˆ ysik , y ik ) + 
+
+> Ni
+
+X
+
+> k=1
+
+FL (ˆ ytik , y ik ) (12) Here, FL (·) represents the focal loss function. Description of the focal loss and related ablations are provided in Sec. 4.4. 
+
+3.5.2. Multimodal Contrastive Loss 
+
+In many cases, speech and text provide complementary signals about a speaker’s emotion. To exploit this, we incorporate a supervised contrastive loss that struc-tures the joint representation space based on emotion labels, drawing together ut-terances with shared emotional intent across modalities. Consider the multimodal speech and text representations denoted by Msi = {msi1 , msi2 , msi3 , . . . , msiN i } and 
+
+Mti = {mti1 , mti2 , mti3 , . . . , mtiN i } respectively. These embeddings are batched to get, 
+
+Zi = { ˜msi1 , . . . , ˜msiN i , ˜mti1 , . . . , ˜mtiN i } (13) where ˜m· 
+
+> ik
+
+= m· 
+
+> ik
+> || m·
+> ik ||
+
+denotes the normalized embeddings. Let za ∈ Zi for a ∈{1, 2, . . . , 2Ni}, and let ya be the emotion label associated with za. The contrastive loss is given by: 
+
+Licon =
+
+> 2Ni
+
+X
+
+> a=1
+
+−1
+
+|P (a)|
+
+X 
+
+> p∈P(a)
+
+log exp  z⊤ 
+
+> a
+
+zp/τ 
+
+> 2Ni
+
+P 
+
+> q=1
+> q̸=a
+
+exp ( z⊤ 
+
+> a
+
+zq/τ )
+
+(14) where τ is the temperature and P (a) = {p ∈ { 1, 2, . . . , 2Ni}\{ a}| yp = ya} is the set of positives for anchor za. This objective pulls together utterances with the same emotion class across both speech and text, while pushing apart other sam-ples, thereby guiding the model to learn emotionally coherent, modality-invariant representations. 
+
+Total multimodal loss : The final loss used to train the multimodal model com-bines the classification and contrastive objectives: 
+
+Li 
+
+> multi
+
+=
+
+> Ni
+
+X
+
+> k=1
+
+FL (ˆ ymik , y ik ) + λLi 
+
+> con
+
+(15) 10 where ˆymik denotes the multimodal prediction, and λ controls the contribution of the contrastive loss. 
+
+3.5.3. MoE Gating Loss 
+
+To train the mixture-of-experts (MoE) gating network, we combine two ob-jectives: (i) focal loss for emotion classification, and (ii) a regularization term to promote consistency among the expert predictions. Specifically, we enforce sim-ilarity in the predicted distributions of the three experts—speech-only, text-only, and multimodal—using the Kullback-Leibler (KL) divergence. The total loss for the MoE layer is: 
+
+Li 
+
+> moe
+
+=
+
+> Ni
+
+X
+
+> k=1
+
+FL (ˆ yik , y ik ) + α · L i 
+
+> KL
+
+(16) where ˆyik is defined in Eq. 11, α controls the strength of the consistency regular-ization, and the KL term is given by: 
+
+Li 
+
+> KL
+
+=
+
+> Ni
+
+X
+
+> k=1
+
+h
+
+KL (ˆ pmik || ˆpsik ) + KL (ˆ pmik || ˆptik )
+
+i
+
+(17) Here, ˆp· 
+
+> ik
+
+denotes the class probability distribution obtained by applying a softmax function to the corresponding expert logits ˆy·
+
+> ik
+
+. The KL consistency loss encour-ages the unimodal speech and text experts to produce predictive distributions that are aligned with the multimodal expert. Since the multimodal expert jointly mod-els both modalities, we treat its output distribution as a stronger supervisory signal and therefore, employ a directional KL divergence in this manner. 
+
+3.5.4. Total Loss 
+
+The context addition networks, the multimodal network, and the MoE gating layer are trained together. The total loss is: 
+
+Ltot =
+
+> P
+
+X
+
+> i=1
+
+
+
+Li 
+
+> CAN
+
++ Li 
+
+> moe
+
++ Li
+
+> multi
+
+
+
+(18) 
+
+4. Experiments 
+
+4.1. Datasets 
+
+We evaluate MiSTER-E on three ERC datasets - IEMOCAP [12], MELD [13], and CMU-MOSI [14]. 11 IEMOCAP consists of conversational data split into 5 sessions, 151 dialogues and 7433 utterances. Following prior work [32], we consider session 5 for test-ing, while session 1 is used for validation. The remaining 3 sessions are used for training. Each utterance is classified as one of six emotions: “angry”, “happy”, “sad”, “frustrated”, “excited” and “neutral”. Thus, we use 92 conversations for training, 28 conversations for validation and the 31 conversations in Session 5 for testing. There are a total of 5810 utterances for training and validation, while 1623 
+
+utterances are used for testing the model. 
+
+MELD is a multi-party conversational dataset consisting of 1433 dialogues with 
+
+13708 utterances from the TV show Friends . This dataset has pre-defined train, validation, and test splits which are used in this work. Each utterance is catego-rized as one of seven emotion classes: “angry”, “joy”, “sadness”, “fear”, “dis-gust”, “surprise” and “neutral”. The training and validation data together amount to 1153 conversations ( 11098 utterances), while the test data comprises 280 con-versations ( 2610 utterances). 
+
+CMU-MOSI consists of 93 monologues comprising 2,199 utterances, each an-notated with a sentiment score in the range [−3, 3] . Following prior work, we formulate the task as a binary classification problem, where utterances with sen-timent scores in the range [−3, 0) are labeled as negative and those in the range 
+
+[0 , 3] as positive. We adopt the same dataset partitioning protocol as reported in Lian et al. [32]: the first 62 monologues are used for training and validation, and the remaining 31 monologues are reserved for testing. Among the 62 monologues, 
+
+49 are used for training and 13 for validation. This results in 1,188 training utter-ances, 325 validation utterances, and 686 test utterances. 
+
+4.2. Implementation details 
+
+The two unimodal feature extractors ( SALMONN-7B and LLaMA-3.1-8B )are trained using LoRA with a rank of 8 and the scaling parameter of 32 with a dropout of 0.1. Both models are trained with a batch size of 8 and a learning rate of 1e − 5, with the focal loss. The hidden dimension in the FC (Sec. 3.2) is set to 
+
+2048 . For the rest of the MiSTER-E pipeline, we use a batch size of 8 for IEMO-CAP, MOSI and 32 for MELD. The learning rate is set to 1e − 5 for all datasets. For MELD and MOSI, λ (Eq. 15) is set to 1 , while for IEMOCAP, it is set to 
+
+2. The consistency regularization term, α (Eq. 16), is set to 0.1 for IEMOCAP and MOSI, while it is kept at 1e − 3 for MELD (Sec. 5). We report the weighted F1-score on the test data as the performance metric with 3 random initializations. All our experiments are run using a NVIDIA RTX A6000 GPU card with Py-12 torch 2.7.0 1 and CUDA 12.6. The number of trainable parameters in our model amounts to 97 M ( 8M each for the LLM/SLLM LoRA training and 81 M for the conversational modeling). Training the LLM takes about 10 minutes per epoch, while the SLLM takes about 20 minutes per epoch. The rest of the model, follow-ing feature encoders takes approximately 10 minutes for 100 epochs. We mention further hyperparameter choices for both datasets below: • The BiGRU used in the CAN network (Sec. 3.3.1) has a hidden dimension of 512 and we use 3 layers for IEMOCAP, MOSI, and 2 for MELD. We use a dropout of 0.2 between each fully connected layer for regularization. • For the multimodal fusion network, we use 4 layers with hidden dimension of 120 and 4 attention heads. We use a dropout regularization of 0.5 in the multimodal fusion network. A fusion network with the same parameters is used for both the datasets. The temperature parameter for the contrastive loss, used for the fusion network (Eq. 14), is kept at 1 for IEMOCAP, MOSI, and 0.05 for MELD. • While training the context addition networks, the multimodal network, and the MoE gating network, we use gradient clipping with norm 1.0 for both the datasets and train for 100 epochs. While training the LLM and the SLLM feature encoders, we run for 50 epochs for both datasets. 2
+
+4.3. Comparison with prior work 
+
+Table 2 presents a comparison of the proposed approach with several base-line methods. The competing approaches span a broad spectrum of modeling paradigms, including graph-based frameworks [54, 55], a state-space formula-tion [56], and a mixture-of-experts (MoE) based model [36]. As observed, the proposed method establishes new state-of-the-art performance on all the three datasets, attaining a weighted F1 score of 70 .9% on IEMOCAP, 69 .5% on MELD, and 87 .9% on CMU-MOSI. It is also pertinent to highlight that, for IEMOCAP, the absence of a standard-ized validation set has often resulted in prior studies performing model selection directly on the test set. Such a practice can artificially inflate performance metrics and limit reproducibility. To mitigate this issue, all experiments in this work (for  
+
+> 1https://pytorch.org/blog/pytorch-2-7/
+> 2Code for MiSTER-E is available at https://github.com/iiscleap/MiSTER-E .
+
+13 Method IEMOCAP ( 6-class) MELD ( 7-class) MOSI ( 2-class) 
+
+SMIN [32] ## 70 .5% 63 .7% 79 .7% 
+
+MultiEmo [52] # 66 .9% ±2.0 65 .3% ±0.5 83 .7% ±0.3
+
+HCAM [11] 70 .5% 65 .8% 85 .8% 
+
+DF-ERC [53] 69 .5% 64 .5% –DER-GCN [54] 64 .7% 62 .6% –ELR-GNN [55] 64 .4% 63 .2% –Mamba-like-model [56] 70 .2% 65 .6% –TelME [57] 69 .3% 67 .2% –CFN-ESA [58] 68 .7% 67 .2% –MMGAT-EMO [36] # 65 .5% ±0.6 66 .1% ±0.4 84 .3% ±0.4
+
+MiSTER-E 70 .9%±0.2 69 .5%±0.3 87 .9%±0.2
+
+Table 2: Comparison of different methods on IEMOCAP, MELD, and MOSI datasets using weighted-F1 scores. All reported results are for speech-text systems. ## We report the numbers when no external emotional data is used for training SMIN. # We ran the public implementations provided by the authors under our experimental settings. Superscripted results denote the mean and standard deviation over 3 random initializations, where applicable. Weighted F1-score       
+
+> 68
+> 69
+> 70
+> 71
+> 72
+> 012345
+> IEMOCAP MELD
+
+γ
+
+Figure 3: Performance of MiSTER-E with different values of the focal loss hyperparameter. 
+
+which official implementations were available) were conducted using our own train, validation, and test splits. Consequently, certain IEMOCAP results reported in Table 2 may differ from those originally published. 
+
+4.4. Focal Loss 
+
+Focal loss [51] is generally used to handle class imbalance. Since both ERC datasets considered in this paper are imbalanced, we use focal loss in place of the cross-entropy loss. Denoting the predicted probability for the sample with logits 14 ˆy· 
+
+> ik
+
+as ˆp·
+
+> ik
+
+, the focal loss is given as, 
+
+FL (ˆ y·
+
+> ik
+
+, y ik ) = −
+
+> Y
+
+X
+
+> c=1
+
+ycik (1 − ˆp·cik )γ log(ˆ p·cik ) (19) where ycik = 1 for the true class and 0 otherwise. ˆp·cik is the predicted probability for class c for the sample with logits ˆy· 
+
+> ik
+
+(· is replaced by s, t or m) and γ is the hyperparameter associated with the focal loss. The performance of our proposed method for different values of γ (Eq. 19) is shown in Fig. 3. We note that for cross-entropy loss ( γ = 0 ), the performance drops for both datasets, indicating the need for utilizing a loss function more suited for imbalanced datasets. The value of γ is set to 3 for both datasets. 
+
+4.5. Is modularity crucial? 
+
+To evaluate the importance of architectural modularity, we design a monolithic variant of our model that eliminates the expert-based structure. In this baseline, the contextual representations from each modality are directly passed into the fu-sion module, bypassing the separation between modality-specific and multimodal experts. This modification leads to a notable degradation in performance, with the weighted F1-score dropping from 70 .9% to 67 .8% on the IEMOCAP dataset and from 69 .5% to 67 .9% on MELD. These results underscore a key insight: simply fusing contextual representations in a unified stream is insufficient. Instead, ex-plicitly decoupling context modeling from cross-modal fusion, as implemented in MiSTER-E, enables each component to specialize and contribute more effectively to the final prediction. 
+
+4.6. Are LLM embeddings the panacea? 
+
+An attentive reader might enquire whether the gains of our approach stem solely from the use of LLM/SLLM features. To isolate the impact of our ar-chitectural design from that of the input representations, we conduct controlled experiments where we retrain several prior ERC models using the same LLM and SLLM features employed in our proposed method. Since these baselines were originally optimized for different feature types, we perform our own hyperparam-eter tuning for each model to ensure a fair comparison (see Table 3). Our findings show that while all baselines benefit to some extent from the improved represen-tations, the performance of MiSTER-E improves over previously published base-lines. This highlights a key finding: the gains achieved by our framework are not solely attributable to powerful embeddings, but instead emerge from the modular 15 Method # Params Text Feats. Speech Feats. IEMOCAP MELD                                                       
+
+> MultiEmo [52] ≈450 MRoBERTa OpenSMILE 66 .9% 65 .3%
+> + LLM/SLLM ≈14 BLLaMA SALMONN 69 .5% 68 .2%
+> HCAM [11] ≈750 MRoBERTa wav2vec 70 .5% 65 .8%
+> + LLM/SLLM ≈14 BLLaMA SALMONN 70 .6% 68 .4%
+> MMGAT-EMO [36] ≈450 MEmoBERTa OpenSMILE 65 .5% 66 .1%
+> + LLM/SLLM ≈14 BLLaMA SALMONN 68 .6% 67 .7%
+> MiSTER-E w/o LLM/SLLM ≈450 MRoBERTa OpenSMILE 69 .5% 66 .4%
+> MiSTER-E w/o LLM/SLLM ≈750 MRoBERTa wav2vec 71 .1%68 .4%
+> MiSTER-E ≈14 BLLaMA SALMONN 70 .9% 69 .5%
+> Table 3: Comparison of some of the baseline methods when re-designed with and without LLM features. The results show that the proposal is applicable even for non-LLM representations like OPENSMILE and wav2vec.
+
+architectural choices—particularly the separation of context modeling and cross-modal fusion, and the use of expert-level supervision and gating. To further assess whether the gains of MiSTER-E are attributable to architec-tural design rather than encoder scale, we construct two variants of MiSTER-E by replacing the LLM/SLLM encoders with more conventional pretrained represen-tations: RoBERTa for text and {OpenSMILE, wav2vec} features for speech. De-spite the substantial reduction in model capacity, both variants of MiSTER-E con-sistently outperform all baseline methods that use the same feature representations (Table 3). Notably, on IEMOCAP, MiSTER-E with RoBERTa and wav2vec fea-tures achieves performance comparable to—and in some cases higher than—the corresponding LLM/SLLM-based configuration, suggesting improved generaliza-tion under reduced model capacity. These experiments demonstrate that the ad-vantages of our approach are not tied to any specific set of pretrained embeddings, but rather stem from the modeling design that is proposed in this work. 
+
+4.7. Is decision-level MoE gating crucial? 
+
+To assess the importance of our decision-level Mixture-of-Experts (MoE) gat-ing strategy, we conduct ablation studies by comparing MiSTER-E against two architectural variants. In the first variant, termed feat-MoE , we shift the fu-sion point to the feature space—that is, the modality-specific and multimodal representations are combined before classification, rather than fusing their pre-dictions. This design tests whether earlier integration is sufficient. In the second variant, called No-Loss-MoE , we eliminate the expert-level supervision alto-16 gether. Here, the model is trained solely on the final gated prediction using fo-cal loss, omitting the individual loss signals for the audio, text, and multimodal experts. As shown in Fig. 4a, both variants degrade performance: feat-MoE 
+
+results in a 2.6% drop on IEMOCAP and 0.6% on MELD, while No-Loss-MoE 
+
+leads to similar degradation. These findings reinforce two key design principles behind MiSTER-E: (1) decision-level fusion is more effective than early feature fusion, likely because it preserves modality-specific discriminative cues; and (2) expert-specific supervision is essential for encouraging each expert to specialize in its respective modality or fusion pattern. 
+
+4.8. Performance of Other LLMs/SLLMs 
+
+We experiment with other speech and language large models (SLLMs and LLMs) for encoding speech and text, respectively. All models are trained using the same hyperparameters as LLaMA-3.1-8B and SALMONN - 7B . For the text modality, we experiment with Qwen2.5-7B and Gemma-7B , while for speech, we use Qwen2-Audio-7B and SALMONN-13B .As shown in Table 4b, the performance of the speech encoders is compara-ble across models, with SALMONN-7B achieving the best result on IEMOCAP, and Qwen2-Audio-7B performing best on MELD. The larger SALMONN-13B 
+
+underperforms compared to its smaller counterparts. For text, LLaMA-3.1-8B 
+
+outperforms both Gemma-7B and Qwen2.5-7B on both datasets. 
+
+5. Discussion 
+
+5.1. Expert Behavior and Modality Imbalance 
+
+We analyze the behavior of the mixture-of-experts (MoE) gating mechanism on IEMOCAP and MELD to understand how the model adapts to dataset-specific modality characteristics. As shown in Fig. 5(a), the gating network exhibits clear dataset-dependent preferences: it assigns higher weight to the multimodal expert for IEMOCAP, while favoring the text expert for MELD. This behavior reflects the relative reliability of modalities in the two datasets. These trends are consistent with the performance of individual experts in Fig. 5(b). On MELD, the speech expert performs substantially worse than the text expert, and the multimodal expert slightly underperforms the text expert due to the dif-ficulty of aligning modalities with highly unequal predictive power. In contrast, on IEMOCAP, where speech and text modalities exhibit comparable performance, 17 Weighted F1-score                    
+
+> 60
+> 63.75
+> 67.5
+> 71.25
+> 75
+> IEMOCAP MELD 69.5
+> 70.9
+> 69
+> 68.1 68.9
+> 68.3
+> feat-MoE No-Loss-MoE MiSTER-E (a) Performance of MiSTER-E with changes in the MoE gating strategy for IEMOCAP and MELD and
+> Modality Model IEMOCAP MELD
+> Text Gemma-7B 48 .2% 58 .1%
+> Qwen2.5-7B 53 .1% 65 .5%
+> LLaMA-3.1-8B 55 .3%67 .1%
+> Speech SALMONN-7B 59 .7%54 .3%
+> Qwen2-Audio-7B 59 .2% 54 .9%
+> SALMONN-13B 58 .7% 53 .2%
+> (b) Performance of different SLLMs and LLMs on the two datasets.
+
+Figure 4: Comparison of model performance on IEMOCAP and MELD. (a) Effect of different MoE gating strategies in MiSTER-E. (b) Performance of unimodal SLLMs and LLMs across the two datasets. 
+
+the multimodal expert effectively fuses both sources and outperforms the best uni-modal expert by 2.5% . Across both datasets, MiSTER-E consistently outperforms the strongest individual expert by approximately 1% , demonstrating the benefit of adaptive, per-utterance expert weighting. The effect of expert consistency regularization aligns with these observations. For IEMOCAP, a moderate consistency strength ( α = 0 .1) improves performance from 70 .4% to 70 .9% , while stronger regularization degrades performance. For MELD, where modality imbalance is pronounced, a small value ( α = 10 −3) yields a modest gain of 0.1% , whereas larger values significantly reduce performance. 
+
+5.2. Class-wise Performance of MiSTER-E 
+
+The class-wise performance of our proposed method for the two datasets is shown in Table 7b. We note that for IEMOCAP the worst performing class is “happy” - likely because it is the least frequent class and it is most confused with the “excited” category (Fig. 7a). Similarly, for MELD, the model performs most poorly on the “fear” category - again the least frequent class. However, we note that for both datasets, the model performs quite well on most emotion classes, thereby leading to an improved overall performance. 18 (a) Expert weight distribution      
+
+> Weighted F1-score
+> 50
+> 55
+> 60
+> 65
+> 70
+> 75
+> IEMOCAP MELD 69.5
+> 70.9
+> 68.2
+> 69.9 68.5
+> 65.7
+> 55.8
+> 67.4
+> Speech Text Multimodal MiSTER-E
+> (b) Performance of the experts on the two datasets
+
+Figure 5: (a) Distribution of weights for the experts for the different datasets and (b) The perfor-mance of the experts and MiSTER-E for the two datasets 
+
+5.3. Text-only Experiment 
+
+Although MiSTER-E is designed for speech-text ERC, we evaluate its text-only variant to compare against recent LLM-based ERC approaches that frame the task as text generation and often rely on speaker metadata. We consider In-structERC [24] as a representative baseline and adapt it to operate without speaker information for a fair comparison. Experiments are conducted on the EmoryNLP dataset [59], which contains only textual transcripts across seven emotion classes. For this setting, text embeddings are extracted as described in Sec. 3.2, fol-lowed by the Context Addition Network, while the speech branch and MoE gat-ing losses are removed. As shown in Fig. 8(a), MiSTER-E achieves a modest im-provement of 0.2% over InstructERC. To control for model capacity, we further re-place the LLaMA-2-7B-chat encoder used in InstructERC with LLaMA-3.1-8B .This variant performs worse than both InstructERC and MiSTER-E, indicating that the observed gains stem from the proposed training and contextual modeling strategy rather than from the choice of LLM alone. 
+
+5.4. Importance of the Contrastive Loss 
+
+Figure 8(b) analyzes the effect of the supervised contrastive loss on model performance. On MELD, incorporating the contrastive objective improves perfor-mance from 68 .2% (λ = 0 ) to 69 .5% at λ = 1 , while on IEMOCAP performance increases from 70 .2% to 70 .9% at λ = 2 . These gains indicate that contrastive learning helps align emotion-relevant speech and text representations beyond what is achieved by focal loss alone. However, further increasing λ leads to degraded performance on both datasets, suggesting that the contrastive loss serves as a ben-eficial auxiliary signal rather than a standalone supervisory objective. 19 0.07 Hi!  
+
+> Hi!
+
+0.05    
+
+> Rachel was just helping me out. My head got all sunburned.
+
+0.55  0.27  Neutral 
+
+0.20     
+
+> Thanks a million.
+> Oh, you're welcome a million.
+> Okay, I'll see you in our room.
+> Awww.
+> Yeah.
+> Oh my God.
+> I know.
+> Okay, I gotta go.
+> Whoa! What?! Why?!
+> Well, I-I gotta go break up with Bonnie.
+> Here?! Now?!
+> Well, yeah.
+> I can't-I can't stay here all night, and if I go in there she's-she's gonna wanna... do stuff.
+
+0.48  0.45  Joy 
+
+0.42  0.53  Joy 
+
+0.17 
+
+0.50  0.30  Joy 
+
+0.09  0.69  0.22  Joy 
+
+0.61  0.28  Joy 0.11 
+
+0.69  0.14  Neutral 0.17 
+
+0.63  0.18  Neutral 0.19 
+
+0.26  0.32  Surprise 
+
+0.59  0.18  Neutral 0.24 
+
+> Neutral
+
+0.29  0.51  0.19  Surprise 
+
+0.22  0.13 0.65  Sadness 
+
+0.19  0.64  0.17  Surprise 
+
+0.59  0.25  Neutral 0.16 
+
+0.19  0.72  0.09  Fear 
+
+0.42 
+
+0.18  0.69  0.12 
+
+S T M Prediction Figure 6: A case study from MELD where there are 16 utterances in the conversation. The weights assigned to the different experts are shown. In most cases, text is assigned the highest weight (ex-cept utterance 2 and 9). S: Speech Expert, T: Text Expert, M: Multimodal Expert. The predictions of MiSTER-E are also shown. The model correctly predicts all the utterances in the conversation, inspite of the emotion transitions. 
+
+5.5. Case Study 
+
+We provide a case study from the MELD dataset in Fig. 9. A number of key points that we wish to highlight from this example are as follows: • MiSTER-E does not fail when there are emotion shifts. E.g., the conversa-tion has 6 emotions in 7 utterances. Although, the model incorrectly pre-dicts the third utterance to be neutral (instead of joy), it is able to predict the emotion shift from surprise to sadness to anger. 20 Happy Sad Neutral Angry Excited Frustrated                               
+
+> Predicted
+> Happy Sad Neutral Angry Excited Frustrated
+> Actual
+> 40 526 069 4
+> 1199 17 0028
+> 019 308 5943
+> 0010 106 054
+> 14 039 0243 3
+> 0771 29 4270
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250
+> 300
+
+(a) Confusion matrix of our model on the IEMOCAP dataset. 
+
+IEMOCAP MELD Category F1 Category F1 
+
+Angry 68 .4% Angry 62 .5% 
+
+Excited 77 .9% Disgust 42 .9% 
+
+Frustrated 69 .0% Fear 30 .6% 
+
+Happy 40 .2% Joy 65 .4% 
+
+Neutral 80 .2% Neutral 81 .3% 
+
+Sad 83 .8% Sad 50 .3% 
+
+- - Surprise 61 .5% 
+
+(b) Per-class F1-scores for IEMOCAP and MELD. 
+
+Figure 7: (a) Confusion matrix for IEMOCAP. (b) Class-wise F1-scores on IEMOCAP and MELD, showing variation across different emotions. Weighted F1-score 
+
+> 25
+> 29
+> 33
+> 37
+> 41
+> Instruct-ERC
+> Instruct-ERC-LLaMA-3.1-8B
+> MiSTER-E (Text)
+
+40.7 
+
+39.3 
+
+40.5       
+
+> 68
+> 69
+> 70
+> 71
+> 72
+> 00.1 0.5 125
+> IEMOCAP MELD
+
+λ
+
+> (b) Importance of the Contrastive Loss (a) Results on the EmoryNLP dataset
+
+Figure 8: (a) Results of the text only experiment and, (b) Performance of MiSTER-E with varying values of λ (Eq. 18) for the two datasets. The validation set performance mirrors the trends of the test set. For IEMOCAP, validation accuracy is 63% for λ = 0 and 63 .6% for λ = 2 . For MELD, 
+
+λ = 1 yields the highest validation performance ( 65 .6% ) compared to 65 .4% for λ = 0 
+
+• Another interesting point is the output of the fifth utterance. None of the experts predict sadness class, yet the MoE strategy correctly marks the ut-terance as sad. This indicates the utility of the MoE gating strategy in our proposed method and differentiates it from static ensembling techniques. 21 Audio                           
+
+> Expert
+> Text
+> Expert
+> Fusion
+> Expert Prediction
+> Neutral Fear
+> Yeah, but what if it's not? What if there is a reason
+> why we can't have a baby? Fear Fear
+> Oh, Chandler, look. You and Monica are meant to
+> have children. I am sure it's gonna be just fine. Neutral Neutral Neutral Neutral
+> oh, oh, yeah, ok, thanks. Neutral Neutral Neutral Neutral
+> I can't believe I didn't even think of that. Surprise Surprise Surprise Surprise
+> I guess I was just so worried about having to...
+> come here and do... 'that'... Neutral Fear Fear Sadness
+> What, you can do it in the parking lot of a Taco Bell,
+> but you can't do it at a doctor's office? Anger Surprise Anger Anger
+> It was a "Wendy's!!" Anger Anger Anger Joy
+
+Figure 9: A case study from MELD where there are emotion shifts throughout the conversation. Out of the 7 utterances in the conversation, MiSTER-E correctly predicts 6.
+
+6. Conclusion 
+
+We proposed MiSTER-E, a modular framework for ERC that explicitly sepa-rates contextual modeling from multimodal fusion. Leveraging LLM-based rep-resentations for both speech and text, we model context in the conversations using a temporal inception block followed by a Bi-GRU, and perform modality fusion via an attention-based network. A Mixture-of-Experts (MoE) gate adaptively inte-grates decisions from context-aware and multimodal experts. MiSTER-E achieves new state-of-the-art performance on IEMOCAP, MELD, and CMU-MOSI with-out using speaker identity, demonstrating the efficacy of modular context-fusion and decision-level gating. The auxiliary components such as focal loss, super-vised contrastive learning, and KL-based consistency regularization provide mod-est performance improvements, and hence, they are best viewed as refinements that enhance training stability and robustness, rather than being essential elements of the proposed architecture. 22 7. Limitations 
+
+While MiSTER-E achieves strong performance across multiple benchmarks, several limitations remain, (i) the use of large LLM/SLLM encoders introduces non-trivial computational and memory overhead, which may limit applicability in low-resource or real-time settings, despite the use of parameter-efficient fine-tuning. We have partially addressed this concern in Table 3, where the proposed approach is shown to be beneficial even for non-LLM based features, (ii) our evaluation is primarily conducted on benchmark datasets consisting of scripted or semi-scripted dialogues (e.g., TV shows and acted conversations), and perfor-mance under domain shift to spontaneous, real-world conversational settings re-mains an open question, (iii) emotion inference models are known to be suscepti-ble to dataset biases related to demographic factors, language use, and annotation subjectivity and we have not performed any bias/fairness analysis in this study, and, (iv) throughout this work, we intentionally avoid explicit speaker identity modeling, however, the utilization of speaker metadata may improve the model-ing of interpersonal dynamics. Addressing some of these limitations forms part of our future work. 
+
+Declaration of generative AI and AI-assisted technologies in the writing pro-cess. 
+
+During the preparation of this work the author(s) used ChatGPT in order to polish the writing. After using this tool/service, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the content of the publication. 
+
+References 
+
+[1] M. Pantic, N. Sebe, J. F. Cohn, T. Huang, Affective multimodal human-computer interaction, in: Proceedings of the 13th annual ACM international conference on Multimedia, 2005, pp. 669–676. [2] B. Gaind, V. Syal, S. Padgalwar, Emotion detection and analysis on social media, arXiv preprint arXiv:1901.08458 (2019). [3] S. Ghosh, S. Sahu, N. Ganguly, B. Mitra, P. De, Emokey: An emotion-aware smartphone keyboard for mental health monitoring, in: 2019 11th interna-tional conference on communication systems & networks (COMSNETS), IEEE, 2019, pp. 496–499. 23 [4] D. Hazarika, S. Poria, A. Zadeh, E. Cambria, L.-P. Morency, R. Zimmer-mann, Conversational memory network for emotion recognition in dyadic dialogue videos, in: Proceedings of the 2018 Conference of the North Amer-ican Chapter of the Association for Computational Linguistics: Human Lan-guage Technologies, Volume 1 (Long Papers), 2018, pp. 2122–2132. [5] N. Majumder, S. Poria, D. Hazarika, R. Mihalcea, A. Gelbukh, E. Cambria, Dialoguernn: An attentive rnn for emotion detection in conversations, in: Proceedings of the AAAI conference on artificial intelligence, Vol. 33, 2019, pp. 6818–6825. [6] J. Hu, Y. Liu, J. Zhao, Q. Jin, Mmgcn: Multimodal fusion via deep graph convolution network for emotion recognition in conversation, in: Proceed-ings of the 59th Annual Meeting of the Association for Computational Lin-guistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), 2021, pp. 5666–5675. [7] S. Shen, F. Liu, H. Wang, A. Zhou, Towards speaker-unknown emotion recognition in conversation via progressive contrastive deep supervision, IEEE Transactions on Affective Computing (2025). [8] W. Han, H. Chen, S. Poria, Improving multimodal fusion with hierarchi-cal mutual information maximization for multimodal sentiment analysis, in: Proceedings of the 2021 Conference on Empirical Methods in Natural Lan-guage Processing, 2021, pp. 9180–9192. [9] S. Dutta, S. Ganapathy, Llm supervised pre-training for multimodal emo-tion recognition in conversations, in: ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), IEEE, 2025, pp. 1–5. [10] A. Zadeh, M. Chen, S. Poria, E. Cambria, L.-P. Morency, Tensor fusion net-work for multimodal sentiment analysis, in: Proceedings of the 2017 Con-ference on Empirical Methods in Natural Language Processing, 2017, pp. 1103–1114. [11] S. Dutta, S. Ganapathy, Hcam–hierarchical cross attention model for multi-modal emotion recognition, arXiv preprint arXiv:2304.06910 (2023). 24 [12] C. Busso, M. Bulut, C.-C. Lee, A. Kazemzadeh, E. Mower, S. Kim, J. N. Chang, S. Lee, S. S. Narayanan, Iemocap: Interactive emotional dyadic mo-tion capture database, Language resources and evaluation 42 (2008) 335– 359. [13] S. Poria, D. Hazarika, N. Majumder, G. Naik, E. Cambria, R. Mihalcea, Meld: A multimodal multi-party dataset for emotion recognition in conver-sations, in: Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, 2019, pp. 527–536. [14] A. Zadeh, R. Zellers, E. Pincus, L.-P. Morency, Mosi: multimodal corpus of sentiment intensity and subjectivity analysis in online opinion videos, arXiv preprint arXiv:1606.06259 (2016). [15] T. Mikolov, I. Sutskever, K. Chen, G. S. Corrado, J. Dean, Distributed rep-resentations of words and phrases and their compositionality, Advances in neural information processing systems 26 (2013). [16] J. Pennington, R. Socher, C. D. Manning, Glove: Global vectors for word representation, in: Proceedings of the 2014 conference on empirical methods in natural language processing (EMNLP), 2014, pp. 1532–1543. [17] S. Poria, E. Cambria, A. Gelbukh, Deep convolutional neural network textual features and multiple kernel learning for utterance-level multimodal senti-ment analysis, in: Proceedings of the 2015 conference on empirical methods in natural language processing, 2015, pp. 2539–2544. [18] S. Mai, H. Hu, S. Xing, Divide, conquer and combine: Hierarchical feature fusion network with local and global perspectives for multimodal affective computing, in: Proceedings of the 57th annual meeting of the association for computational linguistics, 2019, pp. 481–492. [19] J. Devlin, M.-W. Chang, K. Lee, K. Toutanova, Bert: Pre-training of deep bidirectional transformers for language understanding, in: Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers), 2019, pp. 4171–4186. [20] Y. Liu, M. Ott, N. Goyal, J. Du, M. Joshi, D. Chen, O. Levy, M. Lewis, L. Zettlemoyer, V. Stoyanov, Roberta: A robustly optimized bert pretraining approach, arXiv preprint arXiv:1907.11692 (2019). 25 [21] D. Hazarika, R. Zimmermann, S. Poria, Misa: Modality-invariant and-specific representations for multimodal sentiment analysis, in: Proceedings of the 28th ACM international conference on multimedia, 2020, pp. 1122– 1131. [22] V. Chudasama, P. Kar, A. Gudmalwar, N. Shah, P. Wasnik, N. Onoe, M2fnet: Multi-modal fusion network for emotion recognition in conversation, in: Proceedings of the IEEE/CVF conference on computer vision and pattern recognition, 2022, pp. 4652–4661. [23] D. Hu, Y. Bao, L. Wei, W. Zhou, S. Hu, Supervised adversarial contrastive learning for emotion recognition in conversations, in: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Vol-ume 1: Long Papers), 2023, pp. 10835–10852. [24] S. Lei, G. Dong, X. Wang, K. Wang, R. Qiao, S. Wang, Instructerc: Reform-ing emotion recognition in conversation with multi-task retrieval-augmented large language models, arXiv preprint arXiv:2309.11911 (2023). [25] Y. Fu, Ckerc: Joint large language models with commonsense knowledge for emotion recognition in conversation, arXiv preprint arXiv:2403.07260 (2024). [26] F. Eyben, M. Wöllmer, B. Schuller, Opensmile: the munich versatile and fast open-source audio feature extractor, in: Proceedings of the 18th ACM international conference on Multimedia, 2010, pp. 1459–1462. [27] G. Degottex, J. Kane, T. Drugman, T. Raitio, S. Scherer, Covarep—a col-laborative voice analysis repository for speech technologies, in: 2014 ieee international conference on acoustics, speech and signal processing (icassp), IEEE, 2014, pp. 960–964. [28] N. Zeghidour, O. Teboul, F. de Chaumont Quitry, M. Tagliasacchi, Leaf: A learnable frontend for audio classification, in: International Conference on Learning Representations, 2021. [29] W.-N. Hsu, B. Bolte, Y.-H. H. Tsai, K. Lakhotia, R. Salakhutdinov, A. Mo-hamed, Hubert: Self-supervised speech representation learning by masked prediction of hidden units, IEEE/ACM transactions on audio, speech, and language processing 29 (2021) 3451–3460. 26 [30] A. Baevski, Y. Zhou, A. Mohamed, M. Auli, wav2vec 2.0: A framework for self-supervised learning of speech representations, Advances in neural information processing systems 33 (2020) 12449–12460. [31] S. Dutta, S. Ganapathy, Multimodal transformer with learnable frontend and self attention for emotion recognition, in: ICASSP 2022-2022 IEEE Inter-national Conference on Acoustics, Speech and Signal Processing (ICASSP), IEEE, 2022, pp. 6917–6921. [32] Z. Lian, B. Liu, J. Tao, Smin: Semi-supervised multi-modal interaction net-work for conversational emotion recognition, IEEE Transactions on Affec-tive Computing 14 (3) (2022) 2415–2429. [33] N. Shazeer, A. Mirhoseini, K. Maziarz, A. Davis, Q. Le, G. Hinton, J. Dean, Outrageously large neural networks: The sparsely-gated mixture-of-experts layer, in: International Conference on Learning Representations, 2017. [34] D. Lepikhin, H. Lee, Y. Xu, D. Chen, O. Firat, Y. Huang, M. Krikun, N. Shazeer, Z. Chen, Gshard: Scaling giant models with conditional com-putation and automatic sharding, in: International Conference on Learning Representations, 2021. [35] C. Riquelme, J. Puigcerver, B. Mustafa, M. Neumann, R. Jenatton, A. Su-sano Pinto, D. Keysers, N. Houlsby, Scaling vision with sparse mixture of experts, Advances in Neural Information Processing Systems 34 (2021) 8583–8595. [36] C. Zhang, Y. Liu, B. Cheng, A moe multimodal graph attention network framework for multimodal emotion recognition, in: ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), IEEE, 2025, pp. 1–5. [37] P. Khosla, P. Teterwak, C. Wang, A. Sarna, Y. Tian, P. Isola, A. Maschinot, C. Liu, D. Krishnan, Supervised contrastive learning, Advances in neural information processing systems 33 (2020) 18661–18673. [38] S. Li, H. Yan, X. Qiu, Contrast and generation make bart a good dialogue emotion recognizer, in: Proceedings of the AAAI conference on artificial intelligence, Vol. 36, 2022, pp. 11002–11010. 27 [39] X. Song, L. Huang, H. Xue, S. Hu, Supervised prototypical contrastive learn-ing for emotion recognition in conversation, in: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, 2022, pp. 5197–5206. [40] F. Yu, J. Guo, Z. Wu, X. Dai, Emotion-anchored contrastive learning frame-work for emotion recognition in conversation, in: Findings of the Associa-tion for Computational Linguistics: NAACL 2024, 2024, pp. 4521–4534. [41] G. Hu, T.-E. Lin, Y. Zhao, G. Lu, Y. Wu, Y. Li, Unimse: Towards unified multimodal sentiment analysis and emotion recognition, in: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, 2022, pp. 7837–7851. [42] C.-H. H. Yang, T. Park, Y. Gong, Y. Li, Z. Chen, Y.-T. Lin, C. Chen, Y. Hu, K. Dhawan, P. ˙ Zelasko, et al., Large language model based generative error correction: A challenge and baselines for speech recognition, speaker tag-ging, and emotion recognition, in: 2024 IEEE Spoken Language Technology Workshop (SLT), IEEE, 2024, pp. 371–378. [43] P. Stepachev, P. Chen, B. Haddow, Context and system fusion in post-asr emotion recognition with large language models, arXiv preprint arXiv:2410.03312 (2024). [44] E. Zhang, C. Poellabauer, Improving speech-based emotion recognition with contextual utterance analysis and llms, arXiv preprint arXiv:2410.20334 (2024). [45] P. BehnamGhader, V. Adlakha, M. Mosbach, D. Bahdanau, N. Chapados, S. Reddy, Llm2vec: Large language models are secretly powerful text en-coders, in: First Conference on Language Modeling, 2024. [46] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, W. Chen, et al., Lora: Low-rank adaptation of large language models., ICLR 1 (2) (2022) 3. [47] C. Tang, W. Yu, G. Sun, X. Chen, T. Tan, W. Li, L. Lu, M. Zejun, C. Zhang, Salmonn: Towards generic hearing abilities for large language models, in: The Twelfth International Conference on Learning Representations, 2024. 28 [48] J. Li, D. Li, S. Savarese, S. Hoi, Blip-2: Bootstrapping language-image pre-training with frozen image encoders and large language models, in: Interna-tional conference on machine learning, PMLR, 2023, pp. 19730–19742. [49] C. Szegedy, W. Liu, Y. Jia, P. Sermanet, S. Reed, D. Anguelov, D. Erhan, V. Vanhoucke, A. Rabinovich, Going deeper with convolutions, in: Proceed-ings of the IEEE conference on computer vision and pattern recognition, 2015, pp. 1–9. [50] S. Poria, N. Majumder, R. Mihalcea, E. Hovy, Emotion recognition in con-versation: Research challenges, datasets, and recent advances, IEEE access 7 (2019) 100943–100953. [51] T.-Y. Lin, P. Goyal, R. Girshick, K. He, P. Dollár, Focal loss for dense object detection, in: Proceedings of the IEEE international conference on computer vision, 2017, pp. 2980–2988. [52] T. Shi, S.-L. Huang, Multiemo: An attention-based correlation-aware multi-modal fusion framework for emotion recognition in conversations, in: Pro-ceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), 2023, pp. 14752–14766. [53] B. Li, H. Fei, L. Liao, Y. Zhao, C. Teng, T.-S. Chua, D. Ji, F. Li, Revisiting disentanglement and fusion on modality and context in conversational mul-timodal emotion recognition, in: Proceedings of the 31st ACM International Conference on Multimedia, 2023, pp. 5923–5934. [54] W. Ai, Y. Shou, T. Meng, K. Li, Der-gcn: Dialog and event relation-aware graph convolutional neural network for multimodal dialog emotion recogni-tion, IEEE Transactions on Neural Networks and Learning Systems (2024). [55] Y. Shou, W. Ai, J. Du, T. Meng, H. Liu, Efficient long-distance latent relation-aware graph neural network for multi-modal emotion recognition in conversations, CoRR (2024). [56] Y. Shou, T. Meng, F. Zhang, N. Yin, K. Li, Revisiting multi-modal emo-tion learning with broad state space models and probability-guidance fusion, CoRR (2024). [57] T. Yun, H. Lim, J. Lee, M. Song, Telme: Teacher-leading multimodal fu-sion network for emotion recognition in conversation, in: Proceedings of 29 the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers), 2024, pp. 82–95. [58] J. Li, X. Wang, Y. Liu, Z. Zeng, Cfn-esa: A cross-modal fusion network with emotion-shift awareness for dialogue emotion recognition, IEEE Transac-tions on Affective Computing (2024). [59] S. M. Zahiri, J. D. Choi, Emotion detection on tv show transcripts with sequence-based convolutional neural networks., in: AAAI Workshops, Vol. 18, 2018, pp. 44–52. 30

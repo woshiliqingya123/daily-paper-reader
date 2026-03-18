@@ -1,0 +1,834 @@
+Title: Face-Guided Sentiment Boundary Enhancement for Weakly-Supervised Temporal Sentiment Localization
+
+URL Source: https://arxiv.org/pdf/2603.14750v1
+
+Published Time: Tue, 17 Mar 2026 04:57:00 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Face-Guided Sentiment Boundary Enhancement for Weakly-Supervised Temporal Sentiment Localization 
+
+## Cailing Han 1* Zhangbin Li 1* Jinxing Zhou 2†
+
+## Wei Qian 1 Jingjing Hu 1 Yanghao Zhou 3 Zhangling Duan 4 Dan Guo 1,4,5†
+
+1Hefei University of Technology 2MBZUAI 3NUS 
+
+4Institute of Artificial Intelligence, Hefei Comprehensive National Science Center 
+
+5The Key Laboratory of Knowledge Engineering with Big Data, Hefei University of Technology 
+
+## {ceilinghan, lizhangbin.mail, zhoujxhfut }@gmail.com, guodan@hfut.edu.cn 
+
+## Abstract 
+
+Point-level weakly-supervised temporal sentiment localiza-tion (P-WTSL) aims to detect sentiment-relevant segments in untrimmed multimodal videos using timestamp sentiment annotations, which greatly reduces the costly frame-level labeling. To further tackle the challenges of imprecise sen-timent boundaries in P-WTSL, we propose the Face-guided Sentiment Boundary Enhancement Network ( FSENet ), a unified framework that leverages fine-grained facial fea-tures to guide sentiment localization. Specifically, our ap-proach first introduces the Face-guided Sentiment Discov-ery (FSD) module, which integrates facial features into mul-timodal interaction via dual-branch modeling for effective sentiment stimuli clues; We then propose the Point-aware Sentiment Semantics Contrast (PSSC) strategy to discrimi-nate sentiment semantics of candidate points (frame-level) near annotation points via contrastive learning, thereby en-hancing the model’s ability to recognize sentiment bound-aries. At last, we design the Boundary-aware Senti-ment Pseudo-label Generation (BSPG) approach to convert sparse point annotations into temporally smooth supervi-sory pseudo-labels. Extensive experiments and visualiza-tions on the benchmark demonstrate the effectiveness of our framework, achieving state-of-the-art performance under full supervision, video-level, and point-level weak supervi-sion, thereby showcasing the strong generalization ability of our FSENet across different annotation settings. Code: 
+
+https://github.com/CeilingHan/FSENet .
+
+## 1. Introduction 
+
+Driven by recent advances in audio-visual learning [1–20], Temporal Sentiment Localization (TSL), which aims to an-
+
+> *
+
+Equal contribution. 
+
+> †
+
+Corresponding author. Time         
+
+> Visual
+> Audio
+> (a) Point -level Weakly -supervised Temporal Sentiment Localization(P -WTSL) Task
+> Point -Anno. Positive Negative
+> ②Sentiment Classification
+> Output
+> ①Sentiment Boundary Localization
+> (b) Face -Guided Sentiment Discovery
+> Neutral Positive
+> Similar Different
+> Facial -guided Facial -guided
+
+…         
+
+> Input
+> (c) Pseudo -Label Generation
+> 𝛽 !𝛽 "𝛽 #
+> 𝜔 !𝜔 "𝜔 #
+> 𝜏
+> Threshold
+> Boundary Discontinuity Jitter
+> Time
+> sentiment score
+> Negative
+> Boundary
+> Positive
+> Boundary width
+> Descending
+
+😩 😀 
+
+😐 
+
+😩 
+
+😩 😩 😀 
+
+😀 😩 
+
+Figure 1. Illustration of the task and motivation. (a) Given the point-level sentiment points in the untrimmed video, the model needs to achieve sentiment classification and boundary localiza-tion. (b) We explored the facial-centric method to guide sentiment clues discovery. (c) To alleviate sentiment boundary jitter and dis-continuity under weak supervision, we propose a novel pseudo-label smoothing strategy. 
+
+alyze sentiment in untrimmed audible videos, has become increasingly important for applications such as sentiment-adaptive editing [21, 22] and affect-aware summariza-tion [23, 24]. However, acquiring dense frame-level sen-timent annotations is time-consuming and costly, restrict-ing the development of fully-supervised TSL [25–29]. As a result, the weakly-supervised temporal sentiment localiza-tion (WTSL) is receiving more and more attention from the community. Recent advances in WTSL mainly fall into two categories: (1) video-level weakly-supervision , where only entire video sentiment labels are available. DCIN [30] uses aligned subtitles as weak supervision via cross-modal con-sensus learning. Other weakly supervised methods include multiple instance learning [31, 32], reweighting-based mechanisms [33–36], and proposal scoring approaches [37, 
+
+> arXiv:2603.14750v1 [cs.CV] 16 Mar 2026
+
+38]. However, lacking fine-grained temporal labels, these methods often fail to precisely localize temporal bound-aries. (2) point-level weakly-supervision , which uses a sin-gle point annotation per segment with the sentiment bound-aries unknown. Recent models TSL [39] exploit temporal context and semantic alignment to infer sentiment segment localization. In this research, we focus on point-level weakly-supervised TSL for videos, where the model aims to auto-matically locate fine-grained sentiment segments and clas-sify their sentiment categories. As shown in Fig. 1(a), it constructs a mapping from sparsely annotated senti-ment points and audio-visual modalities to segment-level sentiment boundary localization. However, this task has some core challenges: 1) Redundant Information Masks Salient Sentiment Signals . Videos contain diverse visual and audio content, but key sentiment-related information is often obscured by redundant content ( e.g., ‘background’ or ‘color’ ), making it difficult for the model to mine ef-fective sentiment information. 2) Uncertain Sentiment Boundaries Due to Sparse Point Annotations . Point-level annotations in P-WTSL provide only a few senti-ment anchors, making it difficult to determine precise sen-timent boundaries. 3) Abrupt and Transient Sentiment Changes . In realistic scenarios, sentiment may emerge and vanish abruptly within short temporal spans, which leads to significant challenges for accurate classification. To address the above issues, we first propose to enhance video temporal sentiment localization using the Facial Fea-tures , for the three reasons: ① Facial expressions directly reflect sentiment stimuli [40, 41] in real scenarios; ② Subtle changes in the face area are easier to capture with lower dif-ficulty, as shown in Fig. 1(b), whereas the overall temporal differences in the main visual content, such as ‘ characters ’and ‘ background ’, are more difficult to perceive due to redundancy. ③ Face features are directly derived from visual frames and can better synergize learning with video features. To this end, to effectively leverage facial fea-tures for temporal sentiment localization, we propose the Face-Guided Sentiment Boundary Enhancement Network (FSENet). Specifically, a face-centric interaction module is designed, consisting of two stages: the facial features first interact independently with audio and visual. These relatively clean and unimodal features make it easier to detect sentiment cues. To further capture more complex sentiment, the fused representations Face-Audio ( F (f ) 
+
+> a
+
+)and Face-Visual (F (f ) 
+
+> v
+
+) are employed to interact for sentiment expression. In parallel with the Facial-Centric Interaction branch, we incorporate a global sentiment per-ception weighting mechanism, which identifies potential sentiment-relevant segments from a holistic view. These two branches collaboratively leverage facial features to discover sentiment-stimulation cues for localization. Importantly, the point-level supervised TSL task still faces two key challenges: vague sentiment boundaries and poor segment-level classification after the stimulus cues are found. Therefore, we further propose two key optimization modules to enhance sentiment semantic alignment. The Point-aware Sentiment Semantics Contrast (PSSC) (shown in Fig. 2(b)) performs frame-level sentiment semantics con-trastive training on the temporal axis. Specifically, for each sentiment category ( e.g ., positive), we aggregate anno-tated positive point features into a class-specific prototype. The top-k frames most similar to the class-specific proto-type are selected as positives ( U+), while other unanno-tated frames serve as negatives ( U−). This contrastive train-ing pulls positive frames closer in semantic space to im-prove segment sentiment classification. Moreover, the pro-posed Boundary-aware Sentiment Pseudo-label Generation (BSPG) module aims to produce high-quality pseudo-labels for reliable sentiment boundary modeling under point-level supervision. As illustrated in Fig. 1(c), traditional threshold-based methods [42] on frame-wise sentiment scores often suffer from boundary discontinuity and jitter 
+
+due to score sensitivity and frame-level content noise, even after normalization. To address this, BSPG introduces a la-bel smoothing mechanism that gradually decays sentiment scores from each annotation point using a decay factor β,with boundary width w controlling the extent of adjacent frames. This yields smoother, more coherent pseudo-labels, which are beneficial for determining effective sentiment boundaries. Our main contributions are as follows.: • Facial-Guided Multimodal Interaction for Sentiment Discovery. We leverage facial features as key sentiment cues to guide audio-visual interaction, enabling interac-tion and global branches to discover more accurate senti-ment cues amid complex background content. • Sentiment boundary optimization under weakly-supervised. We design a contrastive scheme that pulls sentiment-consistent frames toward class prototypes de-rived from point annotations to enhance sentiment seman-tics consistency, and generate smoothing pseudo-labels by expanding annotation points into the temporal axis to improve boundary continuity and reduce noise. • Unified framework with strong generalization. Our method provides a unified solution achieving state-of-the-art performance under full supervision and video-/point-level weak supervision, demonstrating strong generaliza-tion across varying settings, even with LLM methods. 
+
+## 2. Related Work 
+
+2.1. Multimodal Sentiment Analysis 
+
+Multimodal Sentiment Analysis (MSA) leverages visual, audio, and textual information to predict emotion for cropped videos [26]. Some approaches [43–46] decom-Local Face 
+
+> Visual
+
+(a) Face -guided Sentiment Discovery 
+
+> 𝓛 𝒇𝒓𝒂𝒎𝒆
+> 𝒈𝒍𝒐
+> Global CAS
+> Sentiment
+> Pseudo -label
+
+!𝒚    
+
+> Audio
+> Face Region
+> Detection
+> 𝑭 𝒗
+> 𝑭 𝒇
+> 𝑭 𝒂
+> segment
+> Conv Regression
+> 𝑭 𝒗 𝑭 𝒂 𝑭 𝒇
+
+𝒄  
+
+> Global Sentiment Perception Branch (GSP)
+
+𝑾 𝒔𝒆𝒏𝒕       
+
+> Sentiment Segment Location
+> 𝓛 𝒇𝒓𝒂𝒎𝒆 𝒚 ∈𝑅 *×(-./)
+> &𝒚 ∈𝑅 *×(-./)
+> Category -aware
+> Sentiment Score (CAS)
+> Time S-Head
+> S-Head
+> S-Head
+> segment
+
+😩 
+
+😀 😀 
+
+😩 
+
+😡   
+
+> MH Attn.
+> MH Attn.
+> 𝑄
+> 𝑄
+> 𝐾 ,𝑉
+> 𝐾 ,𝑉
+> Sharing
+> 𝑭 𝒂
+> 𝑭 𝒗
+
+𝑭 𝒇 
+
+𝑭 𝒂   
+
+> (𝒇 )
+> MH Attn.
+> MH Attn.
+> Sharing
+> 𝑄
+> 𝑄
+> 𝐾 ,𝑉
+> 𝐾 ,𝑉
+
+𝒄 
+
+𝓛 %& 
+
+> Face -Centric Interaction Branch (FCI)
+
+𝑭 𝒗 
+
+> (𝒇 )
+
+(b) PSSC 
+
+⋱⋱
+
+𝑭 𝒎𝒊𝒙 
+
+⋱⋱
+
+> 𝛽
+
+𝑠 -! ⋯
+
+𝑠 -!
+
+> ⋯
+> w
+
+𝑡 .
+
+> Time
+
+𝑠 -"
+
+> #
+
+𝑠 -"
+
+> #
+> Boundary -aware
+
+⋱⋱ Sentiment   
+
+> Pseudo -label
+> points 𝜔
+> 𝛽 Eq. (7)
+> points
+> Points−Annotation
+> +𝒚
+> 𝒚
+> Threshold filter
+
+(c)BSPG 
+
+> Distance
+
+(c) Boundary -aware Sentiment Pseudo -label Generation （BSPG ）          
+
+> 😀
+> 😩
+> 😡
+> ⋮⋮⋮⋮⋮
+> 𝑑 12/
+> 3$=/
+> 45/
+> 6
+> 𝑠𝑖𝑚 (𝑓 12/,𝑝 4
+> 3!)
+> 𝑑 1
+> 3$=/
+> 45/
+> 6
+> 𝑠𝑖𝑚 (𝑓 1,𝑝 4
+> 3!)
+> Sentiment Distance
+> Time
+> 𝑝 6
+> 3!𝑝 7
+> 3!
+> Time
+
+𝑭 𝒎𝒊𝒙    
+
+> ⋮
+> 𝑓 82/
+> 𝑝 6
+> 3!𝑝 /
+> 3!𝑝 7
+> 3!
+> 𝑝 /
+> 3!
+> 𝑓 8
+> 𝑓 82/
+> Positive Features
+> U%!
+> &={f'}'()
+> *
+
+𝑈 /$     
+
+> Negative Features
+> U%"
+> +={U%",-.},()
+> /
+> ⋮
+
+ℒ%&  
+
+> 8𝒑 𝒄 𝒊
+> 𝐔 𝐜 𝒋
+> 2
+> 𝐔 𝐜 𝒋
+> 2
+> 𝐔 𝐜 𝐢
+> .
+> 𝐔 𝐜 𝐢
+> .8𝒑 𝒄 𝒊
+> 𝐔 𝐜 𝒋
+> 2
+> Eq. (6)
+> Eq. (5)
+> 𝐓𝐨𝐩 𝐊
+
+(b) Point -aware Sentiment Semantics Contrast （PSSC ）
+
+😀 
+
+😀    
+
+> Sentiment Semantic Measurement
+> 𝒄 𝒊
+> points: 𝒑 𝟏 …𝑵
+> 𝒄 𝒊
+
+😀 𝑑 1
+
+> 3$
+> 𝑑 12/
+> 3$
+> 𝑑
+
+Figure 2. Overview of our FSENet framework. (a)FSD module introduces facial features into the temporal sentiment localization task through two branches to advance discovery of sentiment clues: one focuses on facial-centric interaction, while the other employs global sentiment perception weighting score. (b)PSSC aims to identify similar and dissimilar semantic points in the temporal axis to enhance the 
+
+point-level sentiment discrimination by contrastive learning. (c)BSPG transforms sentiment point-level annotations into segment-level sentiment boundaries pseudo-label using the threshold filtering and step-by-step boundary-aware scheme, where sentiment scores decay progressively based on parameters β and w.
+
+pose features into shared and modality-specific subspaces to help capture consistent emotions across multimodal infor-mation. Some work focus on the modality imbalance, filter-ing out noise from single modalities before fusion [47, 48] and removing noise from irrelevant frames to achieve bet-ter emotion recognition [49]. In addition, some work at-tempt to re-modify the prompt text to support the clas-sification of emotion category [50, 51]. However, cur-rent MSA methods are still limited to coarse classifica-tion of pre-cropped video clips and are incapable of han-dling untrimmed videos [52]. Our framework advances to-ward fine-grained multi-emotion understanding and tempo-ral boundary localization in untrimmed videos. 
+
+2.2. Temporal Boundary Localization 
+
+Temporal boundary localization aims to detect the occur-rence time of events in untrimmed videos. Common meth-ods [53–56] first generate a Class Activation Sequence and then apply a fixed threshold for boundary detection. However, these baseline approaches are primarily designed to learn better action representations for locating action boundaries, making them incapable of handling the sub-tle and dynamic nature of sentiment cues (e.g., facial ex-pressions). Recent Temporal Sentiment Localization stud-ies [39] use point supervision to jointly classify and localize sentiment segments, typically via inverse mapping and con-trastive learning. However, they overlook temporal cross-modal dependencies(e.g., synchrony between facial expres-sions, visuals, and audio) and sentiment semantic opposi-tion (e.g., positive vs. negative sentiment). In contrast, our method leverages facial emotion guidance to enhance cross-modal consistency and contrast between sentiment seman-tics, thereby significantly improving localization accuracy. 
+
+## 3. Methodology 
+
+3.1. Problem Formulation 
+
+Given an sentiment audible video with T frames, the point-level annotations along timeline are provided as Yanno =
+
+{(ti, y ti )}Ni=1 , where i-th point is denoted as pi, and pi ∈
+
+RC is a one-hot vector which notes the sentiment categories. The point-level weakly-supervised temporal sentiment lo-calization (P-WTSL) task aims to predict segments convey-ing sentiment around annotated points. 
+
+3.2. Face-guided Sentiment Discovery (FSD) 
+
+To effectively incorporate facial cues into temporal senti-ment localization, we propose the Face-guided Sentiment Discovery(FSD) main module, which integrates facial cues to guide and enhance interaction with audio/visual modali-ties for sentiment temporal alignment. FSD is designed with two parallel branches, Face-Centric Interaction (FCI) and Global Sentiment Perception (GSP) branches. They coop-erate with each other to assist in the discovery of sentiment. Face-Centric Interaction (FCI) leverages facial embed-dings as semantic guidance to selectively attend to emo-tionally salient segments, shown in Fig. 2(a). Prior ap-proaches [30, 39] generally overlook the role of facial features in TSL, but our strategy leverages facial embed-dings to guide audio/visual feature interaction and highlight sentiment-relevant temporal segments. Specifically, given facial feature Ff , visual feature Fv , and auditory feature 
+
+Fa, where Ff , F a, F v ∈ RT ×d, the first stage face-guided interaction is formulated as follows: 
+
+F (f ) 
+
+> v
+
+= Fv + MHAttn (Ff , F v , F v ),F (f ) 
+
+> a
+
+= Fa + MHAttn (Ff , F a, F a), (1) where the MHAttn( ·) denotes the multi-head attention [57], with its inputs corresponding to the ‘query’ , ‘ key ’, and ‘value ’, respectively. The outputs F (f ) 
+
+> v
+
+, F (f ) 
+
+> a
+
+∈ RT ×d are face-guided fusion features in stage-I. To further enable comprehensive sentiment clues discov-ery, we design the stage-II face-guided interaction to pro-gressively integrate audio and visual features with the im-pact of facial features, which performs deep multimodal in-teraction. The process is formulated as follows: 
+
+F (af ) 
+
+> v
+
+= F (f ) 
+
+> v
+
++ MHAttn (F (f ) 
+
+> a
+
+, F (f ) 
+
+> v
+
+, F (f ) 
+
+> v
+
+),F (vf ) 
+
+> a
+
+= F (f ) 
+
+> a
+
++ MHAttn (F (f ) 
+
+> v
+
+, F (f ) 
+
+> a
+
+, F (f ) 
+
+> a
+
+), (2) where the fusion output F (af ) 
+
+> v
+
+and F (vf ) 
+
+> a
+
+∈ RT ×d. We concatenate them to obtain the fused representation Fmix =[F (af ) 
+
+> v
+
+; F (vf ) 
+
+> a
+
+] ∈ RT ×2d.
+
+Global Sentiment Perception (GSP) weighting strategy is designed to complement the interaction branch by model-ing sentiment intensity. While the Face-Centric Interac-tion branch enhances temporal alignment across modali-ties through facial feature guided interactions, this global branch takes a holistic view, identifying sentimentally salient segments along frame-level emotional stimulation dependencies. Specifically, modality-specific features Fa,
+
+Fv , and Ff are first concatenated, then fed into the con-volutional layers E(·). Then the output is projected by re-gression head Reg (·) with a sigmoid activation σ(·) to pro-duce the sentiment weight Wsent ∈ RT ×1, and weighting 
+
+Wsent ∈ [0 , 1] :
+
+Wsent = σ (Reg (E ([ Fa; Fv ; Ff ]))) . (3) 
+
+3.3. Point-aware Sentiment Semantics Contrast (PSSC) 
+
+To enhance the boundary localization of sentiment se-mantics around annotation points under weak supervision, we propose the PSSC optimization strategy, as illustrated Fig. 2(b). The capability of this strategy is to leverage point-level sentiment annotations to pull temporally points (at the frame-level) with the same sentiment closer in the embed-ding space. Specifically, for each candidate point embed-ding ft on the temporal axis, we measure its distance to all annotated points pci
+
+> 1...n
+
+. The computation is performed as follows: 
+
+dci 
+
+> t
+
+= PNn=1 sim (ft, p ci 
+
+> n
+
+), (4) where sim (·, ·) denotes the feature similarity ( i.e ., cosine similarity), and value d ∈ [0 , 1] , and the number N means the annotated points of sentiment of ci.Next, we construct positive and negative sample sets for contrastive learning, based on the computed distances. To gain sentiment stimulation, we incorporate Global Senti-ment Perception weighting (GSP) in Eq. 3, which can adjust sample selection based on sentiment saliency. The positive neighbor set for category ci, denoted as Uci , consists of the top-K most relevant point embeddings: 
+
+U+ 
+
+> ci
+
+= {ft | dci 
+
+> t
+
+∈ Top-K({Wsent ,t · dci 
+
+> t
+
+}Tt=1 )}, (5) where K < T − N is a parameter controlling the size of the positive set U+ 
+
+> ci
+
+, which consists of point-level embeddings, and t̸ = tp (tp: annotated timestamp). Meanwhile, for other sentiment categories cj̸ = ci, nearby points form negative sets U− 
+
+> cj
+
+, as they belong to different sentiment prototypes. To enhance the discriminative ability for sentiment clas-sification under point-level supervision, we introduce a con-trastive learning loss to encourage candidate points to be close to their annotation points with the same sentiment category, while simultaneously pushing them away from neighbors of different categories. To this end, we construct a triplet {¯pci , U+ 
+
+> ci
+
+, U− 
+
+> cj
+
+} for sentiment ci. The ¯pci serves as a sentiment prototype, encouraging features in the positive set U+ 
+
+> ci
+
+to be pulled closer to ¯pci , while pushing features in the negative sets U− 
+
+> cj
+
+away. The overall loss across all sentiment categories is defined as: 
+
+Lsc = −
+
+> C
+
+X
+
+> i=1
+
+log 
+
+P
+
+> ft∈U +
+> ci
+
+exp (ft · ¯pci )
+
+P   
+
+> ft∈{U +
+> ci,U−
+> cj}
+
+exp (ft · ¯pck=i/j ) , (6) where ¯pci is the average result of the annotation point fea-tures for sentiment category ci, and k in negative sets is based on the sentiment to which ft belongs. 
+
+3.4. Boundary-aware Sentiment Pseudo-label Gen-eration (BSPG) 
+
+The quality of the generated pseudo-label ˆy, especially the accuracy of its sentiment boundaries, plays a pivotal role in the effectiveness of the point-level WTSL task. To ad-dress the challenge of jitter and discontinuous pseudo-label distributions caused by using raw model predictions with a threshold filter [42, 58]. We propose a Boundary-aware Sentiment Pseudo-label Generation (BSPG) strategy that exploits the local temporal continuity of sentiment frames near annotation points. The detailed procedure is as fol-lows: 
+
+st = β + (1 − β)
+
+
+
+1 − |t − tp|
+
+w
+
+
+
+, (7) where tp is the timestamp of the annotated point, and t is any time step along the video, and w ∈ Z+ and β ∈ [0 , 1] 
+
+are the predefined hyperparameters denoting the smooth-ing window length (frames-level) and smoothing score that controls the minimum pseudo-label value at the temporal boundaries, respectively. Next, we integrate the output sentiment score y and the obtained smoothing scores st, to enhance the reliability of sentiment localization supervision:                          
+
+> ˆyt,c i=I(yt) +
+> 
+> st,if ci̸=c+ 1 and |t−tp| ≤ w,
+> 1−st,if ci=c+ 1 and |t−tp| ≤ w,
+> 0,otherwise ,
+
+(8) where ci = c+1 represents the non-sentiment category, and 
+
+I(yt) denotes a sentiment threshold function that sets the sentiment score to zero when non-sentiment confidence yt
+
+exceeds threshold τ =0.95, indicating a non-sentiment point. 
+
+3.5. Optimization of Backbone Network 
+
+To adapt the point-level weakly supervised temporal senti-ment localization, we leverage the previously obtained Fmix 
+
+and Wsent features to construct an effective loss function for optimizing our framework. Specifically, the Fmix is pro-cessed through c+1 independent convolutional layers with a sigmoid-activated function to generate the frame-level sen-timent score for sentiment alignment supervision, and the process is as follows: 
+
+y = σ (CLS (Fmix )) ∈ RT ×(C+1) , (9) where the number C denotes sentiment categories, with an additional category designated for non-sentiment. The output y denotes the frame-level category-aware sentiment score (CAS). Next, we further achieve feature-level collaboration be-tween the two branches, incorporating the category-aware sentiment score (CAS) into the global sentiment perception (GSP) branch for joint computation: 
+
+˜yt = [ Wsent ,t · yt, 1: C ; (1 − Wsent ,t ) · yt,C +1 ] , (10) where the larger value in Wsent reflect stronger sentiment stimuli in the first c categories, meanwhile 1 − Wsent is used to represent the last non-sentiment category, and ˜yt ∈
+
+RC+1 is the sentiment-enhanced activation for frame t, and 
+
+˜y ∈ RT ×(C+1) denotes the (Global CAS) in global branch. Our optimization objective is to minimize the discrep-ancy between the category-aware sentiment score (CAS) and the global CAS with the sentiment pseudo label ˆy gen-erated from point-level annotations. To guide the training process, we define a base loss Lbase = − PCc=1 avg ( ˆ yc) ·
+
+log avg (yc) that encourages alignment of (video-level) sen-timent predictions by averaging over temporal axis. We also introduce two finer-grained (frame-level) supervision con-straints, Lframe and Lglo frame , whose details are as follows: 
+
+Falign (f ; fp) = PC+1  
+
+> c=1
+
+FL (f ; fp),
+
+Lframe = Falign (y; ˆ y); Lglo frame = Falign ( ˜ y; ˆ y),
+
+| {z }
+
+y ← FCI ˜y ← GSP ˆy ← BSPG (11) where the Falign (· ; ·) function performs Frame-level 
+
+Sentiment Align ment between the model outputs ( y and 
+
+˜y) and the pseudo labels ( ˆy). The FL denotes the fo-cal loss function [59]with γ is 2, which is widely used in multimodal sentiment analysis tasks to help distinguish sentiment-related frames from non-sentiment ones. In summary, the overall backbone network is trained on the point-level WTSL task with multiple loss functions. The collaborative loss computation Ltotal is as follows: 
+
+Ltotal = Lbase + λ1 · (Lframe + Lglo frame ) + λ2Lsc , (12) where the hyperparameters λ1 and λ2 are weighting factors that balance the relative importance of the respective terms in the total loss. 
+
+## 4. Experiments 
+
+4.1. Experimental Setup 
+
+Dataset and Evaluation Metrics . We primarily evaluate our method on the popular point-annotated TSL300 [39] dataset, which contains 300 untrimmed videos with an av-erage duration of over 250 seconds, totaling more than 1.3 k minutes. We also evaluate our method on CMU-MOSEI [64], where we retain two sentiment categories for temporal localization on untrimmed videos. Following the standard protocol [39], we use mean Average Precision (mAP) under IoU thresholds from 0.1 to 0.3 (step size 0.05) as the primary metric for temporal localization. Addition-ally, we report Recall and F2-score metrics to better evalu-ate segment-level sentiment classification. 
+
+Implementation Details. Videos are divided into 16-frame segments to extract visual, audio, and facial features us-ing the I3D [65], MFCC [66], and ResEmoteNet [67], re-spectively. Facial regions are detected using DeepFace 1 to obtain bounding boxes: [x,y,w,h], which are then fed into ResEmoteNet for feature extraction. The raw feature di-mensions (1024/512/256) are projected to a unified dimen-sion d=512 via unfixed 1D convolutions. We use the Adam optimizer, with an initial learning rate of 1 × 10 −5 and a weight decay of 5 × 10 −4. The training epochs are 600, and 
+
+> 1https://github.com/serengil/deepface
+
+Table 1. Performance comparison with SOTA methods under Fully and Weakly supervised settings on TSL300 . “†” indicates methods reproduced by ourselves. The best and second-best results are bolded and underlined, respectively. 
+
+Setting Method mAP@IoU(%) Average 0.1 0.15 0.2 0.25 0.3 Recall F2 Score mAP Full Supervision 
+
+VAANet [60] 28.01 24.95 20.68 16.45 12.50 69.82 39.59 20.51 
+
+†AFSD [61] 33.44 27.09 21.78 16.64 11.76 75.10 31.78 22.14 FSENet(ours) 28.02 25.45 22.63 18.93 14.33 79.58 30.37 21.87 
+
+Weak Supervision (Video-level) 
+
+CoLA [62] 11.87 10.14 8.11 6.83 4.98 64.07 21.19 8.38 UM [34] 14.77 13.28 10.77 8.41 6.54 55.33 23.94 10.75 
+
+†DDG-Net [54] 16.13 12.19 9.91 8.47 6.93 66.38 23.82 10.72 
+
+†ISSF [55] 13.83 11.15 9.30 6.87 5.14 45.65 25.17 9.26 
+
+†TSL [39] 14.10 11.35 8.77 6.36 4.47 31.84 27.40 9.01 
+
+FSENet(ours) 19.15 15.12 11.91 9.35 7.12 58.11 30.0 12.53 Weak Supervision (Point-level) 
+
+LACP [42] 17.25 14.46 12.47 9.59 7.76 66.92 25.01 12.30 SF-Net [63] 20.26 18.09 15.01 12.38 9.76 59.55 32.61 15.10 
+
+†HR-pro stage1 [56] 19.77 17.10 14.71 11.38 8.86 62.23 22.82 14.36 
+
+†HR-pro stage2 [56] 27.24 23.13 19.85 15.96 11.83 73.60 32.21 19.60 TSL [39] 28.72 24.92 20.46 16.10 11.83 71.14 35.36 20.40 
+
+FSENet (ours) 29.31 25.47 22.49 16.76 13.24 75.02 33.67 21.45 
+
+Table 2. Performance results on CMU-MOSEI dataset under point-level settings.                                
+
+> Method mAP@IoU(%) Average 0.1 0.2 0.3 Recall F2 Score mAP
+> HR-pro stage1 11.83 7.26 4.44 18.81 18.46 7.65 HR-pro stage2 16.27 11.49 6.76 26.61 24.71 11.47 TSL 15.18 10.71 7.46 27.24 24.86 11.00
+> FSENet (Ours) 22.7 22.49 13.24 33.08 24.89 16.54
+
+Table 3. Comparison with large language models (LLMs) on the TSL300 dataset. Zero-shot methods are evaluated without fine-tuning. while LoRA-based models are fine-tuned with point-level supervision. 
+
+Method mAP@IoU (%) Avg 
+
+0.1 0.2 0.3 mAP 
+
+Qwen3-Omni(zero-shot) 7.67 5.03 2.67 5.07 LLaMA-2-7B (LoRA) 10.98 10.98 8.45 9.97 LLaMA-2-7B (LoRA+BSPG) 27.76 11.82 5.16 11.75 
+
+Ours (small model) 29.31 22.49 13.24 21.45 
+
+the batch size is 16. The experiments are conducted on a single NVIDIA A40 GPU. The optimization of total losses contains two parameters: λ1=1 and λ2=0.05. The hyper-parameters w=7 and β=0.6 are applied in Eq. 7 and Eq. 8, respectively. Supervision settings : We compare point-level, video-level weak, and full supervision settings for TSL. For weak supervision, only point annotations are used. For the video-level setting, points are converted into a binary vector 
+
+RC , where 1 indicates the presence of sentiment segments. For full supervision, segment start and end times are con-verted into frame-level labels. 
+
+Table 4. Fair evaluation under identical feature settings on TSL300 . Group ➀ uses only audio-visual features, and group ➁
+
+adds local facial features. All △ adopt the same facial extractor.                                                         
+
+> Method mAP@IoU (%) Avg
+> 0.1 0.15 0.2 0.25 0.3 mAP
+> AV Features Only
+> HR-pro stage1 16.64 13.95 11.86 9.74 8.01 12.04 HR-pro stage2 26.40 21.80 16.91 13.27 9.96 17.67 TSL 28.14 23.02 18.68 14.36 10.46 18.93 FSENet(ours) 25.91 24.70 20.08 16.85 11.53 19.41
+> AV + Facial Features
+> △HR-pro stage1 19.77 17.10 14.71 11.38 8.86 14.36
+> △HR-pro stage2 27.24 23.13 19.85 15.96 11.83 19.60
+> △TSL 27.77 24.94 20.93 17.15 13.48 20.86
+> △FSENet(ours) 29.31 25.47 22.49 16.76 13.24 21.45
+
+4.2. Comparison to Prior Work 
+
+We evaluate our model under multiple supervision settings, including full, video-level, and point-level supervision, to assess its effectiveness on the temporal sentiment localiza-tion task across the TSL300 and CMU-MOSEI datasets. 
+
+TSL300 : As shown in Tab. 1, under point-level setting, our model achieves superior performance, attaining the best mAP scores across all IoU thresholds [0.1:0.3], and the highest average mAP@IoU of 21.45%, outperforming the previous SOTA method TSL [39] by over 5%, and achieving a peak Recall of 75.02%. Moreover, our model (FSENet) also demonstrates competitive results under both full and video-level weak supervision. First, our method surpasses the video-level supervised SOTA methods, such as UM [34], by 25% in F2-score and 16.5% in average mAP. Next, FSENet achieves a mAP of 21.87% and an F2-score of 30.37% under full supervision, approaching the perfor-Table 5. Ablation study on the main network component in FSD. We report the result of mAPs, and ‘–’ denotes not used.                                             
+
+> #id FCI GSP mAP@IoU (%) Avg
+> first stage second stage 0.1 0.2 0.3 mAP
+> a––✓24.95 18.63 11.52 18.42 b✓–✓27.19 18.93 11.16 19.10 c–✓✓27.46 18.31 10.37 18.78 d✓✓–28.69 20.83 11.26 20.22 e✓✓✓29.31 22.49 13.24 21.45
+
+Table 6. Ablation of pseudo-label generation strategies.                                
+
+> Pseudo-Label Threshold Boundary mAP@IoU(%) Avg
+> 0.1 0.2 0.3 mAP
+> None ––27.51 15.31 8.72 16.92 Threshold Only ✓–28.06 20.98 11.55 20.29 Step Only –✓25.76 21.59 13.10 20.31
+> Ours (full model) ✓✓29.31 22.49 13.24 21.45
+
+mance of AFSD [61], which is specifically designed for the fully supervised setting. Our FSENet still surpasses this fully supervised method by around 6% in Recall. 
+
+CMU-MOSEI: To further verify generalization, we evalu-ate FSENet on the CMU-MOSEI dataset. In Tab. 2, FSENet achieves mAP@IoU thresholds of 22.7%, 22.49%, 13.24% for 0.1, 0.2, and 0.3, respectively. Despite the overall lower performance due to coarse temporal annotations, FSENet achieves 16.54% average mAP, outperforming TSL and HR-pro by 5.54% and 5.07%, respectively. 
+
+Comparison with LLMs . We compare our model with large language models (LLMs). Despite their strong reason-ing ability, LLMs’ text-centric representations hinder tem-poral sentiment alignment across audio/visual/facial modal-ities. As shown in Tab. 3, our model achieves the high-est average mAP of 21.45%, outperforming Qwen3-Omni-30B [68], LLaMA-2-7B [69] with LoRA [70], and LoRA + BSPG by 16.30%, 11.48%, and 9.70%, respectively. More-over, for LLaMA-2 fine-tuning, our pseudo-labeling strat-egy BSPG (Eq. 8) improves average mAP by 1.8% over the variant without BSPG, demonstrating its effectiveness for temporal sentiment detection. 
+
+4.3. Ablation Studies 
+
+Ablation studies on facial features . To evaluate the im-pact of facial features, we conduct two group experiments: 1) using only audio-visual (AV) features, and 2) enhancing AV features with local facial features. As shown in Tab. 4, our method outperforms the SOTA method by 0.48% even without facial features. With facial feature enhancement, the performance of FSENet improves consistently across all IoU thresholds [0.1:0.3], reaching an average mAP of 21.45% and outperforming △TSL [39] by 0.59%. These results indicate that facial features improve sentiment local-ization, and FSENet achieves the best performance across all settings, confirming the generalizability of our design. 
+
+Table 7. Ablation of weakly-supervised optimization losses.                                                  
+
+> #id Lframe Lglo
+> frame Lsc
+> mAP@IoU(%) Avg
+> 0.1 0.2 0.3 mAP
+> a✓✓✓29.31 22.49 13.24 21.45
+> b–✓✓28.28 19.52 10.33 20.02 c✓–✓27.67 20.40 9.99 20.65 d✓✓–29.17 21.18 12.49 20.94 e––✓19.15 11.91 7.12 12.53 f–––16.61 12.32 9.38 10.69
+
+Effects of Main Network Components. The FSD frame-work consists of two parallel components: FCI and GSP. We conduct an ablation study to evaluate their contribu-tions (Tab. 5). Compared to (row #a), (rows #b and #c) show slight improvements of 0.7% and 0.4%, respectively, when facial feature guidance is introduced into FCI. How-ever, directly applying the complex second-stage fusion of 
+
+F (f ) 
+
+> a
+
+and F (f ) 
+
+> v
+
+(Eq. 2 in (row #c) does not lead to obvi-ous improvements. The best performance is achieved with an Avg.mAP of 21.45% (row #e), where facial guidance is progressively introduced (including both stages). More-over, when the GSP branch is ablated (from row #e to #d), the performance drops by around 1.2%, highlighting the ef-fectiveness of both the proposed FCI and GSP modules in leveraging facial features to enhance sentiment localization. 
+
+Effects of the generated pseudo-label . Our Boundary-aware Sentiment Pseudo-label Generation (BSPG) strat-egy combines a traditional threshold-based approach with a novel point-centric, step-wise boundary generation method (Tab. 6). The naive baseline using raw predictions suffers from low-confidence noise (16.92% mAP). Applying a con-fidence threshold improves the result to 20.29%, while our boundary-aware pseudo-label method refinement temporal consistency and further boosts mAP to 20.31%. Our full ap-proach (BSPG) achieves the best result (21.45% mAP) and improvement ( ≈ 4.5%), demonstrating that our joint design effectively facilitates sentiment boundary localization under weak supervision. 
+
+Effects of the optimization. The losses Lframe and Lglo frame 
+
+(Eq. 11) enforce sentiment boundary constraints between the outputs of the two branches and the pseudo-labels under weak supervision. The semantic contrast loss Lsc (Eq. 6) further aligns annotation points with nearby sentiment-relevant frames. We conduct an ablation study on these op-timization losses, as shown in Tab. 7. Compared with the full optimization setting (row #a), removing each optimiza-tion loss (#b/#c/#d) leads to performance drops of around 1.4%, 0.8%, and 0.5%, respectively. Notably, jointly re-moving Lframe and Lglo frame causes a significant drop of 8.9%, demonstrating the effectiveness of our pseudo-label design for sentiment boundary constraints. Overall, the results con-firm that all proposed optimization losses contribute to im-proving temporal sentiment localization. Video  … 
+
+> Audio
+
+## … 
+
+> Face
+> 115 120s
+
+## …Time  0 5 10  15  90  95  100  105  110 
+
+> w/o Face
+> Ours
+> TSL
+> GT
+> TSL
+> HR -pro
+> w/o BSPG
+> w/o PSSC
+
+Laughter Sigh Figure 3. Visualization of the predicted results for temporal sentiment localization. The ‘pink’ segments are positive sentiment, ‘blue’ means negative, and ‘gray’ means no valid location output. △ indicates that methods incorporate facial features settings. (d ) TSL  Feature Space  (e ) HR -pro  Feature Space  (f) Ours  Feature Space 
+
+> (c)Raw Face Feature Space (b)Raw Audio Feature Space (a)Raw Visual Feature Space
+> Label
+> p
+> n
+> n-sent
+> Label
+> p
+> n
+> n-sent
+> Label
+> p
+> n
+> n-sent
+> Label
+> p
+> n
+> n-sent
+> Label
+> p
+> n
+> n-sent
+> Label
+> p
+> n
+> n-sent
+
+Figure 4. T-SNE visualization comparing our FSENet with SOTA. Each point represents a segment-level feature (‘p/n/n-sent’ denotes positive, negative, and non-sentiment categories, respectively). 
+
+4.4. Qualitative Results 
+
+Visualization of predicted sentiment localization . As il-lustrated in Fig. 3, we present a long-form interview dis-cussing U.S. student loans, involving three speakers whose sentiments shift from initially negative to increasingly posi-tive. The results are grouped for analysis. The first four out-puts correspond to ablations of our main modules. Without facial features (w/o Face), the model fails to detect the early negative sentiment segment (0–15s) due to the lack of facial guidance. Removing our proposed optimization strategies (w/o BSPG and w/o PSSC) leads to fragmented sentiment predictions between (90–116s), indicating weaker temporal coherence and boundary precision. The latter four outputs compare our method with existing methods. TSL [39] and 
+
+△TSL miss the fine-grained positive segment from (90– 96s), suggesting limited sensitivity to short-duration senti-ment shifts. Although △HR-pro [56] detects all emotional segments, it tends to overextend short segments into overly long ones, leading to boundary overestimation. Our FSENet achieves the most accurate and balanced results, effectively capturing both short and long sentiment segments by lever-aging facial cues and robust boundary strategies. 
+
+T-SNE visualization of the sentiment points distribu-tion. To evaluate the effectiveness of our model in learning sentiment semantics, we randomly select four videos from TSL300 [39] and apply t-SNE to their frame-level features. Fig. 4(a)–(c) show the feature spaces of the original visual, audio, and facial features, where points with the same sen-timent label are not clearly clustered. We then compare several state-of-the-art methods, including △TSL [39] and 
+
+△HR-pro [56], as shown in Fig. 4(d)–(e). The t-SNE results show multiple sentiment clusters for both positive and neg-ative samples, indicating a limited ability to distinguish sen-timents. In contrast, our method, FSENet (Fig. 4(f)), pro-duces two well-separated clusters corresponding to positive and negative sentiments with a large inter-cluster distance, facilitating more accurate temporal sentiment localization. This demonstrates the strong capability of our method in discriminating sentiment semantics. 
+
+## 5. Conclusion 
+
+In this paper, we propose FSENet, a unified framework for point-level weakly-supervised temporal sentiment local-ization (P-WTSL). We attempt to enhance sentiment stim-uli discovery by introducing facial features as core seman-tic guidance (FSD), which facilitates interaction between audio/visual and facial features. Through facial-guided interaction, our model enhances sentiment boundary per-ception by jointly performing semantic contrastive learn-ing (PSSC) and generating boundary-aware pseudo-labels (BSPG) that provide sentiment temporal supervision. Com-prehensive experiments and ablation analyses confirm that FSENet achieves superior performance to existing SOTA approaches under every supervision setting for TSL tasks. Acknowledgement :This work is supported by the National Key R&D Program of China (NO.2024YFB3311600), the Natural Science Foundation of China (62272144), the Anhui Provincial Natural Science Foundation (2408085J040), the Major Project of the Anhui Provin-cial Science and Technology Breakthrough Program (202423k09020001), and the Fundamental Research Funds for the Central Universities (JZ2024AHST0337). 
+
+## References 
+
+[1] J. Zhou, D. Guo, R. Guo, Y. Mao, J. Hu, Y. Zhong, X. Chang, and M. Wang, “Towards open-vocabulary audio-visual event localization,” in CVPR , 2025, pp. 8362–8371. 1 [2] P. Zhao, J. Zhou, Y. Zhao, D. Guo, and Y. Chen, “Multimodal class-aware semantic enhancement network for audio-visual video parsing,” in AAAI , 2025, pp. 10 448–10 456. [3] Z. Li, D. Guo, J. Zhou, J. Zhang, and M. Wang, “Object-aware adaptive-positivity learning for audio-visual question answering,” in AAAI , 2024, pp. 3306–3314. [4] Z. Li, J. Zhou, J. Zhang, S. Tang, K. Li, and D. Guo, “Patch-level sounding object tracking for audio-visual question an-swering,” in AAAI , vol. 39, no. 5, 2025, pp. 5075–5083. [5] X. Liu, N. Xia, J. Zhou, Z. Li, and D. Guo, “Towards energy-efficient audio-visual classification via multimodal interac-tive spiking neural network,” ACM Transactions on Multime-dia Computing, Communications, and Applications , vol. 21, no. 5, pp. 144:1–144:24, 2025. [6] J. Zhou, X. Shen, J. Wang, J. Zhang, W. Sun, J. Zhang, S. Birchfield et al. , “Audio-visual segmentation with seman-tics,” IJCV , vol. 133, no. 4, pp. 1644–1664, 2025. [7] J. Zhou, Z. Zhou, Y. Zhou, Y. Mao, Z. Duan, and D. Guo, “Clasp: Cross-modal salient anchor-based semantic propa-gation for weakly-supervised dense audio-visual event local-ization,” in AAAI , 2026. [8] J. Zhou, L. Zheng, Y. Zhong, S. Hao, and M. Wang, “Pos-itive sample propagation along the audio-visual event line,” in CVPR , 2021, pp. 8436–8444. [9] J. Zhou, D. Guo, and M. Wang, “Contrastive positive sam-ple propagation along the audio-visual event line,” IEEE Transactions on Pattern Analysis and Machine Intelligence ,vol. 45, no. 6, pp. 7239–7257, 2023. [10] J. Zhou, D. Guo, Y. Mao, Y. Zhong, X. Chang, and M. Wang, “Label-anticipated event disentanglement for audio-visual video parsing,” in ECCV , 2024, pp. 35–51. [11] J. Zhou, D. Guo, Y. Zhong, and M. Wang, “Advancing weakly-supervised audio-visual video parsing via segment-wise pseudo labeling,” International Journal of Computer Vision , vol. 132, no. 11, pp. 5308–5329, 2024. [12] J. Zhou, J. Wang, J. Zhang, W. Sun, J. Zhang, S. Birchfield, D. Guo, L. Kong, M. Wang, and Y. Zhong, “Audio-visual segmentation,” in ECCV , 2022, pp. 386–403. [13] D. Jin, Y. Zhou, J. Zhou, J. Ma, R. Guo, and D. Guo, “Sim-token: A simple baseline for referring audio-visual segmen-tation,” in ICASSP , 2026, pp. 1–5. [14] J. Zhou, Y. Zhou, M. Han, T. Wang, X. Chang, H. Cholakkal, and R. M. Anwer, “Think before you segment: An object-aware reasoning agent for referring audio-visual segmenta-tion,” in AAAI , 2026, pp. 1–19. [15] R. Guo, X. Ying, Y. Chen, D. Niu, G. Li, L. Qu, Y. Qi, J. Zhou, B. Xing, W. Yue et al. , “Audio-visual instance seg-mentation,” in CVPR , 2025, pp. 13 550–13 560. [16] M. I. Kurpath, J. M. Kaithakkodan, J. Zhou, S. S. Mul-lappilly, M. Almansoori, N. Ahsan, B. Kalmakhanbet, S. Shikhar, R. Lalla, J. Lahoud et al. , “A benchmark and agentic framework for omni-modal reasoning and tool use in long videos,” arXiv preprint arXiv:2512.16978 , 2025. [17] X. Shen, D. Li, J. Zhou, Z. Qin, B. He, X. Han, A. Li, Y. Dai, L. Kong, M. Wang et al. , “Fine-grained audible video de-scription,” in CVPR , 2023, pp. 10 585–10 596. [18] Y. Mao, X. Shen, J. Zhang, Z. Qin, J. Zhou, M. Xiang, Y. Zhong, and Y. Dai, “Tavgbench: Benchmarking text to audible-video generation,” in ACM MM , 2024, pp. 6607– 6616. [19] J. Zhou, Y. Zhou, Y. Wang, Z. Han, J. Ma, H. Ding, R. M. Anwer, and H. Cholakkal, “Audit after segmentation: Reference-free mask quality assessment for language-referred audio-visual segmentation,” arXiv preprint arXiv:2602.03892 , 2026. [20] Y.-H. Zhou, H. Li, R. Lin, H. Huang, J. Zhou, C. Yuan, T. Lan, Z. Zhou, Y. Li, J. Xu et al. , “Mtavg-bench: A comprehensive benchmark for evaluating multi-talker dialogue-centric audio-video generation,” arXiv preprint arXiv:2602.00607 , 2026. 1 [21] X. Ji, H. Zhou, K. Wang, W. Wu, C. C. Loy, X. Cao, and F. Xu, “Audio-driven emotional video portraits,” in CVPR ,2021, pp. 14 080–14 089. 1 [22] Y. Wang, S. Shen, and B. Y. Lim, “Reprompt: Automatic prompt editing to refine ai-generative art towards precise ex-pressions,” in ACM CHI , 2023, pp. 1–29. 1 [23] E. Apostolidis, E. Adamantidou, A. I. Metsai, V. Mezaris, and I. Patras, “Video summarization using deep neural net-works: A survey,” Proceedings of the IEEE , vol. 109, no. 11, pp. 1838–1863, 2021. 1 [24] A. Bertrand, R. Belloum, J. R. Eagan, and W. Maxwell, “How cognitive biases affect xai-assisted decision-making: A systematic review,” in AAAI , 2022, pp. 78–91. 1 [25] S. Poria, E. Cambria, D. Hazarika, N. Majumder, A. Zadeh, and L.-P. Morency, “Context-dependent sentiment analysis in user-generated videos,” in ACL , 2017, pp. 873–883. 1 [26] A. Z. P. P. L. S. P. E. C. L.-P. Morency, “Multimodal language analysis in the wild: CMU-MOSEI dataset and interpretable dynamic fusion,” in ACL , 2018, pp. 2236–2246. 2 [27] N. Majumder, D. Hazarika, A. Gelbukh, E. Cambria, and S. Poria, “Multimodal sentiment analysis using hierarchi-cal fusion with context modeling,” Knowledge-based sys-tems(KBS) , vol. 161, pp. 124–133, 2018. [28] W. Yu, H. Xu, Z. Yuan, and J. Wu, “Learning modality-specific representations with self-supervised multi-task learning for multimodal sentiment analysis,” in AAAI , 2021, pp. 10 790–10 797. [29] Y.-H. H. Tsai, S. Bai, P. P. Liang, J. Z. Kolter, L.-P. Morency, and R. Salakhutdinov, “Multimodal transformer for un-aligned multimodal language sequences,” in ACL , 2019, pp. 6477–6486. 1 [30] J. Li, J. Xie, L. Zhu, L. Qian, S. Tang, W. Zhang, H. Shi, S. Zhang, L. Wei, Q. Tian et al. , “Dilated context integrated network with cross-modal consensus for temporal emotion localization in videos,” in ACM MM , 2022, pp. 5083–5092. 1, 4 [31] L. Wang, Y. Xiong, D. Lin, and L. Van Gool, “Untrimmed-nets for weakly supervised action recognition and detection,” in CVPR , 2017, pp. 4325–4334. 1 [32] P. Nguyen, T. Liu, G. Prasad, and B. Han, “Weakly su-pervised action localization by sparse temporal pooling net-work,” in CVPR , 2018, pp. 6752–6761. 1 [33] F. Hong, J. Feng, D. Xu, and Y. Shan, “Cross-modal consen-sus network for weakly supervised temporal action localiza-tion,” in ACM MM , 2021, pp. 3932–3941. 1 [34] P. Lee, J. Wang, Y. Lu, and H. Byun, “Weakly-supervised temporal action localization by uncertainty modeling,” in 
+
+AAAI , 2021, pp. 1854–1862. 6 [35] J. Zhou, Z. Li, Y. Yu, Y. Zhou, R. Guo, G. Li, Y. Mao, M. Han, X. Chang, and M. Wang, “Mettle: Meta-token learning for memory-efficient audio-visual adapta-tion,” IEEE Transactions on Pattern Analysis and Machine Intelligence , pp. 1–17, 2025. [36] Z. Zhou, J. Zhou, W. Qian, S. Tang, X. Chang, and D. Guo, “Dense audio-visual event localization under cross-modal consistency and multi-temporal granularity collaboration,” in 
+
+AAAI , vol. 39, no. 10, 2025, pp. 10 905–10 913. 1 [37] H. Ren, W. Yang, T. Zhang, and Y. Zhang, “Proposal-based multiple instance learning for weakly-supervised temporal action localization,” in CVPR , 2023, pp. 2394–2404. 1 [38] Y. Hu, J. Fu, M. Chen, J. Gao, J. Dong, B. Fan, and H. Liu, “Learning proposal-aware re-ranking for weakly-supervised temporal action localization,” IEEE Transactions on Circuits and Systems for Video Technology (TCSVT) , vol. 34, no. 1, pp. 207–220, 2023. 2 [39] Z. Zhang and J. Yang, “Temporal sentiment localization: Listen and look in untrimmed videos,” in ACM MM , 2022, pp. 199–208. 2, 3, 4, 5, 6, 7, 8 [40] M. A. Sama, M. Shoura, A. Nestor, and J. S. Cant, “Atten-tion and stimulus structure interact during ensemble encod-ing of facial expression,” Scientific Reports , vol. 15, no. 1, p. 18632, 2025. 2 [41] N. Alp, G. Lale, C. Saglam, and B. Sayim, “The effect of processing partial information in dynamic face perception,” 
+
+Scientific Reports , vol. 14, no. 1, p. 9794, 2024. 2 [42] P. Lee and H. Byun, “Learning action completeness from points for weakly-supervised temporal action localization,” in CVPR , 2021, pp. 13 648–13 657. 2, 4, 6 [43] D. Hazarika, R. Zimmermann, and S. Poria, “Misa: Modality-invariant and-specific representations for multi-modal sentiment analysis,” in ACM MM , 2020, pp. 1122– 1131. 2 [44] P. He, J. Yu, C. Ge, Y. Yu, W. Xu, L. Wang, T. Liu, and Z. Kan, “Domain-separated bottleneck attention fu-sion framework for multimodal emotion recognition,” ACM Transactions on Multimedia Computing, Communications and Applications (TOMCCAP) , vol. 21, no. 4, pp. 1–21, 2025. [45] J. Zhang, L. Zheng, M. Wang, and D. Guo, “Training a small emotional vision language model for visual art comprehen-sion,” in ECCV . Springer, 2024, pp. 397–413. [46] P. Song, D. Guo, X. Yang, S. Tang, and M. Wang, “Emo-tional video captioning with vision-based emotion interpre-tation network,” IEEE Transactions on Image Processing ,vol. 33, pp. 1122–1135, 2024. 2 [47] Y. Zeng, S. Mai, W. Yan, and H. Hu, “Multimodal reac-tion: Information modulation for cross-modal representation learning,” IEEE Transactions on Multimedia(TMM) , vol. 26, pp. 2178–2191, 2024. 3 [48] H. Zhang, Y. Wang, G. Yin, K. Liu, Y. Liu, and T. Yu, “Learning language-guided adaptive hyper-modality repre-sentation for multimodal sentiment analysis,” arXiv preprint arXiv:2310.05804 , 2023. 3 [49] Z. Zhang, L. Wang, and J. Yang, “Weakly supervised video emotion detection and prediction via cross-modal temporal erasing network,” in CVPR , 2023, pp. 18 888–18 897. 3 [50] J. Wei, G. Hu, X. Yang, A. T. Luu, and Y. Dong, “Learn-ing facial expression and body gesture visual information for video emotion recognition,” Expert Systems with Applica-tions , vol. 237, p. 121419, 2024. 3 [51] T. Chay-intr, Y. Chen, K. Viriyayudhakorn, and T. Theera-munkong, “Llavac: Fine-tuning llava as a multimodal senti-ment classifier,” arXiv preprint arXiv:2502.02938 , 2025. 3 [52] U. Singh, K. Abhishek, and H. K. Azad, “A survey of cutting-edge multimodal sentiment analysis,” ACM Comput-ing Surveys (CSUR) , vol. 56, no. 9, pp. 1–38, 2024. 3 [53] Y. Li, W. Gan, K. Lu, D. Jiang, and R. Jain, “Aves: An audio-visual emotion stream dataset for temporal emotion detection,” IEEE Transactions on Affective Computing(IEEE Trans. Affective Comput) , vol. 16, no. 1, pp. 438–450, 2025. 3[54] X. Tang, J. Fan, C. Luo, Z. Zhang, M. Zhang, and Z. Yang, “Ddg-net: Discriminability-driven graph net-work for weakly-supervised temporal action localization,” in 
+
+ICCV , 2023, pp. 6622–6632. 6 [55] W. Yun, M. Qi, C. Wang, and H. Ma, “Weakly-supervised temporal action localization by inferring salient snippet-feature,” in AAAI , 2024, pp. 6908–6916. 6 [56] H. Zhang, X. Wang, X. Xu, Z. Qing, C. Gao, and N. Sang, “Hr-pro: Point-supervised temporal action localization via hierarchical reliability propagation,” in AAAI , 2024, pp. 7115–7123. 3, 6, 8 [57] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” Advances in neural information processing sys-tems , vol. 30, 2017. 4 [58] K. K. Rachavarapu, K. Ramakrishnan et al. , “Weakly-supervised audio-visual video parsing with prototype-based pseudo-labeling,” in CVPR , 2024, pp. 18 952–18 962. 4 [59] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Doll´ ar, “Focal loss for dense object detection,” in ICCV , 2017, pp. 2980– 2988. 5 [60] S. Zhao, Y. Ma, Y. Gu, J. Yang, T. Xing, P. Xu, R. Hu, H. Chai, and K. Keutzer, “An end-to-end visual-audio at-tention network for emotion recognition in user-generated videos,” in AAAI , 2020, pp. 303–311. 6 [61] C. Lin, C. Xu, D. Luo, Y. Wang, Y. Tai, C. Wang, J. Li, F. Huang, and Y. Fu, “Learning salient boundary feature for anchor-free temporal action localization,” in CVPR , 2021, pp. 3320–3329. 6, 7 [62] C. Zhang, M. Cao, D. Yang, J. Chen, and Y. Zou, “Cola: Weakly-supervised temporal action localization with snippet contrastive learning,” in CVPR , 2021, pp. 16 010–16 019. 6 [63] F. Ma, L. Zhu, Y. Yang, S. Zha, G. Kundu, M. Feiszli, and Z. Shou, “Sf-net: Single-frame supervision for temporal ac-tion localization,” in ECCV , 2020, pp. 420–437. 6 [64] A. Zadeh, P. P. Liang, S. Poria, P. Vij, E. Cambria, and L.-P. Morency, “Multimodal language analysis in the wild: Cmu-mosei dataset and interpretable dynamic fusion graph,” in 
+
+ACL , 2018, pp. 2236–2246. 5 [65] J. Carreira and A. Zisserman, “Quo vadis, action recogni-tion? a new model and the kinetics dataset,” in CVPR , 2017, pp. 6299–6308. 5 [66] L. Muda, M. Begam, and I. Elamvazuthi, “Voice recognition algorithms using mel frequency cepstral coefficient (mfcc) and dynamic time warping (dtw) techniques,” arXiv preprint arXiv:1003.4083 , 2010. 5 [67] A. K. Roy, H. K. Kathania, A. Sharma, A. Dey, and M. S. A. Ansari, “Resemotenet: bridging accuracy and loss reduction in facial emotion recognition,” IEEE Signal Processing Let-ters , 2024. 5 [68] J. Xu, Z. Guo, H. Hu, Y. Chu, X. Wang, J. He, Y. Wang 
+
+et al. , “Qwen3-omni technical report,” arXiv preprint arXiv:2509.17765 , 2025. 7 [69] H. Touvron, L. Martin, K. Stone, P. Albert, A. Almahairi, Y. Babaei, N. Bashlykov, S. Batra, P. Bhargava, S. Bhosale 
+
+et al. , “Llama 2: Open foundation and fine-tuned chat mod-els,” arXiv preprint arXiv:2307.09288 , 2023. 7 [70] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen, “Lora: Low-rank adaptation of large language models,” in International Conference on Learning Representations (ICLR) , 2022. 7 [71] H. Alwassel, F. C. Heilbron, V. Escorcia, and B. Ghanem, “Diagnosing error in temporal action detectors,” in ECCV ,2018, pp. 256–272. 1 Face-Guided Sentiment Boundary Enhancement for Weakly-Supervised Temporal Sentiment Localization 
+
+# Supplementary Material    
+
+> Table 8. Ablation study of BSPG parameters (confidence decay factor βand smoothing width w) on mAP performance.
+
+BSPG 
+
+w 5 6 7 8 9mAP (%) 19.22 19.77 21.45 19.66 19.26 
+
+β 0.1 0.3 0.5 0.6 0.7 mAP (%) 19.64 18.88 21.29 21.45 21.20 
+
+## 1. Hyperparameter Ablation 
+
+Ablation on BSPG Parameters. Our BSPG improves the reliability of pseudo-labels under point-level supervision through step-by-step smoothing. This reduces temporal jit-ter and mitigates boundary discontinuities (Fig. 2(c), Eq. 7). We ablate two key hyperparameters: the smoothing width 
+
+w and the confidence decay factor β. As shown in Table 8, performance peaks at w = 7 (mAP: 21.45%), indicating that moderate neighborhood expansion effectively aggre-gates supervisory cues. Smaller windows (w = 5, mAP: 19.22%) under-smooth labels, whereas larger ones (w = 9, mAP: 19.26%) over-smooth and blur temporal boundaries. For the decay factor, optimal performance is achieved at 
+
+β = 0 .6. Lower values ( β = 0.1, mAP: 19.64%) decay too quickly, limiting contextual information, whereas higher values ( β = 0.7, mAP: 21.20%) overconfidently propagate pseudo-labels, introducing spurious activations. Overall, tuning both w and β improves pseudo-label quality and tem-poral localization. 
+
+Ablation on PSSC Parameters. Our PSSC enhances emo-tion boundary localization by leveraging the semantic space across temporal sequences, as illustrated in Fig. 2(c). The ablation study on the sample quantity in Eq. 5 is conducted based on K = ⌊T /k ⌋, where T denotes the total number of frames. This design accounts for significant temporal vari-ations across input videos. As shown in Fig. 5, the hyper-parameter k has a substantial impact on performance, with mAP showing a nonlinear trend. The best result (21.5% mAP) occurs at k = 8 , indicating a balance between emo-tional coverage and noise suppression. A moderate sam-ple count promotes the optimization of Lsc by aggregating discriminative emotional patterns and capturing the spatial distribution of frame-level Fmix . In contrast, k = 5 yields insufficient cues, while k = 12 introduces redundancy. 
+
+Ablation on Loss Weights. We explore the impact of loss weights on the experiment in terms of mAP. As shown in Fig. 6, the blue curve indicates the variation of λ1 when       
+
+> Figure 5. Ablation study of Top-K parameter kin PSSC on mAP performance.
+> Figure 6. Ablation study of loss function weights λ1and λ2on mAP performance.
+
+λ2 = 0 .05 , while the green curve shows the variation of 
+
+λ2 when λ1 = 1 . The mAP reaches its peak at (λ1, λ 2) = (1 , 0.05) , highlighting the importance of properly balanc-ing the two loss terms. Specifically, Lframe improves the accuracy of emotion localization, whereas Lsc helps align frame-level emotion segments. A small λ1 results in in-sufficient boundary supervision, while an overly large λ2
+
+may over-constrain the alignment, leading to blurred seg-ment boundaries and loss of fine-grained emotional cues. 
+
+## 2. Additional Results 
+
+Error Analysis. To gain deeper insight, we follow the error diagnosis protocol of [71] to break down the model out-puts on the TSL300 dataset. As in Fig. 7, a key observa-Figure 7. Proportion of proposal type for all prediction results of models on TSL300. Error categories: Bg (background), Loc (localization), Dbl (double detection), Conf (confusion), WLbl (wrong label), and TP (true positive). 
+
+tion is the substantial reduction in background errors, with a 10.0% decrease compared to HR-Pro (33.4% → 23.4%) and a 16.3% decrease compared to TSL (39.7% → 23.4%). This is accompanied by a notable increase in true positives (TP: 26.3%). These results strongly suggest that our approach effectively reduces false positives arising from background confusion. The fact that localization error (Loc) remains the dominant error type also indicates potential for further im-provement in overall detection accuracy (mAP), pointing to future work on refining temporal boundaries. 
+
+PSSC Distance Metric Ablation. To assess the impact of different distance metrics on the identification of se-mantically relevant positive samples, we conduct an abla-tion study on the similarity function used in Eq. (4) of the PSSC module. Table 10 reports the mAP results under mul-tiple IoU thresholds. Among the compared metrics, Co-sine similarity (Ours) achieves the highest average mAP of 21.45%. In comparison, the L2 distance, the L1 distance and the dot product achieve lower scores of 20. 29%, 20. 05% and 21. 00%, respectively. This corresponds to abso-lute improvements of 1.16%, 1.40%, and 0.45%. Under low IoU thresholds (0.1, 0.15, 0.2), where spatial constraints are loose and semantic disentanglement is more difficult, Co-sine still achieves the best performance, with mAP of 29. 31%, 25. 47%, and 22. 49%. These results demonstrate the effectiveness of cosine similarity in capturing semantic 
+
+Table 9. Performance comparison of different modality combina-tions on the TSL task. A: Audio, V: Visual, F: Local Face. Metrics are reported as mAP@IoU (%) across various thresholds and av-erage mAP.                                                  
+
+> Modality mAP@IoU (%) Avg
+> 0.1 0.15 0.2 0.25 0.3 mAP
+> Single Modality
+> A (Audio) 18.98 15.47 12.96 9.75 7.09 12.85 V (Visual) 19.27 16.14 12.06 9.14 6.45 12.61 F (Local Face) 22.11 15.97 11.33 8.40 6.62 12.88
+> Bimodal Combinations
+> A + F 29.41 24.01 18.70 13.97 9.95 19.21 A + V 25.91 23.70 20.08 15.85 11.53 19.41 V + F 26.20 22.48 17.41 14.53 11.30 18.38
+> Trimodal Combination
+> A + V + F 29.31 25.47 22.49 16.76 13.24 21.45
+
+relationships between feature vectors. 
+
+Table 10. Ablation of feature distance metrics for Point-aware Sentiment Semantics Contrast modeling.                                
+
+> Method mAP@IoU (%) Avg
+> 0.1 0.15 0.2 0.25 0.3 mAP
+> L2 28.06 24.40 20.98 16.49 11.55 20.29 L1 26.53 23.66 20.70 16.36 12.97 20.05 Dot 27.23 24.90 21.21 17.42 14.22 21.00
+> Cosine(Ours) 29.31 25.47 22.49 16.76 13.24 21.45
+
+Modality Combination Analysis. We conduct an abla-tion study to examine the impact of the modality infor-mation, as shown in Table 9, which reports the perfor-mance of different modality combinations. Among the uni-modal inputs, the face embedding (F) achieves the best per-formance (mAP: 12.88%), slightly outperforming the au-dio (A) and visual (V) features. This suggests that each modality provides complementary yet insufficient informa-tion when used in isolation. Bimodal combinations such as A+V and A+F yield significantly improved results (mAP: 19.41%, representing an increase of 6.56%; and 19.21%, with an increase of 6.36%, respectively). These results indicate strong complementarity between audio and vi-sual/facial cues. Meanwhile, the relatively lower perfor-mance of V+F (18.38%) may be attributed to redundancy between holistic and local visual features. Trimodal fusion (A+V+F) further boosts the performance to 21.45% mAP, demonstrating the advantage of integrating heterogeneous modalities.

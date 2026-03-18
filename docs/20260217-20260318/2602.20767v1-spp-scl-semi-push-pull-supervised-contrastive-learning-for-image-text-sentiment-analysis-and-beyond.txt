@@ -1,0 +1,417 @@
+Title: SPP-SCL: Semi-Push-Pull Supervised Contrastive Learning for Image-Text Sentiment Analysis and Beyond
+
+URL Source: https://arxiv.org/pdf/2602.20767v1
+
+Published Time: Wed, 25 Feb 2026 01:54:44 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# SPP-SCL: Semi-Push-Pull Supervised Contrastive Learning for Image-Text Sentiment Analysis and Beyond 
+
+## Jiesheng Wu 1, Shengrong Li 2 * 
+
+> 1
+
+School of Computer and Information, Anhui Normal University, Wuhu, 241003, China 
+
+> 2
+
+College of Artificial Intelligence, Nanjing University of Aeronautics and Astronautics, Nanjing, 211106, China jasonwu@mail.nankai.edu.cn, lisrong@nuaa.edu.cn 
+
+Abstract 
+
+Existing Image-Text Sentiment Analysis (ITSA) methods may suffer from inconsistent intra-modal and inter-modal sentiment relationships. Therefore, we develop a method that balances before fusing to solve the issue of vision-language imbalance intra-modal and inter-modal sentiment relationships; that is, a Semi-Push-Pull Supervised Con-trastive Learning (SPP-SCL) method is proposed. Specif-ically, the method is implemented using a novel two-step strategy, namely first using the proposed intra-modal super-vised contrastive learning to pull the relationships between the intra-modal and then performing a well-designed condi-tional execution statement. If the statement result is false, our method will perform the second step, which is inter-modal supervised contrastive learning to push away the relationships between inter-modal. The two-step strategy will balance the intra-modal and inter-modal relationships to achieve the pur-pose of relationship consistency and finally perform cross-modal feature fusion for sentiment analysis and detection. Ex-perimental studies on three public image-text sentiment and sarcasm detection datasets demonstrate that SPP-SCL signifi-cantly outperforms state-of-the-art methods by a large margin and is more discriminative in sentiment. 
+
+## Introduction 
+
+With the explosive growth of social media, users increas-ingly express sentiments through images accompanied by textual descriptions. This has spurred extensive interest in 
+
+image-text sentiment analysis (ITSA) (Das and Singh 2023; Xue et al. 2022; Zadeh et al. 2017). The core chal-lenge of ITSA lies in accurately modeling and integrating emotional cues from different modalities to make consistent and robust predictions. Early methods typically concatenate high-level features from each modality for fusion (Xu and Mao 2017; Xu 2017), but such strategies often fall short in capturing nuanced or conflicting emotional signals across modalities. To address this, recent studies have introduced interaction-based fusion modules (Yang et al. 2021a; Yu and Jiang 2019; Zhu et al. 2023b) to better model fine-grained cross-modal sentiment relationships. Despite progress, a critical issue remains un-
+
+> *
+
+Corresponding author. Copyright © 2026, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+derexplored: the imbalance and inconsistency among intra-modal and inter-modal sentiment representations .
+
+Figure 1: Comparison of intra-modal and inter-modal senti-ment distances under different training strategies. (a) Cross-entropy loss only: image and text sentiment representations are scattered, leading to inconsistent intra- and inter-modal sentiment relationships. (b) Intra-modal contrastive learning aligns IID and TTD, but fails on ITD. (c) Inter-modal con-trastive learning aligns ITD but ignores intra-modal struc-ture. (d) Our proposed SPP-SCL balances all three sentiment distances, yielding consistent sentiment embeddings. As illustrated in Fig. 1, existing methods primarily rely on cross-entropy loss, which encourages discriminative classi-fication but fails to align sentiment representations across modalities. Specifically, we observe that the average pair-wise distances within image sentiment features (IID), within text sentiment features (TTD), and between image-text pairs sentiment features (ITD) often differ significantly, even for samples sharing the same sentiment label. Here, IID (Image-to-Image sentiment embedding Distance), TTD (Text-to-Text sentiment embedding Distance), and ITD (Image-to-Text sentiment embedding Distance) denote 
+
+> arXiv:2602.20767v1 [cs.MM] 24 Feb 2026
+
+the average Euclidean distances between sentiment em-beddings of samples with the same label, computed re-spectively within the image modality, within the text modality, and across modalities. Such inconsistencies in sentiment-level embedding space undermine generalization and hinder effective fusion. While some works employ con-trastive learning (CL) to address this issue (Li et al. 2022b), most adopt a fuse-then-contrast strategy, applying CL on fused multi-modal features. This approach risks semantic noise propagation and lacks targeted alignment of unimodal emotional representations. To tackle these challenges, we propose a novel Balance-before-Fuse framework that aligns sentiment representa-tions within and across modalities before fusion. Inspired by alignment-then-fusion paradigms in vision-language tasks (Li et al. 2021, 2022a; Yang, Bisk, and Gao 2021), we intro-duce a two-step Semi-Push-Pull Supervised Contrastive Learning (SPP-SCL) approach. In the first step, we apply supervised contrastive losses to image and text branches in-dependently, pulling same-sentiment samples closer within each modality and achieving intra-modal sentiment align-ment ( i.e., , IID ≈ IID and TTD ≈ TTD). In the second step, we conditionally apply inter-modal contrastive learning to align sentiment representations across modalities, based on a diagonal similarity threshold. We aim to simultaneously minimize the discrepancy among intra-image, intra-text, and image-text sentiment distances under a unified su-pervised contrastive learning framework , thereby con-structing a modality-balanced and sentiment-consistent em-bedding space that facilitates robust multi-modal fusion. To further improve fusion quality, we introduce two lightweight yet effective components: a Hierarchical Attention (HA) 
+
+module for context-aware sentiment extraction from text, and a Cross-Modal Fusion (CMF) module for dynamic in-tegration of aligned features. Unlike general-purpose vision-language alignment frameworks, our method is specifically tailored for sentiment analysis by aligning emotion-aware representations across modalities, rather than generic se-mantic features. 
+
+Our main contributions are summarized as follows: 
+
+• We propose a novel two-step Semi-Push-Pull Super-vised Contrastive Learning (SPP-SCL) framework that aligns intra- and inter-modal sentiment relationships prior to fusion, yielding a well-structured space. • We design three supervised contrastive objectives—two intra-modal (for image and text) and one inter-modal—that enable fine-grained sentiment-level align-ment without requiring data augmentation or large-scale pretraining. • We develop a Hierarchical Attention module for efficient sentiment representation from text, and a Cross-Modal Fusion module for robust visual-linguistic interaction. • Extensive experiments on three public datasets (MVSA-S, MVSA-M, and HFM) demonstrate that our method significantly outperforms state-of-the-art baselines, espe-cially in fine-grained or ambiguous sentiment scenarios. 
+
+## Related Work 
+
+Image-Text Sentiment Analysis 
+
+Image-Text Sentiment Analysis (ITSA) aims to classify the sentiment of paired visual and textual content, particularly in social media contexts (Xie et al. 2024; He et al. 2023; Tang et al. 2023). Early approaches such as HSAN and Mul-tiSentiNet (Xu 2017; Xu and Mao 2017) extracted features independently from each modality and fused them via sim-ple concatenation, which limited cross-modal interaction. To address this, subsequent works introduced interaction-aware architectures. For example, Co-MN-Hop6 (Xu, Mao, and Chen 2018) and MVAN (Yang et al. 2021a) lever-aged memory-based networks to enable iterative alignment between modalities, while MGNNS (Yang et al. 2021b) used sentiment-aware graph neural networks. More recent methods such as ITIN and MULSER (Zhu et al. 2023a,b) focused on deep fusion but often overlooked token-level alignment or sentiment consistency. To improve alignment, CLMLF (Li et al. 2022b) adopted contrastive learning using both label- and data-based signals. However, it applied con-trastive objectives directly on fused representations, without explicitly balancing intra- and inter-modal features. Inspired by this, our method introduces a balance-before-fuse strat-egy to align intra- and inter-modal sentiment embeddings prior to fusion. 
+
+Contrastive Learning 
+
+Contrastive Learning (CL) has shown strong representation power in vision and language domains through instance dis-crimination techniques, as demonstrated in MoCo (He et al. 2020), SimCLR (Chen et al. 2020), and SimCSE (Gao, Yao, and Chen 2021). In the multi-modal setting, CLIP (Radford et al. 2021) paved the way for joint vision-language rep-resentation learning. Supervised contrastive learning (SCL) (Khosla et al. 2020) extends this idea by incorporating la-bel information, enabling multi-positive alignment. Recent applications of SCL include text classification (Gunel et al. 2020) and trimodal sentiment analysis (Mai et al. 2022; Yang et al. 2023). However, most methods treat contrastive learning as an auxiliary module or apply it after feature fu-sion, which may propagate semantic noise across modalities. In contrast, we propose a two-step supervised contrastive framework that explicitly aligns intra-modal and inter-modal sentiment embeddings, ensuring a consistent and discrimi-native feature space for downstream fusion. 
+
+## Methodology 
+
+Overview 
+
+The overall architecture of our proposed Semi-Push-Pull Supervised Contrastive Learning (SPP-SCL) framework is illustrated in Fig. 2. The model operates in two sequen-tial steps designed to align sentiment representations both within and across modalities, prior to final fusion. We first adopt two frozen feature encoders—a ResNet-50 pretrained on ImageNet for image inputs and a BERT-base model pre-trained on general text corpora for textual inputs—to ex-tract high-level semantic features. These encoders are kept Figure 2: Overall architecture of SPP-SCL. The framework includes two main steps: intra-modal sentiment alignment via supervised contrastive learning ( Lcl i and Lcl t ), and conditional inter-modal sentiment alignment ( Lcl m ). 
+
+fixed during training to prevent overfitting on small-scale sentiment datasets and to ensure that performance improve-ments stem primarily from our proposed contrastive align-ment strategy rather than feature extractor fine-tuning. In the first step , intra-modal sentiment alignment is performed using two supervised contrastive losses: Lcl i for the image branch and Lcl t for the text branch. These losses encourage sentiment representations of samples from the same class to be pulled closer within each modality. Both image and text embeddings are projected into a shared sentiment embed-ding space, where the contrastive objectives operate jointly with a standard cross-entropy loss for sentiment classifica-tion. This step ensures intra-modal consistency, minimizing discrepancies such as IID and TTD. In the second step , we conduct a conditional judgment on the alignment quality between modalities. Specifically, we compute the similar-ity matrix between paired image and text sentiment embed-dings. If the diagonal consistency score falls below a prede-fined threshold, we activate an inter-modal supervised con-trastive loss Lcl m , which further pulls image-text pairs of the same sentiment class closer together, thus reducing ITD and achieving global sentiment-level alignment. By decoupling intra- and inter-modal sentiment alignment into a two-step training process, SPP-SCL ensures a well-structured sentiment embedding space where intra-image, intra-text, and image-text sentiment distances are har-monized , resulting in more robust and discriminative fused representations. 
+
+Multi-modal Feature Extraction 
+
+Given an image-text pair sample from an ITSA dataset, de-noted as S = {I, T }, where I and T represent the image and text modalities, respectively, let the corresponding sen-timent label be Y = yi, indicating that the sample belongs to the i-th sentiment class. Our goal is to propose a framework for balancing sentiment consistency, independent of encoder scale. SPP-SCL is backbone-agnostic and can replace other encoders directly. We focus on widely adopted backbones (BERT-base, ResNet-50) to ensure fair comparison. 
+
+Image Encoder We adopt ResNet-50 (He et al. 2016) as the image encoder. Given an input image I, we extract fea-ture maps from the layer preceding the final global average pooling. These features are then passed through a 1 × 1 con-volutional layer with batch normalization and ReLU activa-tion, followed by an adaptive average pooling layer and a fully connected projection layer with non-linear activation. The output is the final image representation Ip ∈ RB×D,where B denotes the batch size and D the embedding di-mension. The overall encoding process is defined as: 
+
+Ip = M (P (c (ResNet (I)))) , (1) where c(·) denotes the 1 × 1 convolutional layer, P(·) the adaptive average pooling operation, and M(·) the fully con-nected transformation for dimensionality reduction. 
+
+Text Encoder We adopt BERT (Devlin et al. 2018) as the text encoder. Given a text input T , we follow prior findings (Jawahar, Sagot, and Seddah 2019; Sun et al. 2019) that fine-tuning only the last four transformer layers (layers 9–12) yields optimal performance for text classification tasks. Ac-cordingly, we extract two types of features from these layers: (1) the [CLS] token embeddings, which capture contextual semantics, and (2) the token-level word embeddings from the corresponding hidden states, which preserve fine-grained lexical information. To effectively combine these two feature types, we pro-pose a Hierarchical Attention (HA) module that fuses con-textual and word-level representations into a unified senti-ment embedding. Specifically, let T c ∈ RB×4×1×C denote the [CLS] embeddings and T w ∈ RB×4×N ×C denote the word embeddings, where B is the batch size, N the number of words, and C the hidden dimension. The HA module first applies one-dimensional global aver-age pooling to T c, reducing it to RB×4×1×1, and then passes it through a fully connected layer followed by a sigmoid activation S(·) to generate normalized attention weights across layers. These weights are then element-wise multi-plied with T w to produce the weighted word representa-tion T ′
+
+> w
+
+. Afterward, we apply summation and channel-wise pooling operations to aggregate token features across lay-ers and time steps. Finally, the fused features are fed into an LSTM (Hochreiter and Schmidhuber 1997) followed by a projection layer M(·) to obtain the final text representation 
+
+T p ∈ RB×D. The entire process can be formalized as: 
+
+T ′ 
+
+> c
+
+= S (M (Pg (T c))) , T ′ 
+
+> w
+
+= T ′ 
+
+> c
+
+⊙ T w,
+
+T p = M  LSTM  Pc
+
+ U(T ′
+
+> w
+
+) , (2) where S(·) denotes the sigmoid activation, Pg (·) is global average pooling, Pc(·) is channel-wise pooling, U(·) de-notes summation over layers, ⊙ represents element-wise multiplication, and LSTM (·) is the LSTM network. 
+
+Cross-Modal Fusion Module 
+
+Effective fusion of visual and textual sentiment cues is es-sential for sentiment classification in multi-modal contexts (Tang et al. 2022). To this end, we propose a Cross-Modal Fusion (CMF) module that integrates the visual represen-tation Ip and the textual representation T p into a uni-fied, sentiment-aware feature. Inspired by DFAF (Gao et al. 2019), CMF combines two key components: intra-modal feature enhancement via Self-Attention (SA) (Vaswani et al. 2017) and inter-modal interaction via dynamic at-tention modulation. The intuition is to dynamically adjust intra-modal attention weights based on complementary in-formation from the other modality, enabling fine-grained sentiment-level interaction rather than simple semantic matching. Specifically, for both Ip and T p, we construct re-spective Query, Key, and Value vectors: QI , KI , V I for im-ages and QT , KT , V T for text. During self-attention, we in-ject inter-modal cues by modulating the query and key vec-tors via element-wise multiplication with the other modal-ity’s global representation (e.g., T p modulates QI , KI ). This allows the model to dynamically adjust its attention focus based on sentiment-relevant context from the other modality. The fusion process is defined as: 
+
+Im = Softmax (QI ⊙ T p) ⊗  KI ⊙ T ⊺
+
+> p
+
+
+
+√D
+
+!
+
+⊗ V I ,
+
+T m = Softmax (QT ⊙ Ip) ⊗  KT ⊙ I⊺
+
+> p
+
+
+
+√D
+
+!
+
+⊗ V T ,
+
+M p = [ Im, T m, Ip, T p] ,
+
+(3) where Im, T m ∈ RB×D are the enhanced modality-specific features, ⊙ denotes element-wise multiplication, ⊗ is matrix multiplication, and [·] denotes concatenation. Softmax (·) de-notes the standard attention normalization. The resulting fused representation M p is sentiment-aware and jointly in-formed by both intra- and inter-modal contextual signals. 
+
+Semi-Push-Pull Supervised Contrastive Learning 
+
+As previously discussed, robust image-text sentiment anal-ysis (ITSA) requires a well-structured embedding space where image and text representations of the same senti-ment class are closely aligned. This entails minimizing the distance and relationship discrepancies across three per-spectives: Image-to-Image (IID), Text-to-Text (TTD), and Image-to-Text (ITD). To this end, we propose a Semi-Push-Pull Supervised Contrastive Learning (SPP-SCL) frame-work that incorporates both intra-modal and inter-modal alignment strategies. 
+
+Intra-Modal Supervised Contrastive Learning To en-force sentiment consistency within each modality, we in-troduce two supervised contrastive losses: Lcl i for the im-age branch and Lcl t for the text branch. Following (Khosla et al. 2020), we first construct an Intra-Mask matrix 1ij =
+
+1 [yi = yj , i ̸ = j] to identify positive pairs based on senti-ment labels. Let Ip and T p ∈ RB×D denote the ℓ2-normalized im-age and text representations. The intra-modal similarity ma-trix is computed using cosine similarity. The supervised con-trastive loss for the image branch is defined as:               
+
+> Lcl i=−1
+> B
+> BX
+> i=1
+> 1
+> B
+> BX
+> j=1
+> 1ij log exp (s(i, j )/τ )
+> PBk=2 exp (s(i, k )/τ )
+> !
+> ,
+> (4)
+
+where s (i, j ) is the cosine similarity between samples i and 
+
+j, and τ is the temperature scaling factor. The diagonal is excluded since self-similarity is trivial. The loss Lcl t for the text branch follows the same formulation:               
+
+> Lcl t=−1
+> B
+> BX
+> i=1
+> 1
+> B
+> BX
+> j=1
+> 1ij log exp (s(i, j )/τ )
+> PBk=2 exp (s(i, k )/τ )
+> !
+> .
+> (5)
+
+These losses effectively reduce intra-modal sentiment vari-ance and ensure that IID ≃ TTD within the sentiment em-bedding space. Inter-modal Supervised Contrastive Learning While intra-modal alignment achieves IID ≃ TTD, it does not guar-antee cross-modal consistency ( i.e., ITD alignment). To ad-dress this, we propose an inter-modal supervised contrastive loss Lcl m .We define an Inter-Mask matrix 1mn = 1[ym =
+
+yn, m ̸ = n] across image-text pairs. Let Ip′ and T p′ de-note ℓ2-normalized features extracted after the first training step. The inter-modal similarity matrix is then computed be-tween all image-text pairs. The inter-modal contrastive loss is defined as: 
+
+Lcl m = − 1
+
+B
+
+> B
+
+X
+
+> m=1
+
+1
+
+B
+
+> B
+
+X
+
+> n=1
+
+1mn log exp (s (m, n ) /τ )
+
+PBt=1 exp (s (m, t ) /τ )
+
+!
+
+.
+
+(6) 
+
+This loss encourages image-text samples to align in senti-ment space, thereby enforcing IID ≃ TTD ≃ ITD. 
+
+Training Strategy: Two-Step Optimization To balance efficiency and alignment quality, we adopt a two-step train-ing strategy. In the first step ( SPP-SCL 1), we jointly op-timize Lcl i, Lcl t, and the cross-entropy loss Lce . After training, we evaluate whether sentiment distances among all three types (IID, TTD, ITD) are sufficiently consistent based on a threshold α. If not, we proceed to the second step ( SPP-SCL 2), where we fine-tune the model using the inter-modal contrastive loss Lcl m to close any remaining cross-modal gaps. The full procedure is outlined in Algorithm 1. 
+
+Loss Function 
+
+The overall training loss integrates four components: 
+
+L = λLce (M p, Y ) + Lcl i (Ip, Y ) + 
+
+Lcl t (T p, Y ) + Lcl m (T p′ , Ip′ , Y ) , (7) where Lce represents the cross-entropy loss function, and λ
+
+is a hyperparameter used to balance the different losses. 
+
+## Experiments 
+
+Datasets 
+
+We evaluate on three widely used ITSA benchmarks: MVSA-S, MVSA-M (Niu et al. 2016), and the sarcasm-oriented HFM dataset (Cai, Cai, and Wan 2019; Liang et al. 2022). Details are listed in Table 1. Datasets Numbers Train sets Validation sets Test sets MVSA-S 4,511 3,611 450 450 MVSA-M 17,024 13,624 1,700 1,700 HFM 24,635 19,816 2,410 2,409 Table 1: Statistics of three datasets. 
+
+Experimental Details 
+
+Our SPP-SCL model is implemented using PyTorch and HuggingFace Transformers, and trained on an NVIDIA V100 GPU (16GB) 1. We use ResNet-50 (He et al. 2016) and BERT-base-uncased (Devlin et al. 2018) as frozen image 
+
+> 1
+
+Codes: https://github.com/TomorrowJW/SPP-SCL 
+
+Algorithm 1: # Two-Step Training Strategy of SPP-SCL (PyTorch Style) 
+
+Require: Input image-text pair (I, T ), sentiment label Y ,model f (·), batch size B, threshold α
+
+1: for each batch (I, T, Y ) from dataloader do 
+
+2: # # Step 1: Intra-modal alignment (SPP-SCL 1)
+
+3: Mp, I p, T p ← f (I, T )
+
+4: L = λ · L ce (Mp, Y ) + Lcl i (Ip, Y ) + Lcl t (Tp, Y )
+
+5: Backpropagate and update: optimizer.step() 
+
+6: # # Step 2: Inter-modal check (SPP-SCL 2)
+
+7: I′
+
+> p
+
+, T ′ 
+
+> p
+
+← f (I, T ) # # extract embeddings again 
+
+8: Compute similarity matrix: S = sim (I′
+
+> p
+
+, T ′
+
+> p
+
+)
+
+9: Compute average diagonal: d = mean (diag (S)) 
+
+10: Count: c = sum (S < d )
+
+11: cmask = sum (InterMask )
+
+12: if c < α · cmask then 
+
+13: Lcl m = Lcl m (I′
+
+> p
+
+, T ′
+
+> p
+
+, Y )
+
+14: Backpropagate and update: 
+
+optimizer.step() 
+
+15: end if 
+
+16: end for                       
+
+> Hyperparameters Dataset MVSA-S MVSA-M HFM
+> λ5510 Initial learning rate 1e-4 1e-4 5e-5 Learning rate decay/multiple 10/0.5 15/0.5 5/0.5 Weight decay 1e-6 1e-6 1e-6 DropOut 0.2 0.2 0.2 Batch size 64 128 256 Epochs 150 150 150
+
+Table 2: Statistics for all hyperparameters. and text encoders. Training is performed using the AdamW optimizer (Kingma and Ba 2014) with StepLR scheduling. Key hyperparameters include temperature τ = 0 .07 , thresh-old α = 2 /3, feature dimension D = 32 , max text length 
+
+N = 200 , and image size 224 × 224 . Additional settings are listed in Table 2. To make a fair comparison, we fol-low the existing evaluation. For the MVSA-S and MVSA-M datasets, the Accuracy (Acc) and Weighted F1 value are used for evaluation, and for the HFM dataset, the Accuracy (Acc) and Macro F1 are used for evaluation. 
+
+Comparison Methods 
+
+• Uni-modal baselines : For text, we include CNN (Kim 2014), Bi-LSTM (Zhou et al. 2016), and BERT (Devlin et al. 2018); for images, ResNet (He et al. 2016) and ViT (Dosovitskiy et al. 2020). OSDA (Yang et al. 2021a), a multi-view visual classifier, was designed by them. • Multi-modal baselines : On MVSA-S and MVSA-M, we compare with MultiSentiNet (Xu and Mao 2017), HSAN (Xu 2017), Co-MN-Hop6 (Xu, Mao, and Chen 2018), MGNNS (Yang et al. 2021b), CLMLF (Li et al. 2022b), ITIN (Zhu et al. 2023a), MULSER (Zhu et al. 2023b), CLMLF 1, MVCN (Wei et al. 2023), CTMWA (Zhang MVSA-S MVSA-M HFM modal Model Publication ACC F1 ACC F1 Model Publication ACC F1 CNN EMNLP2014 0.6819 0.5590 0.6564 0.5766 CNN EMNLP2014 0.8003 0.7532 Bi-LSTM ACL2016 0.7012 0.6506 0.6790 0.6790 Bi-LSTM ACL2016 0.8190 0.7753 Text BERT NAACL2018 0.7111 0.6970 0.6759 0.6624 BERT NAACL2018 0.8389 0.8326 ResNet-50 CVPR2016 0.6467 0.6155 0.6188 0.6098 ResNet-50 CVPR2016 0.7277 0.7138 OSDA TMM2021 0.6675 0.6651 0.6662 0.6623 OSDA TMM2021 - -Image ViT ICLR2021 0.6378 0.6226 0.6194 0.6119 ViT ICLR2021 0.7309 0.7152 MultiSentiNet CIKM2017 0.6984 0.6984 0.6886 0.6811 Concat(2) ACM MM2016 0.8103 0.7799 HSAN ISI2017 0.6988 0.6690 0.6796 0.6776 Concat(3) ACM MM2016 0.8174 0.7874 Co-MN-Hop6 SIGIR2018 0.7051 0.7001 0.6892 0.6883 MMSD ACL2019 0.8344 0.8018 MGNNS ACL2021 0.7377 0.7270 0.7249 0.6934 D&R Net ACL2020 0.8402 0.8060 CLMLF NAACL2022 0.7533 0.7346 0.7200 0.6983 CLMLF NAACL2022 0.8543 0.8487 ITIN TMM2023 0.7519 0.7497 0.7352 0.7349 HKE EMNLP2022 0.8702 -MULSER TMM2023 0.7560 0.7534 0.7375 0.7371 DIP CVPR2023 0.8820 0.8767 CLMLF 1 ACL2023 0.7378 0.7291 0.7112 0.6863 CLMLF 1 ACL2023 0.8489 0.8446 MVCN ACL2023 0.7606 0.7455 0.7207 0.7001 MVCN ACL2023 0.8568 0.8523 CTMWA TMM2024 0.7196 0.7143 0.7256 0.7157 MMGCL TAC2024 0.8857 0.8870 MSFN TOMM2025 0.7898 0.7848 0.7475 0.7262 ESAM TMM2025 0.9011 0.8819 Multi-modal     
+
+> SPP-SCL 2025 0.8133 0.8015 0.7871 0.7753 SPP-SCL 2025 0.9469 0.9450
+
+Table 3: Quantitative results of the proposed SPP-SCL and these state-of-the-art methods on MVSA-S, MVSA-M, and HFM datasets. The best results are highlighted in Bold in each column. et al. 2024), and MSFN (Zhang et al. 2025). On HFM, we evaluate against Concat(2), Concat(3) (Schifanella et al. 2016), MMSD (Cai, Cai, and Wan 2019), D&R Net (Xu, Zeng, and Mao 2020), CLMLF (Li et al. 2022b), HKE (Liu, Wang, and Li 2022), DIP (Wen, Jia, and Yang 2023), CLMLF 1, MVCN (Wei et al. 2023), MMGCL (Liang et al. 2024), and ESAM (Yuan et al. 2025). 
+
+Quantitative Comparison 
+
+The quantitative results in Table 3 show that SPP-SCL consistently outperforms all baseline methods across the three datasets. Overall, multi-modal methods perform better than uni-modal ones, with text-based models outperforming image-based models—likely due to the sparse and noisy na-ture of visual sentiment cues, which limits the effectiveness of image-only classifiers. In a word, SPP-SCL first aligns intra-modal sentiment features independently and then bal-ances inter-modal distributions, leading to more robust sen-timent representations and better overall performance. 
+
+Ablation Study 
+
+Effectiveness of the two-step strategy We evaluate a one-step variant of our model—where all contrastive losses are applied simultaneously—to assess the benefit of the pro-posed two-step training strategy. Table 4 shows that the one-Method MVSA-S MVSA-M HFM ACC F1 ACC F1 ACC F1 
+
+> SPP-SCL (Two-step) 0.8133 0.8015 0.7871 0.7753 0.9469 0.9450
+> SPP-SCL (One-step) 0.7956 0.7684 0.7276 0.6929 0.8800 0.8765
+
+Table 4: Ablation results of two-step strategy. step strategy performs worse than the two-step strategy, es-pecially on the HFM dataset. This demonstrates that our ap-proach better balances intra- and inter-modal sentiment em-bedding distances, leading to improved performance. 
+
+Effectiveness of semi-push-pull supervised contrastive learning We remove Lcl i , Lcl t and Lcl m respectively from the entire SPP-SCL. Table 5 shows that removing ei-Method MVSA-S MVSA-M HFM ACC F1 ACC F1 ACC F1        
+
+> SPP-SCL 0.8133 0.8015 0.7871 0.7753 0.9469 0.9450
+> w/o Lcl m0.7289 0.7040 0.7688 0.7500 0.7812 0.7753 w/o Lcl i,Lcl t0.7244 0.7170 0.7459 0.7411 0.9427 0.9409
+
+Table 5: Lcl i , Lcl t and Lcl m ablation results. “w/o 
+
+Lcl i , Lcl t ” indicates the removal of Lcl i , Lcl t , while “w/o 
+
+Lcl m ” indicates the removal of Lcl m .ther component degrades SPP-SCL’s performance, confirm-ing their importance. On MVSA-S and MVSA-M, intra-modal losses are more critical than inter-modal losses. How-ever, on HFM, the model still performs well without intra-modal loss (F1=0.9409), indicating a larger gap between text and visual features and highlighting the need for Lcl m to bal-ance them. To further verify the effectiveness of the two components, t-SNE (Van der Maaten and Hinton 2008) visualizes fu-sion features before classification in Fig. 3. The full SPP-SCL shows well-separated clusters with minimal overlap, while removing Lcl m or Lcl i , Lcl t results in larger cluster overlaps. This confirms the components’ role in balancing intra- and inter-modal sentiment consistency. Fig. 4 visual-izes the distance distribution, showing that average distances (IID, TTD, ITD) are nearly equal and same-category sam-ples from both modalities cluster together. This indicates the sentiment alignment already has notable discriminative power before cross-modal fusion. 
+
+Effectiveness of hierarchical attention module To vali-date the HA module, we conduct ablation experiments ex-tracting [CLS] embeddings from the last 1 to 4 BERT layers and word embeddings from hidden layers. Results are shown in Table 6. The results show performance varies when us-ing features from BERT’s last four layers across datasets. Generally, fusing all four layers in the HA module gives the best results. MVSA-S, MVSA-M, and HFM are most sen-sitive to fusing the last two or three layers, but still perform (a) MVSA-S SPP-SCL 
+
+(b) MVSA-S without Lcl m
+
+(c) MVSA-S without Lcl i , Lcl t
+
+(d) MVSA-M SPP-SCL 
+
+(e) MVSA-M without Lcl m
+
+(f) MVSA-M without Lcl i , Lcl t
+
+(g) HFM SPP-SCL 
+
+(h) HFM without 
+
+Lcl m
+
+(i) HFM without 
+
+Lcl i , Lcl t
+
+Figure 3: Visualization of the fusion feature distribution on the three datasets. well. This suggests dataset differences, possibly related to size—MVSA-M and HFM are larger. Overall, using the last four layers yields the best performance. Method MVSA-S MVSA-M HFM ACC F1 ACC F1 ACC F1 w: last three layers 0.7667 0.7565 0.7612 0.7275 0.9402 0.9385 w: last two layers 0.8222 0.8181 0.5918 0.5847 0.9311 0.9293 w: last one layers 0.7133 0.7025 0.7282 0.6840 0.6617 0.6512   
+
+> SPP-SCL 0.8133 0.8015 0.7871 0.7753 0.9469 0.9450
+
+Table 6: The ablation experiment results of the HA module. “w: last three Layers, w: last two Layers and w: last one Layer” respectively indicate the ablation results from the last three layers, last two layers, and last one layer of BERT. 
+
+Effectiveness of cross-modal fusion module To validate the CMF module, we remove it from SPP-SCL and replace fusion with simple concatenation of Ip and T p. Results are in Table 7. The results show a performance drop without the CMF module, proving its effectiveness. Simple concatena-tion fails to capture semantic interactions for effective fu-sion. Despite this, “w/o CMF” still outperforms image-only models, confirming the advantage of multi-modal methods. 
+
+Sensitivity of hyperparameters We observe the best per-formance at α = 2 /3, as shown in Fig. 5. A lower value (e.g., 1/3) triggers inter-modal alignment too early, possi-bly disrupting already consistent intra-modal structures. In 
+
+(a) Distance distribution of non-sarcasm category 
+
+(b) Distance distribution of sarcasm category 
+
+Figure 4: Visualization of the sentiment distance distribu-tion. Method MVSA-S MVSA-M Method HFM ACC F1 ACC F1 ACC F1 ResNet-50 0.6467 0.6155 0.6188 0.6098 ResNet-50 0.7277 0.7138 ViT 0.6378 0.6226 0.6194 0.6119 ViT 0.7309 0.7152 w/o CMF 0.7289 0.7482 0.7453 0.7389 w/o CMF 0.8117 0.8260 
+
+> SPP-SCL 0.8133 0.8015 0.7871 0.7753 SPP-SCL 0.9469 0.9450
+
+Table 7: The ablation experiment results of the CMF mod-ule. “w/o CMF” indicates the removal of the CMF module. contrast, a higher value ( e.g., 1) may skip necessary inter-modal alignment, leading to suboptimal sentiment fusion. Thus, α = 2 /3 achieves the best trade-off between sensitiv-ity and stability. 1/3 2/3 1  
+
+> 0.750
+> 0.775
+> 0.800
+> 0.825
+> 0.850
+> 0.875
+> 0.900
+> 0.925
+> 0.950
+> F1
+> 0.7897 0.8015 0.8003 0.7468 0.7753 0.7661 0.8991 0.9450 0.9234
+
+Sensitivity Analysis of 
+
+> MVSA-S MVSA-M HFM
+
+Figure 5: Sensitivity of hyperparameter α.
+
+## Conclusion 
+
+We propose SPP-SCL, a model that balances visual and tex-tual modalities before fusion for image-text sentiment anal-ysis using a novel two-step supervised contrastive learning strategy, combining intra- and inter-modal learning. Without data augmentation, this approach achieves a balanced senti-ment embedding space. We also introduce a hierarchical at-tention module and a cross-modal fusion module to enhance feature extraction and fusion. Experiments on three datasets validate our method’s effectiveness. Future work will ex-plore semi-supervised image-text sentiment analysis. Acknowledgements 
+
+This work was supported in part by the National Natural Science Foundation of China (No.62541601, No.62306010), Natural Science Foundation of Anhui Province under Grant No. 2408085MF169. 
+
+## References 
+
+Cai, Y.; Cai, H.; and Wan, X. 2019. Multi-modal sarcasm detection in twitter with hierarchical fusion model. In Pro-ceedings of the 57th annual meeting of the association for computational linguistics , 2506–2515. Chen, T.; Kornblith, S.; Norouzi, M.; and Hinton, G. 2020. A simple framework for contrastive learning of visual repre-sentations. In International conference on machine learning ,1597–1607. PMLR. Das, R.; and Singh, T. D. 2023. Multimodal sentiment analy-sis: a survey of methods, trends, and challenges. ACM Com-puting Surveys , 55(13s): 1–38. Devlin, J.; Chang, M.-W.; Lee, K.; and Toutanova, K. 2018. Bert: Pre-training of deep bidirectional transformers for lan-guage understanding. arXiv preprint arXiv:1810.04805 .Dosovitskiy, A.; Beyer, L.; Kolesnikov, A.; Weissenborn, D.; Zhai, X.; Unterthiner, T.; Dehghani, M.; Minderer, M.; Heigold, G.; Gelly, S.; et al. 2020. An image is worth 16x16 words: Transformers for image recognition at scale. arXiv preprint arXiv:2010.11929 .Gao, P.; Jiang, Z.; You, H.; Lu, P.; Hoi, S. C. H.; Wang, X.; and Li, H. 2019. Dynamic Fusion With Intra- and Inter-Modality Attention Flow for Visual Question Answering. In 
+
+2019 IEEE/CVF Conference on Computer Vision and Pat-tern Recognition (CVPR) , 6632–6641. Gao, T.; Yao, X.; and Chen, D. 2021. Simcse: Simple con-trastive learning of sentence embeddings. arXiv preprint arXiv:2104.08821 .Gunel, B.; Du, J.; Conneau, A.; and Stoyanov, V. 2020. Su-pervised contrastive learning for pre-trained language model fine-tuning. arXiv preprint arXiv:2011.01403 .He, K.; Fan, H.; Wu, Y.; Xie, S.; and Girshick, R. 2020. Momentum contrast for unsupervised visual representation learning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 9729–9738. He, K.; Zhang, X.; Ren, S.; and Sun, J. 2016. Deep resid-ual learning for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recogni-tion , 770–778. He, L.; Wang, Z.; Wang, L.; and Li, F. 2023. Multi-modal Mutual Attention-Based Sentiment Analysis Frame-work Adapted to Complicated Contexts. IEEE Transac-tions on Circuits and Systems for Video Technology , 33(12): 7131–7143. Hochreiter, S.; and Schmidhuber, J. 1997. Long short-term memory. Neural computation , 9(8): 1735–1780. Jawahar, G.; Sagot, B.; and Seddah, D. 2019. What does BERT learn about the structure of language? In ACL 2019-57th Annual Meeting of the Association for Computational Linguistics .Khosla, P.; Teterwak, P.; Wang, C.; Sarna, A.; Tian, Y.; Isola, P.; Maschinot, A.; Liu, C.; and Krishnan, D. 2020. Super-vised contrastive learning. Advances in Neural Information Processing Systems , 33: 18661–18673. Kim, Y. 2014. Convolutional Neural Networks for Sentence Classification. In Moschitti, A.; Pang, B.; and Daelemans, W., eds., Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing, EMNLP 2014, October 25-29, 2014, Doha, Qatar, A meeting of SIGDAT, a Special Interest Group of the ACL , 1746–1751. ACL. Kingma, D. P.; and Ba, J. 2014. Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980 .Li, J.; Li, D.; Xiong, C.; and Hoi, S. 2022a. Blip: Boot-strapping language-image pre-training for unified vision-language understanding and generation. In International conference on machine learning , 12888–12900. PMLR. Li, J.; Selvaraju, R.; Gotmare, A.; Joty, S.; Xiong, C.; and Hoi, S. C. H. 2021. Align before fuse: Vision and language representation learning with momentum distillation. Ad-vances in neural information processing systems , 34: 9694– 9705. Li, Z.; Xu, B.; Zhu, C.; and Zhao, T. 2022b. CLMLF: A Contrastive Learning and Multi-Layer Fusion Method for Multimodal Sentiment Detection. In Findings of the Asso-ciation for Computational Linguistics: NAACL 2022 , 2282– 2294. Liang, B.; Gui, L.; He, Y.; Cambria, E.; and Xu, R. 2024. Fu-sion and Discrimination: A Multimodal Graph Contrastive Learning Framework for Multimodal Sarcasm Detection. 
+
+IEEE Transactions on Affective Computing , 1–15. Liang, B.; Lou, C.; Li, X.; Yang, M.; Gui, L.; He, Y.; Pei, W.; and Xu, R. 2022. Multi-modal sarcasm detection via cross-modal graph convolutional network. In Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , volume 1, 1767–1777. Association for Computational Linguistics. Liu, H.; Wang, W.; and Li, H. 2022. Towards multi-modal sarcasm detection via hierarchical congruity modeling with knowledge enhancement. arXiv preprint arXiv:2210.03501 .Mai, S.; Zeng, Y.; Zheng, S.; and Hu, H. 2022. Hybrid con-trastive learning of tri-modal representation for multimodal sentiment analysis. IEEE Transactions on Affective Comput-ing , 14(3): 2276–2289. Niu, T.; Zhu, S.; Pang, L.; and El Saddik, A. 2016. Sen-timent analysis on multi-view social data. In MultiMedia Modeling: 22nd International Conference, MMM 2016, Mi-ami, FL, USA, January 4-6, 2016, Proceedings, Part II 22 ,15–27. Springer. Radford, A.; Kim, J. W.; Hallacy, C.; Ramesh, A.; Goh, G.; Agarwal, S.; Sastry, G.; Askell, A.; Mishkin, P.; Clark, J.; et al. 2021. Learning transferable visual models from nat-ural language supervision. In International conference on machine learning , 8748–8763. PMLR. Schifanella, R.; De Juan, P.; Tetreault, J.; and Cao, L. 2016. Detecting sarcasm in multimodal social platforms. In Pro-ceedings of the 24th ACM international conference on Mul-timedia , 1136–1145. Sun, C.; Qiu, X.; Xu, Y.; and Huang, X. 2019. How to fine-tune bert for text classification? In Chinese Compu-tational Linguistics: 18th China National Conference, CCL 2019, Kunming, China, October 18–20, 2019, Proceedings 18 , 194–206. Springer. Tang, J.; Liu, D.; Jin, X.; Peng, Y.; Zhao, Q.; Ding, Y.; and Kong, W. 2022. BAFN: Bi-direction attention based fusion network for multimodal sentiment analysis. IEEE Transac-tions on Circuits and Systems for Video Technology , 33(4): 1966–1978. Tang, J.; Liu, D.; Jin, X.; Peng, Y.; Zhao, Q.; Ding, Y.; and Kong, W. 2023. BAFN: Bi-Direction Attention Based Fu-sion Network for Multimodal Sentiment Analysis. IEEE Transactions on Circuits and Systems for Video Technology ,33(4): 1966–1978. Van der Maaten, L.; and Hinton, G. 2008. Visualizing data using t-SNE. Journal of machine learning research , 9(11). Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A. N.; Kaiser, Ł.; and Polosukhin, I. 2017. At-tention is all you need. In Advances in neural information processing systems , 5998–6008. Wei, Y.; Yuan, S.; Yang, R.; Shen, L.; Li, Z.; Wang, L.; and Chen, M. 2023. Tackling Modality Heterogeneity with Multi-View Calibration Network for Multimodal Sentiment Detection. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 5240–5252. Wen, C.; Jia, G.; and Yang, J. 2023. Dip: Dual incongruity perceiving network for sarcasm detection. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2540–2550. Xie, Z.; Yang, Y.; Wang, J.; Liu, X.; and Li, X. 2024. Trust-worthy Multimodal Fusion for Sentiment Analysis in Ordi-nal Sentiment Space. IEEE Transactions on Circuits and Systems for Video Technology , 34(8): 7657–7670. Xu, N. 2017. Analyzing multimodal public sentiment based on hierarchical semantic attentional network. In 2017 IEEE international conference on intelligence and security infor-matics (ISI) , 152–154. IEEE. Xu, N.; and Mao, W. 2017. Multisentinet: A deep semantic network for multimodal sentiment analysis. In Proceedings of the 2017 ACM on Conference on Information and Knowl-edge Management , 2399–2402. Xu, N.; Mao, W.; and Chen, G. 2018. A co-memory network for multimodal sentiment analysis. In The 41st international ACM SIGIR conference on research & development in infor-mation retrieval , 929–932. Xu, N.; Zeng, Z.; and Mao, W. 2020. Reasoning with multi-modal sarcastic tweets via modeling cross-modality contrast and semantic association. In Proceedings of the 58th an-nual meeting of the association for computational linguis-tics , 3777–3786. Xue, X.; Zhang, C.; Niu, Z.; and Wu, X. 2022. Multi-level attention map network for multimodal sentiment analysis. 
+
+IEEE Transactions on Knowledge and Data Engineering ,35(5): 5105–5118. Yang, J.; Bisk, Y.; and Gao, J. 2021. Taco: Token-aware cascade contrastive learning for video-text alignment. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , 11562–11572. Yang, X.; Feng, S.; Wang, D.; Hong, P.; and Poria, S. 2023. Multiple Contrastive Learning for Multimodal Sen-timent Analysis. In ICASSP 2023 - 2023 IEEE Interna-tional Conference on Acoustics, Speech and Signal Process-ing (ICASSP) , 1–5. Yang, X.; Feng, S.; Wang, D.; and Zhang, Y. 2021a. Image-Text Multimodal Emotion Classification via Multi-View At-tentional Network. IEEE Transactions on Multimedia , 23: 4014–4026. Yang, X.; Feng, S.; Zhang, Y.; and Wang, D. 2021b. Mul-timodal sentiment detection based on multi-channel graph neural networks. In Proceedings of the 59th Annual Meet-ing of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) , 328–339. Yu, J.; and Jiang, J. 2019. Adapting bert for target-oriented multimodal sentiment classification. In Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence , 5408–5414. Yuan, S.; Wei, Y.; Zhou, H.; Xu, Q.; Chen, M.; and He, X. 2025. Enhancing Semantic Awareness by Sentimental Con-straint with Automatic Outlier Masking for Multimodal Sar-casm Detection. IEEE Transactions on Multimedia .Zadeh, A.; Chen, M.; Poria, S.; Cambria, E.; and Morency, L.-P. 2017. Tensor fusion network for multimodal sentiment analysis. arXiv preprint arXiv:1707.07250 .Zhang, B.; Yuan, Z.; Xu, H.; and Gao, K. 2024. Crossmodal Translation Based Meta Weight Adaption for Robust Image-Text Sentiment Analysis. IEEE Transactions on Multimedia ,26: 9949–9961. Zhang, S.; Liu, J.; Jiao, Y.; Zhang, Y.; Chen, L.; and Li, K. 2025. A Multimodal Semantic Fusion Network with Cross-Modal Alignment for Multimodal Sentiment Analysis. ACM Transactions on Multimedia Computing, Communications and Applications .Zhou, P.; Shi, W.; Tian, J.; Qi, Z.; Li, B.; Hao, H.; and Xu, B. 2016. Attention-based bidirectional long short-term mem-ory networks for relation classification. In Proceedings of the 54th annual meeting of the association for computa-tional linguistics (volume 2: Short papers) , 207–212. Zhu, T.; Li, L.; Yang, J.; Zhao, S.; Liu, H.; and Qian, J. 2023a. Multimodal Sentiment Analysis With Image-Text Interaction Network. IEEE Transactions on Multimedia , 25: 3375–3385. Zhu, T.; Li, L.; Yang, J.; Zhao, S.; and Xiao, X. 2023b. Mul-timodal Emotion Classification With Multi-Level Semantic Reasoning Network. IEEE Transactions on Multimedia , 25: 6868–6880.

@@ -1,0 +1,223 @@
+Title: Stage-Adaptive Reliability Modeling for Continuous Valence-Arousal Estimation
+
+URL Source: https://arxiv.org/pdf/2603.11468v1
+
+Published Time: Fri, 13 Mar 2026 00:24:12 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Stage-Adaptive Reliability Modeling for Continuous Valence-Arousal Estimation 
+
+## Yubeen Lee *
+
+## Sungkyunkwan University 
+
+## yubeenlee@skku.edu 
+
+## Sangeun Lee *
+
+## Electronics and Telecommunications Research Institute 
+
+## sange1104@etri.re.kr 
+
+## Junyeop Cha Sungkyunkwan University 
+
+## jycha95@g.skku.edu 
+
+## Eunil Park †
+
+## Sungkyunkwan University 
+
+## eunilpark@skku.edu 
+
+## Abstract 
+
+Continuous valence-arousal estimation in real-world envi-ronments is challenging due to inconsistent modality relia-bility and interaction-dependent variability in audio-visual signals. Existing approaches primarily focus on model-ing temporal dynamics, often overlooking the fact that modality reliability can vary substantially across interac-tion stages. To address this issue, we propose SAGE, a Stage-Adaptive reliability modeling framework that explic-itly estimates and calibrates modality-wise confidence dur-ing multimodal integration. SAGE introduces a reliability-aware fusion mechanism that dynamically rebalances au-dio and visual representations according to their stage-dependent informativeness, preventing unreliable signals from dominating the prediction process. By separating reli-ability estimation from feature representation, the proposed framework enables more stable emotion estimation under cross-modal noise, occlusion, and varying interaction con-ditions. Extensive experiments on the Aff-Wild2 benchmark demonstrate that SAGE consistently improves concordance correlation coefficient scores compared with existing multi-modal fusion approaches, highlighting the effectiveness of reliability-driven modeling for continuous affect prediction. 
+
+## 1. Introduction 
+
+Emotion recognition has become an increasingly important research topic in machine intelligence, as it enables the de-velopment of intelligent systems capable of understanding human affective states [13, 15, 18, 24, 31]. While many traditional approaches formulate emotion recognition as a 
+
+> *Equal contribution.
+> †Corresponding author.
+
+Figure 1. Temporal reliability varies within modalities due to ex-pressive facial cues and varying speech activity. SAGE adaptively reweights modality contributions over time, leading to stable and accurate VA prediction. 
+
+categorical classification problem [41, 42], an alternative paradigm represents emotions in a continuous space using valence and arousal (VA) [3]. In this formulation, valence describes the degree of pleasantness, while arousal reflects the level of activation. Modeling emotions in a continuous VA space allows systems to capture subtle and ambiguous affective variations that are difficult to represent with dis-crete categories. The Affective Behavior Analysis in-the-Wild (ABAW) challenge has become a major benchmark for advancing af-fect recognition in naturalistic environments. The present work is conducted in the 10th ABAW competition, which builds upon a series of previous challenges [4, 5, 8, 10– 12, 14, 16, 19, 20, 22, 23, 44]. In particular, VA esti-mation task utilizes an extended version of the Aff-Wild2 dataset [6, 8, 10, 14, 17, 21], where the goal is to predict 1
+
+> arXiv:2603.11468v1 [cs.MM] 12 Mar 2026
+
+frame-level valence and arousal scores from multimodal au-dio–visual cues. To address the complexity of multimodal emotion recog-nition, recent studies [36, 39, 40] have explored various fusion strategies to combine information from multiple modalities. Cross-attention and gating-based fusion mod-els have shown promising performance by enabling fine-grained interaction between modalities and adaptive fea-ture selection. However, these approaches typically focus on modeling feature interactions rather than explicitly es-timating the reliability of each modality. In realistic envi-ronments, the quality of audio and visual signals may vary significantly across time due to noise, occlusion, or modal-ity imbalance. As illustrated in Figure 1, the reliability of different modalities can fluctuate temporally depending on factors such as expressive facial cues or intermittent speech activity. Without accounting for such reliability variations, multimodal fusion may incorporate unreliable signals, lead-ing to unstable predictions. To address this challenge, we propose SAGE, a stage-adaptive multimodal framework for continuous VA estima-tion. The proposed approach introduces a reliability-guided weighting strategy that estimates cross-modal confidence and dynamically adjusts modality contributions during fu-sion. By explicitly modeling modality reliability, SAGE en-ables robust integration of multimodal signals under noisy or imbalanced conditions. Extensive experiments on the ABAW benchmark demonstrate that SAGE consistently improves concordance correlation coefficient (CCC) performance compared with strong baseline methods. The main contributions of our work are summarized as follows: • We propose SAGE, a stage-adaptive reliability modeling framework for continuous VA estimation. • We design a reliability-guided weighting strategy that quantifies cross-modal confidence to achieve robust fu-sion under noise and modality imbalance. • Extensive experiments on the ABAW benchmark show that SAGE consistently improves CCC performance over strong baselines. 
+
+## 2. Related Work 
+
+2.1. Valence-Arousal Estimation 
+
+VA estimation is grounded in the circumplex model of af-fect proposed by Russell [37], which represents emotions in a two-dimensional space defined by valence (i.e., pleas-ant–unpleasant) and arousal (i.e., activation). This formu-lation established the theoretical foundation for modeling affect as continuous coordinates rather than discrete cate-gories. Early studies on VA estimation relied on handcrafted features derived from multimodal signals. Nicolaou et al. [29] utilized facial expressions, shoulder gestures, and audio cues, and modeled temporal dependencies using bidirectional LSTM networks for continuous prediction. Savran et al. [38] combined visual texture descriptors with prosodic, spectral audio features, integrating multimodal af-fective indicators through particle filtering. With the advent of deep learning, feature extraction shifted from manual design to deep representation learn-ing. Kollias and Zafeiriou [9] employed multi-CNN ar-chitectures to extract low, mid, and high-level visual fea-tures, which were subsequently modeled using RNN-based temporal modules for VA estimation. Liu et al. [26] intro-duced an ensemble framework that combines six pretrained visual encoders with multiple low-level and deep audio ex-tractors, demonstrating the effectiveness of aggregating het-erogeneous deep representations for robust VA estimation. Attention-based strategies have increasingly been adopted to enhance multimodal integration and sequential modeling in continuous VA estimation. MAVEN [1] integrates visual, audio, and textual modalities through bidirectional cross-modal attention with modality-specific encoders. Park et al. [30] and Meng et al. [27] com-bine LSTM-based temporal modeling with Transformer encoders, leveraging pose features or audio–visual repre-sentations to capture sequential affect dynamics. 
+
+2.2. Multimodal Fusion 
+
+Existing research in multimodal emotion recognition can be broadly categorized into modality reweighting approaches and interaction using cross-attention approaches. Early studies primarily focused on weighted integration or late fusion strategies. Toisoul et al. [40] proposed a three-level fusion framework in which audio and visual features are independently regressed and their outputs are iteratively combined. Sharafi et al. [39] adopted a direct feature-level fusion strategy, concatenating visual spatial features, tem-poral representations, and audio MFCC and energy features into a unified representation for classification. More recent work emphasizes fine-grained inter-modal interaction through cross-attention mechanisms. FedSER-XAI [2] extracts contextual representations using ViT and GCN-based structural representations and fuses them through cross-attention to capture interdependencies. Mo-canu et al. [28] first refine intra-modal representations us-ing attention modules and subsequently apply audio–visual cross-attention to model inter-modal relationships. Praveen and Alam [33] proposed Recursive Joint Cross-Modal At-tention, which computes attention weights based on the cor-relation between joint and individual modality representa-tions and progressively refines multimodal features through recursion. Building upon recursive cross-attention, subsequent studies introduced gating mechanisms to further regulate 2Figure 2. Overall architecture of the proposed SAGE framework for continuous VA estimation. Visual and audio features are extracted using pretrained encoders and temporally encoded via TCNs. The fused representation is processed by the SAGE module, which performs reliability-guided fusion and temporal refinement, followed by a regression head for frame-level VA prediction. 
+
+information flow. Gated Recursive Joint Cross Atten-tion [36] extends the joint attention framework by incor-porating adaptive gates that modulate the contribution of cross-attended features according to the strength of modal-ity complementarity. In line with this, Time-aware Gated Fusion [25] integrates temporal gating modules to empha-size emotionally salient segments while suppressing tran-sient noise. Nevertheless, explicit modeling of time-varying modality reliability remains limited. SAGE is introduced to address this gap by incorporating reliability-aware adaptive reweighting into multimodal fusion. 
+
+## 3. Methodology 
+
+3.1. Overview 
+
+Figure 2 illustrates the overall architecture of the proposed SAGE model for continuous VA estimation. We design a reliability-aware adaptive fusion framework composed of four stages. 
+
+(i) Multimodal Feature Extraction. Given a short video clip, preprocessed cropped video frames and the cor-responding raw audio waveform are used as inputs. The visual stream employs a ResNet-50 pretrained on ImageNet to extract frame-level visual representations. For the audio stream, we adopt a pretrained WavLM-base model to ob-tain self-supervised acoustic embeddings directly from the raw waveform. Accordingly, the temporal representations for each modality are formulated as: 
+
+Xv = fv (V ) ∈ RT ×Dv , Xa = fa(A) ∈ RT ×Da , (1) where T denotes the number of time steps, and Dv , D a
+
+represent the feature dimensions of the visual and audio em-beddings, respectively. 
+
+(ii) Temporal Encoding. To capture short-term tem-poral dependencies, Temporal Convolutional Networks (TCNs) are applied: 
+
+˜Xv = TCN v (Xv ), ˜Xa = TCN a(Xa). (2) The temporally encoded features are concatenated: 
+
+X = [ ˜Xv ; ˜Xa] ∈ RT ×D, (3) where D = Dv + Da.
+
+(iii) Stage-Adaptive Reliability Modeling. The fused representation X is then passed to the SAGE module: 
+
+Z = RGF (X), H = Transformer (Z). (4) SAGE first performs Reliability-Guided Fusion (RGF), which dynamically reweights modality contributions at each time step. The reliability-adjusted representation is subsequently refined through a Temporal Refinement Trans-former to enhance cross-modal interactions under modality imbalance and noisy conditions. 
+
+(iv) Regression Head. Finally, the refined representa-tion is mapped to continuous VA predictions: 
+
+ˆyt = Φ( Ht), ˆyt ∈ R2, (5) where Φ( ·) denotes a frame-wise multilayer perceptron (MLP). The regression head produces predictions indepen-dently for each time step. 
+
+3.2. Stage-Adaptive Reliability Modeling 
+
+SAGE dynamically adjusts temporal feature contributions under modality imbalance. It consists of two components: RGF and a Temporal Refinement Transformer, as illustrated in Figure 3. 3Figure 3. Detailed architecture of the proposed SAGE mod-ule. RGF computes time-dependent reliability scores to adaptively reweight temporal features. The reliability-adjusted representation is then refined by a self-attention-based temporal transformer to capture long-range dependencies before final regression. 
+
+3.2.1. Reliability-Guided Fusion 
+
+Given the temporally encoded multimodal representation 
+
+X ∈ RT ×D, we estimate time-dependent reliability scores to dynamically adjust modality contributions. For each time step t, a scalar reliability logit is computed as: 
+
+gt = Wr Xt + br , (6) where Xt ∈ RD denotes the multimodal feature at time step t, Wr ∈ R1×D and br ∈ R are learnable parameters. Stacking all logits yields: 
+
+g = XW ⊤ 
+
+> r
+
++ br , (7) where g ∈ RT . To obtain a normalized reliability distri-bution across time: 
+
+αt = exp( gt)
+
+PTk=1 exp( gk) , (8) yielding a reliability vector α ∈ RT satisfying: 
+
+> T
+
+X
+
+> t=1
+
+αt = 1 . (9) The reliability-adjusted representation is computed as: 
+
+Zt = αtXt, (10) or equivalently in matrix form: 
+
+Z = diag (α)X, (11) where Z ∈ RT ×D.
+
+3.2.2. Temporal Refinement Transformer 
+
+The reliability-weighted representation Z is further refined via a self-attention based transformer to capture long-range temporal dependencies. Multi-head self-attention is defined as: Attention (Q, K, V ) = softmax 
+
+ QK ⊤
+
+√d
+
+
+
+V, (12) where 
+
+Q = ZW Q, K = ZW K , V = ZW V . (13) The refined representation is computed as: 
+
+H = Transformer (Z). (14) By operating on reliability-adjusted features, the trans-former enhances cross-modal interactions under modality imbalance. 
+
+## 4. Experiments 
+
+4.1. Dataset Description 
+
+4.1.1. Aff-Wild2 Dataset 
+
+We conduct experiments on the Aff-Wild2 [7] dataset pro-vided for the 10th ABAW Competition. Aff-Wild2 is a large-scale in-the-wild dataset for multimodal affective be-havior analysis. The dataset comprises 594 videos collected from YouTube, totaling approximately 2 million annotated frames captured under diverse real-world conditions, in-cluding variations in pose, illumination, age, and ethnicity. For the VA Estimation Challenge, frame-level annota-tions are provided for the training and validation sets. Each annotation file corresponds to a video and contains contin-uous valence and arousal values in the range of [−1, 1] for each frame. Frames with annotation value −5 are consid-ered invalid and are excluded during training and evalua-tion. All cropped-aligned face images have a resolution of 
+
+112 × 112 × 3. We follow the official subject-independent split provided by the competition. In addition, to assess robustness and generalization performance, we conduct K-fold cross-validation within the official training set. Final results are reported on the validation and test sets following the challenge protocol. 44.1.2. Data Preprocessing 
+
+In this study, we construct temporally structured multi-modal sequences based on the Aff-Wild2 dataset. Each video is segmented into fixed-length clips consisting of 300 consecutive frames, with a stride of 200 to generate partially overlapping segments. Frames with invalid annotations or failed face detections are excluded during training to ensure label reliability and consistency. For the visual modality, we utilize the cropped and aligned facial images provided by the challenge organizers, with an input resolution of 48×48. During training, random horizontal flipping and random cropping are applied to en-hance generalization performance. In contrast, only center cropping is employed during validation to maintain experi-mental consistency. For the audio modality, raw waveform signals are extracted from the original videos and resampled to 16 kHz. To maintain temporal alignment with the visual stream, the audio sequence is temporally synchronized ac-cording to the video frame rate. 
+
+4.2. Evaluation Metrics 
+
+To quantitatively evaluate continuous emotion estimation performance, we adopt the CCC as the primary evaluation metric. CCC measures the agreement between predictions and ground-truth annotations by jointly considering corre-lation and distributional similarity. It is defined as: 
+
+CCC = 2ρσ xσy
+
+σ2 
+
+> x
+
++ σ2 
+
+> y
+
++ ( μx − μy )2 , (15) where ρ denotes the Pearson correlation coefficient be-tween the prediction x and the ground truth y, μx and μy
+
+represent their respective means, and σ2 
+
+> x
+
+and σ2 
+
+> y
+
+denote their variances. Unlike Mean Squared Error (MSE), which evaluates point-wise discrepancies independently at each timestep, CCC explicitly accounts for both correlation consistency and mean–variance alignment across the entire temporal se-quence. This characteristic makes CCC particularly suit-able for continuous affect estimation tasks, where preserv-ing global temporal dynamics and structural agreement is as important as minimizing instantaneous prediction errors. To maintain alignment between the optimization objec-tive and the evaluation metric, a CCC-based loss function is adopted during training. Specifically, the training loss is defined as: 
+
+LCCC = 1 − CCC . (16) By directly maximizing concordance, the model is en-couraged to align not only numerical accuracy but also the structural dynamics of predicted and ground-truth emo-tional trajectories. 
+
+Table 1. Comparison of CCC performance on the Aff-Wild2 vali-dation set (fold-0), following the official challenge split.                                        
+
+> Model Validation Set Valence CCC Arousal CCC CCC Avg
+> MM-CV-LC [45] 0.469 0.649 0.559 Netease Fuxi Virtual Human [46] 0.464 0.640 0.552 CtyunAI [48] 0.550 0.681 0.616 HFUT-MAC [47] 0.554 0.659 0.607 Situ-RUCAIM3 [27] 0.588 0.668 0.628
+> JCA [34] 0.663 0.584 0.623 RJCA [35] 0.443 0.639 0.541 DCA [32] 0.451 0.647 0.549 GRJCA [36] 0.459 0.652 0.556 HGRJCA [36] 0.464 0.660 0.562 TAGF [25] 0.427 0.676 0.552
+> Ours 0.509 0.674 0.591
+
+4.3. Experimental Results 
+
+4.3.1. Validation Performance 
+
+The validation performance of the proposed model is first evaluated using the official Aff-Wild2 validation split. Fol-lowing the standard ABAW evaluation protocol, CCC is adopted as the primary evaluation metric for VA predic-tion. To assess the effectiveness of the proposed approach, we compare the validation performance with several recent state-of-the-art methods reported in the ABAW challenge literature. As summarized in Table 1, the proposed model achieves a CCC of 0.509 for valence and 0.674 for arousal, resulting in an average CCC of 0.591 on the validation set. While some prior methods obtain slightly higher scores by leveraging complex architectures or additional resources, the proposed model demonstrates reliable performance with a relatively streamlined framework. 
+
+4.3.2. Test Performance 
+
+To evaluate performance on the Aff-Wild2 test set, the model achieving the best validation performance was sub-mitted to the official ABAW challenge evaluation server. During submission, a target-wise fold selection strategy was applied, where the fold achieving the best validation perfor-mance for each target was selected. Table 2 compares the proposed approach with several re-cent multimodal methods reported in the ABAW challenge literature. According to the challenge evaluation protocol, the individual CCC scores for valence and arousal on the test set are not publicly disclosed; therefore, only the aver-aged CCC score is reported. The proposed method achieves an average CCC of 0.58 on the test set. Compared with earlier multimodal approaches such as JCA [34], RJCA [35], and DCA [32], the proposed model demonstrates competitive performance in terms of the av-eraged CCC score. In particular, our approach outperforms methods such as MM-CV-LC [45] and HFUT-MAC [47], while achieving comparable results to GRJCA [36] and HGRJCA [36]. Although the top-performing methods 5Table 2. Comparison of CCC performance on the Aff-Wild2 test set, evaluated through the official challenge server. Our submis-sion adopts target-wise fold selection based on validation perfor-mance.                                           
+
+> Model Test Set Valence CCC Arousal CCC CCC Avg
+> MM-CV-LC [45] 0.46 0.49 0.47 Netease Fuxi Virtual Human [46] 0.64 0.62 0.63
+> CtyunAI [48] 0.50 0.63 0.56 HFUT-MAC [47] 0.52 0.54 0.53 Situ-RUCAIM3 [27] 0.61 0.59 0.60 JCA [34] 0.37 0.36 0.36 RJCA [35] 0.53 0.57 0.55 DCA [32] 0.54 0.58 0.56 GRJCA [36] 0.56 0.60 0.58 HGRJCA [36] 0.56 0.62 0.59 USTC-IAT-United [43] 0.62 0.57 0.60 TAGF [25] 0.51 0.57 0.54
+> Ours --0.58
+
+achieve slightly higher scores, the proposed model demon-strates competitive performance without relying on addi-tional external datasets or ensemble strategies. 
+
+## 5. Conclusion 
+
+In this paper, we investigated multimodal VA estimation from the perspective of modality reliability rather than ar-chitectural complexity alone. We introduced SAGE, a Stage-Adaptive reliability modeling framework that explic-itly estimates and regulates modality-wise confidence dur-ing multimodal fusion. Extensive experiments conducted within the setting of the 10th ABAW Competition demon-strate that performance limitations in real-world emotion recognition frequently arise from unstable modality contri-butions rather than insufficient temporal modeling capacity. By dynamically calibrating cross-modal influence across in-teraction stages, SAGE produces more stable affect trajec-tories under noisy, imbalanced, and unconstrained condi-tions. These results suggest that reliability-aware model-ing constitutes a fundamental design principle for robust multimodal emotion estimation. The proposed framework achieved competitive performance in the official evalua-tion of the 10th ABAW Competition, further validating its practical effectiveness on large-scale in-the-wild bench-marks. 
+
+## References 
+
+[1] Vrushank Ahire, Kunal Shah, Mudasir Khan, Nikhil Pakhale, Lownish Sookha, Mudasir Ganaie, and Abhinav Dhall. Maven: Multi-modal attention for valence-arousal emotion network. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 5789–5799, 2025. 2 [2] Eman Abdulrahman Alkhamali, Arwa Abdulaziz Allinjawi, Rehab Bahaaddin Ashari, and Mohammed Tawfik. Fedser-xai: Pso-optimized multi-stream cross-attention transformer with graph features for explainable federated speech emotion recognition. Scientific Reports , 2025. 2 [3] Lisa A Feldman. Valence focus and arousal focus: Individual differences in the structure of affective experience. Journal of personality and social psychology , 69(1):153, 1995. 1 [4] Dimitrios Kollias. Abaw: Valence-arousal estimation, ex-pression recognition, action unit detection & multi-task learning challenges. In Proceedings of the IEEE/CVF Con-ference on Computer Vision and Pattern Recognition , pages 2328–2336, 2022. 1 [5] Dimitrios Kollias. Abaw: Learning from synthetic data & multi-task learning challenges. In European Conference on Computer Vision , pages 157–172. Springer, 2023. 1 [6] Dimitrios Kollias. Multi-label compound expression recog-nition: C-expr database & network. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5589–5598, 2023. 1 [7] Dimitrios Kollias and Stefanos Zafeiriou. Aff-wild2: Ex-tending the aff-wild database for affect recognition. arXiv preprint arXiv:1811.07770 , 2018. 4 [8] Dimitrios Kollias and Stefanos Zafeiriou. Expression, affect, action unit recognition: Aff-wild2, multi-task learning and arcface. arXiv preprint arXiv:1910.04855 , 2019. 1 [9] Dimitrios Kollias and Stefanos Zafeiriou. Exploiting multi-cnn features in cnn-rnn based dimensional emotion recogni-tion on the omg in-the-wild dataset. IEEE Transactions on Affective Computing , 12(3):595–606, 2020. 2 [10] Dimitrios Kollias and Stefanos Zafeiriou. Affect analysis in-the-wild: Valence-arousal, expressions, action units and a unified framework. arXiv preprint arXiv:2103.15792 , 2021. 1[11] Dimitrios Kollias and Stefanos Zafeiriou. Analysing affec-tive behavior in the second abaw2 competition. In Proceed-ings of the IEEE/CVF International Conference on Com-puter Vision , pages 3652–3660, 2021. [12] D Kollias, A Schulc, E Hajiyev, and S Zafeiriou. Analysing affective behavior in the first abaw 2020 competition. In 
+
+2020 15th IEEE International Conference on Automatic Face and Gesture Recognition (FG 2020)(FG) , pages 794– 800. 1 [13] Dimitrios Kollias, Viktoriia Sharmanska, and Stefanos Zafeiriou. Face behavior a la carte: Expressions, af-fect and action units in a single network. arXiv preprint arXiv:1910.11111 , 2019. 1 [14] Dimitrios Kollias, Panagiotis Tzirakis, Mihalis A Nicolaou, Athanasios Papaioannou, Guoying Zhao, Bj¨ orn Schuller, Irene Kotsia, and Stefanos Zafeiriou. Deep affect prediction in-the-wild: Aff-wild database and challenge, deep architec-tures, and beyond. International Journal of Computer Vision ,pages 1–23, 2019. 1 [15] Dimitrios Kollias, Viktoriia Sharmanska, and Stefanos Zafeiriou. Distribution matching for heterogeneous multi-task learning: a large-scale face study. arXiv preprint arXiv:2105.03790 , 2021. 1 [16] Dimitrios Kollias, Panagiotis Tzirakis, Alice Baird, Alan Cowen, and Stefanos Zafeiriou. Abaw: Valence-arousal es-timation, expression recognition, action unit detection emo-tional reaction intensity estimation challenges. In Proceed-ings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5888–5897, 2023. 1 
+
+6[17] Dimitrios Kollias, Chunchang Shao, Odysseus Kaloidas, and Ioannis Patras. Behaviour4all: in-the-wild facial behaviour analysis toolkit. arXiv preprint arXiv:2409.17717 , 2024. 1 [18] Dimitrios Kollias, Viktoriia Sharmanska, and Stefanos Zafeiriou. Distribution matching for multi-task learning of classification tasks: a large scale study on faces & beyond. In Proceedings of the AAAI Conference on Artificial Intelli-gence , pages 2813–2821, 2024. 1 [19] Dimitrios Kollias, Panagiotis Tzirakis, Alan Cowen, Ste-fanos Zafeiriou, Irene Kotsia, Alice Baird, Chris Gagne, Chunchang Shao, and Guanyu Hu. The 6th affective behav-ior analysis in-the-wild (abaw) competition. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pat-tern Recognition , pages 4587–4598, 2024. 1 [20] Dimitrios Kollias, Stefanos Zafeiriou, Irene Kotsia, Abhinav Dhall, Shreya Ghosh, Chunchang Shao, and Guanyu Hu. 7th abaw competition: Multi-task learning and compound ex-pression recognition. In European Conference on Computer Vision , pages 31–45. Springer, 2024. 1 [21] Dimitrios Kollias, Damith C Senadeera, Jianian Zheng, Kaushal KK Yadav, Greg Slabaugh, Muhammad Awais, and Xiaoyun Yang. Dvd: A comprehensive dataset for advanc-ing violence detection in real-world scenarios. arXiv preprint arXiv:2506.05372 , 2025. 1 [22] Dimitrios Kollias, Panagiotis Tzirakis, Alan Cowen, Ste-fanos Zafeiriou, Irene Kotsia, Eric Granger, Marco Peder-soli, Simon Bacon, Alice Baird, Chris Gagne, et al. Ad-vancements in affective and behavior analysis: The 8th abaw workshop and competition. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 5572– 5583, 2025. 1 [23] Dimitrios Kollias, Stefanos Zafeiriou, Irene Kotsia, Greg Slabaugh, Damith Chamalke Senadeera, Jianian Zheng, Kaushal Kumar Keshlal Yadav, Chunchang Shao, and Guanyu Hu. From emotions to violence: Multimodal fine-grained behavior analysis at the 9th abaw. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 1–12, 2025. 1 [24] Kevin LaGrandeur. Emotion, artificial intelligence, and ethics. In Beyond artificial intelligence: The disappearing human-machine divide , pages 97–109. Springer, 2015. 1 [25] Yubeen Lee, Sangeun Lee, Chaewon Park, Junyeop Cha, and Eunil Park. Dynamic temporal gating networks for cross-modal valence-arousal estimation. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 61–70, 2025. 3, 5, 6 [26] Xiaolong Liu, Lei Sun, Wenqiang Jiang, Fengyuan Zhang, Yuanyuan Deng, Zhaopei Huang, Liyu Meng, Yuchen Liu, and Chuanhe Liu. Evaef: Ensemble valence-arousal estima-tion framework in the wild. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 5863–5871, 2023. 2 [27] Liyu Meng, Yuchen Liu, Xiaolong Liu, Zhaopei Huang, Wenqiang Jiang, Tenggan Zhang, Chuanhe Liu, and Qin Jin. Valence and arousal estimation based on multimodal temporal-aware features for videos in the wild. In Proceed-ings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 2345–2352, 2022. 2, 5, 6 [28] Bogdan Mocanu, Ruxandra Tapu, and Titus Zaharia. Mul-timodal emotion recognition using cross modal audio-video fusion with attention and deep metric learning. Image and vision computing , 133:104676, 2023. 2 [29] Mihalis A Nicolaou, Hatice Gunes, and Maja Pantic. Con-tinuous prediction of spontaneous affect from multiple cues and modalities in valence-arousal space. IEEE Transactions on Affective Computing , 2(2):92–105, 2011. 2 [30] Ho-min Park, Ilho Yun, Ajit Kumar, Ankit Kumar Singh, Bong Jun Choi, Dhananjay Singh, and Wesley De Neve. To-wards multimodal prediction of time-continuous emotion us-ing pose feature engineering and a transformer encoder. In 
+
+Proceedings of the 3rd International on Multimodal Senti-ment Analysis Workshop and Challenge , pages 47–54, 2022. 2[31] Rosalind W Picard. Affective computing . MIT press, 2000. 1[32] R Gnana Praveen and Jahangir Alam. Cross-attention is not always needed: Dynamic cross-attention for audio-visual di-mensional emotion recognition. In 2024 IEEE International Conference on Multimedia and Expo (ICME) , pages 1–6. IEEE, 2024. 5, 6 [33] R Gnana Praveen and Jahangir Alam. Recursive joint cross-modal attention for multimodal fusion in dimensional emo-tion recognition. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition , pages 4803–4813, 2024. 2 [34] R Gnana Praveen, Wheidima Carneiro de Melo, Nasib Ul-lah, Haseeb Aslam, Osama Zeeshan, Th´ eo Denorme, Marco Pedersoli, Alessandro L Koerich, Simon Bacon, Patrick Car-dinal, et al. A joint cross-attention model for audio-visual fusion in dimensional emotion recognition. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 2486–2495, 2022. 5, 6 [35] R Gnana Praveen, Eric Granger, and Patrick Cardinal. Re-cursive joint attention for audio-visual fusion in regression based emotion recognition. In ICASSP 2023-2023 IEEE In-ternational Conference on Acoustics, Speech and Signal Pro-cessing (ICASSP) , pages 1–5. IEEE, 2023. 5, 6 [36] Gnana Praveen Rajasekhar, Jahangir Alam, and Eric Char-ton. United we stand, divided we fall: Handling weak complementarity for audio-visual emotion recognition in valence-arousal space. In Proceedings of the Computer Vi-sion and Pattern Recognition Conference , pages 5741–5751, 2025. 2, 3, 5, 6 [37] James A Russell. A circumplex model of affect. Journal of personality and social psychology , 39(6):1161, 1980. 2 [38] Arman Savran, Houwei Cao, Miraj Shah, Ani Nenkova, and Ragini Verma. Combining video, audio and lexical indica-tors of affect in spontaneous conversation via particle filter-ing. In Proceedings of the 14th ACM international confer-ence on Multimodal interaction , pages 485–492, 2012. 2 [39] Masoumeh Sharafi, Mohammadreza Yazdchi, Reza Rasti, and Fahimeh Nasimi. A novel spatio-temporal convolu-tional neural framework for multimodal emotion recogni-tion. Biomedical Signal Processing and Control , 78:103970, 2022. 2 
+
+7[40] Antoine Toisoul, Jean Kossaifi, Adrian Bulat, Georgios Tz-imiropoulos, and Maja Pantic. Estimation of continuous va-lence and arousal levels from faces in naturalistic conditions. 
+
+Nature Machine Intelligence , 3(1):42–50, 2021. 2 [41] Samarth Tripathi, Shrinivas Acharya, Ranti Sharma, Sudhan-shi Mittal, and Samit Bhattacharya. Using deep and convo-lutional neural networks for accurate emotion classification on deap data. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 4746–4752, 2017. 1 [42] Yue Xie, Ruiyu Liang, Zhenlin Liang, Chengwei Huang, Cairong Zou, and Bj¨ orn Schuller. Speech emotion classi-fication using attention-based lstm. IEEE/ACM Transactions on Audio, Speech, and Language Processing , 27(11):1675– 1685, 2019. 1 [43] Jun Yu, Yongqi Wang, Lei Wang, Yang Zheng, and Sheng-fan Xu. Interactive multimodal framework with temporal modeling for emotion recognition. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 5699–5706, 2025. 6 [44] Stefanos Zafeiriou, Dimitrios Kollias, Mihalis A Nicolaou, Athanasios Papaioannou, Guoying Zhao, and Irene Kot-sia. Aff-wild: Valence and arousal ‘in-the-wild’challenge. In Computer Vision and Pattern Recognition Workshops (CVPRW), 2017 IEEE Conference on , pages 1980–1987. IEEE, 2017. 1 [45] Su Zhang, Yi Ding, Ziquan Wei, and Cuntai Guan. Contin-uous emotion recognition with audio-visual leader-follower attentive fusion. In Proceedings of the IEEE/CVF inter-national conference on computer vision , pages 3567–3574, 2021. 5, 6 [46] Wei Zhang, Bowen Ma, Feng Qiu, and Yu Ding. Multi-modal facial affective analysis based on masked autoencoder. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5793–5802, 2023. 5, 6[47] Ziyang Zhang, Liuwei An, Zishun Cui, Ao Xu, Tengteng Dong, Yueqi Jiang, Jingyi Shi, Xin Liu, Xiao Sun, and Meng Wang. Abaw5 challenge: A facial affect recognition ap-proach utilizing transformer encoder and audiovisual fusion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5725–5734, 2023. 5, 6[48] Weiwei Zhou, Jiada Lu, Zhaolong Xiong, and Weifeng Wang. Leveraging tcn and transformer for effective visual-audio fusion in continuous emotion recognition. In Proceed-ings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 5756–5763, 2023. 5, 6 
+
+8

@@ -1,0 +1,432 @@
+Title: Voices, Faces, and Feelings: Multi-modal Emotion-Cognition Captioning for Mental Health Understanding
+
+URL Source: https://arxiv.org/pdf/2603.01816v1
+
+Published Time: Tue, 03 Mar 2026 04:11:29 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Voices, Faces, and Feelings: Multi-modal Emotion-Cognition Captioning for Mental Health Understanding 
+
+# Zhiyuan Zhou 1, Yanrong Guo 1* , Shijie Hao 1* 
+
+> 1
+
+Hefei University of Technology zhouzhiyuan.hfut@gmail.com, yrguo@hfut.edu.cn, hfut.hsj@gmail.com 
+
+Abstract 
+
+Emotional and cognitive factors are essential for understand-ing mental health disorders. However, existing methods of-ten treat multi-modal data as classification tasks, limiting in-terpretability especially for emotion and cognition. Although large language models (LLMs) offer opportunities for men-tal health analysis, they mainly rely on textual semantics and overlook fine-grained emotional and cognitive cues in multi-modal inputs. While some studies incorporate emo-tional features via transfer learning, their connection to men-tal health conditions remains implicit. To address these is-sues, we propose ECMC, a novel task that aims at gener-ating natural language descriptions of emotional and cog-nitive states from multi-modal data, and producing emo-tion–cognition profiles that improve both the accuracy and interpretability of mental health assessments. We adopt an encoder–decoder architecture, where modality-specific en-coders extract features, which are fused by a dual-stream BridgeNet based on Q-former. Contrastive learning enhances the extraction of emotional and cognitive features. A LLaMA decoder then aligns these features with annotated captions to produce detailed descriptions. Extensive objective and sub-jective evaluations demonstrate that: 1) ECMC outperforms existing multi-modal LLMs and mental health models in gen-erating emotion–cognition captions; 2) the generated emo-tion–cognition profiles significantly improve assistive diag-nosis and interpretability in mental health analysis. 
+
+# Introduction 
+
+Mental health disorders, such as depression, significantly af-fect physical and psychological well-being. According to the World Health Organization (WHO), depression affects over 300 million people worldwide, and untreated mental disor-ders will account for 13% of the total disease burden by 2030 (WHO 2017). One reason many patients struggle to receive evaluation is the lack of effective assistive mental health analysis methods. Current diagnostic methods rely heavily on self-reports and clinical interviews (Habtamu et al. 2023), which are subjective and inefficient. The shortage of psy-chiatrists cannot keep up with increasing patients (Johnson 2022), highlighting the urgent need for efficient and scalable assistive mental health analysis. 
+
+> *
+
+Corresponding authors. Copyright © 2026, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+Figure 1: Different paradigms for mental disorder detection. (a) Classification-based. (b) LLM-based. (c) Ours. However, existing assistive mental health analysis meth-ods face challenges. Firstly, most methods (Liu et al. 2024; Ji et al. 2021; Zhang et al. 2022) treat the task as a classifica-tion problem by categorizing multi-modal data to a mental disorder category, which lacks interpretability (Figure 1(a)). They do not reveal which cues are associated with mental health conditions. As a result, these methods are often un-convincing for clinical diagnostic support. Secondly, large language models (LLMs) have strong natural language un-derstanding abilities (Guo et al. 2025; Achiam et al. 2023). However, when applied to mental health analysis, they rely on textual information, such as detecting symptom-related words (Yang et al. 2024; Xu et al. 2024a) (Figure 1(b)). They cannot capture emotional and cognitive signals from other modalities, like facial expressions or vocal tone, which are important in real-world clinical observations. Despite the above two categories of methods contain works (Wu, Zhang, and Woodland 2023; Wu, Wu, and Yu 2022) that in-troduce affective features using transfer learning, the high-dimensional features offer limited insight into the correla-tion between emotion and mental disorders. They also ig-nore the role of cognitive factors in mental health analysis. Emotion–cognition patterns play a vital role in under-standing mental health disorders. Neuroscience research (Shackman, Fox, and Seminowicz 2015) suggests mental 
+
+> arXiv:2603.01816v1 [cs.MM] 2 Mar 2026
+
+disorders are not only reflected in observable symptoms, but also in the dynamic mechanisms of emotional and cog-nitive processing. For example, depression is often associ-ated with a prolonged emotional stagnation and suppressed cognitive functioning, while anxiety disorders exhibit rapid emotional and cognitive fluctuations, often manifesting as panic attacks. Prior studies (Uban, Chulvi, and Rosso 2021; Li et al. 2022) have also identified significant differences in emotional and cognitive characteristics between individu-als with and without mental health conditions based on lin-guistic features. However, existing methods rarely consider a multi-modal perspective to examine these patterns, and often fail to provide interpretable insights for clinical diagnosis. To address these limitations, we introduce an emo-tion–cognition cooperative multi-modal captioning (ECMC) task, which aims to generate interpretable emotion–cognition profiles for mental health understanding (Figure 1(c)). Inspired by recent work on emotion caption-ing task (Xu et al. 2024b; Ye et al. 2024), ECMC requires models to extract emotion- and cognition-relevant features from diverse modalities, and generate coherent, high-quality natural language descriptions. Unlike traditional approaches that compress complex signals to categorical labels, ECMC leverages natural language to unify multi-modal infor-mation into rich, contextualized narratives that capture both emotional states and cognitive impairments. This not only enhances interpretability for clinicians but also supports fine-grained comparisons across individuals and time, making ECMC a promising direction for accurate and explainable mental health assessment. To this end, we design a multi-modal encoder–decoder framework, which compromises modality-specific encoders, a dual-stream BridgeNet, and a LLaMA-based decoder. Given the challenge of training encoders from scratch with limited data, we initialize the modality-specific encoders using pre-trained models tailored to each modality to ex-tract initial features. However, such pre-trained models typ-ically focus on frame-level representations and fail to cap-ture emotion- and cognition-relevant semantics. Inspired by BLIP-2 (Li et al. 2023), we design a dual-stream BridgeNet based on Q-former, which compresses multi-modal features and disentangles emotion and cognition representations with contrastive learning. Finally, we employ a LLaMA-based decoder, leveraging the powerful language understanding abilities of LLM, to generate emotion–cognition captions from the encoded features. The decoder guides the Brid-geNet in the training process, to align emotion-cognition features with the target textual space. The contributions of our work are summarized as follows: • We propose a novel emotion–cognition cooperative multi-modal captioning (ECMC) task, which enables LLMs to generate emotion–cognition profiles for men-tal health understanding. To the best of our knowledge, this perspective has not been explored in previous work. • We design a multi-modal encoder–decoder framework for the ECMC 1 task, which extracts emotion and cogni-
+
+> 1Code and more results: https://github.com/zhouzyhfut/ECMC.
+
+tion features from multi-modal data and aligns them with the LLM input space to produce informative captions. • Extensive objective and subjective evaluations demon-strate that our method can generate high-quality emo-tion–cognition captions from multi-modal observations. 
+
+# Related Work 
+
+Mental Disorders Detection 
+
+Most mental disorder detection methods focus on designing various deep learning models to classify samples into disor-der categories (Liu et al. 2024; Ji et al. 2021; Zhang et al. 2022). However, the underlying reasons behind these pre-dictions are often implicit, limiting their utility in clinical applications. The emergence of LLMs enhances mental dis-orders detection by fine-tuning on relevant data (Yang et al. 2024; Xu et al. 2024a). Nevertheless, these approaches typi-cally rely solely on textual semantic information and cannot capture facial expressions or other observable reactions from patients. Although prior works (Uban, Chulvi, and Rosso 2021; Li et al. 2022) have incorporated affective informa-tion via transfer learning, the relationship between emotion-related features and prediction outcomes remains difficult to interpret. In contrast, our approach enables multi-modal ob-servation of patients’ emotion–cognition patterns and gener-ates descriptions of salient cues, thus providing more inter-pretable evidence to support effective clinical diagnosis. 
+
+Multi-modal Large Language Model 
+
+Recent advances in multi-modal large language models (MLLMs) have achieved remarkable performance in cross-modal understanding and generation tasks. For example, BLIP-2 (Li et al. 2023) introduces a lightweight query-based transformer that effectively bridges frozen vision encoders and language models, enabling strong zero-shot perfor-mance. Qwen2.5-Omni (Xu et al. 2025) supports seamless multi-turn dialogue grounded in visual content, highlighting its strength in multi-modal scenarios. InternVL-2.5 (Chen et al. 2024) unifies visual and textual representations through dense alignment, enhancing complex cross-modal reasoning and fine-grained understanding. Sa2VA (Yuan et al. 2025) focuses on fine-grained semantic alignment, leading to im-provements in visual question answering and detailed image captioning. Overall, MLLMs demonstrate impressive gener-alization across diverse modalities, laying a foundation for downstream multi-modal applications. 
+
+Automatic Captioning 
+
+Automatic captioning methods typically aim to generate nat-ural language descriptions from visual or multi-modal inputs by leveraging encoder–decoder architectures. For example, generating emotion–cause–aware video captions helps cap-ture fine-grained multi-modal cues, which can then be used to summarize the causes of emotions in conversations (Wang et al. 2024). SECap (Xu et al. 2024b) uses HuBERT and Q-Former to extract emotion-focused speech features and LLaMA to generate natural language captions of speech emotions. By providing fine-grained and semantically rich Figure 2: The framework of the proposed method. textual descriptions, captioning tasks naturally offer detailed cues that can be highly valuable for mental health under-standing, enabling interpretable insights into patients’ emo-tional and cognitive states. 
+
+# Method 
+
+We first provide an overview of our ECMC. Then, we de-scribe in detail how the emotion bridge-net and cognition bridge-net extract emotional and cognitive features, respec-tively. The overall training process is finally described. 
+
+Model Architecture 
+
+As illustrated in Figure 2, inspired by automatic captioning in emotion recognition (Wang et al. 2024; Xu et al. 2024b; Ye et al. 2024), we adopt an encoder–decoder architecture. 
+
+Encoder For a given utterance sample xi =
+
+{Xv , Xa, Xt} where the subscripts v, a, and t denote the video, audio, and text modalities respectively, we first extract modality-specific initial representations with modal-specific pre-trained models: 
+
+Hv = Fv (Xv ), Ha = Fa(Xa), Ht = Ft(Xt). (1) Here, we employ VideoMAE (Tong et al. 2022), HuBERT (van Niekerk et al. 2022), and BERT (Devlin et al. 2019) as Fv , Fa, and Ft, respectively. Hm ∈ RTm×dm , m ∈{v, a, t } represents initial representation of each modality, where Tm is the number of time steps and dm is the dimen-sion of representation. Subsequently, we design a dual-stream BridgeNet com-prising the emotion bridge-net and the cognition bridge-net, which fuses multi-modal information and further com-presses the initial representations, since the sequential repre-sentations are often redundant. This process yields two em-beddings, E-embedding and C-embedding, denoted as: 
+
+{he, hc} = Fbridge (Hv , Ha, Ht) (2) Here, he ∈ R1×de captures features relevant to various emo-tional categories, while hc ∈ R1×dc encodes features related to potential cognitive impairments. 
+
+Decoder We then employ LLaMA (Touvron et al. 2023) as a text decoder to generate fine-grained emotion–cognition descriptions. Leveraging the powerful language understand-ing and generation capabilities of LLMs, we guide the Brid-geNet toward a semantically rich textual feature space and produce high-quality captions. Specifically, we prepend a 
+
+<BOS> token to the input, and concatenate it with the E-embedding he and C-embedding hc, followed by the tok-enized prompt. The input to LLM is thus formulated as: 
+
+u = Fllm 
+
+ concat (<BOS> , he, hc, P rompt ) (3) which constrains the output space of LLM to generate ac-curate captions u that reflect both emotional and cognitive aspects of the utterance. After obtaining the emotion–cognition descriptions U =
+
+{u1, ..., un} for multiple utterances, we instruct LLM to produce a user profile p. This profile summarizes salient pat-terns such as negative emotions and cognitive impairments observed in the utterances: 
+
+p = Fllm (U , P rompt ) (4) The user profile p provides valuable evidence for mental dis-order diagnosis, and further assists a general-purpose LLM in enhancing its mental disorder detection capabilities: 
+
+y = Fllm (p, P rompt, Xt) (5) where y is the prediction of mental disorder. 
+
+Emotional Representation Extraction 
+
+To fuse multi-modal features and further compress the initial representations for extracting an emotional representation to feed into the decoder, we design the Emotion BridgeNet, as illustrated in Figure 3. 
+
+Q-former For each modality m, we introduce a set of learnable query tokens Qm ∈ Rlq ×dq , where lq is the num-ber of query tokens and dq is the hidden dimension. We first apply self-attention over the query tokens to model intra-query dependencies: 
+
+Q′ 
+
+> m
+
+= softmax 
+
+ QmWq (QmWk)⊤
+
+√dk
+
+
+
+QmWv (6) Figure 3: The architecture of BridgeNet. where Wq ∈ Rdq ×dk , Wk ∈ Rdq ×dk , Wv ∈ Rdq ×dv are the learnable weight matrices for queries, keys, and values. Next, the updated queries Q′ 
+
+> m
+
+∈ Rlq ×dv used as queries for the cross-attention: 
+
+Zm = softmax Q′
+
+> m
+
+W ′(c) 
+
+> q
+
+(H′
+
+> m
+
+W ′(c) 
+
+> k
+
+)⊤
+
+√dk
+
+!
+
+H′
+
+> m
+
+W ′(c)
+
+> v
+
+(7) where H′ 
+
+> m
+
+= HmWm, W ′(c) 
+
+> q
+
+∈ Rdv ×dk , W ′(c) 
+
+> k
+
+∈
+
+Rdq ×dk , W ′(c) 
+
+> v
+
+∈ Rdq ×dv , Wm ∈ Rdm×dq are the learn-able weight matrices. Subsequently, the attended query rep-resentation Zm ∈ Rlq ×dv is passed through a feed-forward layer: 
+
+Z′ 
+
+> m
+
+= ReLU (ZmW1 + b1) W2 + b2 (8) where W1 ∈ Rdv ×de , W2 ∈ Rde× de  
+
+> 3
+
+, and b1, b2 are biases. We concatenate the representations Z′ 
+
+> m
+
+and project them into the feature space: 
+
+he = N orm (P ooling (Concat (Z′ 
+
+> v
+
+, Z′
+
+> a
+
+, Z′ 
+
+> t
+
+) W3 + b3)) ,
+
+(9) where he ∈ Rld×de , W3 ∈ Rde×de is the projection matrix and b3 is the bias. Pooling indicates meanpooling operation, and Norm is L2 normalization. 
+
+Emotion Contrastive Learning For mental disorder anal-ysis, psychological researches (Joormann and Stanton 2016; Vanderlind et al. 2020; Zakiei et al. 2014) have highlighted negative emotions as a significant characteristic. Accord-ingly, we divide the feature representations he,i into neg-ative, neutral, and positive categories according to the va-lence dimension (Kensinger 2004) in the affective space. To better capture the representations of different emotional categories, we introduce a label-matching based contrastive learning approach. We first compute the similarity matrix: 
+
+Sij = h⊤ 
+
+> e,i he,j
+> τ
+
+. Then we build a binary mask Mij = 1 
+
+if ye,i = ye,j and i̸ = j, and 0 otherwise, where ye ∈{− 1, 0, 1} denotes emotion class label, to identify intra-class positives. The loss combines intra-class compactness and inter-class separability: 
+
+Lemo = − 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+1
+
+|{ j : Mij = 1 }| 
+
+X 
+
+> j:Mij =1
+
+log pij 
+
++ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+log  1 + X 
+
+> j:Mij =0
+
+exp( Sij ),
+
+(10) where log pij = Sij −log P  
+
+> k̸=i
+
+exp( Sik ), and N represents the batch size. 
+
+Cognitive Representation Extraction 
+
+Similar to the emotional representation extraction process, we employ a Q-former to compress and fuse the multi-modal initial features Hm, resulting in the cognition representa-tion hc. Guided by clinical cognitive scale MMSE (Arevalo-Rodriguez et al. 2015), we focus on four specific cognitive impairments: orientation deficit, attention deficit, memory deficit, and language disorder, and aim to discover represen-tations corresponding to these distinct cognitive categories. Since a sample hc,i may be associated with multiple cog-nitive impairments simultaneously, we design a multi-label contrastive learning objective based on the Jaccard similar-ity to better capture the shared and unique aspects of these impairments. For cognition features hc,i , each sample may have multiple labels yc,i ∈ { 0, 1}4. We replace the binary mask with a soft similarity weight based on Jaccard index: 
+
+Wij =
+
+
+
+1, yc,i = yc,j = ∅
+
+0, yc,i = ∅ or yc,j = ∅
+
+|yc,i ∩ yc,j ||yc,i ∪ yc,j | , otherwise .
+
+(11) The loss softly pulls samples with higher label overlap closer and pushes others apart: 
+
+Lcog = − 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+log 
+
+P 
+
+> j
+
+exp( Sij ) · Wij 
+
+P 
+
+> j
+
+exp( Sij )+ 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+log  1 + X
+
+> j
+
+exp( Sij )(1 − Wij ).
+
+(12) 
+
+Training Process 
+
+To enhance multi-modal emotion–cognition captions with LLMs, we design a two-stage training process. In the first stage, we jointly train the emotional representation ex-traction and cognitive representation extraction processes. This collaborative training effectively compresses and fuses multi-modal information, enabling the extraction of compact emotional and cognitive representations: 
+
+L1 = Lemo + Lcog , (13) where we keep the parameters of the modal-specific encoder frozen, and the Q-Former is initialized with BERT (Devlin et al. 2019) pre-trained parameters. Method Modality Domain BLEU-1 BLEU-2 BLEU-4 METEOR ROUGE-L CIDEr F BERT InternVL-2.5-8B VT General 8.35 3.30 0.96 10.06 13.98 0.96 6.48 DeepSeek-VL-2-small VT 2.98 1.33 0.42 5.99 10.00 0.42 2.02 Sa2VA-8B VT 14.36 7.05 2.14 15.35 20.34 2.14 12.28 Qwen2.5-Omni-7B AVT 12.74 4.86 1.42 13.31 16.99 1.42 8.93 PsycoLLM TMental 4.86 1.76 0.50 5.68 7.68 0.50 0.35 MindChat T 5.44 1.75 0.50 6.73 9.71 0.50 0.87 EmoLLM T 8.50 3.50 1.19 10.08 14.25 1.19 6.25 CPsyCoun T 17.44 7.24 2.33 15.07 18.90 2.33 9.30 
+
+Ours AVT 34.76 19.40 8.28 29.47 24.91 8.28 27.13 
+
+Table 1: Comparison of emotion captioning performance with other methods. A,V,T denote audio, video, and text, respectively. Bold indicates the best, while underline indicates the second-best. 
+
+Method Modality Domain BLEU-1 BLEU-2 BLEU-4 METEOR ROUGE-L CIDEr F BERT InternVL-2.5-8B VT General 8.17 3.05 0.84 9.35 16.52 0.84 18.43 DeepSeek-VL-2-small VT 8.49 4.40 1.72 10.34 15.45 1.72 6.75 Sa2VA-8B VT 15.82 6.24 1.61 13.15 22.59 1.61 18.78 Qwen2.5-Omni-7B AVT 12.82 5.30 1.48 12.04 19.56 1.48 20.03 PsycoLLM TMental 6.22 3.19 1.30 10.59 10.48 1.30 6.60 MindChat T 6.81 3.02 1.11 8.33 11.74 1.11 5.41 EmoLLM T 17.00 6.66 1.98 13.29 19.08 1.98 14.99 CPsyCoun T 9.32 3.89 1.06 18.88 23.07 1.06 4.47 
+
+Ours AVT 35.92 25.05 15.32 35.86 39.82 15.32 41.04 
+
+Table 2: Comparison of cognition captioning performance with other methods In the second stage, we fine-tune the emotion Bridge-Net and cognition Bridge-Net to effectively integrate the ex-tracted features into the LLM. Specifically, we keep both the modal-specific encoders and LLM parameters frozen, and employ cross-entropy loss to make the LLM generate anno-tated captions ˆu, thereby guiding the Bridge-Net to produce features aligned with the LLM’s input space: 
+
+L2 = CELoss ( ˆ u, u) (14) 
+
+# Dataset and Evaluation Metric 
+
+Dataset We evaluate our method on the MMDA dataset (Jiang, Zhang, and Sun 2022), a large-scale multimodal benchmark for mental disorder analysis containing 1,025 clinically validated samples. Each sample includes visual, acoustic, and textual data from clinical interviews, with de-pression and anxiety labels based on standardized assess-ments (HAMD and HAMA). To obtain utterance-level emo-tion–cognition captions, we combine automatic annotation with manual refinement. The interviews are first segmented into question–answer turns. Emotion-LLaMA (Cheng et al. 2024) then generates emotional descriptions integrating fa-cial, vocal, and semantic cues. Using these outputs and the textual content, DeepSeek-671B (Guo et al. 2025) pro-duces corresponding cognitive captions and categorical la-bels for both emotion and cognition, yielding 30,592 anno-tated utterance–caption pairs. To ensure data quality, non-informative segments (e.g., greetings, personal information inquiries, side conversations, or utterances shorter than 2 seconds) were removed to retain core doctor–patient inter-actions. Annotators further discarded inconsistent labels to minimize noise and bias. We computed inter-rater agree-ment, yielding substantial consistency (Fleiss’s κ = 0.64 for emotion and 0.73 for cognition). After filtering and verifi-cation, the dataset comprises 13,536 segments for training, 1,402 for validation, and 3,790 for testing. The dataset’s cat-egory distribution is 0.91% orientation deficit, 8.54% atten-tion deficit, 10.38% memory deficit, 15.89% language dis-order, and 31.85% negative emotion. 
+
+Objective metrics For the ECMC task, we adopt the natural language evaluation metrics as used in automatic captioning, including BLEU-1, BLEU-2, BLEU-4, ME-TEOR, ROUGE-L, CIDEr, and F BERT. Among these, BLEU, METEOR, ROUGE-L, and CIDEr are primarily word-level matching metrics, while F BERT is a seman-tic similarity-based metric. For evaluating the generated emotion-cognition profiles on mental disorder detection, we use accuracy (ACC) and F1 score (F1). 
+
+Subjective Metrics To evaluate both the quality of our dataset annotations and the effectiveness of captions gen-erated by different methods, we conduct a human evalua-tion using a five-point Likert scale (Joshi et al. 2015) across the following designed dimensions: (1) Emotional Accuracy (EAcc), measuring whether the generated emotional cap-tions accurately reflect the content of the video; (2) Cog-nitive Accuracy (CAcc), measuring whether the captions of cognitive impairments correctly correspond to the dialogue content; (3) Detail Richness (Detail), evaluating the richness and granularity of details in the captions; (4) Label Consis-tency (Consis), assessing whether the captions align with the corresponding classification labels; and (5) Overall Quality Method ACC F1 Method ACC F1 Method ACC F1 Im ACC Im F1 
+
+Llama-3-8B 44.95 46.43 Qwen3-8B 50.46 60.29 GLM4-9B 47.71 58.39 0.00 0.00 InternVL-2.5-8B 48.62 46.15 InternVL-2.5-8B 69.72 69.81 InternVL-2.5-8B 53.21 59.84 9.48 ↑ 3.56 ↑
+
+DeepSeek-VL-2-small 41.28 47.54 DeepSeek-VL-2-small 51.38 59.54 DeepSeek-VL-2-small 51.38 60.15 0.31 ↑ 0.71 ↑
+
+Sa2VA-8B 48.62 49.09 Sa2VA-8B 67.89 69.03 Sa2VA-8B 57.80 62.90 10.40 ↑ 5.30 ↑
+
+Qwen2.5-Omni-7B 49.54 54.24 Qwen2.5-Omni-7B 65.14 67.24 Qwen2.5-Omni-7B 56.88 58.46 9.48 ↑ 4.94 ↑
+
+PsycoLLM 47.71 44.66 PsycoLLM 54.13 62.12 PsycoLLM 53.21 61.07 3.98 ↑ 0.91 ↑
+
+MindChat 29.36 36.36 MindChat 58.72 62.81 MindChat 57.80 62.90 0.92 ↑ 1.01 ↓
+
+EmoLLM 45.87 54.96 EmoLLM 61.47 63.16 EmoLLM 55.05 63.16 6.42 ↑ 5.39 ↑
+
+CPsyCounX 48.62 48.15 CPsyCounX 67.89 68.47 CPsyCounX 55.05 60.80 9.48 ↑ 4.10 ↑
+
+Ours 50.46 56.69 Ours 70.64 70.27 Ours 59.63 65.62 12.54 ↑ 9.16 ↑
+
+Table 3: Depression Detection by Baseline LLMs Using Emotion–Cognition Profiles from Different Methods. Row 1: results of baseline models. ’Im ACC’ and ’Im F1’ show average gains over Llama-3-8B, Qwen3-8B, and GLM4-9B in ACC and F1. 
+
+Method ACC F1 Method ACC F1 Method ACC F1 Im ACC Im F1 
+
+Llama-3-8B 38.54 52.80 Qwen3-8B 41.67 57.58 GLM4-9B 43.75 57.14 0.00 0.00 InternVL-2.5-8B 56.25 56.25 InternVL-2.5-8B 55.21 63.87 InternVL-2.5-8B 42.71 58.02 10.07 ↑ 3.54 ↑
+
+DeepSeek-VL-2-small 48.96 55.05 DeepSeek-VL-2-small 45.83 59.38 DeepSeek-VL-2-small 41.67 57.58 4.17 ↑ 1.50 ↑
+
+Sa2VA-8B 55.21 52.75 Sa2VA-8B 54.17 62.71 Sa2VA-8B 44.79 58.46 10.07 ↑ 2.13 ↑
+
+Qwen2.5-Omni-7B 50.00 50.00 Qwen2.5-Omni-7B 65.62 65.96 Qwen2.5-Omni-7B 43.75 58.46 11.80 ↑ 2.30 ↑
+
+PsycoLLM 52.08 57.41 PsycoLLM 48.96 59.50 PsycoLLM 43.75 58.46 6.94 ↑ 2.62 ↑
+
+MindChat 47.92 46.81 MindChat 46.88 59.84 MindChat 41.67 57.58 4.17 ↑ 1.10 ↓
+
+EmoLLM 54.17 55.10 EmoLLM 61.46 66.06 EmoLLM 43.75 58.46 11.81 ↑ 4.03 ↑
+
+CPsyCounX 46.88 54.05 CPsyCounX 56.25 63.16 CPsyCounX 42.71 58.02 7.29 ↑ 2.57 ↑
+
+Ours 57.29 58.59 Ours 66.67 69.16 Ours 44.95 58.91 14.98 ↑ 6.38 ↑
+
+Table 4: Anxiety Detection by Baseline LLMs Using Emotion–Cognition Profiles from Different Methods (Overall), providing an overall assessment of the quality. 
+
+# Experiments and Analysis 
+
+Experiment Setup 
+
+For the first stage, we train our model on two NVIDIA RTX A6000 GPUs with a batch size of 64 for up to 500 epochs. The maximum sequence lengths of 1024 for audio and 512 for video. We use the AdamW optimizer with a learning rate of 1.3 × 10 −5, and a weight decay of 1.0 × 10 −6. The model has approximately 701M total parameters, with about 598M parameters being trainable. For the second stage, we train our model with a micro batch size of 8 per GPU and accumu-lation over 8 steps. We also apply DeepSpeed ZeRO stage-2 optimization and set mixed-precision training (fp16). In this stage, the model has approximately 7.6B total parameters, with about 605M trainable parameters. 
+
+Performance Analysis 
+
+We evaluate our method through caption comparison with baselines, mental disorder detection performance, ablations on modalities and contrastive modules, statistical analysis across disorders, and human evaluation. 
+
+Comparison of Emotion–Cognition Captions We se-lect general multi-modal large language models (MLLMs) (InternVL-2.5 (Chen et al. 2024), DeepSeek-VL-2 (Lu et al. 2024), Sa2VA (Yuan et al. 2025), Qwen2.5-Omni (Xu et al. 2025)), as well as large language models (LLMs) specifi-cally fine-tuned for the mental health domain (PsycoLLM (Hu et al. 2024), MindChat 2, EmoLLM 3, CPsyCoun (Zhang et al. 2024)), for comparison. Tables 1 and 2 present the ECMC performance of different models. We can see that our model consistently outperforms other competitors in both emotion and cognition captioning. General-domain MLLMs like Sa2VA and Qwen2.5-Omni perform relatively well due to better instruction-following and broader data coverage, but often produce short or inconsistent outputs. Mental health LLMs, though domain-specific, are limited to text and struggle with describing non-verbal cues, leading to lower scores. In contrast, our method effectively integrates multi-modal data, including facial expressions, vocal tone, and text semantics, to generate more comprehensive and higher-quality emotion-cognition captions. 
+
+Effect on Mental Disorder Detection We evaluate the impact of emotion–cognition profiles generated by differ-ent methods on depression and anxiety detection using ex-isting baseline LLMs, including LLaMA-3-8B (Dubey et al. 2024), Qwen3-8B (Yang et al. 2025), and GLM4-9B (Zeng et al. 2024). For each subject, we first summarize the cap-tions generated by different methods (Table 1 and 2) into emotion–cognition profiles using DeepSeek-671B. These profiles, together with the original dialogue content, are then 
+
+> 2https://github.com/X-D-Lab/MindChat
+> 3https://github.com/SmartFlowAI/EmoLLM
+
+Figure 4: Emotional and cognitive differences between nor-mal individuals and patients with different mental disorders 
+
+Audio Video Text EmoCL CogCL F BERT 
+
+✓ ✓ ✓ 18.10 
+
+✓ ✓ ✓ 16.30 
+
+✓ ✓ ✓ 16.75 
+
+✓ ✓ ✓ ✓ 22.05 
+
+✓ ✓ ✓ ✓ 29.30 
+
+✓ ✓ ✓ ✓ 27.21 
+
+✓ ✓ ✓ 23.89 
+
+✓ ✓ ✓ ✓ 27.24 
+
+✓ ✓ ✓ ✓ 26.94 
+
+✓ ✓ ✓ ✓ ✓ 34.09 Table 5: Ablation Study on Different Modules. EmoCL and CogCL represent emotion contrastive learning and cognition contrastive learning, respectively. provided as input to the baseline LLMs. As shown in Table 3 and 4, the profiles generated by our method yield higher accuracy and F1 scores across both disorder types, signif-icantly improving the performance of different baselines, with average ACC and F1 improvements over 12.54% and 9.16% on depression detection, and 14.98% and 6.38% on anxiety detection. Notably, we also observe that ineffective captions can even degrade detection performance, as long but uninformative texts may increase the difficulty for LLMs to extract relevant indicators. The results validate that our method produces higher-quality emotion–cognition profiles, which effectively enhance the accuracy of mental disorder detection using existing general models. 
+
+Ablation Study We conduct ablation studies to verify the contribution of different modalities and contrastive learn-ing modules to the final performance. We use the seman-tic similarity metric F BERT to evaluate the overall effec-tiveness of the emotion–cognition captions. As shown in Ta-ble 5, among uni-modal inputs, audio achieves the best per-formance, indicating its discriminative power. Multi-modal combinations further improve results, with audio+text show-ing strong complementarity. Removing either EmoCL or CogCL causes the model to degenerate into a single-branch structure, resulting in performance drops, while removing both leads to a significant decline. This demonstrates the im-portance of the dual-branch structure for effectively decou-pling emotion and cognition features. The full model with all modalities and contrastive objectives achieves the best score, confirming the effectiveness of each component. 
+
+Method/Dataset EAcc CAcc Detail Consis Overall 
+
+Dataset 4.2 3.9 4.6 4.3 4.3 Sa2VA 3.76 4.40 4.36 - 4.15 Qwen2.5-Omni 3.73 4.45 4.32 - 4.12 EmoLLM 3.6 3.91 3.96 - 3.79 CPsyCoun 3.2 3.6 3.68 - 3.46 
+
+Ours 3.98 4.51 4.32 - 4.26 
+
+Table 6: Human Evaluation on Dataset and Methods 
+
+Emotional and Cognitive Statistics across Different Mental Disorders To explore the differences in emo-tion–cognition patterns across mental disorders and healthy individuals, we calculate the proportion of negative emo-tions, orientation deficit, attention deficit, memory deficit, and language disorder in utterances of each individual, and then compute the average within each group (depres-sion, anxiety, and healthy controls). As shown in Figure 4, both depressed and anxious individuals exhibit signifi-cantly higher proportions of negative emotions compared to healthy participants. In terms of cognitive impairments, depression is associated with notably higher frequencies than anxiety. Among the cognitive categories, orientation deficits appear less frequently, while attention deficits, mem-ory deficits, and language disorders are more prevalent. The above observations validate the necessity of the ECMC task. 
+
+Human Evaluation We invited eight psychology practi-tioners with expertise in mental health to evaluate our dataset and model outputs. As shown in Table 6, the dataset receives an overall score of 4.3, indicating high-quality emotion-cognition captions. EAcc, Detail, and Consis all score above 4.0, suggesting accurate emotional content, rich detail, and reliable labels for contrastive learning. CAcc scores slightly lower, reflecting the difficulty of generating cognitively ac-curate descriptions from multi-modal and textual inputs, and highlighting the need for better multi-modal cognitive mod-eling. We compare our method with two top-performing general MLLMs and two leading mental health LLMs. Our model achieves the highest scores in EAcc, CAcc, and Over-all, and ranks second in Detail. Notably, MLLMs receive higher subjective ratings than mental health LLMs, empir-ically validating the effectiveness of combining visual and acoustic cues, which mental health LLMs lack. 
+
+# Conclusion 
+
+In this paper, we introduce the ECMC task to generate inter-pretable emotion–cognition profiles from multi-modal data for mental health understanding. To support this task, we de-sign a novel encoder–decoder framework that extracts and aligns emotion–cognition features with a LLaMA-based de-coder. Experimental results show that our method produces high-quality, explainable captions, offering a promising di-rection for interpretable and fine-grained mental health as-sessment. Acknowledgments 
+
+This work was supported by the National Key Research and Development Program (Grant No. 2023YFC2506800), the National Natural Science Foundation of China under Grant No. 62072152, 62172137. 
+
+# References 
+
+Achiam, J.; Adler, S.; Agarwal, S.; Ahmad, L.; Akkaya, I.; Aleman, F. L.; Almeida, D.; Altenschmidt, J.; Altman, S.; Anadkat, S.; et al. 2023. Gpt-4 technical report. arXiv preprint arXiv:2303.08774 .Arevalo-Rodriguez, I.; Smailagic, N.; i Figuls, M. R.; Ciap-poni, A.; Sanchez-Perez, E.; Giannakou, A.; Pedraza, O. L.; Cosp, X. B.; and Cullum, S. 2015. Mini-Mental State Ex-amination (MMSE) for the detection of Alzheimer’s disease and other dementias in people with mild cognitive impair-ment (MCI). Cochrane Database of Systematic Reviews ,(3). Chen, Z.; Wu, J.; Wang, W.; Su, W.; Chen, G.; Xing, S.; Zhong, M.; Zhang, Q.; Zhu, X.; Lu, L.; et al. 2024. In-ternvl: Scaling up vision foundation models and aligning for generic visual-linguistic tasks. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 24185–24198. Cheng, Z.; Cheng, Z.-Q.; He, J.-Y.; Wang, K.; Lin, Y.; Lian, Z.; Peng, X.; and Hauptmann, A. 2024. Emotion-llama: Multimodal emotion recognition and reasoning with instruc-tion tuning. Advances in Neural Information Processing Systems , 37: 110805–110853. Devlin, J.; Chang, M.-W.; Lee, K.; and Toutanova, K. 2019. Bert: Pre-training of deep bidirectional transformers for lan-guage understanding. In Proceedings of the 2019 Confer-ence of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, volume 1 (long and short papers) , 4171–4186. Dubey, A.; Jauhri, A.; Pandey, A.; Kadian, A.; Al-Dahle, A.; Letman, A.; Mathur, A.; Schelten, A.; Yang, A.; Fan, A.; et al. 2024. The llama 3 herd of models. arXiv e-prints ,arXiv–2407. Guo, D.; Yang, D.; Zhang, H.; Song, J.; Zhang, R.; Xu, R.; Zhu, Q.; Ma, S.; Wang, P.; Bi, X.; et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 .Habtamu, K.; Birhane, R.; Demissie, M.; and Fekadu, A. 2023. Interventions to improve the detection of depression in primary healthcare: systematic review. Systematic Reviews ,12(1): 25. Hu, J.; Dong, T.; Gang, L.; Ma, H.; Zou, P.; Sun, X.; Guo, D.; Yang, X.; and Wang, M. 2024. Psycollm: Enhancing llm for psychological understanding and evaluation. IEEE Transactions on Computational Social Systems .Ji, S.; Zhang, T.; Ansari, L.; Fu, J.; Tiwari, P.; and Cam-bria, E. 2021. Mentalbert: Publicly available pretrained language models for mental healthcare. arXiv preprint arXiv:2110.15621 .Jiang, Y.; Zhang, Z.; and Sun, X. 2022. MMDA: A Mul-timodal Dataset for Depression and Anxiety Detection. In 
+
+Proceedings of the International Conference on Pattern Recognition , 691–702. Springer. Johnson, R. M. 2022. Addressing shortages in the psychiatry workforce. Psychiatric Times .Joormann, J.; and Stanton, C. H. 2016. Examining emotion regulation in depression: A review and future directions. Be-haviour Research and Therapy , 86: 35–49. Joshi, A.; Kale, S.; Chandel, S.; and Pal, D. K. 2015. Likert scale: Explored and explained. British Journal of Applied Science & Technology , 7(4): 396. Kensinger, E. A. 2004. Remembering emotional experi-ences: The contribution of valence and arousal. Reviews in the Neurosciences , 15(4): 241–252. Li, J.; Li, D.; Savarese, S.; and Hoi, S. 2023. Blip-2: Boot-strapping language-image pre-training with frozen image encoders and large language models. In Proceedings of the International Conference on Machine Learning , 19730– 19742. PMLR. Li, M.; Zhang, J.; Song, J.; Li, Z.; and Lu, S. 2022. Aclinical-oriented non-severe depression diagnosis method based on cognitive behavior of emotional conflict. IEEE Transactions on Computational Social Systems , 10(1): 131– 141. Liu, H.; Li, C.; Zhang, X.; Zhang, F.; Wang, W.; Ma, F.; Chen, H.; Yu, H.; and Zhang, X. 2024. Depression detec-tion via capsule networks with contrastive learning. In Pro-ceedings of the AAAI Conference on Artificial Intelligence ,22231–22239. Lu, H.; Liu, W.; Zhang, B.; Wang, B.; Dong, K.; Liu, B.; Sun, J.; Ren, T.; Li, Z.; Yang, H.; et al. 2024. Deepseek-vl: towards real-world vision-language understanding. arXiv preprint arXiv:2403.05525 .Shackman, A. J.; Fox, A. S.; and Seminowicz, D. A. 2015. The cognitive-emotional brain: Opportunitvnies and chal-lenges for understanding neuropsychiatric disorders. Behav-ioral and Brain Sciences , 38: e86. Tong, Z.; Song, Y.; Wang, J.; and Wang, L. 2022. Video-mae: Masked autoencoders are data-efficient learners for self-supervised video pre-training. Advances in Neural In-formation Processing Systems , 35: 10078–10093. Touvron, H.; Lavril, T.; Izacard, G.; Martinet, X.; Lachaux, M.-A.; Lacroix, T.; Rozi` ere, B.; Goyal, N.; Hambro, E.; Azhar, F.; et al. 2023. Llama: Open and efficient founda-tion language models. arXiv preprint arXiv:2302.13971 .Uban, A.-S.; Chulvi, B.; and Rosso, P. 2021. An emotion and cognitive based analysis of mental health disorders from social media data. Future Generation Computer Systems ,124: 480–494. van Niekerk, B.; Carbonneau, M.-A.; Za¨ ıdi, J.; Baas, M.; Seut´ e, H.; and Kamper, H. 2022. A Comparison of Dis-crete and Soft Speech Units for Improved Voice Conver-sion. In Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing .Vanderlind, W. M.; Millgram, Y.; Baskin-Sommers, A. R.; Clark, M. S.; and Joormann, J. 2020. Understanding pos-itive emotion deficits in depression: From emotion prefer-ences to emotion regulation. Clinical Psychology Review ,76: 101826. Wang, F.; Ma, H.; Shen, X.; Yu, J.; and Xia, R. 2024. Ob-serve before Generate: Emotion-Cause aware Video Cap-tion for Multimodal Emotion Cause Generation in Conver-sations. In Proceedings of the 32nd ACM International Con-ference on Multimedia , 5820–5828. WHO. 2017. Depression and other common mental disor-ders: global health estimates. Technical report, World Health Organization. Wu, W.; Wu, M.; and Yu, K. 2022. Climate and weather: Inspecting depression detection via emotion recognition. In Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing , 6262–6266. IEEE. Wu, W.; Zhang, C.; and Woodland, P. C. 2023. Self-Supervised Representations in Speech-Based Depression Detection. In Proceedings of the IEEE International Con-ference on Acoustics, Speech and Signal Processing , 1–5. Xu, J.; Guo, Z.; He, J.; Hu, H.; He, T.; Bai, S.; Chen, K.; Wang, J.; Fan, Y.; Dang, K.; et al. 2025. Qwen2. 5-omni technical report. arXiv preprint arXiv:2503.20215 .Xu, X.; Yao, B.; Dong, Y.; Gabriel, S.; Yu, H.; Hendler, J.; Ghassemi, M.; Dey, A. K.; and Wang, D. 2024a. Mental-LLM: Leveraging Large Language Models for Mental Health Prediction via Online Text Data. In Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies .Xu, Y.; Chen, H.; Yu, J.; Huang, Q.; Wu, Z.; Zhang, S.-X.; Li, G.; Luo, Y.; and Gu, R. 2024b. Secap: Speech emotion captioning with large language model. In Proceedings of the AAAI Conference on Artificial Intelligence , 19323–19331. Yang, A.; Li, A.; Yang, B.; Zhang, B.; Hui, B.; Zheng, B.; Yu, B.; Gao, C.; Huang, C.; Lv, C.; et al. 2025. Qwen3 technical report. arXiv preprint arXiv:2505.09388 .Yang, K.; Zhang, T.; Kuang, Z.; Xie, Q.; Huang, J.; and Ana-niadou, S. 2024. MentaLLaMA: interpretable mental health analysis on social media with large language models. In 
+
+Proceedings of the ACM Web Conference 2024 , 4489–4500. Ye, C.; Chen, W.; Li, J.; Zhang, L.; and Mao, Z. 2024. Dual-path Collaborative Generation Network for Emotional Video Captioning. In Proceedings of the 32nd ACM International Conference on Multimedia , 496–505. Yuan, H.; Li, X.; Zhang, T.; Huang, Z.; Xu, S.; Ji, S.; Tong, Y.; Qi, L.; Feng, J.; and Yang, M.-H. 2025. Sa2VA: Marrying SAM2 with LLaVA for Dense Grounded Understanding of Images and Videos. arXiv preprint arXiv:2501.04001 .Zakiei, A.; Karami, J.; Alikhani, M.; Ghasemi, S.; and Gi-lan, N. R. 2014. The relationship between alexithymia, ir-rational beliefs, positive and negative emotions with mental disorders. Depression and Anxiety , 17: 18. Zeng, A.; Xu, B.; Wang, B.; Zhang, C.; Yin, D.; Zhang, D.; Rojas, D.; Feng, G.; Zhao, H.; Lai, H.; Yu, H.; Wang, H.; Sun, J.; Zhang, J.; Cheng, J.; Gui, J.; Tang, J.; Zhang, J.; Sun, J.; Li, J.; Zhao, L.; Wu, L.; Zhong, L.; Liu, M.; Huang, M.; Zhang, P.; Zheng, Q.; Lu, R.; Duan, S.; Zhang, S.; Cao, S.; Yang, S.; Tam, W. L.; Zhao, W.; Liu, X.; Xia, X.; Zhang, X.; Gu, X.; Lv, X.; Liu, X.; Liu, X.; Yang, X.; Song, X.; Zhang, X.; An, Y.; Xu, Y.; Niu, Y.; Yang, Y.; Li, Y.; Bai, Y.; Dong, Y.; Qi, Z.; Wang, Z.; Yang, Z.; Du, Z.; Hou, Z.; and Wang, Z. 2024. ChatGLM: A Family of Large Language Models from GLM-130B to GLM-4 All Tools. arXiv:2406.12793. Zhang, C.; Li, R.; Tan, M.; Yang, M.; Zhu, J.; Yang, D.; Zhao, J.; Ye, G.; Li, C.; and Hu, X. 2024. Cpsycoun: A report-based multi-turn dialogue reconstruction and evalua-tion framework for chinese psychological counseling. arXiv preprint arXiv:2405.16433 .Zhang, Z.; Chen, S.; Wu, M.; and Zhu, K. Q. 2022. Psychi-atric scale guided risky post screening for early detection of depression. arXiv preprint arXiv:2205.09497 .
