@@ -1,0 +1,203 @@
+Title: Generate Then Correct: Single Shot Global Correction for Aspect Sentiment Quad Prediction
+
+URL Source: https://arxiv.org/pdf/2603.13777v1
+
+Published Time: Tue, 17 Mar 2026 00:52:12 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Generate Then Correct: Single Shot Global Correction for Aspect Sentiment Quad Prediction 
+
+Shidong He 1, Haoyu Wang 2, Wenjie Luo 1,* 
+
+> 1
+
+School of Cyber Security and Computer, Hebei University 
+
+> 2
+
+Faculty of Computer Science, Dalhousie University, Canada 
+
+Abstract —Aspect-based sentiment analysis (ABSA) extracts aspect-level sentiment signals from user-generated text, supports product analytics, experience monitoring, and public-opinion tracking, and is central to fine-grained opinion mining. A key challenge in ABSA is aspect sentiment quad prediction (ASQP), which requires identifying four elements: the aspect term, the aspect category, the opinion term, and the sentiment polarity. However, existing studies usually linearize the unordered quad set into a fixed-order template and decode it left-to-right. With teacher forcing training, the resulting training-inference mis-match (exposure bias) lets early prefix errors propagate to later elements. The linearization order determines which elements appear earlier in the prefix, so this propagation becomes order-sensitive and is hard to repair in a single pass. To address this, we propose a method Generate-then-Correct (G2C): agenerator drafts quads and a corrector performs a single-shot, sequence-level global correction trained on LLM-synthesized drafts with common error patterns. On the Rest15 and Rest16 datasets, G2C outperforms strong baseline models. 
+
+Index Terms —Aspect sentiment quad prediction, ASQP, Aspect-based sentiment analysis, ABSA 
+
+I. I NTRODUCTION 
+
+Aspect-Based Sentiment Analysis (ABSA) aims to uncover fine-grained opinions toward specific aspects of target enti-ties such as products, services, and organizations. Instead of assigning a single sentiment label to a whole document or sentence, ABSA decomposes an opinion into several inter-acting elements, typically including aspect terms, aspect cate-gories, opinion expressions, and sentiment polarities. This fine-grained view supports downstream applications such as prod-uct review mining, customer-feedback analytics, and public-opinion monitoring, where users care not only about whether a review is positive or negative, but also about which aspects (e.g., food , service , price ) are praised or criticized. Early work in ABSA usually addressed one element at a time, for example aspect term extraction, aspect category detection, or aspect-level sentiment classification [1]–[3]. Subsequent research has progressively moved toward joint formulations that model multiple elements simultaneously, in order to better capture their strong mutual dependencies and provide a more complete picture of user opinions. Typical examples include aspect–opinion pair extraction, end-to-end ABSA, aspect category sentiment analysis, aspect sentiment triplet extraction (ASTE), and target–aspect senti-ment detection (TASD) [4]–[6]. Among these, aspect senti-ment quad prediction (ASQP), also known as aspect-category– opinion–sentiment (ACOS) [7], has emerged as a central and The susi is delicious         
+
+> sushi , delicious, food quality
+> sushi , food quality
+> sushi , delicious, positive
+> sushi, delicious
+> ao
+> ac
+> os
+> a
+> a
+> oc
+> sushi , delicious, food quality, positive
+> aocs
+> AOPE
+> ACSA
+> ASTE
+> ACSD
+> ASQP
+
+Fig. 1. Differences Among ABSA Tasks. 
+
+particularly challenging task. Given an input sentence, ASQP requires the model to output a set of quadruples (a, c, o, s ),where a is the aspect term, c is its aspect category from a predefined taxonomy, o is the opinion term, and s is the sentiment polarity. This formulation unifies the core ABSA elements in a single structure and forces the model to decide how many quads are present, how aspects and opinions are paired, and which categories and polarities are appropriate for each pair. As a result, ASQP captures richer aspect-level sentiment information than traditional sub-tasks and has become a key testbed for designing fine-grained sentiment models. Existing ASQP approaches fall into two lines: non-generative methods, which typically formulate ASQP as a tagging or classification problem, and generative methods, which transform the input into a structured output decoded by a pretrained sequence-to-sequence (seq2seq) model. Due to their simplicity and end-to-end manner, generation-based methods have become the main research direction. We follow the latter and use the template: [category] is [sentiment] because [aspect] is [opinion] , with multiple quads separated by [SSEP] . This linearization provides a unified text-to-text interface for end-to-end modeling. At the same time, it maps an inherently unordered quad set into a left-to-right sequence that the model must decode autoregressively. During training with teacher forcing, the decoder conditions on the gold prefix, while at inference it conditions on its own generated prefix. This mismatch introduces exposure bias and makes early errors accumulate. Once an early deviation such as a polarity flip, span boundary error, or aspect-opinion mismatch enters the prefix, it can steer subsequent generation and distort later 
+
+> arXiv:2603.13777v1 [cs.CL] 14 Mar 2026 LLM
+> D_correct
+
+Stage-1: Generator 
+
+> Sentence X : In the end you end up with a fair tab and NOTHING BUT A GREAT TIME!!!
+
+Stage-2: Corrector   
+
+> ASQP Dataset Correction Dataset
+> D
+> Instruction-tune QC Fliter
+
+Data Synthesis 
+
+Per-train T5 
+
+Stage-1: Generator 
+
+Final Y 
+
+Train  sentence X 
+
+> Draft Y
+
+Stage-2: Corrector               
+
+> Correct
+> Draft Y :restaurant price is bad bacause it is a fair tab
+> X+Y
+> (restaurant prices, Null,
+> great ,fair )
+> restaurant price is
+> great bacause it is tab
+> Recover
+
+Inference  
+
+> Correct Fig. 2. The proposed G2C framework.
+
+elements [8]–[10]. The linearization order determines which element types enter the prefix earlier, for example category and polarity before aspect and opinion in our template. This choice shapes the propagation path of exposure-bias-induced deviations across elements, which manifests as order-sensitive error patterns. Yet these methods still rely on a single left-to-right pass, which offers limited opportunities to revise earlier decisions once emitted, so early deviations are hard to recover. To address these issues without reverting to a pipeline (solving ASQP via sequential sub-tasks, which can propagate errors [10]), we introduce a two-stage Generate-then-Correct (G2C) paradigm. Stage-1 performs single-pass decoding with the template to produce a complete draft. Stage-2 uses a T5 model with the same architecture to perform a one-shot, sequence-level correction conditioned on the sentence and the Stage-1 draft, retaining a text-to-text formulation that is end-to-end. During training, we initialize Stage-2 from Stage-1 and fine-tune it on LLM-synthesized sentence–draft pairs with composite synthetic noise, e.g., polarity drift, opinion-boundary deviations and omissions/duplications, so it learns to normalize a noisy draft into a consistent and complete quad set. In summary, our main contributions of this paper are as follows: (1) To the best of our knowledge, we are the first to introduce a two-stage Generate–then–Correct framework for ASQP: under a text-to-text setting, a same-architecture T5 cor-rector performs a one-shot sequence-level global correction 
+
+conditioned on the sentence and the Stage-1 draft to obtain the final prediction. (2) We develop an instruction-tuned, LLM-based synthesis pipeline that produces sentence–draft pairs covering common error patterns, which we use to train the corrector to map noisy drafts to a consistent and complete set of quads. (3) Experimental results show that on the Rest15 and Rest16 ASQP datasets, G2C achieves an average improvement of approximately 3.8% over Stage-1, and also obtains effective improvements compared to previous strong baseline models. We will release our code after acceptance. II. R ELATED WORK 
+
+Aspect-based sentiment analysis. ABSA has been widely studied for modeling fine-grained opinions toward aspects, evolving from predicting isolated elements to jointly extracting coupled opinion structures [1]–[5]. In this paper, we focus on quad-level joint extraction, ASQP task. 
+
+Aspect sentiment quad prediction. ASQP extends ASTE by additionally predicting the aspect category, thereby re-quiring models to jointly model four coupled elements in each quad. Early non-generative approaches often decompose quad prediction into subtasks and solve them in a pipeline manner, which is conceptually simple but prone to error propagation. A representative instance is the extract-then-classify design that first identifies aspect–opinion pairs and then predicts their category and polarity [7]. Beyond pipelines, structured prediction/decoding has been explored to better preserve compositional relations, such as path-based structured generation [11] and opinion-tree generation [12]. In parallel, generative approaches cast ASQP as text-to-text generation by linearizing quads into a template sequence and decoding it with a pretrained seq2seq model [10], [13]. Within the generative paradigm, robustness remains a re-curring issue: autoregressive decoding is vulnerable to error accumulation, and template design introduces order sensitivity, making early mistakes propagate across elements [10]. Prior work mitigates these issues by varying linearization orders and aggregating multiple orders/views [14], [15], or by designing uncertainty-aware objectives to improve stability [16]. Other methods explicitly target generation instability in quad decod-ing to enhance consistency of generated structures [6]. Despite these advances, most methods still rely on a single left-to-right pass with limited opportunity to revise early decisions once emitted. Our work is complementary to the above efforts. We keep the standard generative ASQP formulation and template, but explicitly introduce a second-stage corrector that rewrites the initial prediction from Stage-1. Instead of using LLMs to directly produce final quads, we leverage an instruction-tuned LLM to synthesize realistic error drafts and their corrected counterparts. These synthetic pairs provide dense supervision for training a T5-based corrector that learns how to fix typical ASQP mistakes. In this way, G2C explicitly introduces a revi-sion stage into generative ASQP, so that early deviations in the initial draft can be revisited and corrected before producing the final quad set, thereby mitigating error propagation inherent to single-pass decoding. III. T ASK DEFINITION 
+
+Following prior work on generative ASQP [7], [10], we formulate aspect sentiment quad prediction as follows. Given an input sentence x, the goal is to predict a set of aspect-level quadruples Q = {(ai, c i, o i, s i)}Mi=1 . Here ai denotes the aspect term (which may be implicit), ci is its aspect category chosen from a predefined taxonomy, oi is the opinion term, and 
+
+si ∈ { positive , negative , neutral } is the sentiment polarity. The number of quads M is not given in advance. The model must therefore determine how many quads are present in x, identify the spans of aspect and opinion terms, assign appropriate categories and polarities, and output the resulting quad set in a suitable textual form. IV. M ETHODOLOGY 
+
+A. Overview 
+
+In order to address the sensitivity induced by the lineariza-tion template’s element order and to correct early mistakes, we propose a two-stage Generate-then-Correct framework. As illustrated in Figure 2, G2C has two stages: (1) Stage-1 (Generator), a T5 seq2seq model that drafts a set of quads under the linearization template; and (2) Stage-2 (Correc-tor), a same-architecture T5 initialized from Stage-1 that performs a one-shot sequence-level rewrite conditioned on the sentence and the draft to produce the final quads. The Corrector is trained on LLM-synthesized noisy drafts to learn a draft-to-gold mapping. At inference, we run one forward pass per stage with matched model sizes and decoding settings. This preserves the text-to-text formulation without reverting to a pipeline. 
+
+B. Stage-1: Initial Prediction Generation 
+
+The Stage-1 Generator is a T5-based [17] model fine-tuned to produce sentiment quads in a single pass. Given an input sentence, the model generates a textual draft encoding all predicted quadruples. In the first stage, we employ a standard pre-trained T5 model as our Generator. Following the paradigm established by prior work [10], the generator is fine-tuned on the standard ASQP training set to convert an input sentence x into a natural language sequence ˜y that represents the predicted quadruples. This sequence ˜y serves as the initial, potentially flawed prediction. We linearize a sentiment quad as follows. 
+
+q = ( a, c, o, s ). (1) We verbalize it using the template below. [c] is [ s] because [ a] is [ o]. (2) Here, c denotes the category , s the sentiment , a the aspect term , and o the opinion term . Multiple quads are separated by [SSEP] .Let x be a sentence and Q = {(ai, c i, o i, s i)}Mi=1 its quad set. Let ℓ(·) verbalize one quad using the above pattern. We define the linearization as follows: 
+
+y = L(Q) = [SSEP] .join  {ℓ(ai, c i, o i, s i)}Mi=1 
+
+ (3) To strengthen task conditioning, we prepend a lightweight instruction prefix that specifies the quad schema and output formatting constraints. The Generator is a T5 model trained with maximum-likelihood estimation to map an input sentence 
+
+x into a linearized draft ˜y that represents the predicted quads (i.e., ˜y = L( bQ(1) )). Formally, Stage-1 is a standard autoregressive seq2seq model trained with masked token-level cross-entropy. 
+
+Lgen = − log pθ (˜ y | x). (4) Fig. 3. eaxmple of error. 
+
+C. Stage-2: Correction 
+
+The Stage-2 Corrector is a sequence-level model that per-forms a one-shot sequence-level global correction condi-tioned on both the sentence and the Stage-1 draft. We use a T5 of the same architecture and size as the Generator and initialize it from the Generator’s weights. The input concatenates the raw sentence x and the draft ˜y with special delimiters, and the model produces the final linearized quad sequence in a single decoding pass. Formally, we denote the corrector’s conditional distribution as 
+
+qϕ(y | x, ˜y). (5) We fine-tune the Corrector by minimizing a weighted, masked negative log-likelihood over sentence–draft–gold triples (xi, ˜yi, y i). For each example i, let mi,t ∈ {0, 1}
+
+indicate supervised target positions and Ti = P 
+
+> t
+
+mi,t . The objective is 
+
+Lcorr (ϕ) = − 1
+
+> N
+
+PNi=1 
+
+> wi
+> Ti
+
+P 
+
+> t
+
+mi,t log qϕ(yi,t | yi,<t , x i, ˜yi)
+
+(6) where qϕ denotes the Corrector, and Fwi ∈ {wcor , w err }
+
+optionally reweights identity pairs ( ˜yi ≡ yi) and error drafts; unless stated, wcor = werr = 1 .This preserves a simple text-to-text interface. The global correction is not tied to the original template order and can add, remove, or modify elements to better match the sentence, while stabilizing already-correct parts. By conditioning on 
+
+(x, ˜y), the Corrector reduces common near-miss errors(e.g., polarity flips, mild opinion-span drift, and (aspect, opinion) mispairings) and enforces sentence-level consistency. 
+
+D. Data 
+
+Training the Corrector requires abundant paired examples of flawed drafts and gold outputs, which standard ASQP datasets do not provide. We therefore synthesize five draft variants per training sentence with an instruction-tuned LLM (DeepSeek-R1 [18]) in a single call; the prompt is released with our code. Four drafts each perturb one quad component (Category, Aspect, Opinion, or Sentiment), and the fifth ran-domly selects one of these four types. As shown in Fig. 3, we generate drafts that intentionally introduce a single error in one component of the quad, covering four classes: (1) Aspect — replace the aspect term with a plausible but incorrect in-sentence mention, preferably semantically related and matching the noun or noun-phrase type; (2) Category — substitute a semantically related but wrong label from the predefined taxonomy; (3) Sentiment — change the sentiment verbalization to a different value; (4) Opinion — replace the opinion term with a plausible but incorrect in-sentence mention, preserving part-of-speech or phrase type when possible. In sentences with multiple aspects or opinions, these perturba-tions can induce aspect-opinion mispairings or mild opinion-boundary drift. We keep such cases because they mirror typical generator failures. After synthesis, we apply quality-control filtering: dupli-cates are removed; drafts that materially contradict the sen-tence are discarded; and only drafts that remain parseable under the linearization template are kept. Concretely, as-pect/opinion replacements must come from the source sen-tence (surface form or substring), and category labels must belong to the predefined taxonomy. Each retained draft pairs with its sentence as input and y as the target, yielding 
+
+(x, ˜y) → y instances. We also include a small fraction of identity pairs ( ˜y = y). V. E XPERIMENTS 
+
+A. Dataset 
+
+We employ two restaurant-domain datasets for ASQP: Rest15 and Rest16, originally from the SemEval tasks [19] [20]and later refined and extended by Zhang [10]. Model performance is reported precision (Pre, %), recall (Rec, %), and F1 (F1, %) at the quad level. A sentiment quad prediction is counted as correct if and only if all the predicted elements are exactly the same as the gold labels. To avoid test leakage, draft synthesis for Corrector training uses only the non-test splits. All results are reported on the official test sets.          
+
+> TABLE II
+> STATISTICS OF DATASETS OF REST 15 AND REST 16
+> Dataset Rest15 Rest16 Train 834 1264 validation 209 316 Test 537 544
+
+B. Baseline and Training Settings 
+
+Baseline. We compare against representative and strong generation-based baselines for ASQP, including: HGCN-BERT+BERT-Linear and HGCN-BERT+BERT-TFM [10] are early pipeline baselines; Extract-Classify [7] adopts an extract-then-classify pipeline for ASQP; GAS [13], the first unified generative ABSA framework; PARA-PHRASE [10], solves ASQP via fixed-order paraphrase gen-eration; DLO [14], selects dataset-level template orders by minimal-entropy scoring for augmentation; ILO [14], selects TABLE I PERFORMANCE COMPARISON OF VARIOUS METHODS ON ASQP DATASETS . B ASELINES ARE REPORTED AS IN THEIR PAPERS AND ALL METRICS ARE REPORTED IN PERCENTAGES . T HE BEST RESULTS ARE IN BOLD , WHILE THE SECOND BEST ARE UNDERLINED 
+
+Method Rest15 Rest16 Pre Rec F1 Pre Rec F1 HGCN-BERT+BERT-TFM(2021) 25.55 22.01 23.65 27.40 26.41 26.90 HGCN-BERT+BERT-Lineear(2021) 24.32 20.25 22.15 25.36 24.03 24.68 Extract-Classify (2021) 35.64 37.25 46.42 38.40 50.93 43.88 GAS (2021) 45.31 46.70 45.98 54.54 57.62 56.04 Paraphrase (2021) 46.16 47.72 46.93 56.63 59.30 57.93 DLO (2022) 47.08 49.33 48.18 57.92 61.80 59.79 ILO (2022) 47.78 50.38 49.05 57.58 61.17 59.32 Special Symbols (2022) 48.24 48.93 48.58 58.74 60.35 59.53 DLO+UAUL (2023) 48.03 50.54 49.26 59.02 62.05 60.50 Special Symbols+UAUL (2023) 49.12 50.39 49.75 59.24 61.75 60.47 MVP (2023) - - 51.04 - - 60.39 GDP (2024) 49.20 50.31 49.75 61.16 62.08 61.61 STAR (2024) 50.80 51.95 51.37 60.54 62.90 61.70 SCRAP (2024) 55.45 45.41 49.93 69.59 56.70 62.48 DOT (2025) - - 51.91 - - 61.24 G2C (ours) 51.26 53.38 52.40 61.24 64.48 62.80 
+
+- w/o Corrector (Stage-1) 48.62 50.94 49.75 59.90 62.83 61.33 - w/o identfy pairs 49.15 51.19 50.15 60.29 63.45 61.83 
+
+instance-level template orders by minimal-entropy scoring for augmentation; ILO+UAUL and DLO+UAUL [16], add uncertainty-aware unlikelihood learning to explicitly suppress mistake tokens; MVP [15], prompts multiple element orders and selects tuples by voting; DOT [21], dynamically gen-erates instance-specific order templates using only necessary views; GDP [6], combats generation instability using diffusion learning and consistency likelihood; STAR [22], a method for stepwise task augmentation and relation learning in ASQP; and SCRAP [23], generates reasoning plus quadruplets with consistency voting, extract-then-assign strategy. 
+
+Training settings. We use T5-base [17] as the backbone and AdamW as the optimizer. Stage 1 is trained with a learning rate of 3e-4 for 20 epochs with a batch size of 16; Stage 2 uses a learning rate of 1e-4 for 25 epochs with a batch size of 16. All experiments are conducted on a single NVIDIA RTX 4090 GPU. The final model is the last-epoch checkpoint in each stage. Decoding settings are matched across Stage 1 and G2C. 
+
+C. Result 
+
+Main comparisons. Table I reports the results on Rest15 and Rest16. Our method outperforms the single-pass Generator (Stage-1) on both datasets. On Rest15, F1 rises from 49.75 to 52.40 (+5.30%), with precision 48.62 to 51.26 and recall 50.94 to 53.38. On Rest16, F1 improves from 61.33 to 62.80 (+2.39%), with precision 59.90 to 61.24 and recall 62.38 to 64.46. These gains indicate that the corrective stage improves both coverage and exactness of predicted quads. Moreover, G2C also attains the best performance among recently pub-lished baselines on both Rest15 and Rest16.    
+
+> TABLE III PERFORMANCE COMPARISON OF INFERENCE TIME (SECONDS )ON ASQP
+> DATASETS .
+
+Method Rest15 Rest16 Average Paraphrase 10 13 11.5 MVP 1932 1970 1932 DOT 257 271 262 Ours 70 74 72 
+
+Analysis. We further analyze G2C on Rest15. In Stage-1, single-element errors (predicted quads that differ from gold in exactly one element) account for more than half of all errors (260/430, 60.4%). Stage-2 mainly acts on Fig. 4: opinion decreases from 150 to 138 (-8.0%), sentiment from 21 to 17 (-19.0%), and aspect from 47 to 41 (-12.7%), showing a consistent reduction across multiple single-element error types rather than being confined to one type. The slight rise in category single-element errors (from 42 to 44) is due to error compression: some Stage-1 multi-element errors are partially fixed so that only the category remains wrong, migrating from multi-element to category-only errors. Overall, fewer wrong elements, fewer deletions and rare regressions, and the compression of complex errors into easier-to-localize category-only errors are consistent with the concurrent gains in precision and recall. 
+
+Ablation Study. Table I reports Rest15 and Rest16 for three variants: Stage 1 (Generator-only), G2C (full), and G2C without identity pairs. Removing the Corrector (Stage 1) leads to a clear drop on both datasets, with an average decrease of 3.6%. Removing identity pairs also reduces F1; keeping 050 100 150    
+
+> ACOS
+> Stage1 Stage2
+
+Fig. 4. Single element error statistics in the Rest15 dataset. 
+
+a modest proportion during Corrector training is therefore beneficial. The full G2C achieves the best results. 
+
+Inference Time Analysis. Inference Time Analysis. Table III reports inference time comparisons of multiple methods on the ASQP benchmarks Rest15 and Rest16. As shown in the table, although our method introduces an additional inference pass, it remains markedly more efficient than prior strong baselines, including the multi-view aggregation MVP and the DOT variant that adds dynamic ordering templates on top of MVP. On Rest15 and Rest16, the inference times are 10 s and 13 s for Paraphrase, 1932 s and 1970 s for MVP, 257 s and 271 s for DOT, and 70 s and 74 s for Ours (G2C), respectively. Overall, relative to the prior strong baselines MVP and DOT, our method reduces inference time by about 96% and 73% on average, indicating a favorable efficiency–accuracy trade-off. VI. CONCLUSION We target two weaknesses of single-pass ASQP with ele-ments predicted in a fixed order: sensitivity to that order and to prefix errors, and the absence of an explicit sentence-level check that leaves early mistakes uncorrected. Generate-then-Correct (G2C) preserves the text-to-text interface and relocates decisions to a one-shot sequence-level global correction over the sentence plus a Stage-1 draft, using a T5 Corrector trained on LLM-synthesized near-miss drafts. On Rest15/Rest16, G2C surpasses a matched Generator and recent strong baselines while reducing single-element errors. In the future, we will explore incorporating reasoning signals into our method to further improve correction and consistency checking in chal-lenging settings. REFERENCES [1] P. Liu, S. Joty, and H. Meng, “Fine-grained opinion mining with recurrent neural networks and word embeddings,” in EMNLP , 2015, pp. 1433–1443. [2] X. Zhou, X. Wan, and J. Xiao, “Representation learning for aspect category detection in online reviews,” in AAAI , vol. 29, no. 1, 2015. [3] Y. Wang, M. Huang, X. Zhu, and L. Zhao, “Attention-based LSTM for aspect-level sentiment classification,” in EMNLP , 2016, pp. 606–615. [4] H. Peng, L. Xu, L. Bing, F. Huang, W. Lu, and L. Si, “Knowing what, how and why: A near complete solution for aspect-based sentiment analysis,” in AAAI , vol. 34, no. 05, 2020, pp. 8600–8607. [5] H. Wan, Y. Yang, J. Du, Y. Liu, K. Qi, and J. Z. Pan, “Target-aspect-sentiment joint detection for aspect-based sentiment analysis,” in AAAI ,vol. 34, no. 05, 2020, pp. 9122–9129. [6] L. Zhu, X. Chen, X. Guo, C. Zhang, Z. Zhu, Z. Zhou, and X. Kong, “Pinpointing diffusion grid noise to enhance aspect sentiment quad prediction,” in Findings-ACL , 2024, pp. 3717–3726. [7] H. Cai, R. Xia, and J. Yu, “Aspect-category-opinion-sentiment quadruple extraction with implicit aspects and opinions,” in ACL , 2021, pp. 340– 350. [8] M. Ranzato, S. Chopra, M. Auli, and W. Zaremba, “Sequence level train-ing with recurrent neural networks,” arXiv preprint arXiv:1511.06732 ,2015. [9] S. Bengio, O. Vinyals, N. Jaitly, and N. Shazeer, “Scheduled sampling for sequence prediction with recurrent neural networks,” NeurIPS ,vol. 28, 2015. [10] W. Zhang, Y. Deng, X. Li, Y. Yuan, L. Bing, and W. Lam, “Aspect sentiment quad prediction as paraphrase generation,” in EMNLP , 2021, pp. 9209–9219. [11] Y. Mao, Y. Shen, J. Yang, X. Zhu, and L. Cai, “Seq2Path: Generating sentiment tuples as paths of a tree,” in Findings-ACL , 2022, pp. 2215– 2225. [12] X. Bao, W. Zhongqing, X. Jiang, R. Xiao, and S. Li, “Aspect-based sentiment analysis with opinion tree generation,” in IJCAI , 2022, pp. 4044–4050. [13] W. Zhang, X. Li, Y. Deng, L. Bing, and W. Lam, “Towards generative aspect-based sentiment analysis,” in ACL/IJCNLP , 2021, pp. 504–510. [14] M. Hu, Y. Wu, H. Gao, Y. Bai, and S. Zhao, “Improving aspect sentiment quad prediction via template-order data augmentation,” in EMNLP ,2022, pp. 7889–7900. [15] Z. Gou, Q. Guo, and Y. Yang, “MvP: Multi-view prompting improves aspect sentiment tuple prediction,” in ACL , 2023, pp. 4380–4397. [16] M. Hu, Y. Bai, Y. Wu, Z. Zhang, L. Zhang, H. Gao, S. Zhao, and M. Huang, “Uncertainty-aware unlikelihood learning improves gener-ative aspect sentiment quad prediction,” in Findings-ACL , 2023, pp. 13 481–13 494. [17] C. Raffel, N. Shazeer, A. Roberts, K. Lee, S. Narang, M. Matena, Y. Zhou, W. Li, and P. J. Liu, “Exploring the limits of transfer learning with a unified text-to-text transformer,” Journal of Machine Learning Research , vol. 21, no. 140, pp. 1–67, 2020. [18] D. Guo, D. Yang, H. Zhang, J. Song, R. Zhang, R. Xu, Q. Zhu, S. Ma, P. Wang, X. Bi et al. , “Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning,” arXiv preprint arXiv:2501.12948 ,2025. [19] M. Pontiki, D. Galanis, H. Papageorgiou, S. Manandhar, and I. Androut-sopoulos, “SemEval-2015 task 12: Aspect based sentiment analysis,” in 
+
+Proceedings of the 9th International Workshop on Semantic Evaluation (SemEval 2015) . Association for Computational Linguistics, 2015, pp. 486–495. [20] M. Pontiki, D. Galanis, H. Papageorgiou, I. Androutsopoulos, S. Man-andhar, M. AL-Smadi, M. Al-Ayyoub, Y. Zhao, B. Qin, O. De Clercq, V. Hoste, M. Apidianaki, X. Tannier, N. Loukachevitch, E. Kotelnikov, N. Bel, S. M. Jim´ enez-Zafra, and G. Eryi˘ git, “SemEval-2016 task 5: As-pect based sentiment analysis,” in Proceedings of the 10th International Workshop on Semantic Evaluation (SemEval-2016) , 2016, pp. 19–30. [21] Y. Jun and H. Lee, “Dynamic order template prediction for generative aspect-based sentiment analysis,” in Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers) , Jul. 2025, pp. 614–626. [22] W. Lai, H. Xie, G. Xu, and Q. Li, “Star: Stepwise task augmentation and relation learning for aspect sentiment quad prediction,” 2025. [Online]. Available: https://arxiv.org/abs/2501.16093 [23] J. Kim, R. Heo, Y. Seo, S. Kang, J. Yeo, and D. Lee, “Self-consistent reasoning-based aspect-sentiment quad prediction with extract-then-assign strategy,” in Findings-ACL , 2024, pp. 7295–7303.

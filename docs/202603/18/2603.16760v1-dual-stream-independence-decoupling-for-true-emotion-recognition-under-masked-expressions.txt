@@ -1,0 +1,194 @@
+Title: Dual Stream Independence Decoupling for True Emotion Recognition under Masked Expressions
+
+URL Source: https://arxiv.org/pdf/2603.16760v1
+
+Published Time: Wed, 18 Mar 2026 01:36:15 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Dual Stream Independence Decoupling for True Emotion Recognition under Masked Expressions 
+
+Jinsheng Wei, Xiguang Zhang, Zheng Shi *, Guanming Lu 
+
+Nanjing University of Posts and Telecommunications, Nanjing, China 
+
+Abstract —Recongnizing true emotions from masked expres-sions is extremely challenging due to deliberate concealment. Existing paradigms recognize true emotions from masked-expression clips that contain onsetframes just starting to disguise. However, this paradigm may not reflect the actual disguised state, as the onsetframe leaks the true emotional information without reaching a stable disguise state. Thus, this paper introduces a novel apexframe-based paradigm that classifies true emotions from the apexframe with a stable disguised state. Furthermore, this paper proposes a novel dual stream independence decoupling framework that decouples true and disguised emotion features, avoiding the interference of disguised emotions on true emotions. For efficient decoupling, we design a decoupling loss group, comprising two classification losses that learn true emotion and disguised expression features, respectively, and a Hilbert-Schmidt Independence loss that enhances the independence of two features. Experiments demonstrate that the apexframe-based paradigm is challenging, and the proposed decouple framework improves recogntioni performances. 
+
+Index Terms —masked expression, true emotion recognition, decoupling, hilbert schmidt independence 
+
+I. I NTRODUCTION 
+
+Facial expressions reflect human emotional states [1], [2]. In social interactions, people may conceal their true emotions through the masked expressions of deliberate disguise. Here, masked expressions refer to the facial appearance when dis-guised emotions are inconsistent with their true emotions [3]– [6], while masked emotions are the emotions that individuals deliberately want to express. Researches [7], [8] demonstrate that there are differences between masked expressions and nat-ural expressions, and these differences reflect their true emo-tions. Therefore, Recognizing True Emotions (TER) underly-ing masked expressions is feasible and has critical applications in security, healthcare, and human-computer interaction [2], [9], [10]. Due to deliberate concealment, masked expressions contain rich disguised emotional information, while containing less true emotional information. Therefore, TER is extremely challenging. To support research in this area, Mo et al. [8] constructed the Masked Facial Expression Database (MFED) dataset. In MFED, the subjects first watch emotional stimulation videos to induce real emotions (called experienced emotion in MFED), and then display specific disguised expressions (called re-quired expression in MFED) based on the prompt images. When the two are not consistent, a masked expression is 
+
+*Corresponding author 
+
+Fig. 1. The illustration of onset and apex frames from the masked expression sequence: a ”happiness” disguised emotion with a ”surprise” true emotion. The onset frame reveals the true emotion (surprise), while the apex frame reveals the disguised emotion (happiness). 
+
+formed. Each recorded sequence is annotated with an onset frame (beginning of masked expression), an apex frame (the peak intensity of masked expression), and an offset frame (masked expression end). As shown in Fig. 1, the onset frame contains rich true emotional information, while the apex frame contains rich disguised emotional information [11]. Thus, existing methods achieved satisfactory performance in learning true emotional features from the onset frame or video clips containing the onset frame. However, in the onset frame, the masked expression is just beginning to be revealed and does not fully conceal the true emotions. Thus, the onset frame-based TER paradigm suffers from a fundamental limitation: the onset frame captures the subject’s true emotional response before the disguised emotion stabilizes, thus leaking true emotion information and simplifying the TER task. As shown in Fig. 1, the onset frame mainly expresses the true emotion (”surprise”). In the apex frame, the masked expression reaches its peak and stable state, and the apex frame-based TER presents a more realistic and challenging setting for true emotion inference from masked expressions. For example, the apex frame in Fig. 1 expresses rich disguised emotion (”Happiness). So far, due to the dominance of disguised 
+
+> arXiv:2603.16760v1 [cs.CV] 17 Mar 2026
+
+emotions in apex frames, the contribution of the apex frame for true emotional analysis is not clear. Therefore, this paper explores the contribution of apex frames to TER and proposes a new paradigm that aims to classify true emotions from the apex frame. In this paradigm, the disguised emotions have been fully expressed, which is more consistent with practical scenarios. In a disguised state, disguised emotions dominate masked expressions to conceal true emotions [12]–[14]. Disguised emotion information seriously interferes with the model’s abil-ity to mine true emotional information. Accurately recognizing true emotions requires separating overlapping emotional sig-nals present in masked expressions. The existing methods [8], [12], [15] design the classification model to violently extract true emotion information using category labels, but cannot effectively eliminate the interference of disguised emotion information on true emotional information. Thus, this paper designs a Dual Stream Independence Decoupling (DSID) model that effectively decouples disguised emotion features and true emotion features from masked expressions. After extracting global emotion features, the model in-troduces two branches to learn true emotion features and disguised emotion features, respectively. To achieve decou-pling, a decoupling loss group is designed and includes two classification losses and one independence loss. Specifically, for the two branches, two emotion classification losses are designed to learn their unique features. Furthermore, to im-prove the decoupling performance, inspired by the Hilbert Schmidt Independence Criterion (HSIC) [16]–[18], a Hilbert Schmidt Independence Criterion loss is designed to enhance the independence of the true and disguised emotion features. Overall, the contributions of this paper are as follows:  
+
+> •
+
+A new paradigm is introduced to shift the focus from onset-frame to apex-frame analysis, establishing a more realistic and challenging benchmark for true emotion recognition under masked expressions.  
+
+> •
+
+A novel decoupling framework is proposed to isolate true and disguised emotion features, reducing interference between them.  
+
+> •
+
+An hilbert schmidt independence-based decoupling loss group is designed to enhance the feature independence between the true and disguised emotions, supported by dedicated classification losses for each branch. II. R ELATED WORKS 
+
+A. Recognition Paradigm 
+
+The appropriate selection of input frames is a crucial factor affecting the performance of masked expression recognition. Zhou et al. [19] used a time-interpolation model to unify the input into a sequence of 30 frames in their study, which, while preserving complete temporal dynamic information, also introduced computational burden and redundant information. To further improve efficiency and mitigate data redundancy, Gu et al. [20] proposed an input strategy based on keyframe selection, using temporal binning and Euclidean distance cal-culation to select the most representative keyframes from each bin to form a compact sequence, reducing computational load while maintaining the integrity of temporal information. Liu et al. [11] explicitly used the onset frame for true emotion recognition tasks. They believe that the onset frame retains more true emotional information, while the apex frame was used for disguised emotion recognition. Although the above methods improve the TER performance to a certain extent, their adopted paradigm faces the true emotion leakage issue. Different from these works, this study explores a novel apexframe-based paradigm that captures true emotion cues from the apex frames of masked expression videos, and in line with more challenging real-world scenarios. 
+
+B. Masked Expression Recognition 
+
+Masked Expression Recognition can be divided into two parts, namely, TER and Disguised Emotion Recognition (DER) based on Masked Expressions. Liu et al. [11] proposed a masked expression recognition method based on transfer learning, using a ResNet18 model pre-trained on the ImageNet dataset as the backbone network. This method redesigned the classifier and introduced a Dropout layer, while also applying various data augmentation techniques to enhance the model’s robustness and generalization ability. Zhang et al. [15] present an end-to-end dual-stream network that joints the Transformer and the graph convolutional network (GCN) [21] to model image features and AU features, respectively, achieving the masked expression recognition. He et al. [12] proposed a multi-task spatiotemporal weighting network (MTSTWN) that integrates spatiotemporal feature modulation and an adap-tive spatial attention module, achieving state-of-the-art perfor-mance in masked facial expression recognition. Different with above works, this works make the first step to decouple the true and disguised emotion features. The proposed decoupling framework with a two stream structure introduces the Hilbert-Schmidt Independence Criterion (HSIC) as a feature decoupling constraint that effectively promotes their evolution towards orthogonal independence in the feature space. III. M ETHOD 
+
+A. Framework 
+
+The proposed framework consists of a Masked Expression Feature Extractor (MEFE) and dual adaptation branches, de-signed to decouple features of true and disguised emotions. The workflow is as shown in Fig. 2. The details are as follows: 
+
+a) Backbone: In this work, Vision Transformer (ViT) [22] is employed as the backbone, initialized with the pre-trained weights on the CLIP’s visual encoder [23]. We first select the apex frame from the mask expression videos and feed it into the visual encoder. Based on the learned visual representation ability in pre-trained weights, this backbone can capture high-level semantic information of facial expressions and provide more comprehensive visual semantic knowledge for subsequent task adapters. Fig. 2. Framework of dual stream independence decoupling model. 
+
+b) Masked Expression Adapter: To adapt the masked expression recognition task, a Masked Expression Adapter is designed to map the visual feature obtained by the backbone to masked expression features. The masked expression adapter comprises Linear, BN, ReLU and Dropout layers serially. The output of this adapter is shared as the input for subsequent dual branches. 
+
+c) Dual Emotion Adapters: Two parallel adapters, the true emotion adapter and the disguised emotion adapter, are designed to extract true and disguised emotion features, re-spectively. The true emotion adapter comprises Linear, BN, ReLU and Dropout layers serially to process masked expres-sion features, learning true emotion features for true emotion classification. The disguised emotion adapter uses the same architecture as the true emotion adapter to learn disguised emotion features for disguised emotion classification. 
+
+B. Decoupling Loss Group 
+
+In order to enable the proposed framework to have de-coupling capability, this paper proposes a decoupling loss group, including true emotion classification loss LT, disguised emotion classification loss LD, and HSIC loss ( LHSIC ). By jointing the three losses, the total loss are calculated by: 
+
+LTotal = LT + β · L D + α · L HSIC , (1) where α and β are trade-off hyperparameters to balance the discrimination and independence of two emotion features. 
+
+a) Two Emotion Classification Losses ( LT, LD):  
+
+> •
+
+LT: Cross-entropy loss is employed to learn the unique features of true emotions and as the true emotion clas-sification loss. This loss is calculated by penalising the distance between the predicted labels of the True Emotion Adapter and the ground-truth labels of true emotions.  
+
+> •
+
+LD: Consistent with the true emotion classification loss, the disguised emotion classification loss also employs cross-entropy los to learn the unique features of disguised emotions. 
+
+b) HSIC Feature Independence Loss ( LHSIC ): To decou-ple the true emotion features and disguised emotion features extracted by the dual-branch adapters, we designed the HSIC Loss ( LHSIC ), which quantifies the statistical independence between two feature distributions [17]. The core principle of HSIC loss is to minimize the statistical dependence between the two feature. when the true emotion features and disguised emotion features are completely decoupled (statistically inde-pendent), the HSIC value converges to 0. For the i-th sample in a batch, let Xi ∈ Rd denote the true emotion feature (dimension d) and Yi ∈ Rd denote the disguised emotion feature (with the same dimension to ensure kernel compatibility). We first perform L2 normalization on all feature vectors to enhance numerical stability during kernel calculation, yielding normalized features ˆXi = Xi 
+
+> ∥Xi∥2
+
+and 
+
+ˆYi = Yi 
+
+> ∥Yi∥2
+
+.The HSIC value for the feature pair ( ˆXi, ˆYi) is approx-imated using a kernel-based method, where two types of kernels are supported (Radial Basis Function, RBF, and Linear kernel): HSIC ( ˆXi, ˆYi) = 
+
+
+
+k ˆXi ˆYi − k ˆXi ˆXi · k ˆYi ˆYi
+
+2
+
+(2) where: • k ˆXi ˆYi represents the cross-kernel value between the nor-malized true emotion feature ˆXi and normalized dis-guised emotion feature ˆYi. 
+
+> •
+
+k ˆXi ˆXi (self-kernel of ˆXi) and k ˆYi ˆYi (self-kernel of ˆYi)denote the kernel values of each feature vector with itself. In this paper, we select the RBF kernel, and the kernel value between two vectors u and v is calculated as: kRBF  
+
+> uv
+
+= exp 
+
+
+
+− ∥u − v∥22
+
+2σ2
+
+
+
+, (3) where σ is the bandwidth hyperparameter controlling the smoothness of the kernel. The physical meaning of (3) is that when ˆXi and ˆYi are independent, the cross-kernel k ˆXi ˆYi approximates the product of the self-kernels k ˆXi ˆXi · k ˆYi ˆYi , making the HSIC value close to 0. Conversely, if the two features are dependent, the HSIC value increases significantly. After computing the HSIC value for each sample pair in the batch, these HSIC values are aggregate to obtain the batch-level HSIC loss: 
+
+LHSIC = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+HSIC ( ˆXi, ˆYi), (4) where N is the batch size. IV. E XPERIMENTS 
+
+A. Dataset and Preprocessing 
+
+All experiments in this paper are conducted on the Masked Facial Expression Database (MFED) [8] constructed by the Institute of Psychology, Chinese Academy of Sciences. This database contains 778 video sequences contributed by 22 subjects (10 males, 12 females, aged 19–26 years), with a resolution of 1280×720 pixels and a frame rate of 25 fps. During the data acquisition phase, subjects first watched videos designed to induce six basic emotions (anger, disgust, fear, happiness, sadness, surprise), and then immediately made an expression according to on-screen instructions. If this expression did not match the true emotion induced by the video, it was defined as a masked expression, and the complete video sequence from receiving the instruction to completing the expression was recorded. To focus on the core task of true emotion recognition, we removed sequences where the true emotion and the instructed expression were consistent (i.e., normal expressions), retaining only the data for all 30 types of masked expressions (six true emotions × five corresponding inconsistent disguised expressions). All videos have been annotated with the onset, apex and offset frames of the masked expression dynamics. In the preprocessing stage, we first performed face detection and background cropping on each video [24]. Then, we extracted the apex frame of the standardized sequence as the static image input for the model. In the study of TER paradigm, the onset is extracted as the input of the onset-based paradigm. All processed images were uniformly scaled to 224×224 pixels.              
+
+> TABLE I THE COMPARISON RESULTS BETWEEN THE APEX FRAME -BASED PARADIGM AND THE ONSET FRAME -BASED PARADIGM .
+> Input TER DER
+> Accuracy F1-Score Accuracy F1-Score
+> Apex-based 0.3719 0.3518 0.4707 0.4604
+> Onset-based 0.4136 0.3933 0.3781 0.3725
+
+B. Experimental Setup 
+
+This study employs a Leave-One-Subject-Out (LOSO) cross-validation strategy [20], [25] to evaluate model perfor-mance. Model performance is evaluated using accuracy and F1 score. The experiments were conducted on a hardware platform equipped with a 12th generation Intel Core i7-12700KF pro-cessor and an NVIDIA GeForce RTX 3060Ti GPU. During the data preprocessing stage, data augmentation techniques such as random horizontal flipping, random rotation ( 10 ◦ ), and color jittering were used. Image normalization used the statistics of the ImageNet dataset (mean=[0.485, 0.456, 0.406], standard deviation=[0.229, 0.224, 0.225]). The max training epoch and batch size are set to 200 and 32, respectively. The dropout probability is 0.5. The Adam optimizer was used with an initial learning rate of 0.0005 and a weight decay (L2 regularization) value of 0.0005. To prevent overfitting, an early stopping strategy was employed; training was terminated when the validation set accuracy did not improve for 50 consecutive epochs. 
+
+C. The Study of TER Paradigm 
+
+Tab. I reports the performance comparison between the onset frame-based paradigm and the apex frame-based paradigms. Both paradigms use the same model that employs the advanced ViT as the backbone with an independent clas-sification pipeline. Tab. I shows that the disguised emotion recognition based on apex frames achieves a significantly better performance than that based on onset frames, while the opposite is true for true emotion recognition. It indicates that the information contained in the two types of frames has significant differences. Specifically, the onset frame contains rich true emotion information, while the apex frame is more dominated by disguised emotion information, which verifies the viewpoint presented in the previous section. Furthermore, in terms of true emotion recognition, the apex frame-based paradigm achieved poorer performance than the onset frame-based paradigm. It demonstrates that in the apex frame, the disguised emotion produces a stronger interference on true emotion cues, and the apex frame-based paradigm proposed in this paper is more challenging and has practical application value. At the same time, this also confirms that the onset frame has not yet reached a stable disguised state, and there is a leakage of true emotional information. 
+
+D. Ablation Study 
+
+This ablation study validates the effectiveness of the pro-posed decoupling framework (DSID) by comparing it with a TABLE II ABLATION STUDY : F EATURE DECOUPLING VS NO DECOUPLING                                                
+
+> Methods TER DER
+> Accuracy F1-Score Accuracy F1-Score
+> ViT 0.3719 0.3518 0.4707 0.4604 DSID w/o HSIC 0.3781 0.3683 0.5154 0.5118 DSID 0.3920 0.3707 0.5170 0.5166
+> TABLE III PRAMETER EVALUATION ON α.
+> αTER DER
+> Accuracy F1-Score Accuracy F1-Score
+> 0.1 0.3796 0.3677 0.5432 0.5389
+> 0.3 0.3873 0.3703 0.5077 0.5073 0.5 0.3920 0.3707 0.5170 0.5166 0.7 0.3796 0.3665 0.5062 0.5077 0.9 0.3688 0.3446 0.4985 0.4991 1.0 0.3673 0.3419 0.5062 0.5038
+
+standard Vision Transformer (ViT) with no decoupling, and an ablated DSID model trained without the HSIC loss (DSID w/o HSIC). As shown in Tab, the results clearly demonstrate the distinct contributions of the decoupling structure and the inde-pendence constraint. For DER, DSID w/o HSIC is surpier to ViT model, as seen in the significant jump from ViT (46.04% F1) to DSID w/o HSIC (51.18% F1). It demonstrates that the dual stream structure can guide the separation of features through two classification losses, effectively improving the model to capture the disguised emotional clues. However, for the more challenging TER, the architectural separation alone yields only a minor improvement. Furthermore. DSID achieves a better performance compared to DSID w/o HSIC, especially on TER task. The critical gain comes from the HSIC loss, which actively enforces feature independence, pushing TER performance from 36.83% to 37.07% F1-score. This shows that structural separation is insufficient; statistical independence is essential to isolate subtle genuine emotions from the overpowering disguise. 
+
+E. Parameter Evaluation a) The Evaluation on α: As shown in Tab. III, the HSIC loss weight αs is evaluated ranging from 0.1 to 1 with a 0.2 interval, while keeping the disguised emotion classification loss weight β fixed at 1. For the TER task, as α increases from 0.1 to 0.5, accuracy improves from 0.3796 to a peak of 0.3920, and the F1-score rises from 0.3677 to 0.3707. This demonstrates that a moderate independence constraint can guide the model to separate true emotional features from the disguised expression. However, when α exceeds 0.5, performance declines, with notable degradation at α=0.9 and 1.0 (accuracy drops to 0.3688 and 0.3673, respectively). This suggests that an excessively strong independence constraint may disrupt discriminative feature information, impairing TER. For the DER task, the performance is more sensitive to 
+
+α. The optimal α is 1 with a highist performance (accuracy 0.5432, F1-score 0.5389). As α increases, performance gen-                                        
+
+> TABLE IV PRAMETER EVALUATION ON β.
+> βTER DER
+> Accuracy F1-Score Accuracy F1-Score
+> 0.1 0.3657 0.3580 0.3596 0.3592 0.3 0.3843 0.3750 0.4907 0.4908 0.5 0.3765 0.3583 0.4861 0.4809 0.7 0.3827 0.3631 0.4954 0.4939 0.9 0.3750 0.3586 0.5139 0.5137 1.0 0.3920 0.3707 0.5170 0.5166
+> TABLE V COMPARING WITH OTHER MODELS
+> Methods True Emotion
+> Accuracy F1-Score
+> ResNet18 [26] 0.2948 0.2869 ViT [22] 0.3719 0.3518 CLIP [23] 0.3441 0.3319 DSID 0.3920 0.3707
+
+erally decreases, reaching its lowest point at α=0.9 (accuracy 0.4985). It turns out that while the HSIC loss enhances feature independence, it may also suppress the learning of disguised emotion features, especially when weighted too heavily. Overall, α=0.5 emerges as an optimal balance for both tasks. When α is 0.5, TER performance peaks, while DER remains relatively strong (accuracy 0.5170), albeit slightly below its maximum at α=0.1 (a difference of 2.6 percentage points). This configuration achieves an effective trade-off, namely, sufficient feature decoupling to improve TER, without critically compromising DER discriminability. 
+
+b) The Evaluation on β: This experiment evaluates the impact of the disguised emotion classification loss weight β on model performance, and the α is fixed at 0.5 (optimal value). Overall, TER is sensitive to β, but there is no clear regular-ity. Furthermore, when β is set to 0.1, the performances of both TER and DER have an obvious decrease, especially on DER. It demonstrates that a too small β makes it difficult for the model to learn stable and discriminative disguised emotional features, thereby leading to interference in both tasks under the constraint of independence loss. Also, Performance on DER shows a steady improvement as β increases from 0.1 to 1.0, which demonstrates that the strong supervision based on β is positively correlated with the mining of disguised emotions. 
+
+F. Comparing With Other Models 
+
+Tab. V reports the comparison results between the proposed method and other models. All results were obtained under the setting of apexframe-based TER frames. Since there is cur-rently no work based on this paradigm, several representative models were selected as comparison methods. Overall, the proposed DSID framework achieves the best results, outperforming ResNet18, ViT, and CLIP. Specifically, traditional ResNet18, as a representative of convolutional neural networks, has the lowest performance (accuracy of 0.2948), indicating that relying solely on local convolutional features is difficult to capture subtle true emotional clues from highly disguised apex frames. The Vision Transformer (ViT) has significantly improved its performance with its global self-attention mechanism. It turns out that modeling long-range dependencies is crucial for understanding complex facial expressions. Furthermore, the multimodal pre-trained model CLIP performs better than ResNet18, but not as well as ViT. It demonstrates that CLIP’s visual encoder has limited discriminative power for true emotion features without specific task tuning. Also, the fine-grained level of text may also affect its ability to capture small emotion differences. DSID holds the advantage of its targeted feature decoupling and independence constraint design and achieves a compet-itive performance in the apex frame-based TER task, which provides an effective baseline solution for subsequent research. 
+
+G. Conclusions 
+
+This paper presents a novel apex-frame-based paradigm for true emotion recognition from masked expressions, which is a more realistic and challenging task compared to the conventional onset-frame analysis. To tackle this, we propose a Dual-Stream Independence Decoupling (DSID) framework. Its core innovation lies in explicitly separating true emotional features from disguised emotion features via two dedicated branches, enforced by a Hilbert-Schmidt Independence Cri-terion (HSIC) loss to ensure their statistical independence. The ablation study confirmed the necessity of both the dual-stream structure (crucial for DER) and the HSIC loss (critical for TER). Hyperparameter tuning identified α=0.5 and β=1.0 as the optimal weights, balancing the independence constraint with task-specific supervision. Finally, comparisons with other models demonstrated the superior effectiveness of the well-designed DSID framework for TER task. Collectively, the experiments validate that our method successfully decouples and recognizes true emotions from highly disguised apex frames, establishing a strong baseline for this new research direction. REFERENCES [1] Guoying Zhao, Xiaobai Li, Yante Li, and Matti Pietik¨ ainen, “Facial micro-expressions: An overview,” Proceedings of the IEEE , vol. 111, no. 10, pp. 1215–1235, 2023. [2] Jinsheng Wei, Jialiang Sun, Guanming Lu, Jingjie Yan, and Dong Zhang, “Multi-information hierarchical fusion transformer with local alignment and global correlation for micro-expression recognition,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5873–5882. [3] Kaustubh Kulkarni, Ciprian Adrian Corneanu, Ikechukwu Ofodile, Ser-gio Escalera, Xavier Bar´ o, Sylwia Hyniewska, J¨ uri Allik, and Gholam-reza Anbarjafari, “Automatic recognition of facial displays of unfelt emotions,” IEEE Transactions on Affective Computing , vol. 12, no. 2, pp. 377–390, 2021. [4] Wen-Jing Yan, Xiaobai Li, Su-Jing Wang, Guoying Zhao, Yong-Jin Liu, Yu-Hsin Chen, and Xiaolan Fu, “Casme ii: An improved spontaneous micro-expression database and the baseline evaluation,” PloS one , vol. 9, no. 1, pp. e86041, 2014. [5] Wenhao Cai, Junli Zhao, Ran Yi, Minjing Yu, Fuqing Duan, Zhenkuan Pan, and Yong-Jin Liu, “Mfdan: Multi-level flow-driven attention network for micro-expression recognition,” IEEE Transactions on Circuits and Systems for Video Technology , 2024. [6] Xuan-Bac Nguyen, Chi Nhan Duong, Xin Li, Susan Gauch, Han-Seok Seo, and Khoa Luu, “Micron-bert: Bert-based facial micro-expression recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2023, pp. 1482–1492. [7] Paul Ekman and Wallace V Friesen, Unmasking the face: A guide to recognizing emotions from facial clues , Ishk, 2003. [8] Fan Mo, Zhihao Zhang, Tong Chen, Ke Zhao, and Xiaolan Fu, “Mfed: A database for masked facial expression,” IEEE access , vol. 9, pp. 96279–96287, 2021. [9] Xiao Zhang, Yonggang Liu, Ke Zhao, and Xiaolan Fu, “Recognition of masked facial expressions based on convolutional neural networks and data augmentation,” in 2023 International Annual Conference on Complex Systems and Intelligent Science (CSIS-IAC) . IEEE, 2023, pp. 351–357. [10] Yante Li, Jinsheng Wei, Yang Liu, Janne Kauttonen, and Guoying Zhao, “Deep learning for micro-expression recognition: A survey,” IEEE Transactions on Affective Computing , vol. 13, no. 4, pp. 2028–2046, 2022. [11] Yonggang Liu, Ke Zhao, and Xiaolan Fu, “Recognition of masked facial expressions based on transfer learning and data augmentation,” in 2023 International Annual Conference on Complex Systems and Intelligent Science (CSIS-IAC) . IEEE, 2023, pp. 80–86. [12] Shiwei He, Yingjuan Jia, Hanpu Wang, Xinyu Liu, Jianmeng Zhou, Huijie Gu, Mengyan Li, and Tong Chen, “Weighted spatiotemporal fea-ture and multi-task learning for masked facial expression recognition,” in International Conference on Computational Visual Media . Springer, 2025, pp. 369–393. [13] Jinsheng Wei, Guanming Lu, Jingjie Yan, and Yuan Zong, “Learning two groups of discriminative features for micro-expression recognition,” 
+
+Neurocomputing , vol. 479, pp. 22–36, 2022. [14] Jun Yang, Zilu Wu, and Renbiao Wu, “Micro-expression recognition based on contextual transformer networks,” The Visual Computer , vol. 41, no. 3, pp. 1527–1541, 2025. [15] Zheyuan Zhang, Bingtong Liu, Ju Zhou, Hanpu Wang, Xinyu Liu, Bing Lin, and Tong Chen, “Masked facial expression recognition based on temporal overlap module and action unit graph convolutional network,” 
+
+Journal of Visual Communication and Image Representation , vol. 107, pp. 104398, 2025. [16] Wan-Duo Kurt Ma, JP Lewis, and W Bastiaan Kleijn, “The hsic bottleneck: Deep learning without back-propagation,” in Proceedings of the AAAI conference on artificial intelligence , 2020, vol. 34, pp. 5085– 5092. [17] Arthur Gretton, Olivier Bousquet, Alex Smola, and Bernhard Sch¨ olkopf, “Measuring statistical dependence with hilbert-schmidt norms,” in 
+
+International conference on algorithmic learning theory . Springer, 2005, pp. 63–77. [18] M´ elisande Albert, B´ eatrice Laurent, Amandine Marrel, and Anouar Meynaoui, “Adaptive test of independence based on hsic measures,” 
+
+The Annals of Statistics , vol. 50, no. 2, pp. 858–879, 2022. [19] Ju Zhou, Xinyu Liu, Hanpu Wang, Zheyuan Zhang, Tong Chen, Xiaolan Fu, and Guangyuan Liu, “Seeing through the mask: Recognition of genuine emotion through masked facial expression,” IEEE Transactions on Computational Social Systems , vol. 11, no. 6, pp. 7159–7172, 2024. [20] Huijie Gu, Hanpu Wang, Shiwei He, Mengyan Li, Jianmeng Zhou, and Tong Chen, “Kf-tmiaf: An efficient key-frames-based temporal mod-eling of images and au features structure for masked facial expression recognition,” in 2024 IEEE International Conference on Bioinformatics and Biomedicine (BIBM) . IEEE, 2024, pp. 4909–4916. [21] Thomas N Kipf and Max Welling, “Semi-supervised classification with graph convolutional networks,” arXiv preprint arXiv:1609.02907 , 2016. [22] Alexey Dosovitskiy, “An image is worth 16x16 words: Transformers for image recognition at scale,” arXiv preprint arXiv:2010.11929 , 2020. [23] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, et al., “Learning transferable visual models from natural language supervision,” in International conference on machine learning .PmLR, 2021, pp. 8748–8763. [24] Hong-Xia Xie, Ling Lo, Hong-Han Shuai, and Wen-Huang Cheng, “An overview of facial micro-expression analysis: Data, methodology and challenge,” IEEE Transactions on Affective Computing , vol. 14, no. 3, pp. 1857–1875, 2022. [25] Jinsheng Wei, Wei Peng, Guanming Lu, Yante Li, Jingjie Yan, and Guoying Zhao, “Geometric graph representation with learnable graph structure and adaptive au constraint for micro-expression recognition,” IEEE Transactions on Affective Computing , vol. 15, no. 3, pp. 1343– 1357, 2023. [26] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun, “Deep residual learning for image recognition,” in Proceedings of the IEEE conference on computer vision and pattern recognition , 2016, pp. 770– 778.
