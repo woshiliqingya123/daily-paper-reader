@@ -1,0 +1,783 @@
+Title: CLCR: Cross-Level Semantic Collaborative Representation for Multimodal Learning
+
+URL Source: https://arxiv.org/pdf/2602.19605v1
+
+Published Time: Tue, 24 Feb 2026 03:18:38 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# CLCR:Cross-Level Semantic Collaborative Representation for Multimodal Learning 
+
+# Chunlei Meng *†
+
+# Fudan University 
+
+clmeng23@m.fudan.edu.cn 
+
+# Guanhong Huang Shantou University Rong Fu University of Macau Runmin.JIAN Guangzhou Huashang College Zhongxue Gan Fudan University Chun Ouyang ‡
+
+# Fudan University 
+
+# Abstract 
+
+Multimodal learning aims to capture both shared and pri-vate information from multiple modalities. However, ex-isting methods that project all modalities into a single latent space for fusion often overlook the asynchronous, multi-level semantic structure of multimodal data. This oversight induces semantic misalignment and error prop-agation, thereby degrading representation quality. To ad-dress this issue, we propose Cross-Level Co-Representation (CLCR), which explicitly organizes each modality’s features into a three-level semantic hierarchy and specifies level-wise constraints for cross-modal interactions. First, a se-mantic hierarchy encoder aligns shallow, mid, and deep features across modalities, establishing a common basis for interaction. And then, at each level, an Intra-Level Co-Exchange Domain (IntraCED) factorizes features into shared and private subspaces and restricts cross-modal attention to the shared subspace via a learnable token budget. This design ensures that only shared semantics are exchanged and prevents leakage from private chan-nels. To integrate information across levels, the Inter-Level Co-Aggregation Domain (InterCAD) synchronizes semantic scales using learned anchors, selectively fuses the shared representations, and gates private cues to form a compact task representation. We further introduce regularization terms to enforce separation of shared and private features and to minimize cross-level interference. Experiments on six benchmarks spanning emotion recognition, event local-ization, sentiment analysis, and action recognition show that CLCR achieves strong performance and generalizes 
+
+> *This study has been Accepted by CVPR 2026.
+> †The camera-ready version can be obtained from the official CVPR 2026 website.
+> ‡Corresponding Author
+
+well across tasks. 
+
+Figure 1. Cross-level semantic asynchrony and CLCR. Top: mix-ing across levels causes semantic confusion and mismatch. bot-tom: CLCR structures each modality into three aligned levels and restricts exchange to the learned shared subspace at matched lev-els, enabling level semantic alignment and reliable aggregation. 
+
+# 1. Introduction 
+
+Multimodal learning (MML) aims to integrate information from multiple modalities (e.g., linguistic, visual, and acous-tic) to obtain more comprehensive representations [16, 18, 22, 32]. By combining complementary cues from differ-ent signal sources, multimodal systems can achieve more accurate and robust understanding than single-modal coun-terparts. MML has become central to applications such as human–computer interaction, sentiment analysis, and event understanding [12, 19, 21]. However, different modali-ties exhibit substantial discrepancies both in their seman-tic spaces and in the granularity of semantics across depth, which together pose significant challenges to current MML methods [15, 20, 36]. To mitigate these challenges, existing research mainly 1
+
+> arXiv:2602.19605v1 [cs.CV] 23 Feb 2026
+
+follows two lines. The first line is based on feature disen-tanglement, which learns shared and modality-specific la-tent subspaces for multimodal representations [12, 31, 36]. MISA [12] projects each modality into two subspaces (modality-invariant and modality-specific) and uses simi-larity losses and orthogonality constraints to enforce align-ment in the common space and separation between common and private factors. FDMER [36] employs encoders that extract common and private features separately and adopts an adversarial modality discriminator to further align the distributions of different modalities. DMD [15] performs graph-based cross-modal knowledge distillation in the de-coupled subspaces to alleviate modality distribution mis-match, and DLF [31] designs geometric metrics to regular-ize the decoupling process. The second line dynamically calibrates modality contributions at both the sample and modality levels [6, 19, 45]. Typical mechanisms include mixture-of-experts weighting, cross-modal distillation, and imbalance-aware recalibration. For instance, EMOE [8] adopts a modality-expert mixture, ARL [32] introduces a dual-path calibration strategy, DEVA [35] converts audiovi-sual cues into text descriptions to leverage language mod-els, and MLA [45] reformulates joint multimodal learning as an alternating single-modal training process. (More re-lated Works, see Appendix.) Although these methods alleviate modality heterogene-ity and improve fusion, they generally assume that cross-modal interaction occurs at a single semantic level. In real-world data, however, evidence is organized hierarchically: shallow layers capture lexical or frame-level cues, mid-dle layers encode phrases or prosodic structures, and deep layers reflect discourse intent or event context. As illus-trated in Fig. 1, when tokens from different levels are mixed without control, early fusion can induce semantic confu-sion and error propagation, cause private factors to leak into shared channels, and enforce excessive invariance that sup-presses modality-specific cues needed for the task. From an information-theoretic perspective, let Z denote the fused representation, Y the task label, and N nuisance factors. In an information bottleneck view, unstructured mixing of mismatched semantic levels tends to increase I(Z; N )
+
+more than I(Z; Y ) under fixed capacity or invariance con-straints, making it harder for downstream predictors to re-cover task-relevant information [5, 28]. This cross-level se-mantic asynchrony, unlike generic modality heterogeneity, has been shown to degrade hierarchical multimodal mod-eling when left unmodeled [11, 43], and our analysis sug-gests that it is a key contributor to representation fragility. We explicitly target this factor with CLCR and empirically examine its impact through ablations in Section 3.3. We address this gap with Cross-Level Co-Representation (CLCR) . CLCR first builds a three-level semantic hierarchy for each modality under a shared feature width, and confines cross-modal exchange at each level to an explicitly learned shared subspace under a token-level budget (IntraCED). This design limits mismatch propagation and prevents private-to-shared leakage at the source. It then synchronizes levels through anchor-based selection and performs cross-level aggregation without increasing representation dimensionality (InterCAD), while routing private summaries directly to the task heads to avoid cross-level mixing on the private path. Finally, intra- and inter-level regularizers preserve shared–private separation and penalize mixtures over incompatible level anchors, stabilizing level selection across modalities and depths. The architecture is trimodal by default yet applies to bimodal settings without structural changes. Across six benchmarks spanning emotion recognition, event local-ization, sentiment analysis, and action recognition, CLCR achieves high accuracy and exhibits robust performance while maintaining interpretable modality contributions. Overall, the main contributions of this work are as follows: • We propose CLCR , which organizes each modality into a three-level semantic hierarchy and explicitly specifies ex-change and alignment rules to handle cross-level semantic heterogeneity. • We introduce IntraCED and InterCAD : IntraCED per-forms budgeted shared-only token exchange at each level, and InterCAD provides anchor-guided cross-level aggre-gation with private routing, thereby reducing mismatch propagation and preserving modality-specific cues. • We design intra- and inter-level regularization losses that stabilize shared–private separation and level selection. 
+
+# 2. Method 
+
+2.1. Model Overview 
+
+The CLCR framework addresses cross-level semantic asyn-chrony in multimodal learning by organizing each modal-ity into a three-level hierarchy and restricting cross-modal exchange to an explicitly disentangled level-shared sub-space. As shown in Fig. 2, a semantic-hierarchy encoder produces shallow, mid, and deep-level token sequences with a common feature width; IntraCED factorizes each level into modality-shared and modality-private subspaces and allows budgeted cross-modal exchange only in the shared subspace; and InterCAD summarizes shared and private streams across levels, synchronizes semantic scales, per-forms modality selection on the shared path, and aggregates private information through confidence gating. Two reg-ularizers maintain shared–private separation across levels and modalities and, together with the task loss, define the overall training objective. 2Figure 2. Overview of the proposed CLCR framework. Each modality is organized into a three-level semantic hierarchy. IntraCED performs budgeted cross-modal exchange in an explicitly disentangled level-shared subspace, while InterCAD synchronizes and aggregates shared and private streams across levels into the final task representation. 
+
+2.2. Semantic-Hierarchy Encoder 
+
+We consider linguistic, visual, and acoustic modalities. For each modality m ∈ {L, V, A}, the input is a sequence 
+
+X(m) = {x(m) 
+
+> t
+
+}T (m) 
+
+> t=1
+
+, x(m) 
+
+> t
+
+∈ Rd0 . To mitigate cross-level semantic asynchrony, we build a three-level hierarchy 
+
+ℓ ∈ { 1, 2, 3} that captures shallow, mid, and deep seman-tics. This design is consistent with multi-scale represen-tation studies showing that combining early, intermediate, and late features captures most of the useful variation in deep encoders [46]. For each modality and level, the back-bone output is mapped to a unified feature space of width d and augmented with positional encodings and layer nor-malization: H(m) 
+
+> ℓ
+
+= LN  Z(m) 
+
+> ℓ
+
+W (m) 
+
+> ℓ
+
++P (m)
+
+> ℓ
+
+, where Z(m)
+
+> ℓ
+
+is the backbone output at level ℓ, W (m) 
+
+> ℓ
+
+∈ Rdm×d is a lin-ear projection with dm ∈ { dbert , d tcn }, and P (m) 
+
+> ℓ
+
+encodes order within each level. This yields level-wise features 
+
+H(m) 
+
+> ℓ
+
+∈ RT (m) 
+
+> ℓ×d
+
+. Positional encodings are defined inde-pendently within each modality and level, so that local tem-poral order is preserved without assuming framewise align-ment across modalities. The linguistic modality is encoded by a pretrained BERT [25], whose early, middle, and late layers provide shallow, mid, and deep-level features. These three levels respectively focus on lexical and syntactic patterns (sub-word structure, part-of-speech cues), phrasal and clause-level compositional and sentiment cues, and discourse-level intent with long-range dependencies. The visual and acous-tic streams are encoded by three-stage Temporal Convolu-tional Networks (TCN) [3] with increasing receptive fields. In the visual branch, the three levels capture local ap-pearance and motion primitives, part-level structure and short actions, and long-range scene and event context. In the acoustic branch, they capture frame-level spectra and micro-prosody, phoneme and syllable patterns with timbre dynamics, utterance-level prosody, and emotional contours. The encoder outputs the collection {H(m) 
+
+> ℓ
+
+}m,ℓ , which is level aligned in semantics and width aligned in channels. These features serve as inputs to IntraCED and InterCAD. 
+
+2.3. Intra-Level Co-Exchange Domain (IntraCED) 
+
+Existing methods often mix tokens from different seman-tic levels, which produces mismatched interactions and al-lows modality-specific factors to leak into the shared inter-action channels. To address this, IntraCED is applied inde-pendently at each semantic level ℓ and follows three princi-ples: separate modality-invariant content into a shared sub-space, restrict cross-modal attention to that subspace, and limit the exchanged information with a token-level budget. Each level becomes a controlled exchange domain that pro-duces level-synchronous shared signals for InterCAD while preserving modality-specific private streams. Formally, given level-wise representations H(m) 
+
+> ℓ
+
+=
+
+{h(m) 
+
+> ℓ,t
+
+}T (m) 
+
+> ℓ
+> t=1
+
+∈ RT (m)  
+
+> ℓ×d
+
+from modality m at level ℓ, In-traCED constructs an orthogonal shared–private decompo-sition. For each level ℓ, we learn two projectors: 
+
+P sh  
+
+> ℓ
+
+= U sh  
+
+> ℓ
+
+(U sh  
+
+> ℓ
+
+)⊤, P pr  
+
+> ℓ,m
+
+= U pr 
+
+> ℓ,m
+
+(U pr 
+
+> ℓ,m
+
+)⊤ (1) where U sh  
+
+> ℓ
+
+∈ Rd×k and U pr  
+
+> ℓ,m
+
+∈ Rd×(d−k) are learned or-thonormal bases with (U sh  
+
+> ℓ
+
+)⊤U pr  
+
+> ℓ,m
+
+= 0 . We enforce or-thonormality during training via a Stiefel parameterization. Each token h(m) 
+
+> ℓ,t
+
+∈ R1×d is decomposed as: 
+
+h(m) 
+
+> ℓ,t, sh
+
+= h(m) 
+
+> ℓ,t
+
+P sh  
+
+> ℓ
+
+, h(m) 
+
+> ℓ,t, pr
+
+= h(m) 
+
+> ℓ,t
+
+P pr 
+
+> ℓ,m
+
+, (2) so that h(m) 
+
+> ℓ,t
+
+= h(m) 
+
+> ℓ,t, sh
+
++ h(m)
+
+> ℓ,t, pr
+
+. Only the shared compo-nent is exposed to cross-modal exchange, while the private remains isolated and is routed along the private path. 3Budgeted token selection. Not all shared tokens are equally reliable carriers of cross-modal evidence. To avoid dense and noisy fusion, IntraCED assigns a level-wise bud-get that limits how many tokens can participate in exchange. For each token, we measure its shared evidence strength 
+
+e(m) 
+
+> ℓ,t
+
+= ∥h(m)
+
+> ℓ,t, sh
+
+∥2. This strength is mapped to a preliminary activation weight ˜α(m) 
+
+> ℓ,t
+
+= σ ρ e (m) 
+
+> ℓ,t
+
+− θℓ
+
+, where ρ > 0 is a learnable scale and θℓ is a level-specific threshold. Collect-ing all token weights yields ˜α(m) 
+
+> ℓ
+
+= [˜ α(m) 
+
+> ℓ, 1
+
+, . . . , ˜α(m) 
+
+> ℓ,T (m)
+> ℓ
+
+]⊤.We then project this vector onto a truncated simplex: 
+
+α(m) 
+
+> ℓ
+
+= Proj ∆( Bℓ)
+
+  ˜α(m)
+
+> ℓ
+
+,
+
+∆( Bℓ) = 
+
+n
+
+a ∈ [0 , 1] T (m) 
+
+> ℓ
+
+: 1⊤a ≤ Bℓ
+
+o
+
+, (3) where Bℓ is a learnable budget at level ℓ. This projection produces a sparse, capacity-limited set of tokens that are allowed to receive cross-modal information. 
+
+Tri-modal level-shared space exchange. At each level, a target modality aggregates information from the shared components of the remaining modalities. Let M be the modality set and define S(m) = M \ { m}. We stack shared tokens from sources other than modality at ℓ layer, as 
+
+H(−m) 
+
+> ℓ, sh
+
+= Concat  {H(n)
+
+> ℓ, sh
+
+}n∈S (m)
+
+ ∈ RT (−m) 
+
+> ℓ×d
+
+, where 
+
+T (−m) 
+
+> ℓ
+
+= P 
+
+> n∈S (m)
+
+T (n) 
+
+> ℓ
+
+and H(n) 
+
+> ℓ, sh
+
+stacks {h(n)
+
+> ℓ,t, sh
+
+}t.Query, key, and value projections are Q(m) 
+
+> ℓ,t
+
+= h(m)
+
+> ℓ,t, sh
+
+WQ,K(−m) 
+
+> ℓ
+
+= H(−m) 
+
+> ℓ, sh
+
+WK , V (−m) 
+
+> ℓ
+
+= H(−m) 
+
+> ℓ, sh
+
+WV , with 
+
+WQ, W K , W V ∈ Rd×dh . Cross-modal attention in the shared subspace is ˜h(m)
+
+> ℓ,t, sh
+
+:
+
+˜h(m) 
+
+> ℓ,t, sh
+
+= α(m) 
+
+> ℓ,t
+
+Attn  Q(m) 
+
+> ℓ,t
+
+, K (−m) 
+
+> ℓ
+
+, V (−m)
+
+> ℓ
+
+ (4) Thus each modality queries a joint shared pool formed by the others, while the budget α(m) 
+
+> ℓ,t
+
+gates how much external evidence each token absorbs. In bimodal settings, S(m)
+
+has a single source modality and the formulation reduces to standard cross-attention. 
+
+Intra-Level Regularization LIntra . To keep private and shared streams statistically distinct, IntraCED uses an iden-tifiability regularizer based on whitened cross-correlation. Let S(m)ℓ and P (m)ℓ denote the updated shared S(m) 
+
+> ℓ
+
+and private P (m) 
+
+> ℓ
+
+streams, each as a matrix in RT (m) 
+
+> ℓ×d
+
+.
+
+S(m) 
+
+> ℓ
+
+= {˜h(m)
+
+> ℓ,t, sh
+
+}t, P (m) 
+
+> ℓ
+
+= {h(m)
+
+> ℓ,t, pr
+
+}t (5) Given matrices A ∈ RTA×d and B ∈ RTB ×d, we center rows and estimate sample covariances ˆΣA, ˆΣB and cross-covariance ˆΣAB . The whitened correlation operator is 
+
+Corr( A, B ) = ˆΣ− 12 
+
+> A
+
+ˆΣAB ˆΣ− 12 
+
+> B
+
+, (6) with ˆΣ− 12 
+
+> A
+
+and ˆΣ− 12 
+
+> B
+
+obtained by eigendecomposition with diagonal regularization. From a computational perspective, both the Stiefel parameterization of U sh  
+
+> ℓ
+
+and U pr  
+
+> ℓ,m
+
+and the whitening-based Corr( ·, ·) operator act on d × d statistics at each level, so the overhead is negligible compared to the backbone encoders and attention layers. The intra-level identifiability loss: 
+
+LIntra 
+
+X
+
+> ℓ
+
+ X 
+
+> m̸=n
+
+∥Corr( P (m) 
+
+> ℓ
+
+, P (n) 
+
+> ℓ
+
+)∥2 
+
+> F
+
++
+
+λsp 
+
+X
+
+> m
+
+∥Corr( P (m) 
+
+> ℓ
+
+, S (m) 
+
+> ℓ
+
+)∥2
+
+> F
+
+ (7) where λsp ∈ (0 , 1] controls the separation strength. The first term discourages different modalities from encoding similar content in their private subspaces at the same level. The second term discourages leakage between private and shared components within each modality. Combined with the shared–private projections and budgeted token gating, this loss keeps the shared space focused on cross-modal ev-idence and preserves modality-specific information in the private streams. 
+
+2.4. Inter-Level Co-Aggregation Domain 
+
+After IntraCED, each modality m and level ℓ has an updated shared stream S(m) 
+
+> ℓ
+
+and a private stream P (m) 
+
+> ℓ
+
+.
+
+Cross-level semantic synchronization. For each modality and level, InterCAD first compresses shared and private streams into fixed-size summaries s(m) 
+
+> ℓ
+
+and p(m)
+
+> ℓ
+
+using mean pooling followed by layer normalization. We obtain hierarchical anchors gℓ by averaging and normaliz-ing the shared summaries across modalities at level ℓ. The three anchors are concatenated and passed through a two-layer perceptron Φ( ·), followed by a softmax to obtain the level weights: 
+
+ω = softmax  Φ([ g1; g2; g3])  ∈ ∆3, (8) so that ω = [ ω1, ω 2, ω 3]⊤ lies on the probability simplex and assigns an importance score to each level. Shared and private summaries are synchronized across levels as 
+
+¯s(m) =
+
+> 3
+
+X
+
+> ℓ=1
+
+ωℓs(m) 
+
+> ℓ
+
+, ¯p(m) =
+
+> 3
+
+X
+
+> ℓ=1
+
+ωℓp(m) 
+
+> ℓ
+
+. (9) 
+
+Modality Selection and Private Information Aggrega-tion. After performing cross-level semantic synchroniza-tion, InterCAD focuses on selecting the most informative modality for each task. We compute a global shared context 
+
+¯g by averaging the synchronized shared summaries ¯s(m)
+
+across modalities. This context vector serves as the query for modality selection. We compute modality-specific keys 
+
+km for each modality m, and use these to calculate the 4attention weights γ through scaled dot-product attention. Where q = LN( Wq ¯g) is the query derived from the global shared context, and km = LN( Wk ¯s(m)) represents the key for modality m. These attention weights γ are then used to obtain the fused shared descriptor ¯zsh , which is a weighted sum of the shared representations from each modality. 
+
+γ = softmax 
+
+ q[k1, . . . , k M ]⊤
+
+√d
+
+
+
+, z sh =
+
+> M
+
+X
+
+> m=1
+
+γm ¯s(m).
+
+(10) For the aggregation of private information, we use a confi-dence gate for each modality. The confidence score ηm for modality m is computed based on the private stream ¯p(m),and it reflects the reliability of the private representation. The final aggregated private descriptor upr is then obtained by summing the weighted private representations: 
+
+ηm = σ
+
+
+
+w⊤ 
+
+> p
+
+LN( Wp ¯p(m))
+
+
+
+, u pr =
+
+> M
+
+X
+
+> m=1
+
+ηm ¯p(m). (11) 
+
+Task Representation. We obtain the final task represen-tation by concatenating the fused shared descriptor and the aggregated private descriptor and feeding the result into the task head ˆy = fθ (zsh ⊕ upr ), where fθ denotes a classifier, or regressor depending on the task. 
+
+Inter-level Regularization LInter . To enforce cross-level consistency and avoid asynchronous mixing, we in-troduce an inter-level regularizer with three correlation-based terms on private streams, shared–private interac-tions, and level selection. Semantic incompatibility be-tween two level anchors gℓ and gk is δℓk = 1 − 
+
+> 1
+> d
+
+∥Corr( gℓ, g k)∥2 
+
+> F
+
+, so similar anchors yield small penalties and dissimilar anchors large ones. We define the three inter-level terms as Lpr = PMm=1 
+
+P 
+
+> ℓ̸=k
+
+∥Corr( P (m) 
+
+> ℓ
+
+, P (m) 
+
+> k
+
+)∥2 
+
+> F
+
+,
+
+Lsp = PMm=1 
+
+P 
+
+> ℓ,k
+
+∥Corr( S(m) 
+
+> ℓ
+
+, P (m) 
+
+> k
+
+)∥2 
+
+> F
+
+, and Lmix =P 
+
+> ℓ<k
+
+ωℓωk δℓk , where Lpr reduces private redundancy across depths, Lsp suppresses shared–private leakage, and 
+
+Lmix discourages assigning mass to incompatible level pairs. The full loss is 
+
+LInter = αpr Lpr + αsp Lsp + αmix Lmix , (12) with αpr , α sp , α mix > 0. This regularizer stabilizes level-synchronized summaries by removing redundant private in-formation and penalizing incompatible level combinations. 
+
+2.5. Objective Optimization 
+
+CLCR is trained end-to-end with a standard task loss and two complementary regularizers. For classification tasks we use cross-entropy, and for regression tasks we use mean-squared error. In addition to the task loss Ltask , we apply the intra-level identifiability loss LIntra in (7) and the inter-level regularization loss LInter in (12). The overall objective is 
+
+Lall = Ltask + λinter LInter + λintra LIntra , (13) where λinter , λ intra > 0 are trade-off weights tuned on vali-dation data. This objective jointly encourages accurate task predictions, cross-level disentanglement, and preservation of modality-specific identity. 
+
+# 3. Experiments 
+
+3.1. Experimental Settings 
+
+Benchmarks. We evaluate CLCR on six multimodal benchmarks spanning emotion recognition, event local-ization, sentiment analysis, and human action recogni-tion. CREMA-D [4] is an audio–visual emotion dataset with 7,442 speech–face clips in six classes (6,698/744 train/test). AVE [32] contains 4,143 ten-second au-dio–visual clips in 28 event categories, following [32], we use synchronized localized segments for multimodal classi-fication. Kinetics-Sounds (KS) [1] comprises about 19K ten-second clips of 34 actions with both visual and au-ditory cues (15K/1.9K/1.9K train/val/test). UCF101 [26] provides RGB and optical flow modalities for 101 ac-tions, and we use the official split (9,537/3,783 train/test). CMU-MOSI [40] contains 2,199 monologue video seg-ments with acoustic and visual features (1,284/229/686 train/val/test) annotated on a [−3, 3] sentiment scale, and we adopt the standard binary positive/negative setting. CMU-MOSEI [42] includes 22,856 segments (16,326/1,871/4,659 train/val/test) with sentiment labels in the same range. 
+
+Implementation Details. We train CLCR using SGD with momentum 0.9, a learning rate of 1 × 10 −3, weight de-cay of 1×10 −4, a batch size of 64, and 100 epochs on A100 GPUs. For CREMA-D, AVE, and KS, we follow the pre-processing and training settings of [32].On MOSI and MO-SEI, we report MAE, ACC 2, ACC 7, and F1, on the other four benchmarks, we report accuracy and F1. 
+
+3.2. Comparison with the State-of-the-Art 
+
+We compare CLCR with recent baselines on multiple audio-visual and Multimodal Sentiment Analysis (MSA) bench-marks, using 5-fold cross-validation in all experiments. 
+
+Results on Acoustic–Visual Task. As shown in Table 1, on CREMA-D, KS, and AVE, CLCR achieves the best ac-curacy and F1 under the same five-fold cross-validation pro-tocol. Compared to the strongest baseline, CLCR improves accuracy by 1.46%, 1.32%, and 1.21% on CREMA-D, KS, and AVE, respectively, and improves F1 by 1.48%, 1.31%, and 1.13%. On UCF101, CLCR further improves accuracy and F1 by 0.58% and 0.49% over the best. These gains are consistent across datasets with different temporal dynamics, indicating that CLCR generalizes beyond a single corpus. 5Table 1. Comparison with state-of-the-art methods on the benchmarks (%). Mean and standard deviation are reported over 5 folds. 
+
+Methods CREMA-D [4] KS [1] AVE [32] UCF101 [26] 
+
+Acc(%) F1(%) Acc(%) F1(%) Acc(%) F1(%) Acc(%) F1(%) only-Acoustic 57.27 57.89 48.67 48.89 62.16 58.54 - -only-Visual 62.17 62.78 52.36 52.67 31.40 29.87 - -Concat 58.83 59.43 64.97 65.21 66.15 62.46 80.41 79.40 Grad-Blending 68.81 69.34 67.31 67.68 67.40 63.87 81.73 80.84 OGM-GE [24] 64.34 64.93 66.35 66.76 65.62 62.97 81.15 80.36 AGM [14] 67.21 68.04 65.61 65.99 64.50 61.49 81.55 80.36 PMR [7] 65.12 65.91 65.01 65.13 63.62 60.36 81.36 80.37 MMPareto [34] 70.19 70.82 69.13 69.05 68.22 64.54 81.98 80.64 MLA [45] 73.21 73.77 69.62 69.98 70.92 67.23 82.01 81.22 D&R [6] 73.52 73.96 69.10 69.36 69.62 64.93 82.11 80.87 ARL [32] 76.46 76.85 74.09 74.01 72.61 67.98 83.06 81.78 
+
+CLCR (Ours) 77.92 ±0.08 78.33 ±0.07 75.41 ±0.10 75.32 ±0.09 73.82 ±0.12 69.11 ±0.11 83.64 ±0.05 82.27 ±0.06 
+
+Table 2. Performance Comparison. ↑ and ↓ indicate that higher and lower value is better. Mean and StDev. are reported over 5 folds. 
+
+Methods CMU-MOSI CMU-MOSEI 
+
+MAE ( ↓) Corr ( ↑) Acc-2(%) Acc-7(%) F1(%) MAE ( ↓) Corr ( ↑) Acc-2(%) Acc-7(%) F1(%) MulT [29] 0.846 0.725 81.70 40.05 81.66 0.673 0.677 80.85 48.37 80.86 MISA [12] 0.788 0.744 82.07 41.27 82.43 0.594 0.724 82.03 51.43 82.13 Self-MM [39] 0.765 0.764 82.88 42.03 83.04 0.576 0.732 82.43 52.68 82.47 FDMER [36] 0.760 0.777 83.01 42.88 83.22 0.571 0.743 83.88 53.21 83.35 PMR [7] 0.895 0.689 79.88 40.60 79.83 0.645 0.689 81.57 48.88 81.56 DMD [15] 0.744 0.788 83.24 43.88 83.55 0.561 0.758 84.17 54.18 83.88 CGGM [10] 0.747 0.798 84.43 43.21 84.13 0.551 0.761 83.90 53.47 84.14 DEVA [35] 0.730 0.787 84.40 46.33 84.45 0.541 0.769 83.17 52.28 83.75 ARL [32] - - 84.16 - 84.09 - - 83.65 - 83.79 DLF [31] 0.731 0.781 85.06 47.08 85.04 0.536 0.764 85.42 53.9 85.27 EMOE [8] 0.710 - 85.4 47.7 85.4 0.536 - 85.3 54.1 85.3 
+
+CLCR (Ours) 0.678 ±0.007 0.819 ±0.005 88.05 ±0.20 49.56 ±0.25 87.99 ±0.18 0.511 ±0.006 0.790 ±0.004 87.96 ±0.21 56.32 ±0.27 88.02 ±0.19 
+
+Results on MSA. As summarized in Table 2, CLCR consistently reduces MAE and improves classification met-rics on CMU-MOSI and CMU-MOSEI. Relative to the strongest baseline, CLCR reduces MAE by 0.032 on MOSI and by 0.025 on MOSEI, while improving Acc 2 by 2.65% and 2.54% and F1 by 2.59% and 2.72%, respectively. These results show that the cross-level design of CLCR also trans-fers well to regression-style sentiment prediction. 
+
+CLCR advantages analysis. Compared with baseline that lack explicit cross-level structuring and with disentan-glement designs that only decouple modalities at a single level, CLCR jointly addresses within-level and cross-level mismatch. It organizes each modality into aligned shal-low, mid, and deep layers, factorizes each layer into shared and private subspaces, restricts cross-modal exchange to a budgeted shared subspace, and applies cross-level regular-ization to suppress private redundancy and shared–private leakage between incompatible levels. This combination yields more stable improvements over diverse baselines across datasets and metrics. 
+
+3.3. Ablation Studies 
+
+We perform ablations on MOSI, KS, and MOSEI to study modality configurations, critical components, cross-level alignment strategies, and regularization terms (Table 3). 
+
+Importance of Modality. To study how CLCR exploits different modalities across heterogeneous benchmarks, we vary the modality configurations. On MOSI and MOSEI, removing language causes the largest degradation, and the language-only setting performs close to full CLCR, while acoustic-only and visual-only are clearly weaker. This indi-cates that language is the primary sentiment carrier on these datasets, whereas audio and visual streams mainly provide complementary cues. On KS, the visual stream clearly out-performs the acoustic stream, and full CLCR consistently exceeds any single-modality or modality-dropped variant. These results suggest that CLCR adapts to the dominant modality of each benchmark and degrades gracefully when modalities are missing. 
+
+Importance of Critical Components. To assess the role of the semantic hierarchy and the representation mod-ules, we ablate IntraCED, InterCAD, and the hierarchy it-6Table 3. Ablation studies of CLCR on three benchmarks (%). ‡                                                                                                   
+
+> denotes removing both LInter and LIntra .
+> Methods MOSI KS MOSEI
+> MAE ↓ACC 7ACC F1 MAE ↓ACC 7
+> CLCR (Ours) 0.678 49.56 75.41 75.32 0.511 56.32
+> Importance of Modality
+> w/o Language 0.970 36.2 ––0.803 42.96 w/o Acoustic 0.705 47.6 52.36 52.67 0.538 54.36 w/o Visual 0.710 47.1 48.67 48.89 0.543 53.86 only Language 0.727 46.3 ––0.560 53.06 only Acoustic 1.020 33.5 48.67 48.89 0.853 40.26 only Visual 0.950 35.0 52.36 52.67 0.783 41.76
+> Importance of Critical Components
+> w/o IntraCED 0.703 47.4 73.0 72.8 0.536 54.16 w/o InterCAD 0.699 47.8 73.4 73.2 0.532 54.56 w/o Hierarchy 0.720 46.3 71.9 71.6 0.553 53.06
+> Importance of Cross-Level Alignment
+> Full Mix 0.743 45.6 70.3 70.5 0.585 52.21 Partial Mix 0.722 46.4 71.5 71.6 0.569 53.76
+> Importance of Regularization
+> w/o LInter 0.695 48.1 74.3 74.0 0.528 54.86 w/o LIntra 0.690 48.4 74.6 74.3 0.523 55.16 w/o both ‡0.725 46.0 71.2 70.8 0.558 52.76
+
+self. Removing either IntraCED or InterCAD leads to con-sistent drops on all three benchmarks, with removing In-traCED usually slightly worse, indicating that level-wise shared/private separation and controlled cross-modal ex-change are crucial for reducing semantic asynchrony. Vari-ants without the hierarchy obtain the lowest scores among these component settings, indicating that the hierarchy, In-traCED, and InterCAD are complementary and that using all of them yields more informative and stable representa-tions than any partial design. 
+
+Importance of Cross-Level Alignment. To analyze the effect of cross-level semantic alignment, we conduct a perturbation study that changes only the alignment strat-egy while keeping all other modules fixed. We compare CLCR with two variants: in Full Mix, shallow, mid, and deep features are fully shuffled within each modality so that no level matches its true depth; in Partial Mix, exactly one level per modality remains correctly aligned and the other two are swapped. As shown in Table 3, Full Mix consis-tently performs worst, Partial Mix attains intermediate re-sults, and CLCR achieves the lowest MAE and highest ac-curacy. Performance improves as cross-level alignment be-comes more coherent, indicating that partial alignment is insufficient and that consistent alignment across all seman-tic levels is needed to fully exploit multimodal complemen-tarity and mitigate cross-level semantic asynchrony. 
+
+Importance of Regularization. We also examine the regularization terms to assess the role of structural objec-tives. Removing either the inter-level or intra-level regu-larization leads to moderate but consistent degradation on benchmarks, while still keeping an advantage over variants that discard structural modules. This suggests that both regularizers help suppress redundancy and leakage and im-prove subspace purity. The variant without both regulariz-ers (task loss only) gives the worst MAE and ACC 7 among all CLCR variants. The gap to full CLCR indicates that the semantic hierarchy, its components, and their regularization jointly support robustness and cross-dataset generalization.  
+
+> Figure 3. Qualitative analysis: t-SNE of MOSI representations. CLCR yields more compact, better separated clusters than ablated variants, indicating improved semantic alignment.
+
+3.4. Further Analysis 
+
+Qualitative Analysis. To assess the effect of the semantic hierarchy and its modules beyond scalar metrics, we visu-alize t-SNE [30] embeddings of MOSI test features for four variants: w/o Semantic Hierarchy, w/o IntraCED, w/o In-terCAD, and full CLCR (Fig. 3). Without the semantic hi-erarchy, modality features are fused without level-wise par-tition or alignment and the embeddings are highly entan-gled, with opposite sentiments and intensity levels overlap-ping and no clear ordering. Without IntraCED, the distribu-tion becomes slightly more organized but sentiment levels still mix heavily, indicating that unconstrained cross-modal exchange does not adequately reduce semantic asynchrony. Removing InterCAD yields embeddings with a clearer pro-gression from negative to positive sentiment but with a less regular trajectory than full CLCR, reflecting the lack of ex-plicit cross-level coordination. With full CLCR, features follow a near monotonic progression from negative to pos-itive sentiment with limited overlap between neighbouring levels. These are consistent with the scores in Table 3, in-dicating that the semantic hierarchy together with IntraCED and InterCAD produces a more coherent and separable mul-timodal representation space than the ablated variants. 7Figure 4. Visualization of semantic-level importance and learned weights on MOSI and KS. The shallow, mid, and deep levels are used in a complementary rather than redundant way, supporting the necessity of the semantic hierarchy.   
+
+> Figure 5. Robustness analysis under Gaussian noise. performance curves over more than 10 random runs with different noisy data on MOSI (a) and KS (b), ↓indicates that lower values are better.
+
+Visualization of Semantic-Level Weights and Impor-tance. We visualize level-wise contributions and cross-level weights on MOSI and KS to examine how CLCR utilizes its three-level semantic hierarchy, as shown in Fig. 4. For representative test samples, we estimate the contribution of each level by in turn masking shallow, mid, or deep features and observing the resulting change in prediction. We also inspect the normalized level weights produced by the cross-level aggregation module in InterCAD. On MOSI, utter-ances dominated by lexical content receive higher weights on deep-level features, whereas samples where intonation or facial micro-expressions are more informative rely more on the shallow level, with the mid level contributing relatively consistently across most samples. On KS, which depends more on shallow motion and acoustic events, the shallow level is strongly emphasized, while events that require con-textual reasoning or object interactions increase the weights assigned to the mid and deep levels. These qualitative pat-terns are consistent with the results in Table 3: removing the semantic hierarchy or disabling cross-level aggregation leads to noticeable performance drops, while the full CLCR with all three levels and the learned level selector achieves the best performance. This supports that the three semantic levels provide complementary information and that cross-level weighting in InterCAD adapts to task semantics. 
+
+Robustness Analysis under Gaussian Noise. We eval-uate the robustness of CLCR to noisy multimodal evi-dence on MOSI and KS by injecting independent zero-mean Gaussian noise with varying strengths into the input fea-tures of all modalities. As shown in Fig. 5, the performance of all methods degrades as the noise level increases, with the drop becoming substantial at higher noise levels. Early fusion and heuristic balancing baselines exhibit the steepest degradation, whereas CLCR consistently achieves the best performance across all noise settings and shows a clearly smaller relative drop on both datasets. These results indi-cate that CLCR not only improves accuracy on clean in-puts but also induces decision boundaries that remain stable under strong perturbations, largely due to the three-level design of IntraCED and InterCAD, which confines cross-modal exchange to shared subspaces and limits noise prop-agation across modalities and semantic depths.        
+
+> Figure 6. Sparsity–performance trade-off of IntraCED token bud-gets. The best appears near γ≈1(r≈0.68 ), indicating that a moderate sparsity level yields optimal cross-modal exchange.
+
+Analysis of IntraCED Token Budgets. We study how token-level budgets in IntraCED control sparsity and influ-ence model behavior via a controlled sparsity experiment. For each modality and level, we define a participation ratio r
+
+as the fraction of tokens selected for cross-modal exchange, and average it over modalities and levels to obtain a single sparsity indicator. Starting from a trained CLCR model, we rescale all token budgets by a factor γ, B(γ) 
+
+> ℓ
+
+= γB ℓ, and evaluate two settings on MOSI and KS. In the first setting, we alter only Bℓ while keeping all other parameters fixed to probe the local sensitivity of performance to sparsity around the learned budgets. In the second setting, we retrain CLCR from scratch with Bℓ frozen at B(γ) 
+
+> ℓ
+
+under the same ar-chitecture and training protocol, testing whether alternative sparsity levels can become optimal after full adaptation. As shown in Fig. 6, when γ deviates from 1.0, the participa-tion ratio r drifts towards either very sparse or nearly dense cross-modal exchange, and performance degrades in both settings and on both benchmarks. The best results consis-tently occur near γ = 1 .0. A dense variant without simplex projection, where the participation ratio r is about 0.99 and almost all tokens participate, performs worst. These obser-vations indicate that the token budgets in IntraCED play a crucial role in regulating how many tokens exchange infor-8mation across modalities and in keeping CLCR in an em-pirically favorable intermediate sparsity regime. We also assess CLCR’s robustness via sensitivity analy-sis of key hyperparameters (see Appendix). 
+
+# 4. Conclusion 
+
+In this study, we address the challenge of cross-level seman-tic asynchrony in multimodal learning, where signals from different modalities and semantic levels are misaligned dur-ing fusion. We propose Cross-Level Co-Representation (CLCR), a novel framework that organizes each modality into a three-level semantic hierarchy. CLCR enables bud-geted shared–private exchange within levels and adaptive aggregation across levels. Our experiments on audio-visual classification and multimodal sentiment analysis bench-marks demonstrate that CLCR consistently outperforms strong fusion and disentanglement baselines. This perfor-mance is further supported by ablation studies and detailed analyses of semantic-level weights and token budgets. 
+
+# References 
+
+[1] Relja Arandjelovic and Andrew Zisserman. Look, listen and learn. In Proceedings of the IEEE international conference on computer vision , pages 609–617, 2017. 5, 6 [2] Juli´ an Arevalo, Thamar Solorio, Manuel Montes, and Fabio A. Gonzalez. Gated multimodal units for information fusion. In International Conference on Learning Represen-tations (ICLR) , 2017. 1 [3] Shaojie Bai, J Zico Kolter, and Vladlen Koltun. An empirical evaluation of generic convolutional and recurrent networks for sequence modeling. arXiv preprint arXiv:1803.01271 ,2018. 3 [4] Houwei Cao, David G Cooper, Michael K Keutmann, Ruben C Gur, Ani Nenkova, and Ragini Verma. Crema-d: Crowd-sourced emotional multimodal actors dataset. IEEE transactions on affective computing , 5(4):377–390, 2014. 5, 6[5] Gal Chechik, Amir Globerson, Naftali Tishby, and Yair Weiss. Information bottleneck for gaussian variables. In Pro-ceedings of the Advances in Neural Information Processing Systems (NeurIPS) , 2003. 2 [6] Yifan Chen, Kuntao Li, Weixing Mai, Qiaofeng Wu, Yun Xue, and Fenghuan Li. D2r: Dual-branch dynamic routing network for multimodal sentiment detection. In Proceed-ings of the 2024 Conference on Empirical Methods in Nat-ural Language Processing , pages 3536–3547, 2024. 2, 6, 1[7] Yunfeng Fan, Wenchao Xu, Haozhao Wang, Junxiao Wang, and Song Guo. Pmr: Prototypical modal rebalance for multi-modal learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 20029– 20038, 2023. 6, 1 [8] Yiyang Fang, Wenke Huang, Guancheng Wan, Kehua Su, and Mang Ye. Emoe: Modality-specific enhanced dynamic emotion experts. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 14314–14324, 2025. 2, 6, 1 [9] Xun Gao, Xun Jiang, et al. Embracing unimodal aleatoric uncertainty for robust multimodal fusion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) , 2024. 1 [10] Zirun Guo, Tao Jin, Jingyuan Chen, and Zhou Zhao. Classifier-guided gradient modulation for enhanced multi-modal learning. Advances in Neural Information Processing Systems , 37:133328–133344, 2024. 6, 1 [11] Wei Han, Hui Chen, and Siau-Cheng Siong. Improving mul-timodal fusion with hierarchical mutual information maxi-mization for multimodal sentiment analysis. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing (EMNLP) , pages 9191–9201, 2021. 2 [12] Devamanyu Hazarika, Roger Zimmermann, and Soujanya Poria. Misa: Modality-invariant and-specific representations for multimodal sentiment analysis. In Proceedings of the 28th ACM international conference on multimedia , pages 1122–1131, 2020. 1, 2, 6 [13] Douwe Kiela, Jannis Bulian, Christopher Clark, Armand Mohan, Danqing Wang, Thomas Scialom, Adina Williams, and Jason Weston. Supervised multimodal bitransformers for classifying images and text. In Proceedings of the Confer-ence on Empirical Methods in Natural Language Processing (EMNLP) , pages 9268–9280, 2020. 1 [14] Hong Li, Xingyu Li, Pengbo Hu, Yinuo Lei, Chunxiao Li, and Yi Zhou. Boosting multi-modal model performance with adaptive gradient modulation. In Proceedings of the IEEE/CVF International Conference on Computer Vision ,pages 22214–22224, 2023. 6, 1 [15] Yong Li, Yuanzhi Wang, and Zhen Cui. Decoupled multi-modal distilling for emotion recognition. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 6631–6640, 2023. 1, 2, 6 [16] Jinhao Lin, Yifei Wang, Yanwu Xu, and Qi Liu. Semi-iin: Semi-supervised intra-inter modal interaction learning net-work for multimodal sentiment analysis. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 1411– 1419, 2025. 1 [17] Zhun Liu, Ying Shen, Varun Bharadhwaj Lakshmi-narasimhan, Paul Pu Liang, Amir Zadeh, and Louis-Philippe Morency. Efficient low-rank multimodal fusion with modality-specific factors. arXiv preprint arXiv:1806.00064 ,2018. 1 [18] Chunlei Meng, Jiacheng Yang, Wei Lin, Bowen Liu, Hongda Zhang, Zhongxue Gan, et al. Cta-net: A cnn-transformer ag-gregation network for improving multi-scale feature extrac-tion. arXiv preprint arXiv:2410.11428 , 2024. 1 [19] Chunlei Meng, Wei Lin, Bowen Liu, Hongda Zhang, Zhongxue Gan, and Chun Ouyang. Rts-vit: Real-time share vision transformer for image classification. IEEE Journal of Biomedical and Health Informatics , 29(5):3576–3586, 2025. 1, 2 [20] Chunlei Meng, Wei Lin, Jiacheng Yang, Yi Liu, Hongda Zhang, Yuning Chen, Bowen Liu, Ziqin Zhou, Chun Ouyang, Zhongxue Gan, Dunzhao Wu, and Zhihua Nie. Cf-vit: Cross-feature vision transformer for improving feature 
+
+9learning on tiny datasets. In 2025 IEEE International Con-ference on Systems, Man, and Cybernetics (SMC) , pages 6919–6926, 2025. 1 [21] Chunlei Meng, Jiacheng Yang, Wei Lin, Linqiang Hu, Bowen Liu, Zhuo Zou, LiDa Xu, Zhongxue Gan, and Chun Ouyang. Multi-grained teacher–student joint representation learning for surface defect classification. Journal of Indus-trial Information Integration , 48:100958, 2025. 1 [22] Chunlei Meng, Ziyang Zhou, Lucas He, Xiaojing Du, Chun Ouyang, and Zhongxue Gan. Temporal-spatial decouple before act: Disentangled representation learning for multi-modal sentiment analysis. arXiv preprint arXiv:2601.13659 ,2026. 1 [23] Diego Aar´ on Moreno-Galv´ an et al. Automatic movie genre classification & emotion recognition via a biprojection mul-timodal transformer. Information Fusion , 102:102641, 2024. 1[24] Xiaokang Peng, Yake Wei, Andong Deng, Dong Wang, and Di Hu. Balanced multimodal learning via on-the-fly gradient modulation. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 8238–8247, 2022. 6, 1 [25] Wasifur Rahman, Md. Kamrul Hasan, Sangwu Lee, AmirAli Bagher Zadeh, Chengfeng Mao, Louis-Philippe Morency, and Mohammed E. Hoque. Integrating multimodal information in large pretrained transformers. In Proceedings of the 58th Annual Meeting of the Association for Computa-tional Linguistics , pages 2359–2369, 2020. 3 [26] Khurram Soomro, Amir Roshan Zamir, and Mubarak Shah. Ucf101: A dataset of 101 human actions classes from videos in the wild. arXiv preprint arXiv:1212.0402 , 2012. 5, 6 [27] Haoqin Sun, Shiwan Zhao, Xuechen Wang, Wenjia Zeng, Yong Chen, and Yong Qin. Fine-grained disentangled rep-resentation learning for multimodal emotion recognition. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 11051–11055. IEEE, 2024. 1 [28] Naftali Tishby, Fernando C Pereira, and William Bialek. The information bottleneck method. In Proceedings of the 37th annual Allerton conference on communication, control and computing , pages 368–377, 2000. 2 [29] Yao-Hung Hubert Tsai, Shaojie Bai, Paul Pu Liang, J Zico Kolter, Louis-Philippe Morency, and Ruslan Salakhutdinov. Multimodal transformer for unaligned multimodal language sequences. In Proceedings of the conference. Association for computational linguistics. Meeting , page 6558, 2019. 6, 1 [30] Laurens Van der Maaten and Geoffrey Hinton. Visualizing data using t-sne. Journal of machine learning research , 9 (11), 2008. 7 [31] Pan Wang, Qiang Zhou, Yawen Wu, Tianlong Chen, and Jingtong Hu. Dlf: Disentangled-language-focused multi-modal sentiment analysis. In Proceedings of the AAAI Con-ference on Artificial Intelligence , pages 21180–21188, 2025. 2, 6, 1 [32] Shicai Wei, Chunbo Luo, and Yang Luo. Improving mul-timodal learning via imbalanced learning. In Proceedings of the IEEE/CVF International Conference on Computer Vi-sion , pages 2250–2259, 2025. 1, 2, 5, 6 [33] Shicai Wei, Chunbo Luo, and Yang Luo. Boosting mul-timodal learning via disentangled gradient learning. In 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , 2025. 1 [34] Yake Wei and Di Hu. Mmpareto: Boosting multimodal learning with innocent unimodal assistance. arXiv preprint arXiv:2405.17730 , 2024. 6 [35] Sheng Wu, Dongxiao He, Xiaobao Wang, Longbiao Wang, and Jianwu Dang. Enriching multimodal sentiment analysis through textual emotional descriptions of visual-audio con-tent. In Proceedings of the AAAI Conference on Artificial Intelligence , pages 1601–1609, 2025. 2, 6, 1 [36] Dingkang Yang, Shuai Huang, Haopeng Kuang, Yangtao Du, and Lihua Zhang. Disentangled representation learning for multimodal emotion recognition. In Proceedings of the 30th ACM international conference on multimedia , pages 1642– 1651, 2022. 1, 2, 6 [37] Jiuding Yang, Yakun Yu, Di Niu, Weidong Guo, and Yu Xu. Confede: Contrastive feature decomposition for multimodal sentiment analysis. In Proceedings of the 61st Annual Meet-ing of the Association for Computational Linguistics , pages 7617–7630, 2023. 1 [38] Yingjie Yang, Hexin Zhang, Kai Han, Tong Wu, Jizhe Song, Jing Liu, and Ziwei Liu. Missing modality prediction for unpaired multimodal learning via joint embedding of uni-modal models. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision (ICCV) , pages 1275– 1285, 2023. 1 [39] Wenmeng Yu, Hua Xu, Ziqi Yuan, and Jiele Wu. Learning modality-specific representations with self-supervised multi-task learning for multimodal sentiment analysis. In Proceed-ings of the AAAI conference on artificial intelligence , pages 10790–10797, 2021. 6, 1 [40] Amir Zadeh, Rowan Zellers, Eli Pincus, and Louis-Philippe Morency. Multimodal sentiment intensity analysis in videos: Facial gestures and verbal messages. IEEE Intelligent Sys-tems , pages 82–88, 2016. 5 [41] Amir Zadeh, Minghai Chen, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Tensor fusion network for mul-timodal sentiment analysis. In Proceedings of the 2017 Con-ference on Empirical Methods in Natural Language Process-ing , pages 1103–1114, 2017. 1 [42] AmirAli Bagher Zadeh, Paul Pu Liang, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. Multimodal lan-guage analysis in the wild: Cmu-mosei dataset and inter-pretable dynamic fusion graph. In Proceedings of the 56th Annual Meeting of the Association for Computational Lin-guistics , pages 2236–2246, 2018. 5 [43] Litian Zhang, Xiaoming Zhang, Junshu Pan, and Feiran Huang. Hierarchical cross-modality semantic correlation learning model for multimodal summarization. In Proceed-ings of the 35th AAAI Conference on Artificial Intelligence ,2021. 2 [44] Qingyang Zhang, Haitao Wu, Changqing Zhang, Qinghua Hu, Huazhu Fu, Joey Tianyi Zhou, and Xi Peng. Provable dynamic fusion for low-quality multimodal data. In Pro-ceedings of the 40th International Conference on Machine Learning (ICML) , 2023. 1 
+
+10 [45] Xiaohui Zhang, Jaehong Yoon, Mohit Bansal, and Huaxiu Yao. Multimodal representation learning by alternating uni-modal adaptation. In Proceedings of the IEEE/CVF Confer-ence on Computer Vision and Pattern Recognition (CVPR) ,2024. 2, 6, 1 [46] Yibo Zhong, Jinman Zhao, and Yao Zhou. Low-rank inter-connected adaptation across layers. In Findings of the As-sociation for Computational Linguistics: ACL 2025 , pages 17005–17029, 2025. 3 [47] Zhao Zhou et al. Balancing multimodal learning with classifier-guided gradient modulation. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. 1 
+
+11 CLCR:Cross-Level Semantic Collaborative Representation for Multimodal Learning 
+
+# Supplementary Material 
+
+# A. Related Work 
+
+A.1. Multimodal Fusion and Disentangled Repre-sentations 
+
+Early multimodal fusion approaches construct a single joint space and perform fusion in that space without distinguish-ing semantic levels. Tensor Fusion Network (TFN) [41] and Low-rank Multimodal Fusion (LMF) [17] model cross-modal interactions by tensor factorization and low-rank pa-rameterization. MMBT [13], GMU-based fusion [2], and language-guided architectures for multimodal transform-ers further exploit attention and gating to combine visual, acoustic, and textual streams. These models improve fusion quality but still project all modalities into one latent space and treat all tokens in that space as equally available for interaction. Transformer-based fusion models strengthen temporal cross-modal attention. MulT [29] attends across unaligned language, vision, and audio sequences, and vari-ants such as BPMulT [23] extend this idea to movie un-derstanding and in-the-wild emotion recognition. They enable fine-grained token interactions but usually operate with a single interaction layer or a shallow hierarchy, so early, intermediate, and deep features are mixed without ex-plicit control of cross-level semantics. A second line of work introduces shared and modality-specific representa-tions, mainly for multimodal sentiment and emotion anal-ysis. MISA [12], Self-MM [39], and FDMER [36] sepa-rate modality-invariant and modality-specific components. DMD [15], Confede [37], FDRL [27], and related meth-ods refine disentanglement through contrastive objectives or decoupled distillation, while EMOE [8], DLF [31], and DEVA [35] design expert-style or bias-aware modules to better exploit unimodal cues. These models usually instan-tiate shared and private subspaces at one semantic depth and do not explicitly coordinate shared and private structure across multiple levels. CLCR connects these directions by combining hierarchi-cal representations with level-aware disentanglement. It or-ganizes each modality into a three-level semantic hierarchy, factorizes each level into shared and private subspaces, and restricts cross-modal attention to a budgeted shared sub-space. Inter-level aggregation is then guided by learned an-chors and regularizers that align levels while suppressing redundancy, which directly targets the cross-level semantic asynchrony that is not modeled in the above fusion and dis-entanglement frameworks.      
+
+> Figure 7. Sensitivity of CLCR to intra-level regularization on MOSI and KS. Each plot varies the global intra-level weight λintra
+> or the separation factor λsp in LIntra , performance improves once the constraint is activated and remains stable for moderate values.
+
+A.2. Robustness Multimodal Learning 
+
+Robust multimodal learning methods study how to keep performance stable under modality imbalance, noisy in-puts, or missing data. PMR [7] rebalances prototypical representations to reduce the dominance of strong modali-ties. OGM-GE [24], AGM [14], CGGM [10], ARL [32], DGL [33], MLA [45], D&R [6], and BML [47] modu-late gradients or losses using classifier feedback or multi-objective criteria so that different modalities and classes receive more balanced updates. These methods mainly act at the optimization level and do not change the inter-nal geometry of the fused representation. Another group of works introduces robustness to low-quality or missing modalities. QMF [44] proposes dynamic fusion strategies for low-quality multimodal data, EAU [9] uses unimodal aleatoric uncertainty to guide fusion under noise. Multi-modal prompting and completion approaches [38] learn to handle missing inputs by predicting or compensating absent streams during inference. These methods improve robust-ness to imperfect observations but usually assume a single interaction space and do not explicitly control how informa-tion flows across semantic depths. CLCR pursues robustness from a structural perspective. 1Figure 8. Sensitivity of CLCR to the internal weights of the inter-level regularizer on CMU-MOSI and KS. Each plot varies one of αpr ,     
+
+> αsp , or αmix while fixing the others, removing any component degrades performance, whereas weights in [0 .5,1.5] give similar results.
+
+The semantic hierarchy, the level-wise shared and private decomposition in IntraCED, and the anchor-guided aggre-gation in InterCAD jointly specify where interaction is al-lowed, how much information is exchanged through token budgets, and how cross-level evidence is combined through correlation-based regularizers. 
+
+# B. Sensitivity Analysis 
+
+To understand how the regularization terms influence CLCR, we conduct a controlled sensitivity study on CMU-MOSI and KS. CMU-MOSI is a regression-style multi-modal sentiment benchmark with three modalities, and KS is an audio-visual action recognition dataset. All architec-tural and training settings follow Section 3, and each con-figuration is trained with five random seeds. 
+
+Intra-level regularization. We first vary the intra-level loss LIntra in Eq.7. Fig. 7 reports the effect of the global weight λintra ∈ { 0, 0.25 , 0.5, 1, 2} and the separation fac-tor λsp ∈ { 0.1, 0.25 , 0.5, 0.75 , 1}. When λintra = 0 , the intra-level constraint is removed and both datasets obtain the lowest performance. Increasing λintra to around 0.5 or 1
+
+reduces MAE and improves Acc 2 on MOSI, and raises Acc and F1 on KS. Increasing λintra to 2 produces only minor changes, and the curves are nearly flat in the interval [0 .5, 2] .
+
+λsp shows a similar pattern: moderate values around 0.5
+
+achieve the best or near-best results, while smaller or larger values slightly degrade the metrics. These results indicate that CLCR benefits from intra-level regularization and re-mains stable once the weights fall into a moderate range. 
+
+Inter-level weighting. We next analyze the internal coefficients of the inter-level loss LInter in Eq.12. Start-ing from the default setting (αpr , α sp , α mix ) = (1 , 1, 1) 
+
+with (λinter , λ intra ) = (0 .1, 0.1) , we vary one coefficient at a time and keep the other two fixed. The values are 
+
+αpr ∈ { 0, 0.5, 1, 1.5, 2}, αsp ∈ { 0.01 , 0.5, 1, 1.5, 2}, and 
+
+αmix ∈ { 0, 0.5, 1, 1.5, 2}. Fig. 8 shows that setting any co-efficient close to zero yields the highest MAE and the low-est Acc 2 on MOSI and the lowest Acc and F1 on KS, which means that removing the corresponding term harms perfor-mance. When the weight moves from zero into the interval 
+
+[0 .5, 1.5] , all metrics improve and then vary only slightly within this interval. The balanced choice (1 , 1, 1) lies near the center of this plateau on both datasets and therefore serves as a convenient default in all experiments. Taken together, these sensitivity curves show that the regularizers play a useful role without introducing fragile 2hyperparameter dependencies. The main gains of CLCR come from its cross-level architecture, while the regulariza-tion terms act as structural guidance whose weights can be chosen from a broad and stable range. 3

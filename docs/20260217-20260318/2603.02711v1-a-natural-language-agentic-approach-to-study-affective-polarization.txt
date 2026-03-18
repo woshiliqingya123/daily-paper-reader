@@ -1,0 +1,317 @@
+Title: A Natural Language Agentic Approach to Study Affective Polarization
+
+URL Source: https://arxiv.org/pdf/2603.02711v1
+
+Published Time: Wed, 04 Mar 2026 01:51:26 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# A Natural Language Agentic Approach to Study Affective Polarization 
+
+Stephanie Anneris Malvicini 1,2, Ewelina Gajewska 3, Arda Derbent 3, Katarzyna Budzynska 3, Jarosław A. Chudziak 3, Maria Vanina Martinez 1
+
+> 1
+
+Instituto de Investigaci´ on en Inteligencia Artificial (IIIA-CSIC) 
+
+> 2
+
+Departamento de Ciencias e Ingenier´ ıa de la Computaci´ on, Universidad Nacional del Sur (UNS) 
+
+> 3
+
+Warsaw University of Technology (WUT) stephanie.malvicini@iiia.csic.es, ewelina.gajewska.dokt@pw.edu.pl, ardaderbent@gmail.com, Katarzyna.Budzynska@pw.edu.pl, jaroslaw.chudziak@pw.edu.pl, vmartinez@iiia.csic.es 
+
+Keywords: Affective Polarization, Multi-Agent Systems, Agentic Platform Abstract: Affective polarization has been central to political and social studies, with growing focus on social media, where partisan divisions are often exacerbated. Real-world studies tend to have limited scope, while simu-lated studies suffer from insufficient high-quality training data, as manually labeling posts is labor-intensive and prone to subjective biases. The lack of adequate tools to formalize different definitions of affective po-larization across studies complicates result comparison and hinders interoperable frameworks. We present a multi-agent model providing a comprehensive approach to studying affective polarization in social media. To operationalize our framework, we develop a platform leveraging large language models (LLMs) to construct virtual communities where agents engage in discussions. We showcase the potential of our platform by (1) analyzing questions related to affective polarization, as explored in social science literature, providing a fresh perspective on this phenomenon, and (2) introducing scenarios that allow observation and measurement of polarization at different levels of granularity and abstraction. Experiments show that our platform is a flexible tool for computational studies of complex social dynamics such as affective polarization. It leverages advanced agent models to simulate rich, context-sensitive interactions and systematically explore research questions tra-ditionally addressed through human-subject studies. 
+
+## 1 INTRODUCTION 
+
+Affective polarization, the tendency of individuals who identify with a political group to view members of opposing groups negatively and members of their own group positively (Iyengar and Westwood, 2015; Campbell, 1980; Green et al., 2004), has become a significant area of inquiry, particularly in the context of social media (Mart´ ınez-Espa˜ na et al., 2024; Yarchi et al., 2021; Lee et al., 2022). Recent studies have il-luminated the dynamics of this phenomenon, reveal-ing how social media platforms exacerbate divisions between partisan groups (Bail et al., 2018; Saveski et al., 2022). For instance, research indicates that interactions among ideologically aligned users tend to be positive, while exchanges between opposing groups are marked by negativity and hostility (Ler-man et al., 2024). This growing body of literature em-phasizes the necessity to explore the mechanisms un-derlying affective polarization, particularly as it man-ifests in online environments (Arora et al., 2022). Modeling and detecting affective polarization in online social media is challenging due to several fac-tors: lack of high quality labeled data, since manual annotation is labor-intensive and biased (Cui and Ab-delzaher, 2024; Kamal et al., 2022); fragmented na-ture of online discourse, which hinders holistic anal-ysis (Liu et al., 2025); and limitations of existing ma-chine learning models, which struggle with contex-tual language and dynamic group formations. Tradi-tional approaches, analyzing surveys or static social media snapshots, provide insights but fail to capture the evolving, interactive nature of polarization. On the other hand, the advent of large language models (LLMs) has opened new avenues for simulat-ing and analyzing social interactions in digital spaces. The integration of LLMs into agent-based models al-lows for a nuanced representation of political dis-course, enabling researchers to simulate discussions that reflect the complexities of real-world social me-dia interactions (Zhang et al., 2025). A central chal-lenge is accurately representing and quantifying po-
+
+> arXiv:2603.02711v1 [cs.AI] 3 Mar 2026
+
+larization from natural language. Our approach en-ables simulations of diverse populations, interactions, and textual outputs. This provides a valuable testbed for developing polarization metrics and testing inter-ventions without the high costs and logistical barriers of real-world experimentation. We propose an agent model of an individual en-gaged in discussion in a simplified yet comprehen-sive manner, along with a multi-agent framework that abstracts interactions among individuals discussing a topic in a context. Our proposal enables the cre-ation of diverse scenarios for studying affective po-larization. We show this by (1) analyzing questions related to affective polarization from social science literature, and (2) introducing innovative scenarios that allow observation and measurement of polariza-tion from multiple perspectives. Through the plat-form, affective polarization can be studied in digital environments via controlled yet rich simulations of real-world discussions among agents representing dif-ferent political parties. By operationalizing partisan identification strength and measuring affects toward in-group and out-group members, this study provides a tool for social scientists to uncover the underlying dynamics of affective polarization. Finally, another contribution of this work is pro-vided in the supplementary material 1, which includes the full implementation code for the platform, a com-prehensive user guide with detailed instructions on how to effectively use it, as well as all the examples and experiments presented in this paper. In this way, readers can replicate the experiments described, fa-cilitating a direct comparison of results and enabling further exploration of the methodologies discussed. 
+
+## 2 RELATED WORK 
+
+2.1 Online Affective Polarization 
+
+Interdisciplinary research has demonstrated that the emotional tone of interactions on social media plat-forms significantly influences affective polarization, revealing that in-group interactions tend to be posi-tive while out-group exchanges are marked by neg-ativity (Lerman et al., 2024; Marchal, 2022; Nettas-inghe et al., 2025). It underscores that affective polar-ization is not merely an individual phenomenon but a structural characteristic of social networks, suggest-ing that the design of these platforms plays a crucial role in shaping political discourse. Analysing affective polarization often involves a 
+
+> 1https://github.com/ICBD-ICIC/PolarMasSupplementaryMaterial
+
+two-fold methodology, combining quantitative and qualitative analysis (Su´ arez Estrada et al., 2022; Kiesel and Amlani, 2025). The former regards nu-merical metrics of the intensity of affective polariza-tion, such as sentiment analysis scores, interaction patterns, and network analysis metrics like modular-ity measures. The latter deals with the characteristics of groups and content analysis of polarizing conver-sations, examining linguistic cues, framing strategies, and narrative alignment within ideologically homo-geneous communities (Garz´ on-Velandia et al., 2024; Harel et al., 2020; Unlu and Kotonen, 2024). Various models are proposed to operationalize these metrics, including machine learning classifiers for emotion recognition, graph-based algorithms for community detection, and transformer architectures for context-aware polarization prediction. Another line of work leverages sentiment analysis to measure individual affective polarization. For ex-ample, (Mart´ ınez-Espa˜ na et al., 2024) develop a new indicator that focuses on understanding intergroup emotional relations and political dynamics within specific contexts. Their methodology combines key-word selection with user profile analysis to generate a dataset capturing user sentiments and engagement across political affiliations. These studies predominantly rely on traditional, static machine learning and sentiment analysis tech-niques, which often capture affective polarization as a fixed or isolated property of online discourse. In con-trast, our proposed framework integrates these ana-lytical tools within a multi-agent system, enabling the modeling of affective polarization as a dynamic and emergent phenomenon. The aforementioned tools could be embedded into our platform to allow the ex-ploration of emotional dynamics evolution over time, providing a more comprehensive understanding of af-fective polarization. 
+
+2.2 Agent-Based Social Modeling 
+
+Agent-based modeling (ABM) has grown, in the last four decades, to be a powerful tool for studying so-cial behavior by simulating interactions between au-tonomous agents and their environments. This ap-proach bridges micro-level individual actions and macro-level societal patterns, addressing complex in-terdependencies in human behavior (Brugi` ere et al., 2022). Agent heterogeneity enables ABMs to cap-ture the inherent complexity of social systems, where individual differences can give rise to emergent phe-nomena and unexpected collective behaviors (Gilbert, 2008; Jackson et al., 2017). Using experimental data and an agent-based model of opinion dynamics, (Car-pentras et al., 2023) discover mechanisms underlying inter-group opinion formation, while (Keijzer et al., 2024) study macro-level opinion polarization. (Liu and Wen, 2024) use ABM and opinion polarization to study polarized news propagation. (Zhang et al., 2025) employ LLMs within an ABM system designed to mimic social media, en-abling the analysis of sentiment and topic diffusion by embedding principles from social psychology to simulate collaborative behaviors and group dynamics. Previous studies focus on agent societies with varying personality traits, creating environments where agents negotiate tasks and resolve conflicts through natural language exchanges (Jahan and Mell, 2024; Harbar and Chudziak, 2025a). (Wang et al., 2024) seek to create scenarios where generative agents interact to simulate opinion dynamics and reproduce phenom-ena such as opinion polarization and echo chambers. (Donkers and Ziegler, 2025) study human users in-teracting with LLM-based artificial agents in a con-trolled social network simulation, reproducing key characteristics of polarized online discourse. (Jin and Guo, 2025) present LLM agents within a framework to generate posts, form opinions and follow/unfollow each other based on discussions. (Gajewska et al., 2025) present a persona-driven multi-agent frame-work for simulating hate incidents in schools using agentic LLMs. (Harbar and Chudziak, 2025b) pro-pose a conceptual LLM based multi-agent architec-ture for simulating Oxford-style debates. While previous studies have investigated multi-agent modeling with LLMs to simulate social and opinion dynamics, our work specifically addresses af-fective polarization in online discourse. We present a formalized and user-friendly framework that supports simulations of diverse populations, interactions, and textual outputs. In contrast to prior models, often fo-cusing on narrowly defined, case-specific scenarios, our platform is designed for generalizability, offering extensive parameterization and customization to suit a wide range of experimental contexts and use cases. 
+
+## 3 OUR PROPOSAL 
+
+3.1 Agent and Multi-Agent Model 
+
+We aim to model emotions and feelings among users in the social network. To this end, we create a multi-agent framework that allows individual agents to in-teract through textual conversations. An agent represents an individual and consists of four key components, contributing to creating a human-like and context-aware agent: 
+
+Memory : ensures that interactions remain coherent, contextual, and efficient. Enables the agent to learn and adapt over time. 
+
+Persona description : defines the agent’s characteris-tics and can be as detailed as needed. Represents a group by including behaviors, goals, challenges, be-liefs, values, and personality traits, making the agent more realistic and relatable. 
+
+Demographics : encompass statistical attributes such as age, race, gender, education, ideology, etc. 
+
+Political standpoint : partisan identity specifying the degree of alignment with a political group. Our multi-agent framework is designed to allow interactions among a set of agents following the model above. Consists of a topic that establishes the central theme of the conversation, and a context 
+
+with background information, circumstances, and set-tings that shape how the conversation is interpreted. It also specifies an interaction protocol that defines the roles each agent may assume, and incorporates a decision-making mechanism that determines the se-quence and timing of each agent’s contributions, en-suring orderly and coherent exchanges. Finally, it has a set of affective variables that abstractly represents the features of agents or the conversation that we aim to measure in order to quantify the level of affective polarization, either individual or group-wise. 
+
+3.2 LLM-Powered Agentic Platform 
+
+We instantiate the multi-agent framework by develop-ing a platform powered by LLMs as the basis for im-plementing agents that resemble human online behav-ior. Agents are built using the LangChain Python li-brary with Gemini Flash 2.0 serving as the underlying LLM (Team et al., 2024). We thought of the LLM as a modular component that could be swapped or com-bined based on the experiment’s needs, since different models serve different purposes and behave uniquely in various scenarios. If the scenario/experiment being studied requires it, it would be possible to have differ-ent instantiations with different LLMs and even com-bine them in the same setting. It is important to note that the use of an LLM is a design choice specific to the presented platform; however, the framework itself is model-agnostic and can be implemented using al-ternative computational tools that allow for conversa-tional interactions (e.g., hybrid agent models in which an LLM serves as one component within a broader reasoning or dialogue-generation mechanism). The memory is structured as a dictionary, where the keys correspond to the conversation IDs, ensur-ing the chronological order of the agents’ memories is preserved. The entire discussion history is retained. Persona description , demographics and political standpoint are stored as a string written directly in the second-person singular point of view. Each agent possesses an attribute that specifies whether it acts as an observer, determining their par-ticipation in conversations. All the components listed above are kept private, agents have no access to the in-ternal attributes or states of other agents. At each turn in the conversation, agents can perform one of two predefined actions: respond to a message and observe 
+
+a conversation. Respond takes a message and its cor-responding conversation ID as input. It saves the mes-sage in the appropriate location in memory and then calls the underlying LLM, using the agent’s name, po-litical standpoint, persona, demographics, and mem-ory to generate and return a response. On the other hand, observe takes a message and its conversation ID as input and saves the message in the appropriate spot in memory, but it does not generate a response. The set of agents is generated from a CSV file including columns persona description , demograph-ics , political standpoint and is observer . Each row represents a single agent. Topic and context are com-bined into a single string called the “prompt”, serv-ing as the discussion trigger . The conversation starts with this prompt, which introduces the topic, provides relevant context, and includes all instructions to guide the LLM agents in generating appropriate responses. The affective variables are assessed through custom, user-defined questionnaires specifically de-signed for each experiment. Prior to the conversa-tion, agents complete a pre-questionnaire to establish baseline values. After the coordinated discussion, a post-questionnaire updates these values. This design reflects the nature of LLM agents: since they lack ex-plicit and observable mental states, affective variables must be inferred via external probing. This method-ology mirrors the approaches commonly employed in human-subject research, where internal states are sim-ilarly estimated via surveys or behavioral measures. Finally, the interaction protocol is implemented as a Round Robin algorithm, following the order de-fined in the CSV configuration file, ensuring each par-ticipating agent is invoked in sequence. This process is repeated for a configurable number of times. The platform allows to save the current session, storing messages and responses for later analysis. The platform is flexible, allowing for easy simula-tion of a variety of scenarios. It can be effortlessly adapted to support simultaneous discussions across different sets of agents. Figure 2 illustrates the plat-form process of agents created on Figure 1, inspired by the experimental setup of (Rossiter and Carlson, 2023), which we further develop in Section 4. observer = True 
+
+> { }
+> You are passionate, deeply concerned about the direction of the country, and feel
+> unheard. You possess strong convictions and are unafraid to express them, even
+> if it means using unconventional methods. You perceive a significant threat and
+> believe urgent action is necessary to prevent irreversible damage. You are
+> frustrated with the current political landscape and feel a sense of urgency to
+> instigate change.
+
+Agent0  
+
+> Moderate Republican observer = False
+> Your demographics are female, american indian alaska native, not hispanic or
+> latino, with graduate or professional degree, and you live in the U.S.
+> { }
+> You are someone who expresses your approval readily. You respect authority
+> figures and aren't afraid to show it. You're politically engaged, following current
+> events and holding opinions you're comfortable sharing. You possess a degree of
+> politeness and respectfulness in your online interactions.
+
+Agent1  
+
+> Extreme Democrat observer = False
+> Your demographics are male, white, not hispanic or latino, with a bachelors
+> degree, and you live in the U.S. { }
+> You hold a strong belief in shared heritage, even across divides of political
+> independence. You value historical connections and see them as enduring, even
+> familial. You are not afraid to express your opinions directly to prominent figures
+> and news outlets on social media. You have a nuanced perspective on historical
+> relationships and are comfortable making bold pronouncements about complex
+> matters.
+
+Agent2 
+
+> Non Partisan
+
+Set of agents 
+
+> Your demographics are female, white, not hispanic or latino, with a bachelors
+> degree, and you live in the U.S.
+
+Figure 1: Snapshot of three agents recently initialized within the platform. Agent1 Agent0 Warmth Republicans = 60 
+
+> Warmth Democrats = 65
+
+Agent2 
+
+> Pre
+> questionnaire
+
+Agent2  
+
+> We've randomly assigned you a partner that belongs to or leans toward your
+> out party. Please have a conversation by chatting with them about climate
+> change policies.
+> Please share your views on climate change with each other.
+> Limit your words to 50.
+> Discussion
+> trigger C
+> o
+> n
+> v
+> e
+> r
+> s
+> a
+> t
+> i
+> o
+> n
+> Warmth Republicans = 0
+> Warmth Democrats = 100
+> The climate is changing, no doubt. But the radical policies being
+> pushed are going to cripple our economy and won't even make a
+> dent globally. We need realistic solutions, not virtue signaling.
+
+Agent0 ... 
+
+> I respectfully disagree. We need strong regulations to curb emissions and
+> incentivize green technologies. The cost of inaction far outweighs the
+> economic impact of these policies. We must prioritize our planet's health.
+
+Agent1  
+
+> Warmth Republicans = 85
+> Warmth Democrats = 20
+> Warmth Republicans = 80
+> Warmth Democrats = 15 Warmth Republicans = 10
+> Warmth Democrats = 100
+
+Agent0 Agent1  
+
+> Warmth Republicans = 55
+> Warmth Democrats = 70 Post
+> questionnaire
+
+Figure 2: Example of a run within the platform. 
+
+## 4 CROSS-PARTISANSHIP 
+
+In this section we demonstrate the capabilities of our platform by examining questions related to affective polarization, a topic widely discussed in the social sci-ences. We do not aim to exactly replicate studies or provide insights, but rather to show how agent-based computational tools can offer a new methodology for analyzing this phenomenon. A growing body of research explores whether con-versations between out-partisans (supporters of op-posing political parties) can reduce polarization (San-toro and Broockman, 2022; de Jong, 2024; Xia et al., 0 10 20 30 40 
+
+> Pre-conversation out-group warmth
+> 0
+> 10
+> 20
+> 30
+> 40
+> Post-conversation out-group warmth
+> Party
+> Democrat
+> Republican
+> No Change
+
+(a) Non-Political Topic 0 10 20 30 40  
+
+> Pre-conversation out-group warmth
+> 0
+> 10
+> 20
+> 30
+> 40
+> Post-conversation out-group warmth
+> Party
+> Democrat
+> Republican
+> No Change
+
+(b) Political Topic Figure 3: Change in Out-Group Warmth by Party. 
+
+2024), focusing on how topic and conversation char-acteristics influence affective polarization. Findings suggest that cross-partisan conversations centered on neutral or shared topics, rather than points of con-flict, can help reduce polarization (Rossiter and Carl-son, 2023). In line with this, with our text-based platform we simulate scenarios where partisan agents (Republican or Democrat) engage in text conversa-tions. These interactions show increased out-group warmth, a proxy for reduced affective polarization, after the exchange. 
+
+Experimental Setup Design choices follow the protocol of “Study 1” from (Rossiter and Carlson, 2023): number of runs (154), discussion topics (meaning of life as non-political and immigration policies as political), discussion trigger (informing cross-partisanship chat and examples of the topic). We use the same agent configurations for both top-ics, for which we yields 77 distinct set of agents (154 agents in total). Persona descriptions for agents are randomly drawn from a sample of 200 profiles taken from the Persona-Hub dataset (Ge et al., 2024). De-mographics include gender, race, ethnicity, educa-tion level, and age group, aligned with distributions from the U.S. Census Bureau 2. Race and ethnicity are categorized separately to account for the overlapping classification of “Hispanic or Latino” classifications. Age restricted to individuals 18 years or older. Politi-cal standpoint is such as each run includes one agent identified as “Republican” and one as “Democrat”. The affective variables measured include agents’ warmth toward both Republicans and Democrats in the U.S., assessed using feeling thermometer-style questions on a scale from 0 to 100. This approach follows the methodology used in (Rossiter and Carl-son, 2023). While it may appear simple, it reflects the standard practice in social and political science studies. The questionnaire, the full implementation of this example, and the corresponding output log are provided in the supplementary materials. We run several controlled scenarios alternating which party starts the conversation. The total num-
+
+> 2
+
+https://www.census.gov and https://data.census.gov 
+
+ber of messages per run varies, with the experiment designed to produce a median of 9 messages per dia-logue, with a maximum of 50 words each. 
+
+Results Across all experimental conditions, conver-sations led to increases in out-group warmth, con-sistent with prior human studies (Rossiter and Carl-son, 2023). In non-political discussions (median 29 words per message, 279 words per run), Democrats exhibited a stronger increase in warmth toward Re-publicans (median +5, mean +6.36) compared to Re-publicans toward Democrats (median 0, mean +0.97). Political discussions (median 26 words per message, 255 words per run) showed a similar pattern, with Democrats again showing larger gains (median +5, mean +6.04) and Republicans minimal change (me-dian 0, mean +1.1). Figure 3 visualizes these shifts, highlighting overall increases in out-group warmth and slight polarization among Republican agents. 
+
+## 5 FURTHER EXPLORATION 
+
+Alternative approximations of affective polarization incorporate a broader set of variables. This section presents an alternative characterization and reports experiments illustrating the platform’s ability to ana-lyze them. More detailed models are possible, but we adopt a level of complexity that exceeds (Rossiter and Carlson, 2023) while remaining interpretable, practi-cal, and feasible for demonstration purposes. 
+
+5.1 Alternative Characterizations 
+
+Affective polarization refers to emotional alignment with in-group partisans and hostility toward out-group partisans (Iyengar and Westwood, 2015), often amplified via emotional contagion. We show how our platform can accommodate to measure an agent’s af-fective alignment and hostility toward those groups. Let A be agents and G groups. Agents’ in- and out-groups can change over time based on interactions, influencing their love (attachment) or hate (hostility) on a 0–10 scale. An agent’s in-group is the group for which love ≥ 5 and higher than for any other group; an the out-group the one with love < 5, while an-other group is the in-group. An agent is polarized if they have both an in-group and an out-group, and hate toward the out-group exceeds a threshold (e.g., 5). The degree of polarization is the sum of love for the in-group and hate for the out-group (Santoro and Broockman, 2022). Special agent types include non-partisans , which have no in-group affiliation, and ex-tremists , with near-maximum love for the in-group and hate for the out-group. The platform allows spec-ification and manipulation of these affective variables, balancing analytical detail with usability, and support-ing experiments that demonstrate its capabilities. 
+
+5.2 Experimental Showcase 
+
+We conducted experiments to demonstrate the plat-form’s ability to simulate our proposed affective po-larization definition and agent types. Rather than gen-erating rigorous sociological profiles, we created con-cise persona descriptions using the Text-to-Persona method (Ge et al., 2024). Tweets were analyzed by Gemini Flash 2.0 (Team et al., 2024), which also in-ferred the political standpoints , both manually re-fined for clarity. Affective variables (love and hate, 0–10 scale) were measured, enabling automatic com-putation of in-group, out-group, polarization, and agent type. Demographics and interaction proto-cols followed Section 4, varying only message count and scenario-specific parameters. 
+
+Experiment 1: Simulating Social Media with Non Partisanship Analysis. Fifty simulations were run with ten Republican-aligned agents and one initially non-partisan observer to test the platform’s ability to model social media interactions and affective polar-ization. Agents engaged in a simulated X (formerly Twitter) thread about Joe Biden’s climate tweet. Re-sults showed realistic social media behaviors (thread-ing, hashtags, character limits) and significant shifts in the non-partisan’s attitudes: increased love for Republicans ( +3.08) and hate toward Democrats (+1.74), decreased love for Democrats ( −1.02) and hate toward Republicans ( −1.38). Afterward, 64% of non-partisans adopted a Republican in-group identity, only 4% chose Democrats, and 62% displayed high out-group hate, demonstrating the platform’s ability to simulate polarization among neutral agents. 
+
+Experiment 2: Non-Partisanship Analysis with Democratic Participation. We added three Democrat-aligned agents to the previous setup to examine their impact on non-partisan agents. Agents posted once in a randomized turn order. The inclusion of Democrats led to smaller shifts in non-partisan attitudes: love for Republicans increased by 2.68 and hate toward Democrats by 1.64, while love for Democrats decreased by 0.22 and hate toward Republicans declined by 0.76. Fewer non-partisan agents adopted a partisan identity: 46% aligned with Republicans, 2% with Democrats, and only 44% exhibited high out-group hate. These results 0 2 4 6 8 10                    
+
+> Pre-conversation love(Republicans)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation love(Republicans) 0246810
+> Pre-conversation love(Democrats)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation love(Democrats) 0246810
+> Pre-conversation hate(Republicans)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation hate(Republicans) 0246810
+> Pre-conversation hate(Democrats)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation hate(Democrats) Non Partisan Polarized Republican Republican Democrat Polarized Democrat
+
+Figure 4: Experiment 1. Non-Partisans Affective Change. 0 2 4 6 8 10                   
+
+> Pre-conversation love(Republicans)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation love(Republicans) 0246810
+> Pre-conversation love(Democrats)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation love(Democrats) 0246810
+> Pre-conversation hate(Republicans)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation hate(Republicans) 0246810
+> Pre-conversation hate(Democrats)
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> Post-conversation hate(Democrats) Polarized Republican Non Partisan Democrat Republican
+
+Figure 5: Experiment 2. Non-Partisans Affective Change. 
+
+highlight the platform’s ability to explore polarization dynamics under different agent compositions. 
+
+Experiment 3: Extremist Analysis. A single sim-ulation tested the impact of one extremist Demo-crat agent on three moderate Republican agents, each posting three times. One moderate agent showed no change, while the other two experienced increased love for Republicans and hate toward Democrats ( +1each) and decreased love for Democrats and hate to-ward Republicans ( −1 each), with a +2-point rise in affective polarization. Though run only once, the experiment demonstrates the platform’s potential to model how extremist agents can polarize moderates. The experiments illustrate the platform’s flexibil-ity and extensibility. Researchers can extend the plat-form with new agents, metrics, or affective variables to study social phenomena beyond polarization. Ex-perimental setups are reusable and customizable in terms of demographics, personas, partisanship, and agent count. Experiments and replication instructions are provided in the supplementary material. 
+
+## 6 CONCLUSION 
+
+We presented a multi-agent, LLM-powered platform for studying affective polarization, enabling simula-tion of human-like interactions in controlled contexts. The platform allows researchers to test theoretical hy-potheses, explore alternative definitions of polariza-tion, and replicate studies typically requiring human participants, while offering flexibility to extend to di-verse social phenomena. Our experiments show that the platform can cap-ture both standard and novel characterizations of af-fective polarization. Although currently focused on U.S.-centric scenarios, the framework is adaptable to other social and cultural contexts, supporting the in-vestigation of group-based divisions beyond simple bipolar structures. This work highlights the potential of AI-driven tools for social science research. Several direc-tions for future development remain open, including the integration of structured cognitive architectures, the introduction of learning mechanisms to capture long-term attitude change, and the incorporation of network-aware interaction protocols. Additionally, implementing explicit content controls, such as sen-timent analysis and argumentation strategies, would further enhance interpretability and realism. As these results represent an initial step toward empirical validation, substantial work remains to as-sess the suitability of LLMs as social agents. In par-ticular, the reliability of variables derived from LLM self-reports requires careful evaluation through sys-tematic comparison with human-subject data. By opening the platform to social scientists, we aim to facilitate reproducible, adaptable, and insight-ful simulations of complex social dynamics. At the same time, we emphasize the importance of cautious interpretation, rigorous validation, and careful cali-bration of models to specific experimental settings. This approach represents a step forward in under-standing polarization and related phenomena, offer-ing a practical, computational complement to tradi-tional social science methods. 
+
+## ACKNOWLEDGEMENTS 
+
+We would like to acknowledge that the work reported in this paper has been supported in part by the Span-ish MCIN/AEI grant PCI2022-135010-2, in part by the Polish National Science Centre, Poland (Chist-Era IV) under grant 2022/04/Y/ ST6/00001, and in part by Universidad Nacional del Sur (UNS) under grant PGI 24/ZN057. 
+
+## REFERENCES 
+
+Arora, S. D., Singh, G. P., Chakraborty, A., and Maity, M. (2022). Polarization and Social Media: A Systematic Review and Research Agenda. Technological Fore-casting and Social Change , 183:121942. Bail, C. A., Argyle, L. P., Brown, T. W., Bumpus, J. P., Chen, H., Hunzaker, M. F., Lee, J., Mann, M., Mer-hout, F., and Volfovsky, A. (2018). Exposure to Op-posing Views on Social Media Can Increase Political Polarization. In Proceedings of the National Academy of Sciences , 115(37):9216–9221. Brugi` ere, A., Nguyen-Ngoc, D., and Drogoul, A. (2022). Handling Multiple Levels in Agent-Based Models of Complex Socio-Environmental Systems: A Compre-hensive Review. Frontiers in Applied Mathematics and Statistics , 8:1020353. Campbell, A. (1980). The American Voter . University of Chicago Press. Carpentras, D., Lueders, A., Maher, P. J., O’Reilly, C., and Quayle, M. (2023). How Polarization Extends to New Topics: An Agent-Based Model Derived from Experi-mental Data. Journal of Artificial Societies and Social Simulation , 26(3). Cui, H. and Abdelzaher, T. (2024). Polarization Detection on Social Networks: Dual Contrastive Objectives for Self-Supervision. In Proceedings of IEEE 10th In-ternational Conference on Collaboration and Internet Computing (CIC) , pages 80–89. IEEE. de Jong, J. F. (2024). Cross-Partisan Discussions Reduced Political Polarization Between UK Voters, but Less So When They Disagreed. Communications psychology ,2(1):5. Donkers, T. and Ziegler, J. (2025). Understanding online polarization through human-agent interaction in a syn-thetic llm-based social network. In Proceedings of the International AAAI Conference on Web and Social Media , volume 19, pages 457–478. Gajewska, E., Wawer, M., Budzynska, K., and Chudziak, J. A. (2025). Leveraging a multi-agent llm-based sys-tem to educate teachers in hate incidents management. In International Conference on Artificial Intelligence in Education , pages 332–339. Springer. Garz´ on-Velandia, D. C., Barreto-Galeano, M. I., and Sabucedo-Cameselle, J. M. (2024). When Political Elites Talk, Citizens Reply: Affective Polarization Through Temporal Orientation and Intergroup Emo-tions. Analyses of Social Issues and Public Policy ,24(3):621–644. Ge, T., Chan, X., Wang, X., Yu, D., Mi, H., and Yu, D. (2024). Scaling Synthetic Data Cre-ation With 1,000,000,000 Personas. arXiv preprint arXiv:2406.20094 .Gilbert, N. (2008). Agent-Based Models , volume 153 of Quantitative Applications in the Social Sciences .SAGE Publications. Green, D. P., Palmquist, B., and Schickler, E. (2004). Parti-san Hearts and Minds: Political Parties and the Social Identities of Voters . Yale University Press. Harbar, Y. and Chudziak, J. A. (2025a). Simulating Oxford-Style Debates with LLM-Based Multi-Agent Sys-tems. In Intelligent Information and Database Sys-tems , pages 286–300, Singapore. Springer Nature Sin-gapore. Harbar, Y. and Chudziak, J. A. (2025b). Simulating oxford-style debates with llm-based multi-agent sys-tems. In Asian Conference on Intelligent Information and Database Systems , pages 286–300. Springer. Harel, T. O., Jameson, J. K., and Maoz, I. (2020). The Nor-malization of Hatred: Identity, Affective Polarization, and Dehumanization on Facebook in the Context of Intractable Political Conflict. Social Media+ Society ,6(2):2056305120913983. Iyengar, S. and Westwood, S. J. (2015). Fear and loathing across party lines: New evidence on group po-larization. American journal of political science ,59(3):690–707. Jackson, J. C., Rand, D., Lewis, K., Norton, M. I., and Gray, K. (2017). Agent-based modeling: A guide for social psychologists. Social Psychological and Personality Science , 8(4):387–395. Jahan, N. and Mell, J. (2024). Unraveling the Tapestry of Deception and Personality: A Deep Dive into Multi-Issue Human-Agent Negotiation Dynamics. In Pro-ceedings of the 23rd International Conference on Au-tonomous Agents and Multiagent Systems , pages 916– 925. Jin, B. and Guo, W. (2025). Synthetic social media in-fluence experimentation via an agentic reinforcement learning large language model bot. Journal of Artifi-cial Societies and Social Simulation , 28(3):1–6. Kamal, S., Gullic, J., and Bagavathi, A. (2022). Modeling Polarization on Social Media Posts: A Heuristic Ap-proach Using Media Bias. In Proceeding of Founda-tions of Intelligent Systems: 26th International Sym-posium, ISMIS 2022 , page 35–43. Springer-Verlag. Keijzer, M. A., M¨ as, M., and Flache, A. (2024). Polar-ization on social media: Micro-level evidence and macro-level implications. JASSS , 27(1):7. Kiesel, S. and Amlani, S. (2025). Affective Polarization in a Word: Open-Ended and Self-Coded Evaluations of Partisan Affect. PLOS ONE , 20(1):1–18. Lee, S., Rojas, H., and Yamamoto, M. (2022). Social Me-dia, Messaging Apps, and Affective Polarization in the United States and Japan. Mass Communication and Society , 25(5):673–697. Lerman, K., Feldman, D., He, Z., and Rao, A. (2024). Affective Polarization and Dynamics of Information Spread in Online Networks. npj Complexity , 1(1):8. Liu, S. and Wen, H. (2024). Agent-Based Modelling of Polarized News and Opinion Dynamics in Social Net-works: A Guidance-Oriented Approach. Journal of Complex Networks , 12(4). Liu, Z., Zhang, J., and Ding, Y. (2025). A More Advanced Group Polarization Measurement Approach Based on LLM-Based Agents and Graphs. Information Re-search an international electronic journal , 30:93–107. Marchal, N. (2022). “Be Nice or Leave Me Alone”: An In-tergroup Perspective on Affective Polarization in On-line Political Discussions. Communication Research ,49(3):376–398. Mart´ ınez-Espa˜ na, R., Fern´ andez-Pedauye, J., De Luc´ ıa, J. G.-P., Rojo-Mart´ ınez, J. M., Bakdid-Albane, K., and Garc´ ıa-Escribano, J. J. (2024). Methodology for Mea-suring Individual Affective Polarization Using Senti-ment Analysis in Social Networks. IEEE Access .Nettasinghe, B., Rao, A., Jiang, B., Percus, A. G., and Ler-man, K. (2025). In-Group Love, Out-Group Hate: A Framework to Measure Affective Polarization via Contentious Online Discussions. In Proceedings of the ACM on Web Conference 2025 , pages 560–575. Rossiter, E. and Carlson, T. (2023). The Similar and Distinct Effects of Political and Non-Political Con-versation on Affective Polarization. Preprint at https://erossiter. com .Santoro, E. and Broockman, D. E. (2022). The Promise and Pitfalls of Cross-Partisan Conversations for Reducing Affective Polarization: Evidence from Randomized Experiments. Science Advances , 8(25):eabn5515. Saveski, M., Gillani, N., Yuan, A., Vijayaraghavan, P., and Roy, D. (2022). Perspective-Taking to Reduce Affec-tive Polarization on Social Media. In Proceedings of the International AAAI Conference on Web and Social Media , volume 16, pages 885–895. Su´ arez Estrada, M., Juarez, Y., and Pi˜ na-Garc´ ıa, C. (2022). Toxic Social Media: Affective Polarization After Feminist Protests. Social Media+ Society , 8(2). Team, G., Anil, R., Borgeaud, S., Alayrac, J.-B., Yu, J., Soricut, R., Schalkwyk, J., Dai, A. M., Hauth, A., Millican, K., et al. (2024). Gemini: A Family of Highly Capable Multimodal Models. arXiv preprint arXiv:2312.11805 .Unlu, A. and Kotonen, T. (2024). Online Polarization and Identity Politics: An Analysis of Facebook Discourse on Muslim and LGBTQ+ Communities in Finland. 
+
+Scandinavian political studies , 47(2):199–231. Wang, C., Liu, Z., Yang, D., and Chen, X. (2024). De-coding echo chambers: Llm-powered simulations re-vealing polarization in social networks. arXiv preprint arXiv:2409.19338 .Xia, Y., Monti, C., Keller, B., and Kivel¨ a, M. (2024). In-tegrated or Segregated? User Behavior Change af-ter Cross-Party Interactions on Reddit. arXiv preprint arXiv:2410.04923 .Yarchi, M., Baden, C., and Kligler-Vilenchik, N. (2021). Political Polarization on the Digital Sphere: A Cross-Platform, Over-Time Analysis of Interactional, Posi-tional, and Affective Polarization on Social Media. 
+
+Political Communication , 38(1-2):98–139. Zhang, L., Hu, Y., Li, W., Bai, Q., and Nand, P. (2025). LLM-AIDSIM: LLM-Enhanced Agent-Based Influ-ence Diffusion Simulation in Social Networks. Sys-tems , 13(1):29.

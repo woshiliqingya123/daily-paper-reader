@@ -1,0 +1,294 @@
+Title: Auditing Reciprocal Sentiment Alignment: Inversion Risk, Dialect Representation and Intent Misalignment in Transformers
+
+URL Source: https://arxiv.org/pdf/2602.17469v1
+
+Published Time: Fri, 20 Feb 2026 02:02:39 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Auditing Reciprocal Sentiment Alignment: Inversion Risk, Dialect Representation and Intent Misalignment in Transformers 
+
+## Nusrat Jahan Lia 
+
+bsse1306@iit.du.ac.bd Institute of Information Technology, University of Dhaka Dhaka, Bangladesh 
+
+## Shubhashis Roy Dipta 
+
+sroydip1@umbc.edu University of Maryland, Baltimore County Baltimore, Maryland, USA 
+
+Abstract 
+
+The core theme of bidirectional alignment is ensuring that AI sys-tems accurately understand human intent and that humans can trust AI behavior. However, this loop fractures significantly across language barriers. Our research addresses Cross-Lingual Sentiment Misalignment between Bengali and English by benchmarking four transformer architectures. We reveal severe safety and represen-tational failures in current alignment paradigms. We demonstrate that compressed model (mDistilBERT) exhibits 28.7% “Sentiment Inversion Rate,” fundamentally misinterpreting positive user in-tent as negative (or vice versa). Furthermore, we identify systemic nuances affecting human-AI trust, including “Asymmetric Empa-thy” where some models systematically dampen and others am-plify the affective weight of Bengali text relative to its English counterpart. Finally, we reveal a “Modern Bias” in the regional model (IndicBERT), which shows a 57% increase in alignment error when processing formal (Sadhu) Bengali. We argue that equitable human-AI co-evolution requires pluralistic, culturally grounded alignment that respects language and dialectal diversity over uni-versal compression, which fails to preserve the emotional fidelity required for reciprocal human-AI trust. We recommend that align-ment benchmarks incorporate “Affective Stability” metrics that explicitly penalize polarity inversions in low-resource and dialectal contexts. 
+
+CCS Concepts 
+
+• Human-centered computing → HCI design and evaluation methods ; • Computing methodologies → Natural language processing ; • Social and professional topics → Computing / technology policy .
+
+Keywords 
+
+Human-AI Sentiment Alignment, Cross-Lingual NLP, Represen-tational Harm, Trust, Bengali Dialectal Bias, Cultural Alignment, Equity 
+
+1 Introduction 
+
+Bidirectional human-AI alignment relies on a reciprocal loop: the AI must accurately encode human intent, and the human must be able to trust the AI’s subsequent behavior. In safety-critical applications such as automated content moderation or mental health support, an AI’s ability to accurately interpret user intent is the foundation of this trust. Yet, what happens when an AI model fundamentally flips the polarity of a Bengali user’s statement across language barriers? If a system categorizes a positive Bengali phrase as highly negative in its English-aligned embedding space, it is a critical safety failure and a violation of the user’s agency. This paper investigates the “Sentiment Inversion Crisis” and the broader representational harms embedded in cross-lingual AI. We employed a standardized cross-lingual sentiment alignment framework to evaluate the semantic consistency of four distinct transformer models when processing parallel Bengali-English text (see Table 2 in Appendix A). We identify that alignment is not uniform across languages or dialects, presenting the following key contributions: 
+
+Capacity Constraints & Alignment Instability: We demon-strate that the capacity-constrained mDistilBERT architecture ex-hibits a 28.7% “Sentiment Inversion Rate”, accompanied by a dan-gerous “heavy tail” of unpredictable errors, suggesting that model compression may compromise the safety margins required for cross-lingual alignment. We further found that regional specialization alone does not resolve this, but robust optimized distilled architec-ture can reduce such representational misalignments. 
+
+Asymmetric Empathy: We reveal that models exhibit direc-tional bias, systematically dampening or artificially inflating the emotional intensity of non-English text. 
+
+The Dialectal Sentiment Gap: We expose a “Modern Bias” in models that align with colloquial text but disenfranchise formal dialects. 
+
+2 Literature Review 
+
+The adoption of transformer architectures has rapidly advanced sentiment analysis in low-resource languages [ 3], though hybrid ap-proaches retaining lexicon features remain relevant for stability [ 9]. While pretrained models leverage shared representations to trans-fer knowledge from high-resource to lower-resource languages [ 5, 11 ], recent literature highlights a significant gap in fairness [ 6]. Chen et al . [4] noted that while GPT-4 achieves ≈84.4% F1 in Eng-lish sentiment, it drops to roughly 67% for languages with fewer resources. Modern methods leverage both monolingual and multilingual ar-chitectures. For Bengali, specialized models such as BanglaBERT [ 2 ]and IndicBERT [ 8] are increasingly used. Multiple model ensembles and distillation are also popular: as noted, Hoque et al . [7] achieved high accuracy with an ensemble of five transformers. However, high aggregate accuracy often masks representational failures, bias, and a lack of true cultural understanding [ 6]. A core challenge in multilingual NLP is handling dialectal variation, especially the cul-turally and computationally significant gap between formal (Sadhu) and colloquial (Cholito) Bengali [ 1]. Wasi et al . [13] show that even generic LLMs catch social biases simply by surface linguistic cues. Because models can systematically fail or flip sentiment, new met-rics including human-AI alignment are being proposed to audit 
+
+> arXiv:2602.17469v1 [cs.CL] 19 Feb 2026 Nusrat Jahan Lia and Shubhashis Roy Dipta
+
+fairness and robustness [ 10 ]. Consequently, recent BiAlign liter-ature argues that true alignment is a two-way street, advocating for pluralistic, customized alignment that respects group-specific values [12]. 
+
+3 Methodology 
+
+We employed a controlled experimental framework to quantify cross-lingual sentiment alignment in multilingual transformer ar-chitectures. We adopt a within-model comparative design where each transformer processes parallel Bengali-English text pairs inde-pendently, to enable direct measurement of semantic divergence without inter-model architectural confounds. 
+
+3.1 Dataset Specification 
+
+We utilized a parallel corpus comprising 𝑛 = 7,350 Bengali-English sentence pairs, sourced from the publicly available “BanglaBlend” [1]. Formally, the dataset D is defined as a set of tuples: 
+
+D = {( 𝐵 𝑖 , 𝐸 𝑖 , 𝐷 𝑖 ) | 𝑖 ∈ [ 1, 𝑛 ]} (1) where: 
+
+• 𝐵 𝑖 ∈ Σ∗ 
+
+> Bengali
+
+represents the 𝑖 -th Bengali sentence (original text) 
+
+• 𝐸 𝑖 ∈ Σ∗ 
+
+> English
+
+represents the corresponding English transla-tion 
+
+• 𝐷 𝑖 ∈ { Sadhu , Cholito } denotes the Bengali dialect classifi-cation Bengali exhibits diglossia with two primary written forms: (1) Sadhu Bhasha : Formal/literary register, characterized by Sanskrit-derived vocabulary and archaic verb conjugations. (2) Cholito Bhasha : Colloquial/standard register, with rela-tively simplified morphology and contemporary vocabu-lary. We stratify the dataset into dialect-specific subsets: 
+
+DSadhu = {( 𝐵 𝑖 , 𝐸 𝑖 , 𝐷 𝑖 ) ∈ D | 𝐷 𝑖 = Sadhu } |D Sadhu | = 3,675 (2) 
+
+DCholito = {( 𝐵 𝑖 , 𝐸 𝑖 , 𝐷 𝑖 ) ∈ D | 𝐷 𝑖 = Cholito } |D Cholito | = 3,675 
+
+(3) This balanced stratification enables statistical comparison of model performance across linguistic registers. 
+
+3.2 Experimental Design 
+
+For each model 𝑀 and sentence pair (𝐵 𝑖 , 𝐸 𝑖 ), we perform indepen-dent inference on both languages using the same model weights 
+
+𝜃 𝑀 :
+
+ˆ𝑦 𝐵,𝑖 = 𝑀 𝜃 (𝐵 𝑖 ) [Bengali stream] (4) 
+
+ˆ𝑦 𝐸,𝑖 = 𝑀 𝜃 (𝐸 𝑖 ) [English stream] (5) This design eliminates architectural differences as a confounding variable, isolating the effect of language on sentiment prediction. Any divergence between ˆ𝑦 𝐵,𝑖 and ˆ𝑦 𝐸,𝑖 is attributable to cross-lingual representation, calibration, or decision boundary alignment within the same parameter space. 
+
+3.3 Score Normalization and Metric Formulation 
+
+3.3.1 Universal Score Normalizer. To enable direct comparison, we define a universal normalization function 𝜑 : Predictions →[− 1, 1]:
+
+𝜑 ( ˆ𝑦 ) =
+
+
+
+ˆ𝑦. score if ˆ𝑦. label ∈ { positive }− ˆ𝑦. score if ˆ𝑦. label ∈ { negative }
+
+0 if ˆ𝑦. label ∈ { neutral }
+
+(6) 
+
+*Note: Standard “Positive” and “Negative” labels map to ±𝑠 for 2-class and 3-class models, while intermediate positive/negative classes are scaled by 0.5 in the 5-class Tabularis model to accommodate the “Very Positive” and “Very Negative” extremes. 
+
+After normalization, we obtain continuous sentiment scores: 
+
+𝑆 𝐵,𝑖 = 𝜑 ( ˆ𝑦 𝐵,𝑖 ) ∈ [− 1, 1] (Bengali sentiment score) (7) 
+
+𝑆 𝐸,𝑖 = 𝜑 ( ˆ𝑦 𝐸,𝑖 ) ∈ [− 1, 1] (English sentiment score) (8) 
+
+3.3.2 Sentence-Level Alignment Metrics. For each sentence pair 𝑖 ,we compute four alignment metrics: 
+
+M1. Alignment Divergence. 
+
+𝐷 𝑖 = |𝑆 𝐵,𝑖 − 𝑆 𝐸,𝑖 | ∈ [ 0, 2] (9) 
+
+Interpretation: 𝐷 𝑖 = 0.0 indicates perfect alignment (identical sen-timent), 𝐷 𝑖 = 0.5 indicates moderate divergence, 𝐷 𝑖 = 2.0 indicates maximal divergence (opposite extremes). 
+
+M2. Directional Bias. 
+
+𝐵 𝑖 = 𝑆 𝐸,𝑖 − 𝑆 𝐵,𝑖 ∈ [− 2, 2] (10) 
+
+Interpretation: 𝐵 𝑖 > 0 indicates that the English text is predicted as more positive (or less negative) than its Bengali counterpart; 
+
+𝐵 𝑖 < 0 indicates the reverse; 𝐵 𝑖 ≈ 0 indicates minimal cross-lingual divergence for that pair. 
+
+M3. Polarity Inversion (Safety Metric). 
+
+𝐼 𝑖 = 1 (𝑆 𝐵,𝑖 > 𝜏 ∧ 𝑆 𝐸,𝑖 < −𝜏 ) ∨ ( 𝑆 𝐵,𝑖 < −𝜏 ∧ 𝑆 𝐸,𝑖 > 𝜏 ) (11) where 1[·] is the indicator function and 𝜏 = 0.1 is a noise threshold to avoid false positives from near-zero scores. 
+
+Interpretation: 𝐼 𝑖 = 1 indicates sentiment inversion (e.g., Ben-gali=Positive, English=Negative); 𝐼 𝑖 = 0 indicates polarity preserved. Inversion is the most severe failure mode, as it indicates misalign-ment of sentiment direction. 
+
+3.4 Population-Level Aggregation and Statistical Computation 
+
+To characterize model-level performance, we aggregate sentence-level metrics across stratified subsets (D Sadhu , DCholito ) or the entire dataset D.For each model 𝑀 , we compute the following population-level statistics: 
+
+P1. Mean Alignment Error (Divergence). 
+
+𝜇 𝐷 (𝑀 ) = 1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝐷 𝑖 (12) Lower 𝜇 𝐷 indicates better cross-lingual consistency. Auditing Reciprocal Sentiment Alignment: Inversion Risk, Dialect Representation and Intent Misalignment in Transformers 
+
+P2. Standard Deviation of Divergence. 
+
+𝜎 𝐷 (𝑀 ) =
+
+vt 1
+
+𝑛 − 1
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+(𝐷 𝑖 − 𝜇 𝐷 (𝑀 )) 2 (13) Quantifies variability in alignment quality across the dataset. 
+
+P3. Robustness Index. 
+
+R ( 𝑀 ) = 1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+1[𝐷 𝑖 < 0.1] × 100% (14) Percentage of sentence pairs with negligible divergence ( 𝐷 𝑖 <
+
+0.1). Higher robustness indicates a larger “safe operating zone.” 
+
+P4. Inversion Rate. 
+
+Irate (𝑀 ) = 1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝐼 𝑖 × 100% (15) Percentage of sentence pairs with sentiment polarity flips. 
+
+P5. Mean Directional Bias. 
+
+𝜇 𝐵 (𝑀 ) = 1
+
+𝑛 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+
+𝐵 𝑖 (16) Average positive value indicates that, on average, the model as-signs higher sentiment scores to English inputs than to their Bengali counterparts; negative value indicates the reverse. Values close to zero suggest no systematic language-conditioned directional skew. To investigate the dialect gap , we quantified the “formal penalty”: 
+
+Δdialect (𝑀 ) = 𝜇 𝐷 (𝑀, Sadhu ) − 𝜇 𝐷 (𝑀, Cholito ) (17) 
+
+Interpretation: Δdialect > 0 indicates the model struggles more with formal Bengali; Δdialect < 0 indicates struggles with colloquial Bengali; Δdialect ≈ 0 indicates dialect-invariant performance. The “Dialect Gap” here is a measure of representational inequity that quantifies the performance degradation for formal (Sadhu) Bengali and operationalizes the cost of alignment for users who prefer traditional linguistic norms. Additionally, we compute the percentage increase in error 
+
+when processing Sadhu vs. Cholito: 
+
+Δ% 
+
+> dialect
+
+(𝑀 ) = Δdialect (𝑀 )
+
+𝜇 𝐷 (𝑀, Cholito ) × 100% (18) This metric normalizes the absolute gap by the baseline Cholito error rate, enabling comparison across models with different overall error magnitudes. 
+
+4 Results 
+
+Beyond average alignment error, our evaluation reveals three crit-ical failure modes affecting human-AI trust and representation. Table 1 presents the comprehensive quantitative comparison an-choring these findings. 
+
+4.1 Finding 1: Sentiment Inversion and Alignment Instability 
+
+We define a sentiment inversion as a case where a Bengali–English translation pair (similar meaning) receives opposite polarity classi-fications (positive vs. negative). Such inversions represent major alignment failures, as semantic equivalence is preserved but affec-tive interpretation is reversed. 
+
+Table 1: Metric scores per Model                                          
+
+> Metric Tabularis XLM-R IndicBERT mDistilBERT
+> Mean Div. 0.200 0.276 0.375 0.417 Std Dev. 0.214 0.298 0.607 0.429 Sadhu Div. 0.239 0.286 0.459 0.456 Cholito Div. 0.161 0.266 0.292 0.379 Dialect Gap 0.078 0.020 0.167 0.077 Sadhu Err. Inc. (%) 48.4 7.6 57.1 20.5 Robustness (%) 43.1 42.1 58.3 34.2 Inversions 635 267 1471 2107 Inv. Rate (%) 8.6 3.6 20.0 28.7 Dir. Bias (En-Bn) 0.002 0.057 0.106 -0.066
+
+Across model architectures, inversion rates vary dramatically, revealing a potential relationship between compression, divergence magnitude or optimization (Figure 1). 
+
+Figure 1: Sentiment Inversion Rate Across Models 
+
+• Compression and Elevated Inversion Risk. The distilled multilingual architecture (mDistilBERT) exhibits the high-est mean alignment divergence and lowest robustness (see Table 1). This indicates that while compression improves efficiency, it comes at a steep safety cost: the efficiency of distillation comes at the expense of alignment stability with high frequency of sentiment inversions that violate the core requirement of reciprocal human-AI trust. 
+
+• Heavy-Tailed Failure Distribution. Alignment error den-sity analysis (Figure 2) shows that divergence is not nor-mally distributed. Instead, the compressed architecture ex-hibits a long right tail, corresponding to extreme polarity flips. While IndicBERT achieves the highest robustness met-ric, it simultaneously exhibits a massive standard deviation in divergence and a high inversion rate with alignment er-ror not normally distributed. When the model fails, it fails catastrophically. 
+
+• Scale-Driven Inversion Resilience. The large-scale mul-tilingual model (XLM-R) records the lowest polarity inver-sion rate (Table 1) across all evaluation pairs. This suggests that massive parameter scale and diverse pre-training may Nusrat Jahan Lia and Shubhashis Roy Dipta 
+
+preserve coherent affect mappings more effectively than re-gional specialization, buffering against semantic instability. 
+
+Figure 2: Distribution of Alignment Error Density 
+
+4.2 Finding 2: Representational Harm and the Dialectal Gap 
+
+To evaluate robustness under Bengali diglossia, we compare align-ment divergence across colloquial (Cholito) and formal (Sadhu) vari-ants. A dialect-robust system should maintain stable cross-lingual calibration regardless of lexical register. Instead, we observed a dialectal sensitivity pattern. 
+
+• Modern-Register Overfitting. Both IndicBERT and Tabu-laris exhibit sharp increases in divergence when processing formal Sadhu text (see Table 1). This indicates that align-ment quality is concentrated in modern, high-frequency lexical distributions, while archaic or formal constructions fall outside the model’s calibrated semantic manifold. We term this phenomenon Modern Bias : strong alignment in contemporary usage, but systematic underperformance in formal registers. Conversely, XLM-R demonstrates strong dialectal resilience. This suggests that broader representa-tional capacity can better absorb regional linguistic varia-tions in alignment. 
+
+4.3 Finding 3: Asymmetric Empathy and Directional Bias 
+
+In a bidirectional human-AI loop, the system must preserve not just the polarity but the intensity of user intent. We evaluate this using Directional Bias (English score − Bengali score). An ideally aligned system should yield a distribution centered at zero with low variance. Instead, we observed two distinct alignment regimes (as seen in Table 1, Figure 3 and Figure 4) 
+
+• Compression-Induced Bengali Positivity Skew. The distilled architecture (mDistilBERT) exhibits a negative di-rectional bias, indicating that it systematically scores Ben-gali text as more positive (or less negative) than its exact English translation. For a human user in a safety-critical context: the AI may artificially dampen the severity of a negative Bengali sentiment, potentially dismissing a user’s distress by interpreting it through an unwarranted opti-mistic lens. 
+
+• Regional English Optimism Bias. Conversely, IndicBERT demonstrates a positive mean directional bias, assigning higher positivity (or lower negativity) to English inputs rel-ative to their Bengali counterparts. This imposes an equity penalty on Bengali users, as their neutral or moderately neg-ative statements are systematically penalized with harsher negative classifications compared to English speakers. 
+
+5 Discussion and Conclusion: Alignment Under Linguistic Pluralism 
+
+Alignment should foreground diverse user populations rather than majority-language or specific dialect speakers alone. The “Mod-ern Bias” in regionally specialized architecture reveals a critical blind spot in current alignment paradigms: embedding spaces are optimized for modern, high-frequency usage, effectively disenfran-chising users who speak traditional or formal dialects. This creates a “unidirectional” adaptation burden, where users are forced to mod-ernize their language to be understood, violating the principle of equitable co-evolution. The high rate of polarity reversals in both compressed and regionally-specialized models is alarming, as in safety-critical contexts, such as mental health monitoring or content moderation, this instability is a violation of user agency, potentially misrepresenting a user’s plea for help as a neutral or negative state-ment. For computationally constrained environments typical of low-resource languages, relying exclusively on massive parameter scale is impractical. Efficient, distilled architectures are practically mandatory for real-world deployment. The stark contrast in our re-sults between the major failure of the baseline distilled architecture and the relative stability of its optimized variant (Tabularis) proves that robust, culturally-aligned compression is both possible and necessary. We argue that equitable human-AI interaction requires moving beyond universal scaling laws to embrace pluralistic, cul-turally grounded alignment frameworks. Future benchmarks must explicitly penalize inversion risk and dialectal divergence along-side standard accuracy. We conclude that true alignment cannot be achieved through data scale, regional pre-training or compression alone; it requires evaluative interventions that prioritize the preser-vation of emotional fidelity and cultural nuance, ensuring that the AI reflects the true intent of the human. 
+
+References            
+
+> [1] Umme Ayman, Chayti Saha, Azmain Mahtab Rahat, and Sharun Akter Khushbu. 2025. BanglaBlend: A large-scale nobel dataset of bangla sentences categorized by saint and common form of bangla language. Data in Brief 58 (2025), 111240. [2] Abhik Bhattacharjee, Tahmid Hasan, Wasi Ahmad, Kazi Samin Mubasshir, Md Saiful Islam, Anindya Iqbal, M Sohel Rahman, and Rifat Shahriyar. 2022. BanglaBERT: Language model pretraining and benchmarks for low-resource language understanding evaluation in Bangla. In Findings of the Association for Computational Linguistics: NAACL 2022 . 1318–1327. [3] Anirban Bhowmick and Abhik Jana. 2021. Sentiment analysis for Bengali using transformer based models. In Proceedings of the 18th International Conference on Natural Language Processing (ICON) . 481–486. [4] Li Chen, Shifeng Shang, and Yawen Wang. 2025. Bridging resource gaps in cross-lingual sentiment analysis: adaptive self-alignment with data augmentation and transfer learning. PeerJ Computer Science 11 (2025), e2851. [5] Alexis Conneau, Kartikay Khandelwal, Naman Goyal, Vishrav Chaudhary, Guil-laume Wenzek, Francisco Guzmán, Edouard Grave, Myle Ott, Luke Zettlemoyer, and Veselin Stoyanov. 2020. Unsupervised cross-lingual representation learning
+
+Auditing Reciprocal Sentiment Alignment: Inversion Risk, Dialect Representation and Intent Misalignment in Transformers 
+
+at scale. In Proceedings of the 58th annual meeting of the association for computa-tional linguistics . 8440–8451. [6] Dipto Das, Shion Guha, Jed R Brubaker, and Bryan Semaan. 2024. The“Colonial Impulse" of Natural Language Processing: An Audit of Bengali Sentiment Analy-sis Tools and Their Identity-based Biases. In Proceedings of the 2024 CHI Confer-ence on Human Factors in Computing Systems . 1–18. [7] Md Nesarul Hoque, Umme Salma, Md Jamal Uddin, Md Martuza Ahamad, and Sakifa Aktar. 2024. Exploring transformer models in the sentiment analysis task for the under-resource Bengali language. Natural Language Processing Journal 8(2024), 100091. [8] Divyanshu Kakwani, Anoop Kunchukuttan, Satish Golla, Gokul NC, Avik Bhat-tacharyya, Mitesh M Khapra, and Pratyush Kumar. 2020. IndicNLPSuite: Mono-lingual corpora, evaluation benchmarks and pre-trained multilingual language models for Indian languages. In Findings of the association for computational linguistics: EMNLP 2020 . 4948–4961. [9] Hemal Mahmud, Hasan Mahmud, and Mohammad Rifat Ahmmad Rashid. 2024. Enhancing sentiment analysis in bengali texts: A hybrid approach using lexicon-based algorithm and pretrained language model bangla-bert. arXiv preprint arXiv:2411.19584 (2024). [10] Millicent Ochieng, Anja Thieme, Ignatius Ezeani, Risa Ueno, Samuel Maina, Keshet Ronen, Javier Gonzalez, and Jacki O’Neill. 2025. Reasoning Beyond Labels: Measuring LLM Sentiment in Low-Resource, Culturally Nuanced Contexts. arXiv preprint arXiv:2508.04199 (2025). [11] Alberto Poncelas, Pintu Lohar, James Hadley, and Andy Way. 2020. The impact of indirect machine translation on sentiment classification. In Proceedings of the 14th Conference of the Association for Machine Translation in the Americas (Volume 1: Research Track) . 78–88. [12] Hua Shen, Tiffany Knearem, Reshmi Ghosh, Kenan Alkiek, Kundan Krishna, Yachuan Liu, Ziqiao Ma, Savvas Petridis, Yi-Hao Peng, Li Qiwei, et al . 2024. Towards bidirectional human-ai alignment: A systematic review for clarifications, framework, and future directions. arXiv preprint arXiv:2406.09264 2406 (2024), 1–56. [13] Azmine Toushik Wasi, Raima Islam, Mst Rafia Islam, Taki Hasan Rafi, and Dong-Kyu Chae. 2024. Exploring bengali religious dialect biases in large language models with evaluation perspectives. arXiv preprint arXiv:2407.18376 (2024). Nusrat Jahan Lia and Shubhashis Roy Dipta 
+
+A Supplementary Figures and Tables 
+
+This appendix contains the visualizations and table referenced in the main findings of the paper. 
+
+Table 2: Model Repository Mapping Model Name Repository (Hugging-Face) 
+
+XLM-R https://huggingface.co/ cardiffnlp/twitter-xlm-roberta-base-sentiment IndicBERT https://huggingface. co/ai4bharat/ IndicBERTv2-alpha-SentimentClassification Tabularis https://huggingface.co/ Tabularisai/multilingual-sentiment-analysis mDistilBERT https://huggingface. co/lxyuan/distilbert-base-multilingual-cased-sentiments-student   
+
+> Note on Tabularis: This model is a fine-tuned version of the model
+> distilbert/distilbert-base-multilingual-cased for multilingual sen-timent analysis. It utilizes synthetic data from multiple sources to achieve robust performance across different languages and cultural contexts.
+
+Figure 3: Directional Bias in Sentiment Scores (English −
+
+Bengali) 
+
+Figure 4: Qualitative validation of Asymmetric Empathy in cross-lingual sentiment alignment.

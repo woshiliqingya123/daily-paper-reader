@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T10:00:17.501874+00:00",
+  "generated_at": "2026-03-18T10:10:34.883583+00:00",
   "updated_date": "20260217-20260318",
   "carryover_days": 9,
   "items": [
@@ -38,44 +38,6 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2603.08462v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.00518v1",
-      "title": "Vision-TTT: Efficient and Expressive Visual Representation Learning with Test-Time Training",
-      "abstract": "Learning efficient and expressive visual representation has long been the pursuit of computer vision research. While Vision Transformers (ViTs) gradually replace traditional Convolutional Neural Networks (CNNs) as more scalable vision learners, their applications are plagued by the quadratic complexity of the self-attention mechanism. To address the challenge, we introduce a new linear-time sequence modeling method Test-Time Training (TTT) into vision and propose Vision-TTT, which compresses the visual token sequence in a novel self-supervised learning manner. By incorporating bidirectional scan strategy and the Conv2d module, Vision-TTT effectively extends vanilla TTT to model 2D visual correlations with global receptive fields. Extensive experiments show that \\texttt{Vittt-T/S/B} achieve 77.3%,81.2%,82.5% Top-1 accuracy on ImageNet classification and also greatly outperform their counterparts on downstream tasks. At 1280x1280 resolution, \\texttt{Vittt-T} reduces FLOPs by 79.4% and runs 4.38x faster with 88.9% less memory than DeiT-T. These results demonstrate the expressiveness and efficiency of Vision-TTT as a strong candidate for the next-generation generic visual backbone.",
-      "authors": [
-        "Quan Kong",
-        "Yanru Xiao",
-        "Yuhao Shen",
-        "Cong Wang"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV"
-      ],
-      "published": "2026-02-28T07:31:43+00:00",
-      "link": "https://arxiv.org/pdf/2603.00518v1",
-      "tags": [
-        "keyword:TokenComp",
-        "query:TokenComp"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "compresses the visual token sequence in a self-supervised manner",
-      "llm_evidence_cn": "以自监督方式压缩视觉Token序列",
-      "llm_evidence": "以自监督方式压缩视觉Token序列",
-      "canonical_evidence": "以自监督方式压缩视觉Token序列",
-      "llm_tldr_en": "Introduces Vision-TTT, which uses test-time training to compress visual token sequences for efficient modeling.",
-      "llm_tldr_cn": "引入Vision-TTT，通过测试时训练压缩视觉Token序列，实现高效的视觉建模。",
-      "llm_tldr": "引入Vision-TTT，通过测试时训练压缩视觉Token序列，实现高效的视觉建模。",
-      "llm_tags": [
-        "query:tokencomp"
-      ],
-      "matched_query_tag": "query:tokencomp",
-      "matched_query_text": "techniques to reduce token count in transformers",
-      "matched_requirement_id": "req-5",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.00518v1",
       "carry_days": 1
     },
     {
@@ -231,49 +193,6 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2603.14224v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.01914v1",
-      "title": "AdaPonderLM: Gated Pondering Language Models with Token-Wise Adaptive Depth",
-      "abstract": "Test-time scaling via recurrent/iterative Transformers enables large language models to spend more computation at inference, but most pretrained recurrent LMs run a fixed number of iterations, wasting compute on easy tokens and lacking token-wise adaptivity. Following the core idea of Adaptive Computation Time(ACT) and Early Exit(EE), we propose AdaPonderLM, a self-supervised recurrent language model that learns token-wise early exiting during pretraining without manually tuned per-token/per-layer pruning ratios. AdaPonderLM uses iteration-specific MLP gates with a monotonic halting mask to decide when each token stops recurring, and introduces a KV reuse mechanism that reuses cached key/value states for halted tokens, ensuring train--test consistency and practical acceleration. Across Pythia backbones from 70M to 410M (pretraining) and up to 2.8B (continued pretraining), AdaPonderLM reduces inference compute at about 10% while maintaining comparable language modeling perplexity and competitive downstream accuracy. Our analysis shows the learned gates allocate more computation to high-NLL (hard) tokens, exhibiting adaptive computation time behavior in a fully self-supervised setting. Meanwhile, under iso-FLOPs, the learned halting policy consistently outperforms fixed pruning, showing AdaPonderLM allocates compute to the right tokens rather than just reducing average depth.",
-      "authors": [
-        "Shixiang Song",
-        "He Li",
-        "Zitong Wang",
-        "Boyi Zeng",
-        "Feichen Song",
-        "Yixuan Wang",
-        "Zhiqin John Xu",
-        "Ziwei He",
-        "Zhouhan Lin"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL"
-      ],
-      "published": "2026-03-02T14:28:16+00:00",
-      "link": "https://arxiv.org/pdf/2603.01914v1",
-      "tags": [
-        "keyword:TokenComp",
-        "query:TokenComp"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "token-wise adaptive depth and early exiting during pretraining",
-      "llm_evidence_cn": "预训练期间的Token级自适应深度与早期退出",
-      "llm_evidence": "预训练期间的Token级自适应深度与早期退出",
-      "canonical_evidence": "预训练期间的Token级自适应深度与早期退出",
-      "llm_tldr_en": "AdaPonderLM enables token-wise adaptive computation and early exiting to save compute on easy tokens.",
-      "llm_tldr_cn": "AdaPonderLM实现了Token级的自适应计算和早期退出，以节省简单Token的计算量。",
-      "llm_tldr": "AdaPonderLM实现了Token级的自适应计算和早期退出，以节省简单Token的计算量。",
-      "llm_tags": [
-        "query:tokencomp"
-      ],
-      "matched_query_tag": "query:tokencomp",
-      "matched_query_text": "dynamic selection of tokens for processing",
-      "matched_requirement_id": "req-3",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.01914v1",
       "carry_days": 1
     },
     {
@@ -514,151 +433,71 @@
       "carry_days": 1
     },
     {
-      "id": "2603.11254v1",
-      "title": "Artificial Intelligence for Sentiment Analysis of Persian Poetry",
-      "abstract": "Recent advancements of the Artificial Intelligence (AI) have led to the development of large language models (LLMs) that are capable of understanding, analysing, and creating textual data. These language models open a significant opportunity in analyzing the literature and more specifically poetry. In the present work, we employ multiple Bidirectional encoder representations from transformers (BERT) and Generative Pre-trained Transformer (GPT) based language models to analyze the works of two prominent Persian poets: Jalal al-Din Muhammad Rumi (Rumi) and Parvin E'tesami. The main objective of this research is to investigate the capability of the modern language models in grasping complexities of the Persian poetry and explore potential correlations between the poems' sentiment and their meters. Our findings in this study indicates that GPT4o language model can reliably be used in analysis of Persian poetry. Furthermore, the results of our sentiment analysis revealed that in general, Rumi's poems express happier sentiments compared to Parvin E'tesami's poems. Furthermore, comparing the utilization of poetic meters highlighted Rumi's poems superiority in using meters to express a wider variety of sentiments. These findings are significant as they confirm that LLMs can be effectively applied in conducting computer-based semantic studies, where human interpretations are not required, and thereby significantly reducing potential biases in the analysis.",
+      "id": "2603.09307v1",
+      "title": "Paralinguistic Emotion-Aware Validation Timing Detection in Japanese Empathetic Spoken Dialogue",
+      "abstract": "Emotional Validation is a psychotherapy communication technique that involves recognizing, understanding, and explicitly acknowledging another person's feelings and actions, which strengthens alliance and reduces negative affect. To maximize the emotional support provided by validation, it is crucial to deliver it with appropriate timing and frequency. This study investigates validation timing detection from the speech perspective. Leveraging both paralinguistic and emotional information, we propose a paralinguistic- and emotion-aware model for validation timing detection without relying on textual context. Specifically, we first conduct continued self-supervised training and fine-tuning on different HuBERT backbones to obtain (i) a paralinguistics-aware Self-Supervised Learning (SSL) encoder and (ii) a multi-task speech emotion classification encoder. We then fuse these encoders and further fine-tune the combined model on the downstream validation timing detection task. Experimental evaluations on the TUT Emotional Storytelling Corpus (TESC) compare multiple models, fusion mechanisms, and training strategies, and demonstrate that the proposed approach achieves significant improvements over conventional speech baselines. Our results indicate that non-linguistic speech cues, when integrated with affect-related representations, carry sufficient signal to decide when validation should be expressed, offering a speech-first pathway toward more empathetic human-robot interaction.",
       "authors": [
-        "Arash Zargar",
-        "Abolfazl Moshiri",
-        "Mitra Shafaei",
-        "Shabnam Rahimi-Golkhandan",
-        "Mohamad Tavakoli-Targhi",
-        "Farzad Khalvati"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "published": "2026-03-11T19:34:23+00:00",
-      "link": "https://arxiv.org/pdf/2603.11254v1",
-      "tags": [
-        "keyword:MSA",
-        "query:MSA"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "sentiment analysis of Persian poetry using BERT and GPT models",
-      "llm_evidence_cn": "使用BERT和GPT模型对波斯诗歌进行情感分析",
-      "llm_evidence": "使用BERT和GPT模型对波斯诗歌进行情感分析",
-      "canonical_evidence": "使用BERT和GPT模型对波斯诗歌进行情感分析",
-      "llm_tldr_en": "Explores the capability of LLMs to analyze emotional tone and sentiment in complex Persian poetry.",
-      "llm_tldr_cn": "探索大语言模型在分析复杂波斯诗歌情感基调和情绪方面的能力。",
-      "llm_tldr": "探索大语言模型在分析复杂波斯诗歌情感基调和情绪方面的能力。",
-      "llm_tags": [
-        "query:msa"
-      ],
-      "matched_query_tag": "query:msa",
-      "matched_query_text": "analysis of emotional tone and opinion",
-      "matched_requirement_id": "req-2",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.11254v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.01778v1",
-      "title": "LLM-as-an-Annotator: Training Lightweight Models with LLM-Annotated Examples for Aspect Sentiment Tuple Prediction",
-      "abstract": "Training models for Aspect-Based Sentiment Analysis (ABSA) tasks requires manually annotated data, which is expensive and time-consuming to obtain. This paper introduces LA-ABSA, a novel approach that leverages Large Language Model (LLM)-generated annotations to fine-tune lightweight models for complex ABSA tasks. We evaluate our approach on five datasets for Target Aspect Sentiment Detection (TASD) and Aspect Sentiment Quad Prediction (ASQP). Our approach outperformed previously reported augmentation strategies and achieved competitive performance with LLM-prompting in low-resource scenarios, while providing substantial energy efficiency benefits. For example, using 50 annotated examples for in-context learning (ICL) to guide the annotation of unlabeled data, LA-ABSA achieved an F1 score of 49.85 for ASQP on the SemEval Rest16 dataset, closely matching the performance of ICL prompting with Gemma-3-27B (51.10), while requiring significantly lower computational resources.",
-      "authors": [
-        "Nils Constantin Hellwig",
-        "Jakob Fehle",
-        "Udo Kruschwitz",
-        "Christian Wolff"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL"
-      ],
-      "published": "2026-03-02T12:03:32+00:00",
-      "link": "https://arxiv.org/pdf/2603.01778v1",
-      "tags": [
-        "keyword:MSA",
-        "query:MSA"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "aspect sentiment tuple prediction and target aspect sentiment detection",
-      "llm_evidence_cn": "方面情感元组预测与目标方面情感检测",
-      "llm_evidence": "方面情感元组预测与目标方面情感检测",
-      "canonical_evidence": "方面情感元组预测与目标方面情感检测",
-      "llm_tldr_en": "Uses LLMs to annotate data for training lightweight models on complex aspect-based sentiment analysis tasks.",
-      "llm_tldr_cn": "利用LLM生成标注数据，以训练用于复杂细粒度情感分析任务的轻量化模型。",
-      "llm_tldr": "利用LLM生成标注数据，以训练用于复杂细粒度情感分析任务的轻量化模型。",
-      "llm_tags": [
-        "query:msa"
-      ],
-      "matched_query_tag": "query:msa",
-      "matched_query_text": "analysis of emotional tone and opinion",
-      "matched_requirement_id": "req-2",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.01778v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.16760v1",
-      "title": "Dual Stream Independence Decoupling for True Emotion Recognition under Masked Expressions",
-      "abstract": "Recongnizing true emotions from masked expressions is extremely challenging due to deliberate concealment. Existing paradigms recognize true emotions from masked-expression clips that contain onsetframes just starting to disguise. However, this paradigm may not reflect the actual disguised state, as the onsetframe leaks the true emotional information without reaching a stable disguise state. Thus, this paper introduces a novel apexframe-based paradigm that classifies true emotions from the apexframe with a stable disguised state. Furthermore, this paper proposes a novel dual stream independence decoupling framework that decouples true and disguised emotion features, avoiding the interference of disguised emotions on true emotions. For efficient decoupling, we design a decoupling loss group, comprising two classification losses that learn true emotion and disguised expression features, respectively, and a Hilbert-Schmidt Independence loss that enhances the independence of two features. Experiments demonstrate that the apexframe-based paradigm is challenging, and the proposed decouple framework improves recogntion performances.",
-      "authors": [
-        "Jinsheng Wei",
-        "Xiguang Zhang",
-        "Zheng Shi",
-        "Guanming Lu"
-      ],
-      "primary_category": "cs.CV",
-      "categories": [
-        "cs.CV"
-      ],
-      "published": "2026-03-17T16:40:48+00:00",
-      "link": "https://arxiv.org/pdf/2603.16760v1",
-      "tags": [
-        "keyword:MSA",
-        "query:MSA"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "recognizing true emotions from masked expressions using dual stream decoupling",
-      "llm_evidence_cn": "通过双流解耦从掩蔽表情中识别真实情感",
-      "llm_evidence": "通过双流解耦从掩蔽表情中识别真实情感",
-      "canonical_evidence": "通过双流解耦从掩蔽表情中识别真实情感",
-      "llm_tldr_en": "Proposes a framework to decouple true and disguised emotion features for better recognition under masked expressions.",
-      "llm_tldr_cn": "提出一种双流解耦框架，用于在掩蔽表情下区分并识别真实情感与伪装情感。",
-      "llm_tldr": "提出一种双流解耦框架，用于在掩蔽表情下区分并识别真实情感与伪装情感。",
-      "llm_tags": [
-        "query:msa:composite"
-      ],
-      "matched_query_tag": "query:msa:composite",
-      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
-      "matched_requirement_id": "req-composite-msa",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.16760v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.00746v1",
-      "title": "SpectroFusion-ViT: A Lightweight Transformer for Speech Emotion Recognition Using Harmonic Mel-Chroma Fusion",
-      "abstract": "Speech is a natural means of conveying emotions, making it an effective method for understanding and representing human feelings. Reliable speech emotion recognition (SER) is central to applications in human-computer interaction, healthcare, education, and customer service. However, most SER methods depend on heavy backbone models or hand-crafted features that fail to balance accuracy and efficiency, particularly for low-resource languages like Bangla. In this work, we present SpectroFusion-ViT, a lightweight SER framework built utilizing EfficientViT-b0, a compact Vision Transformer architecture equipped with self-attention to capture long-range temporal and spectral patterns. The model contains only 2.04M parameters and requires 0.1 GFLOPs, enabling deployment in resource-constrained settings without compromising accuracy. Our pipeline first performs preprocessing and augmentation on raw audio, then extracts Chroma and Mel-frequency cepstral coefficient (MFCC) features. These representations are fused into a complementary time-frequency descriptor that preserves both fine-grained spectral detail and broader harmonic structure. Using transfer learning, EfficientViT-b0 is fine-tuned for multi-class emotion classification. We evaluate the system on two benchmark Bangla emotional speech datasets, SUBESCO and BanglaSER, which vary in speaker diversity, recording conditions, and acoustic characteristics. The proposed approach achieves 92.56% accuracy on SUBESCO and 82.19% on BanglaSER, surpassing existing state-of-the-art methods. These findings demonstrate that lightweight transformer architectures can deliver robust SER performance while remaining computationally efficient for real-world deployment.",
-      "authors": [
-        "Faria Ahmed",
-        "Rafi Hassan Chowdhury",
-        "Fatema Tuz Zohora Moon",
-        "Sabbir Ahmed"
+        "Zi Haur Pang",
+        "Yahui Fu",
+        "Yuan Gao",
+        "Tatsuya Kawahara"
       ],
       "primary_category": "cs.SD",
       "categories": [
-        "cs.SD",
-        "cs.LG"
+        "cs.SD"
       ],
-      "published": "2026-02-28T17:44:46+00:00",
-      "link": "https://arxiv.org/pdf/2603.00746v1",
+      "published": "2026-03-10T07:41:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.09307v1",
       "tags": [
         "keyword:MSA",
         "query:MSA"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "lightweight Transformer for speech emotion recognition using harmonic mel-chroma fusion",
-      "llm_evidence_cn": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
-      "llm_evidence": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
-      "canonical_evidence": "使用谐波梅尔-色度融合的轻量级语音情感识别Transformer",
-      "llm_tldr_en": "Develops a compact Vision Transformer for efficient and accurate speech emotion recognition.",
-      "llm_tldr_cn": "开发了一种紧凑的视觉Transformer，用于高效且准确的语音情感识别。",
-      "llm_tldr": "开发了一种紧凑的视觉Transformer，用于高效且准确的语音情感识别。",
+      "llm_evidence_en": "empathetic spoken dialogue in psychotherapy",
+      "llm_evidence_cn": "心理治疗中的共情口语对话",
+      "llm_evidence": "心理治疗中的共情口语对话",
+      "canonical_evidence": "心理治疗中的共情口语对话",
+      "llm_tldr_en": "Proposes an emotion-aware model for timing validation in Japanese empathetic dialogue.",
+      "llm_tldr_cn": "提出了一种用于日语共情对话中验证时机检测的情感感知模型。",
+      "llm_tldr": "提出了一种用于日语共情对话中验证时机检测的情感感知模型。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "applications of multimodal sentiment analysis in real world scenarios",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.09307v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15120v1",
+      "title": "How Attention Shapes Emotion: A Comparative Study of Attention Mechanisms for Speech Emotion Recognition",
+      "abstract": "Speech Emotion Recognition (SER) plays a key role in advancing human-computer interaction. Attention mechanisms have become the dominant approach for modeling emotional speech due to their ability to capture long-range dependencies and emphasize salient information. However, standard self-attention suffers from quadratic computational and memory complexity, limiting its scalability. In this work, we present a systematic benchmark of optimized attention mechanisms for SER, including RetNet, LightNet, GSA, FoX, and KDA. Experiments on both MSP-Podcast benchmark versions show that while standard self-attention achieves the strongest recognition performance across test sets, efficient attention variants dramatically improve scalability, reducing inference latency and memory usage by up to an order of magnitude. These results highlight a critical trade-off between accuracy and efficiency, providing practical insights for designing scalable SER systems.",
+      "authors": [
+        "Marc Casals-Salvador",
+        "Federico Costa",
+        "Rodolfo Zevallos",
+        "Javier Hernando"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-03-16T11:16:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.15120v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "attention mechanisms for speech emotion recognition",
+      "llm_evidence_cn": "语音情感识别的注意力机制",
+      "llm_evidence": "语音情感识别的注意力机制",
+      "canonical_evidence": "语音情感识别的注意力机制",
+      "llm_tldr_en": "Benchmarks various attention mechanisms to improve efficiency in speech emotion recognition.",
+      "llm_tldr_cn": "基准测试了多种注意力机制，以提高语音情感识别的效率。",
+      "llm_tldr": "基准测试了多种注意力机制，以提高语音情感识别的效率。",
       "llm_tags": [
         "query:msa"
       ],
@@ -666,7 +505,84 @@
       "matched_query_text": "recent advances in multimodal emotion recognition systems",
       "matched_requirement_id": "req-3",
       "selection_source": "carryover_cache",
-      "paper_id": "2603.00746v1",
+      "paper_id": "2603.15120v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.14078v1",
+      "title": "CMHL: Contrastive Multi-Head Learning for Emotionally Consistent Text Classification",
+      "abstract": "Textual Emotion Classification (TEC) is one of the most difficult NLP tasks. State of the art approaches rely on Large language models (LLMs) and multi-model ensembles. In this study, we challenge the assumption that larger scale or more complex models are necessary for improved performance. In order to improve logical consistency, We introduce CMHL, a novel single-model architecture that explicitly models the logical structure of emotions through three key innovations: (1) multi-task learning that jointly predicts primary emotions, valence, and intensity, (2) psychologically-grounded auxiliary supervision derived from Russell's circumplex model, and (3) a novel contrastive contradiction loss that enforces emotional consistency by penalizing mutually incompatible predictions (e.g., simultaneous high confidence in joy and anger). With just 125M parameters, our model outperforms 56x larger LLMs and sLM ensembles with a new state-of-the-art F1 score of 93.75\\% compared to (86.13\\%-93.2\\%) on the dair-ai Emotion dataset. We further show cross domain generalization on the Reddit Suicide Watch and Mental Health Collection dataset (SWMH), outperforming domain-specific models like MentalBERT and MentalRoBERTa with an F1 score of 72.50\\% compared to (68.16\\%-72.16\\%) + a 73.30\\% recall compared to (67.05\\%-70.89\\%) that translates to enhanced sensitivity for detecting mental health distress. Our work establishes that architectural intelligence (not parameter count) drives progress in TEC. By embedding psychological priors and explicit consistency constraints, a well-designed single model can outperform both massive LLMs and complex ensembles, offering a efficient, interpretable, and clinically-relevant paradigm for affective computing.",
+      "authors": [
+        "Menna Elgabry",
+        "Ali Hamdi",
+        "Khaled Shaban"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-03-14T18:47:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.14078v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "textual emotion classification and consistency",
+      "llm_evidence_cn": "文本情感分类与一致性",
+      "llm_evidence": "文本情感分类与一致性",
+      "canonical_evidence": "文本情感分类与一致性",
+      "llm_tldr_en": "Introduces a contrastive learning architecture for logically consistent text emotion classification.",
+      "llm_tldr_cn": "引入了一种对比学习架构，用于逻辑一致的文本情感分类。",
+      "llm_tldr": "引入了一种对比学习架构，用于逻辑一致的文本情感分类。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.14078v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.16553v1",
+      "title": "EmoLLM: Appraisal-Grounded Cognitive-Emotional Co-Reasoning in Large Language Models",
+      "abstract": "Large language models (LLMs) demonstrate strong cognitive intelligence (IQ), yet many real-world interactions also require emotional intelligence (EQ) to produce responses that are both factually reliable and emotionally appropriate. In settings such as emotional support, technical assistance, and consultation, effective dialogue depends on how situations are appraised with respect to the user's needs, goals, and coping capacity. Inspired by appraisal theory, we propose EmoLLM, an appraisal-grounded framework for IQ/EQ co-reasoning in dialogue. EmoLLM uses an explicit Appraisal Reasoning Graph (ARG) to structure intermediate reasoning over contextual facts, inferred user needs, appraisal dimensions, emotional states, and response strategies before generating a reply. We train EmoLLM in a multi-turn role-play environment with reinforcement learning, where reverse-perspective reasoning provides reward signals based on predicted user-side consequences of responses. Across diverse dialogue settings, EmoLLM improves emotional state outcomes and response quality over strong baselines while preserving strong factual reliability.",
+      "authors": [
+        "Yifei Zhang",
+        "Mingyang Li",
+        "Henry Gao",
+        "Liang Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-17T14:17:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.16553v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cognitive-emotional co-reasoning in large language models",
+      "llm_evidence_cn": "大语言模型中的认知-情感协同推理",
+      "llm_evidence": "大语言模型中的认知-情感协同推理",
+      "canonical_evidence": "大语言模型中的认知-情感协同推理",
+      "llm_tldr_en": "Introduces EmoLLM, a framework for appraisal-grounded emotional intelligence in dialogue systems.",
+      "llm_tldr_cn": "引入 EmoLLM，一个用于对话系统中基于评价理论的情感智能框架。",
+      "llm_tldr": "引入 EmoLLM，一个用于对话系统中基于评价理论的情感智能框架。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.16553v1",
       "carry_days": 1
     },
     {
@@ -695,21 +611,64 @@
         "query:MSA"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "affect decoding from facial EMG and acoustic speech",
-      "llm_evidence_cn": "从面部肌电图和声学语音中解码情感",
-      "llm_evidence": "从面部肌电图和声学语音中解码情感",
-      "canonical_evidence": "从面部肌电图和声学语音中解码情感",
-      "llm_tldr_en": "Investigates affect decoding using surface EMG and acoustic signals during phonated and silent speech.",
-      "llm_tldr_cn": "研究了在发声和无声语音过程中利用表面肌电图和声学信号进行情感解码的方法。",
-      "llm_tldr": "研究了在发声和无声语音过程中利用表面肌电图和声学信号进行情感解码的方法。",
+      "llm_evidence_en": "Affect decoding from multimodal signals including EMG and speech",
+      "llm_evidence_cn": "从包括肌电图和语音在内的多模态信号中解码情感",
+      "llm_evidence": "从包括肌电图和语音在内的多模态信号中解码情感",
+      "canonical_evidence": "从包括肌电图和语音在内的多模态信号中解码情感",
+      "llm_tldr_en": "Investigates decoding emotional affect from facial and neck surface EMG during speech production.",
+      "llm_tldr_cn": "研究了在言语产生过程中从面部和颈部表面肌电图中解码情感。",
+      "llm_tldr": "研究了在言语产生过程中从面部和颈部表面肌电图中解码情感。",
       "llm_tags": [
-        "query:msa:composite"
+        "query:msa"
       ],
-      "matched_query_tag": "query:msa:composite",
-      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
-      "matched_requirement_id": "req-composite-msa",
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
       "selection_source": "carryover_cache",
       "paper_id": "2603.11715v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.13406v1",
+      "title": "Nuanced Emotion Recognition Based on a Segment-based MLLM Framework Leveraging Qwen3-Omni for AH Detection",
+      "abstract": "Emotion recognition in videos is a pivotal task in affective computing, where identifying subtle psychological states such as Ambivalence and Hesitancy holds significant value for behavioral intervention and digital health. Ambivalence and Hesitancy states often manifest through cross-modal inconsistencies such as discrepancies between facial expressions, vocal tones, and textual semantics, posing a substantial challenge for automated recognition. This paper proposes a recognition framework that integrates temporal segment modeling with Multimodal Large Language Models. To address computational efficiency and token constraints in long video processing, we employ a segment-based strategy, partitioning videos into short clips with a maximum duration of 5 seconds. We leverage the Qwen3-Omni-30B-A3B model, fine-tuned on the BAH dataset using LoRA and full-parameter strategies via the MS-Swift framework, enabling the model to synergistically analyze visual and auditory signals. Experimental results demonstrate that the proposed method achieves an accuracy of 85.1% on the test set, significantly outperforming existing benchmarks and validating the superior capability of Multimodal Large Language Models in capturing complex and nuanced emotional conflicts. The code is released at https://github.com/dlnn123/A-H-Detection-with-Qwen-Omni.git.",
+      "authors": [
+        "Liang Tang",
+        "Hongda Li",
+        "Jiayu Zhang",
+        "Long Chen",
+        "Shuxian Li",
+        "Siqi Pei",
+        "Tiaonan Duan",
+        "Yuhao Cheng"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-03-12T08:31:42+00:00",
+      "link": "https://arxiv.org/pdf/2603.13406v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Addresses token constraints in long video processing for emotion recognition",
+      "llm_evidence_cn": "解决情绪识别长视频处理中的Token约束问题",
+      "llm_evidence": "解决情绪识别长视频处理中的Token约束问题",
+      "canonical_evidence": "解决情绪识别长视频处理中的Token约束问题",
+      "llm_tldr_en": "Uses a segment-based strategy to handle token constraints and efficiency in multimodal emotion recognition.",
+      "llm_tldr_cn": "采用分段策略解决多模态大模型在长视频情绪识别中的Token限制与计算效率问题。",
+      "llm_tldr": "采用分段策略解决多模态大模型在长视频情绪识别中的Token限制与计算效率问题。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.13406v1",
       "carry_days": 1
     },
     {
@@ -736,51 +695,13 @@
         "query:MSA"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "multimodal reasoning for facial micro-expression analysis",
-      "llm_evidence_cn": "用于面部微表情分析的多模态推理",
-      "llm_evidence": "用于面部微表情分析的多模态推理",
-      "canonical_evidence": "用于面部微表情分析的多模态推理",
-      "llm_tldr_en": "Explores micro-expression understanding using multimodal large language models and video QA.",
-      "llm_tldr_cn": "利用多模态大语言模型和视频问答探索微表情理解。",
-      "llm_tldr": "利用多模态大语言模型和视频问答探索微表情理解。",
-      "llm_tags": [
-        "query:msa:composite"
-      ],
-      "matched_query_tag": "query:msa:composite",
-      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
-      "matched_requirement_id": "req-composite-msa",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.08927v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.15120v1",
-      "title": "How Attention Shapes Emotion: A Comparative Study of Attention Mechanisms for Speech Emotion Recognition",
-      "abstract": "Speech Emotion Recognition (SER) plays a key role in advancing human-computer interaction. Attention mechanisms have become the dominant approach for modeling emotional speech due to their ability to capture long-range dependencies and emphasize salient information. However, standard self-attention suffers from quadratic computational and memory complexity, limiting its scalability. In this work, we present a systematic benchmark of optimized attention mechanisms for SER, including RetNet, LightNet, GSA, FoX, and KDA. Experiments on both MSP-Podcast benchmark versions show that while standard self-attention achieves the strongest recognition performance across test sets, efficient attention variants dramatically improve scalability, reducing inference latency and memory usage by up to an order of magnitude. These results highlight a critical trade-off between accuracy and efficiency, providing practical insights for designing scalable SER systems.",
-      "authors": [
-        "Marc Casals-Salvador",
-        "Federico Costa",
-        "Rodolfo Zevallos",
-        "Javier Hernando"
-      ],
-      "primary_category": "eess.AS",
-      "categories": [
-        "eess.AS"
-      ],
-      "published": "2026-03-16T11:16:27+00:00",
-      "link": "https://arxiv.org/pdf/2603.15120v1",
-      "tags": [
-        "keyword:MSA",
-        "query:MSA"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "benchmark of optimized attention mechanisms for speech emotion recognition",
-      "llm_evidence_cn": "针对语音情感识别的优化注意力机制基准测试",
-      "llm_evidence": "针对语音情感识别的优化注意力机制基准测试",
-      "canonical_evidence": "针对语音情感识别的优化注意力机制基准测试",
-      "llm_tldr_en": "Benchmarks efficient attention mechanisms to improve the scalability of speech emotion recognition systems.",
-      "llm_tldr_cn": "对高效注意力机制进行基准测试，以提高语音情感识别系统的可扩展性。",
-      "llm_tldr": "对高效注意力机制进行基准测试，以提高语音情感识别系统的可扩展性。",
+      "llm_evidence_en": "multimodal reasoning for micro-expression analysis",
+      "llm_evidence_cn": "用于微表情分析的多模态推理",
+      "llm_evidence": "用于微表情分析的多模态推理",
+      "canonical_evidence": "用于微表情分析的多模态推理",
+      "llm_tldr_en": "A grand challenge exploring micro-expression understanding through multimodal large language models.",
+      "llm_tldr_cn": "一项通过多模态大语言模型探索微表情理解的挑战赛。",
+      "llm_tldr": "一项通过多模态大语言模型探索微表情理解的挑战赛。",
       "llm_tags": [
         "query:msa"
       ],
@@ -788,38 +709,37 @@
       "matched_query_text": "recent advances in multimodal emotion recognition systems",
       "matched_requirement_id": "req-3",
       "selection_source": "carryover_cache",
-      "paper_id": "2603.15120v1",
+      "paper_id": "2603.08927v1",
       "carry_days": 1
     },
     {
-      "id": "2603.16553v1",
-      "title": "EmoLLM: Appraisal-Grounded Cognitive-Emotional Co-Reasoning in Large Language Models",
-      "abstract": "Large language models (LLMs) demonstrate strong cognitive intelligence (IQ), yet many real-world interactions also require emotional intelligence (EQ) to produce responses that are both factually reliable and emotionally appropriate. In settings such as emotional support, technical assistance, and consultation, effective dialogue depends on how situations are appraised with respect to the user's needs, goals, and coping capacity. Inspired by appraisal theory, we propose EmoLLM, an appraisal-grounded framework for IQ/EQ co-reasoning in dialogue. EmoLLM uses an explicit Appraisal Reasoning Graph (ARG) to structure intermediate reasoning over contextual facts, inferred user needs, appraisal dimensions, emotional states, and response strategies before generating a reply. We train EmoLLM in a multi-turn role-play environment with reinforcement learning, where reverse-perspective reasoning provides reward signals based on predicted user-side consequences of responses. Across diverse dialogue settings, EmoLLM improves emotional state outcomes and response quality over strong baselines while preserving strong factual reliability.",
+      "id": "2603.13777v1",
+      "title": "Generate Then Correct: Single Shot Global Correction for Aspect Sentiment Quad Prediction",
+      "abstract": "Aspect-based sentiment analysis (ABSA) extracts aspect-level sentiment signals from user-generated text, supports product analytics, experience monitoring, and public-opinion tracking, and is central to fine-grained opinion mining. A key challenge in ABSA is aspect sentiment quad prediction (ASQP), which requires identifying four elements: the aspect term, the aspect category, the opinion term, and the sentiment polarity. However, existing studies usually linearize the unordered quad set into a fixed-order template and decode it left-to-right. With teacher forcing training, the resulting training-inference mismatch (exposure bias) lets early prefix errors propagate to later elements. The linearization order determines which elements appear earlier in the prefix, so this propagation becomes order-sensitive and is hard to repair in a single pass. To address this, we propose a method, Generate-then-Correct (G2C): a generator drafts quads and a corrector performs a single-shot, sequence-level global correction trained on LLM-synthesized drafts with common error patterns. On the Rest15 and Rest16 datasets, G2C outperforms strong baseline models.",
       "authors": [
-        "Yifei Zhang",
-        "Mingyang Li",
-        "Henry Gao",
-        "Liang Zhao"
+        "Shidong He",
+        "Haoyu Wang",
+        "Wenjie Luo"
       ],
       "primary_category": "cs.CL",
       "categories": [
         "cs.CL",
         "cs.AI"
       ],
-      "published": "2026-03-17T14:17:50+00:00",
-      "link": "https://arxiv.org/pdf/2603.16553v1",
+      "published": "2026-03-14T06:11:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.13777v1",
       "tags": [
         "keyword:MSA",
         "query:MSA"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "appraisal-grounded framework for cognitive-emotional co-reasoning in dialogue",
-      "llm_evidence_cn": "对话中基于评价理论的认知-情感协同推理框架",
-      "llm_evidence": "对话中基于评价理论的认知-情感协同推理框架",
-      "canonical_evidence": "对话中基于评价理论的认知-情感协同推理框架",
-      "llm_tldr_en": "Introduces EmoLLM, a framework that enhances LLMs with emotional intelligence through appraisal-based reasoning.",
-      "llm_tldr_cn": "引入 EmoLLM 框架，通过基于评价的推理增强大语言模型的情感智能。",
-      "llm_tldr": "引入 EmoLLM 框架，通过基于评价的推理增强大语言模型的情感智能。",
+      "llm_evidence_en": "aspect-based sentiment analysis and fine-grained opinion mining",
+      "llm_evidence_cn": "细粒度情感分析与观点挖掘",
+      "llm_evidence": "细粒度情感分析与观点挖掘",
+      "canonical_evidence": "细粒度情感分析与观点挖掘",
+      "llm_tldr_en": "Introduces a single-shot global correction method for aspect sentiment quad prediction in text.",
+      "llm_tldr_cn": "引入了一种单次全局修正方法，用于文本中的方面情感四元组预测。",
+      "llm_tldr": "引入了一种单次全局修正方法，用于文本中的方面情感四元组预测。",
       "llm_tags": [
         "query:msa"
       ],
@@ -827,7 +747,132 @@
       "matched_query_text": "analysis of emotional tone and opinion",
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
-      "paper_id": "2603.16553v1",
+      "paper_id": "2603.13777v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.15020v1",
+      "title": "MER-Bench: A Comprehensive Benchmark for Multimodal Meme Reappraisal",
+      "abstract": "Memes represent a tightly coupled, multimodal form of social expression, in which visual context and overlaid text jointly convey nuanced affect and commentary. Inspired by cognitive reappraisal in psychology, we introduce Meme Reappraisal, a novel multimodal generation task that aims to transform negatively framed memes into constructive ones while preserving their underlying scenario, entities, and structural layout. Unlike prior works on meme understanding or generation, Meme Reappraisal requires emotion-controllable, structure-preserving multimodal transformation under multiple semantic and stylistic constraints. To support this task, we construct MER-Bench, a benchmark of real-world memes with fine-grained multimodal annotations, including source and target emotions, positively rewritten meme text, visual editing specifications, and taxonomy labels covering visual type, sentiment polarity, and layout structure. We further propose a structured evaluation framework based on a multimodal large language model (MLLM)-as-a-Judge paradigm, decomposing performance into modality-level generation quality, affect controllability, structural fidelity, and global affective alignment. Extensive experiments across representative image-editing and multimodal-generation systems reveal substantial gaps in satisfying the constraints of structural preservation, semantic consistency, and affective transformation. We believe MER-Bench establishes a foundation for research on controllable meme editing and emotion-aware multimodal generation. Our code is available at: https://github.com/one-seven17/MER-Bench.",
+      "authors": [
+        "Yiqi Nie",
+        "Fei Wang",
+        "Junjie Chen",
+        "Kun Li",
+        "Yudi Cai",
+        "Dan Guo",
+        "Chenglong Li",
+        "Meng Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.CL"
+      ],
+      "published": "2026-03-16T09:23:26+00:00",
+      "link": "https://arxiv.org/pdf/2603.15020v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multimodal meme reappraisal for social expression and affect transformation",
+      "llm_evidence_cn": "用于社交表达和情感转化的多模态模因重评",
+      "llm_evidence": "用于社交表达和情感转化的多模态模因重评",
+      "canonical_evidence": "用于社交表达和情感转化的多模态模因重评",
+      "llm_tldr_en": "Creates a benchmark for multimodal meme reappraisal, transforming negative affect into constructive content.",
+      "llm_tldr_cn": "创建了多模态模因重评基准，将负面情感转化为建设性内容。",
+      "llm_tldr": "创建了多模态模因重评基准，将负面情感转化为建设性内容。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "applications of multimodal sentiment analysis in real world scenarios",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.15020v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.09205v2",
+      "title": "Emotion is Not Just a Label: Latent Emotional Factors in LLM Processing",
+      "abstract": "Large language models are routinely deployed on text that varies widely in emotional tone, yet their reasoning behavior is typically evaluated without accounting for emotion as a source of representational variation. Prior work has largely treated emotion as a prediction target, for example in sentiment analysis or emotion classification. In contrast, we study emotion as a latent factor that shapes how models attend to and reason over text. We analyze how emotional tone systematically alters attention geometry in transformer models, showing that metrics such as locality, center-of-mass distance, and entropy vary across emotions and correlate with downstream question-answering performance. To facilitate controlled study of these effects, we introduce Affect-Uniform ReAding QA (AURA-QA), a question-answering dataset with emotionally balanced, human-authored context passages. Finally, an emotional regularization framework is proposed that constrains emotion-conditioned representational drift during training. Experiments across multiple QA benchmarks demonstrate that this approach improves reading comprehension in both emotionally-varying and non-emotionally varying datasets, yielding consistent gains under distribution shift and in-domain improvements on several benchmarks.",
+      "authors": [
+        "Benjamin Reichman",
+        "Adar Avsian",
+        "Samuel Webster",
+        "Larry Heck"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-10T05:23:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.09205v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Analysis of how emotional tone shapes LLM attention and reasoning",
+      "llm_evidence_cn": "分析情感基调如何影响大模型的注意力和推理",
+      "llm_evidence": "分析情感基调如何影响大模型的注意力和推理",
+      "canonical_evidence": "分析情感基调如何影响大模型的注意力和推理",
+      "llm_tldr_en": "Studies emotion as a latent factor that influences how large language models process and reason over text.",
+      "llm_tldr_cn": "将情感作为潜在因素，研究其如何影响大语言模型对文本的处理和推理过程。",
+      "llm_tldr": "将情感作为潜在因素，研究其如何影响大语言模型对文本的处理和推理过程。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.09205v2",
+      "carry_days": 1
+    },
+    {
+      "id": "2603.08230v1",
+      "title": "Disentangling Reasoning in Large Audio-Language Models for Ambiguous Emotion Prediction",
+      "abstract": "Speech emotion recognition plays an important role in various applications. However, most existing approaches predict a single emotion label, oversimplifying the inherently ambiguous nature of human emotional expression. Recent large audio-language models show promise in generating richer outputs, but their reasoning ability for ambiguous emotional understanding remains limited. In this work, we reformulate ambiguous emotion recognition as a distributional reasoning problem and present the first systematic study of ambiguity-aware reasoning in LALMs. Our framework comprises two complementary components: an ambiguity-aware objective that aligns predictions with human perceptual distributions, and a structured ambiguity-aware chain-of-thought supervision that guides reasoning over emotional cues. Experiments on IEMOCAP and CREMA-D demonstrate consistent improvements across SFT, DPO, and GRPO training strategies.",
+      "authors": [
+        "Xiaofeng Yu",
+        "Jiaheng Dong",
+        "Jean Honorio",
+        "Abhirup Ghosh",
+        "Hong Jia",
+        "Ting Dang"
+      ],
+      "primary_category": "cs.SD",
+      "categories": [
+        "cs.SD",
+        "cs.AI",
+        "eess.AS"
+      ],
+      "published": "2026-03-09T11:02:34+00:00",
+      "link": "https://arxiv.org/pdf/2603.08230v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "ambiguous emotion prediction in audio-language models",
+      "llm_evidence_cn": "音频语言模型中的模糊情感预测",
+      "llm_evidence": "音频语言模型中的模糊情感预测",
+      "canonical_evidence": "音频语言模型中的模糊情感预测",
+      "llm_tldr_en": "Reformulates ambiguous emotion recognition as a distributional reasoning problem in large audio-language models.",
+      "llm_tldr_cn": "该研究将模糊情感识别重新定义为大音频语言模型中的分布推理问题。",
+      "llm_tldr": "该研究将模糊情感识别重新定义为大音频语言模型中的分布推理问题。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.08230v1",
       "carry_days": 1
     }
   ]
