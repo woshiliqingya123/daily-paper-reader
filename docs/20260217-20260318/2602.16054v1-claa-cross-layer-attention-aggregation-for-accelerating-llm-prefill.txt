@@ -1,0 +1,1012 @@
+Title: CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill
+
+URL Source: https://arxiv.org/pdf/2602.16054v1
+
+Published Time: Thu, 19 Feb 2026 01:13:01 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+Bradley McDanel 1 2 Steven Li 2 Harshit Khaitan 2
+
+## Abstract 
+
+The prefill stage in long-context LLM inference remains a computational bottleneck. Recent token-ranking heuristics accelerate inference by selectively processing a subset of semantically rel-evant tokens. However, existing methods suffer from unstable token importance estimation, often varying between layers. Evaluating token-ranking quality independently from heuristic-specific ar-chitectures is challenging. To address this, we introduce an Answer-Informed Oracle, which de-fines ground-truth token importance by measur-ing attention from generated answers back to the prompt. This oracle reveals that existing heuris-tics exhibit high variance across layers: rankings can degrade sharply at specific layers, a failure mode invisible to end-to-end benchmarks. The diagnosis suggests a simple fix: aggregate scores across layers rather than relying on any single one. We implement this as Cross-Layer Atten-tion Aggregation (CLAA), which closes the gap to the oracle upper bound and reduces Time-to-First-Token (TTFT) by up to 39% compared to the Full KV Cache baseline. 
+
+## 1. Introduction 
+
+One emerging framework to reduce this high computational cost is to operate on a smaller subset of only the most impor-tant prompt tokens. For instance, when processing a long document, many of the tokens can be irrelevant to the posed query. The specific heuristics employed within this framework vary in both their ranking signals and their architectural designs. For ranking, importance scores are derived from different sources. Methods like GemFilter (Shi et al., 2024) and FastKV (Jo et al., 2025) derive their ranking signal from the final tokens of the input prompt. In contrast, Speculative Prefill (Liu et al., 2025) uses a separate smaller model to draft a plausible future continuation, which then serves as 
+
+> 1
+
+Franklin and Marshall College 2Meta Reality Labs. Corre-spondence to: Bradley McDanel <bmcdanel@fandm.edu >.
+
+Preprint. February 19, 2026. Score Heuristic Via Rank Similarity 
+
+> LLM Prefill + Full Decode
+> Rank Similarity Score
+> Large Model Single-Layer Ranking
+> GemFilter, FastKV
+> ≈
+> Long-Context Prompt
+> Token Ranking Heuristics
+
+0.86  
+
+> Answer-Informed Oracle
+> Answer
+> Small Model Lookahead Ranking
+> Spec. Prefill
+> Large Model Multi-Layer Ranking
+> CLAA (ours)
+
+Figure 1. Illustration of our framework for evaluating token rank-ing heuristics for LLM Prefill acceleration. An Answer-Informed Oracle establishes a ground-truth token ranking by aggregating attention from the generated answer back to the prompt. This ap-proach, which measures rank similarity between heuristic outputs and the oracle, motivates our Cross-Layer Attention Aggregation (CLAA) method that achieves higher alignment with the oracle. 
+
+the basis for scoring the prompt. Architecturally, these approaches can differ, with some restarting computation entirely, while others dynamically prune tokens during the forward pass. The variety of approaches makes principled comparison difficult. Current benchmarks rely on a single end-to-end performance metric, which conflates ranking quality with architectural efficiency and obscures how token importance evolves across different layers and attention heads. To address these challenges, we propose an Answer-Informed Oracle (Figure 1) that establishes a ground-truth for evaluating token ranking heuristics. Our approach is founded on the observation that the true importance of a prompt token is determined by the attention it receives from the generated answer. Using this framework, we find that aggregating attention scores across multiple model layers produces a more ro-bust signal of token importance. This analysis suggests a straightforward fix: aggregate importance scores across layers rather than trusting any single one. We implement this as Cross-Layer Attention Aggregation (CLAA), which produces rankings with higher similarity to the oracle and validates that the identified instability was indeed the bottle-neck. In summary, our main contributions are: • We introduce an Answer-Informed Oracle that es-1
+
+> arXiv:2602.16054v1 [cs.CL] 17 Feb 2026 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill
+
+tablishes ground-truth token importance by measur-ing attention from the generated answer back to the prompt. • Using this oracle, we develop a quantitative evalua-tion framework that reveals layer-wise ranking insta-bility in existing heuristics, a failure mode invisible to end-to-end benchmarks. • Guided by this diagnosis, we implement Cross-Layer Attention Aggregation (CLAA), a simple aggregation strategy that validates our analysis by closing the gap to the oracle. 
+
+## 2. Related Work 
+
+2.1. Approaches to Prefill Acceleration 
+
+Hardware-aware optimizations such as FlashAttention (Dao et al., 2022; Dao, 2023) achieve substantial speedups through improved memory access patterns, though they still maintain quadratic complexity with respect to sequence length. Researchers have developed dynamic sparse atten-tion methods to address this fundamental scaling limitation. Methods like SpAtten (Wang et al., 2021), H2O (Zhang et al., 2023), and MInference (Jiang et al., 2024) use the observation that attention patterns vary dynamically with input content, adaptively identifying important tokens at runtime rather than relying on static sparsity patterns. Alternative architectural solutions offer different trade-offs. State space models like Mamba (Gu & Dao, 2023) achieve linear complexity but face challenges with precise token recall, which has led to the development of hybrid archi-tectures such as Jamba (Lieber et al., 2024). Semantic compression techniques including LLMLingua (Jiang et al., 2023; Pan et al., 2024) employ smaller auxiliary models to rewrite lengthy prompts into more concise representations, achieving substantial compression ratios but introducing computational overhead from the compression process it-self. Architectures like YOCO (Sun et al., 2024) require additional training or fine-tuning phases. Token-ranking heuristics take a different approach. These methods are training-free and reduce computational costs by identifying and processing only the most relevant token subsets. They can be applied directly to existing models without modification. This paper presents an evaluation framework and improved heuristic for such approaches. 
+
+2.2. Token Ranking Strategies in Prefill Acceleration 
+
+Several recent methods accelerate the prefill stage by avoid-ing a full-sequence forward pass through all layers. These approaches share a common strategy of first ranking the importance of prompt tokens using an initial, less computa-tionally expensive ranking heuristic. This ranking allows the model to perform its main, compute-intensive forward pass on only a top-ranked subset of tokens, thereby lowering the total prefill cost. While these heuristics all rely on attention scores to perform this ranking, their primary distinction lies in the choice of query vectors (Q) used to probe the key vectors (K) of the prompt. To clarify these differences, we formalize each approach below using a consistent notation. Let Tprompt be an input prompt of length L. For a given model M and layer l, let K(l,h ) 
+
+> prompt
+
+∈ RL×dk be the matrix of key vectors for all prompt tokens at head h, where dk
+
+is the head dimensionality. The goal of each strategy is to compute an importance score Si for each prompt token 
+
+i ∈ { 1, . . . , L }.
+
+GemFilter. GemFilter (Shi et al., 2024) hypothesizes that the query from the very last token of the prompt, after being processed by some initial layers, is sufficient to identify rele-vant context. It runs the model M for r layers to produce the query vector for the last token, q(r) 
+
+> last
+
+. The importance score for the i-th prompt token is then computed by summing the raw attention scores (pre-softmax) from this single query across all attention heads h:
+
+SGF  
+
+> i
+
+= X
+
+> h
+
+" q(r,h ) 
+
+> last
+
+(K(r,h )
+
+> prompt
+
+)⊤
+
+√dk
+
+#
+
+> i
+
+(1) 
+
+FastKV. FastKV (Jo et al., 2025) uses a small observa-tion window, W, consisting of the W most recent prompt tokens as queries. This allows a collective assessment from multiple positions at the end of the context. These queries are selected from a specific Token-Selective Propagation (TSP) layer, denoted lTSP . The importance score is derived by summing the post-softmax attention probabilities from each query in the window across all attention heads h:
+
+SFKV  
+
+> i
+
+= X
+
+> j∈W
+
+X
+
+> h
+
+"
+
+Softmax q(lTSP ,h ) 
+
+> j
+
+(K(lTSP ,h ) 
+
+> prompt
+
+)⊤
+
+√dk
+
+!# 
+
+> i
+
+(2) 
+
+Speculative Prefill. In contrast, Speculative Prefill (Liu et al., 2025) uses a separate, smaller speculator model ,
+
+Mspec , to look into the “future.” It generates k looka-head tokens and uses their corresponding query vectors, 
+
+{qgen ,j }kj=1 , to score the prompt. This assesses token im-portance based on what a model would look for while gen-erating a plausible continuation. The final score is the mean of the maximum raw attention scores (pre-softmax) from each lookahead query, taken across all layers and heads: 
+
+SSP  
+
+> i
+
+= 1
+
+k
+
+> k
+
+X
+
+> j=1
+
+max 
+
+> l,h
+
+" q(l,h ) 
+
+> gen ,j
+
+(K(l,h )
+
+> prompt, spec
+
+)⊤
+
+√dk
+
+#
+
+> i
+
+!
+
+(3) 2CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+where K(l,h ) 
+
+> prompt, spec
+
+are the prompt key vectors as computed by the speculator model Mspec .
+
+2.3. KV Cache Management in Prefill Acceleration 
+
+In addition to pruning tokens during prefill, ranking heuris-tics are also used to compress the KV cache for decode. 
+
+Compression via Sequence Pruning. For methods like GemFilter and Speculative Prefill, KV cache compression is a direct consequence of their architectural design. These heuristics first identify a single, shared subset of Lpruned 
+
+important tokens. They then execute a second, main forward pass using only this pruned sequence. The compression follows naturally: the KV cache is built exclusively for these Lpruned tokens. For any given layer l, the resulting key cache matrix, K(l) ∈ RLpruned ×dk , is therefore uniform across all attention heads. 
+
+Layer-wise Cache Compression. In contrast, FastKV employs a dual-strategy architecture that performs explicit compression of the KV cache at each layer. At each layer 
+
+l before the final pruning step, it computes an importance score, I, for each key-value head group g:
+
+IKV-FKV  
+
+> i,g
+
+= 1
+
+|H g |
+
+X
+
+> h∈H g
+
+X
+
+> j∈W
+
+"
+
+Softmax q(l,h ) 
+
+> j
+
+(K(l,g )
+
+> prompt
+
+)⊤
+
+√dk
+
+!# 
+
+> i
+
+(4) Based on these scores, a compressed KV cache is stored independently for each head group. Critically, while the stored cache is compressed, the full, unpruned hidden states are propagated to the subsequent layer for computation. This separation allows full-context processing with a memory-efficient cache. 
+
+## 3. Answer-Informed Oracle Framework 
+
+3.1. Oracle Construction 
+
+Our oracle is based on the idea that prompt token impor-tance is definitively measured by attention received from the generated answer. Unlike existing heuristics predict-ing future importance from partial information, our oracle uses full knowledge of the generation process to determine precisely which prompt tokens influenced the response. Algorithm 1 details the three-stage process for constructing oracle rankings. First, we process the full prompt through the model to extract key vectors for all prompt tokens. Sec-ond, we generate a complete answer while capturing the query vectors from each generated token. This separation into stages allows us to compute the exact attention scores we need without incurring the prohibitive memory cost of storing the full attention matrices from every generation step. Finally, we compute attention scores between all an-
+
+Algorithm 1 Answer-Informed Oracle Token Ranking 
+
+Require: Oracle Model M , prompt tokens Tprompt , max output 
+
+Ngen 
+
+1: Sprompt ← MODEL FORWARD (M, T prompt )
+
+2: Kprompt ← GET KEYS (Sprompt ) ▷ Extract keys from prompt 3: Initialize empty lists Qgen , T gen 
+
+4: for i = 1 to Ngen do 
+
+5: S ← MODEL FORWARD (M, T prompt ⊕ Tgen ) ▷ Generate oracle answer 6: Qgen [i] ← GET LAST QUERY (S) ▷ Store query 7: t ← argmax (GET LAST LOGIT (S)) 
+
+8: if t is EOS then 
+
+9: break 
+
+10: end if 
+
+11: Tgen [i] ← t ▷ Store token 12: end for 
+
+13: A ← COMPUTE ATTN (Qgen , K prompt ) ▷ All attention scores 14: Soracle ← POOL 1D (MEAN AGG (MAX AGG (A))) ▷
+
+Aggregate & denoise 15: return Soracle 
+
+swer queries and prompt keys, aggregating these scores to produce a definitive importance ranking for each prompt token. The oracle design incorporates several architectural choices. We adopt a maximum aggregation strategy across layers and attention heads, similar to that used in Speculative Prefill (Liu et al., 2025), to capture the peak importance of each token. This approach recognizes that even a single strong attention connection can indicate critical information. How-ever, whereas Speculative Prefill aggregates attention from a handful of speculated future tokens, our oracle averages these peak scores across the entire ground-truth generated answer, providing a measure of each token’s true impor-tance. Finally, we apply 1D average pooling with a small kernel to reduce local variations and stabilize rankings. To quantitatively assess how well a ranking generated by a heuristic aligns with the ground truth established by the oracle, we use the Spearman Rank Correlation ( ρ). This metric is a global measure of ranking quality by comparing the ranks assigned to each token by the oracle and heuristic methods. Values range from -1 (perfect disagreement) to 1 (perfect agreement), offering a direct measure of the ordinal similarity between the heuristic and oracle rankings. 
+
+3.2. Oracle as an Upper-Bound Benchmark 
+
+Beyond comparing rankings via similarity metrics, the Answer-Informed Oracle is an empirical upper bound for any given token keep rate. This involves first computing the oracle ranking for a prompt using Algorithm 1, then executing a separate forward pass using only the top-k% tokens identified by this ranking. To ensure a fair upper bound, the oracle-guided forward pass must precisely mirror the architectural strategy of the evalu-3CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 0.0               
+
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> Single-Doc QA Multi-Doc QA Summarization
+> 0816 24 31
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> Few-shot Learning
+> 0816 24 31
+> Synthetic Task
+> 0816 24 31
+> Code Completion
+> GemFilter
+> FastKV
+> CLAA
+> Spec. Prefill
+> Model Layer Index
+> Spearman Rank Correlation with Oracle  Comparing Token Ranking Heuristics against Oracle
+
+Figure 2. Layer-wise token ranking performance on Llama-3.1-8B-Instruct. Spearman correlation with answer-informed oracle across LongBench tasks, comparing existing heuristics to our proposed CLAA method. 
+
+ated heuristic. For methods like GemFilter and FastKV that prune at an intermediate layer lp, the oracle emulation fol-lows a specific protocol: in layers before lp, pre-computed oracle rankings compress the KV cache by selecting top-ranked token pairs, while full hidden states propagate for-ward to preserve the computational path. At the pruning layer lp, these same rankings perform sequence pruning, fil-tering the hidden states themselves to retain only top-ranked tokens. This reduced sequence then flows through all subse-quent layers, with the KV cache at lp compressed using the same indices. 
+
+## 4. Cross-Layer Attention Aggregation (CLAA) 
+
+4.1. The Oracle Reveals Layer-wise Instability 
+
+Figure 2 reveals two limitations of existing token-ranking methods when examined layer by layer against our oracle baseline. First, heuristics such as FastKV and GemFilter exhibit high variance, with rank correlations fluctuating dra-matically and experiencing sharp drops at specific layers. This volatility is risky for methods that depend on a single layer to determine sequence pruning decisions. When the selected layer (e.g., lTSP ) coincides with one of these perfor-mance troughs, the resulting token rankings become unreli-able, potentially eliminating important tokens and compro-mising downstream task performance. Second, our analysis reveals that early layers consistently show unreliable token rankings. The rank correlations in initial layers (particularly layers 0-4) are lower than those in deeper layers. Pruning based on early-layer rankings uses low-fidelity signals. Consequently, essential key-value pairs may be prematurely discarded, undermining the model’s ability to construct accurate semantic representations in subsequent layers and degrading the contextual information available for generation. 
+
+4.2. Multi-Layer Aggregation for Robust Ranking 
+
+The Oracle analysis reveals that single-layer heuristics are unstable, with performance varying sharply across layers. The implication is direct: do not trust any single layer. We implement this as Cross-Layer Attention Aggregation (CLAA), which aggregates scores across consecutive layers. First, given the unreliability of initial layers for ranking deci-sions, CLAA defers KV cache compression during the first 
+
+m = 4 layers of the model. By maintaining the complete context in these early stages, we ensure that the model can construct high-fidelity semantic representations before any KV compression occurs. Second, rather than relying on po-tentially unstable single-layer rankings, CLAA aggregates token importance signals across multiple consecutive lay-ers. By taking the maximum importance score across these layers, tokens critical to any layer are preserved, making the method robust against layer-specific failures. At a desig-nated pruning layer lp, CLAA synthesizes information from a window of n preceding layers, L = {lp − n + 1 , . . . , l p}.For each prompt token i and layer l′ ∈ L , we compute a layer-specific importance score S(l′) 
+
+> i
+
+based on attention from a small observation window W containing the W most recent prompt tokens: 
+
+S(l′) 
+
+> i
+
+= X
+
+> j∈W
+
+X
+
+> h
+
+"
+
+Softmax q(l′,h ) 
+
+> j
+
+(K(l′,h )
+
+> prompt
+
+)⊤
+
+√dk
+
+!# 
+
+> i
+
+(5) Here, q(l′,h ) 
+
+> j
+
+∈ Rdk represents the query vector from the 
+
+j-th token in the observation window at layer l′ and head 
+
+h, while K(l′,h ) 
+
+> prompt
+
+∈ RL×dk contains key vectors for all L
+
+prompt tokens. When the model reaches the pruning layer lp, CLAA com-putes the final importance score for each token by taking the maximum across all collected layer scores: SCLAA  
+
+> i
+
+=max l′∈L S(l′) 
+
+> i
+
+. This maximum aggregation strategy pre-serves tokens deemed important by any recent layer while filtering layer-specific noise. Unlike single-layer methods, CLAA is robust against the layer-specific variations shown in Figure 2. By aggregating across layers, CLAA produces more stable rankings. The improvement over single-layer methods validates that instability was indeed the bottleneck diagnosed by the Oracle. 
+
+## 5. Experiments 
+
+5.1. Experimental Setup Models and Datasets. We evaluate our approach on Llama-3.2-3B-Instruct (28 layers) (Grattafiori et al., 2024), Llama-3.1-8B-Instruct (32 layers), and Mistral-Nemo-12B-Instruct (40 layers) (Mistral AI Team, 2024). We evaluate 4CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+Table 1. LLaMA-3.1-8B LongBench results across varying token keep rate (%).                                                                                                                                                                                                                                                                                  
+
+> Single-Document QA Multi-Document QA Summarization Few-shot Learning Synthetic Code Method NrtvQA Qasper MF-en HotpotQA 2WikiMQA MuSiQue GovReport QMSum MultiNews TREC TriviaQA SAMSum PCount PRe LCC RB-P Avg.
+> Keep Token Rate = 100%
+> FullKV 30.16 45.53 54.94 56.02 46.66 31.28 35.12 25.28 27.25 73.00 91.65 43.80 8.88 99.50 63.38 56.73 49.32 Keep Token Rate = 10%
+> Oracle 29.85 43.94 55.85 54.99 47.11 28.92 32.26 25.29 21.95 68.50 91.43 41.80 7.47 99.50 59.63 56.85 47.83 GemFilter 24.36 21.07 39.73 51.29 33.92 25.78 28.94 18.98 17.42 60.50 91.53 40.39 4.76 87.50 22.73 32.47 37.59 FastKV 30.60 38.96 53.61 54.87 44.73 30.09 28.08 24.57 20.93 70.00 92.38 42.69 6.56 99.00 58.43 53.49 46.81 SpecPrefill 28.53 32.86 51.94 54.33 40.80 29.66 27.47 22.43 19.76 62.50 89.31 40.14 4.40 66.08 50.49 51.09 41.99 CLAA 31.09 42.36 53.68 53.83 44.73 31.53 28.15 24.76 20.42 70.00 92.37 42.93 6.51 99.50 58.31 53.86 47.13 Keep Token Rate = 20%
+> Oracle 29.86 44.37 55.33 54.57 47.17 29.83 33.96 24.92 24.39 69.50 91.63 42.93 5.41 99.50 63.08 57.74 48.39 GemFilter 25.86 30.74 47.30 57.95 43.72 29.64 31.19 20.92 21.06 64.00 92.75 40.92 6.18 97.00 29.17 38.22 42.29 FastKV 30.54 40.45 54.42 53.67 47.25 30.12 28.49 24.33 21.46 70.50 92.08 42.85 7.09 99.50 59.68 54.93 47.33 SpecPrefill 27.41 40.09 56.67 56.39 40.05 27.55 30.28 23.61 22.52 62.50 91.04 41.19 3.00 87.50 52.90 50.49 44.57 CLAA 30.63 43.95 53.85 54.61 46.09 31.01 30.72 25.33 23.14 71.00 92.08 43.14 7.61 99.50 61.21 56.07 48.12 Keep Token Rate = 40%
+> Oracle 30.14 45.74 55.36 54.27 47.42 30.95 35.11 25.17 25.97 70.00 91.79 42.56 6.84 99.50 63.99 57.33 48.88 GemFilter 26.90 39.14 52.33 56.02 46.85 32.22 33.56 22.80 24.36 68.50 91.67 43.84 4.65 99.50 37.34 42.04 45.11 FastKV 30.39 40.92 55.09 55.40 47.36 31.02 28.21 24.39 22.02 71.00 91.87 42.89 6.09 99.50 61.32 55.47 47.68 SpecPrefill 27.05 44.00 54.74 56.27 44.05 30.65 32.67 24.93 24.88 67.50 91.30 42.98 1.89 97.00 55.90 49.00 46.55 CLAA 30.37 45.84 54.32 55.02 47.38 31.72 33.10 24.87 25.21 71.00 92.04 43.31 7.18 99.50 62.40 56.23 48.72
+
+token ranking quality using three benchmarks: (1) Long-Bench (Bai et al., 2024) covers 16 English tasks across single/multi-document QA, summarization, few-shot learn-ing, code completion, and synthetic tasks; (2) Needle-in-a-Haystack (Kamradt, 2023) tests information retrieval by embedding facts at various depths in 16K-64K token con-texts; (3) RULER (Hsieh et al., 2024) evaluates retrieval, multi-hop tracing, information aggregation, and QA across 12 subtasks using 64K contexts with 500 samples per sub-task. 
+
+Baselines. We compare CLAA against three recent token ranking heuristics. GemFilter (Shi et al., 2024) uses atten-tion from the last prompt token after processing through early layers. FastKV (Jo et al., 2025) employs an observa-tion window of recent tokens to score importance. Specu-lative Prefill (Liu et al., 2025) uses Llama-3.2-1B-Instruct as a draft model to generate 8 lookahead tokens for scor-ing; we use a 1B draft to represent resource-constrained deployment scenarios where larger drafters are not feasible. For fair comparison, all methods run on the same Hugging-Face stack with FlashAttention-2, and Speculative Prefill token rankings were verified to match the original authors’ implementation. Absolute TTFT numbers differ from the original paper due to our use of HF Transformers rather than vLLM with PagedAttention; results are intended for relative comparison across methods. To ensure an equitable comparison, a given token keep rate is applied consistently to both sequence pruning during prefill and KV cache compression for decoding across all methods. For both FastKV and CLAA, the observation win-dow size ( W ) is set to 8 tokens. To stabilize token rankings, we apply 1D average pooling with a kernel size of 7 to the importance scores for all applicable methods. Unless other-wise specified, all layer-based ranking methods (GemFilter, FastKV, and CLAA) use layer 15 of the respective model as the pruning layer. For CLAA, we set the cross-layer aggregation window size ( n) to 4 and keep the KV cache for the first m = 4 layers uncompressed. These choices are justified by ablation studies: pruning layer sensitivity is ana-lyzed in Figure 6 (left), cross-layer window size in Figure 6 (right), and first uncompressed layer in Appendix B. All hyperparameter configurations are summarized in Table 5. 
+
+Evaluation Details. For task evaluation, we report task-specific metrics from LongBench (F1 for QA tasks, Rouge-L for summarization, accuracy for classification) and binary re-trieval accuracy for Needle-in-a-Haystack. For the RULER benchmark, we report the official recall-based accuracy aver-aged across its tasks. Experiments used a single A100 GPU (80GB). For the oracle, we use the same main model to gen-erate complete answers. All settings use greedy decoding (temperature 0). 5CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 16k 
+
+> 24k
+> 32k
+> 40k
+> 48k
+> 56k
+> 64k
+> Context Length
+> 0
+> 11
+> 22
+> 33
+> 44
+> 56
+> 67
+> 78
+> 89
+> 100
+> Document Depth (%)
+> GemFilter
+> Average Score: 0.787
+> 16k
+> 24k
+> 32k
+> 40k
+> 48k
+> 56k
+> 64k
+> Context Length
+> 0
+> 11
+> 22
+> 33
+> 44
+> 56
+> 67
+> 78
+> 89
+> 100
+> FastKV
+> Average Score: 0.906
+> 16k
+> 24k
+> 32k
+> 40k
+> 48k
+> 56k
+> 64k
+> Context Length
+> 0
+> 11
+> 22
+> 33
+> 44
+> 56
+> 67
+> 78
+> 89
+> 100
+> Speculative Prefill
+> Average Score: 0.887
+> 16k
+> 24k
+> 32k
+> 40k
+> 48k
+> 56k
+> 64k
+> Context Length
+> 0
+> 11
+> 22
+> 33
+> 44
+> 56
+> 67
+> 78
+> 89
+> 100
+> CLAA
+> Average Score: 0.909
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Retrieval Score
+
+Figure 3. Needle-in-a-Haystack result of LLaMA-3.1-8B-Instruct with 40% token keep rate. X denotes out of memory on 80GB A100. 
+
+5.2. Main Results 
+
+Our experiments validate the Oracle diagnosis. Aggregat-ing across layers (CLAA) consistently closes the gap to the oracle ceiling, confirming that layer instability was the bottleneck. On LongBench with Llama-3.1-8B (Table 1), CLAA achieves 47.13% at 10% token retention, within 0.7% of the oracle ceiling (47.83%). The gap to FastKV (46.81%) is modest, but CLAA consistently closes more of the distance to the oracle across all keep rates. At 20% keep rate, CLAA achieves higher accuracy than FastKV at 40% (48.12% vs. 47.68%). The trend holds across model scales (Table 2), confirming that multi-layer aggregation provides more reliable token selection than single-layer approaches. CLAA also demonstrates greater robustness in challenging retrieval tasks. The Needle-in-a-Haystack results (Figure 3) reveal critical weaknesses in baseline methods. GemFil-ter entirely fails to retrieve needles at intermediate docu-ment positions (22-44% depth), whereas SpecPrefill consis-tently misses needles located in the latter half of documents. In contrast, CLAA maintains consistent retrieval accuracy across all needle positions, achieving the highest average score (0.909). CLAA also excels in RULER (Table 3), particularly at retrieval (89.85%) and multi-hop reasoning (87.72%), both tasks requiring the identification and integra-tion of distributed information. These retrieval results align with the Oracle analysis. Tasks that require locating specific facts distributed across context benefit from multi-layer aggregation: a token ignored at one layer may be deemed important at another. GemFilter’s fail-ure at intermediate document positions (Figure 3) suggests its routing layer attends primarily to document boundaries, missing mid-document content. By aggregating across lay-ers, CLAA captures tokens that any layer considers relevant, avoiding blind spots inherent to single-layer decisions. 
+
+5.3. The Cost of Causal Prediction 
+
+Heuristic methods cannot match the Oracle because they lack information. The Oracle sees which prompt tokens the model attends to while generating the answer. Heuristics see only the prompt and must guess which tokens matter 
+
+Table 2. Average LongBench results across different models and token keep rates. 
+
+Method LLaMA-3.2-3B LLaMA-3.1-8B Mistral-Nemo-12B 
+
+Keep Token Rate = 100% 
+
+FullKV 44.23 49.32 48.32 
+
+Keep Token Rate = 10% 
+
+Oracle 44.13 47.83 47.75 GemFilter 35.20 37.59 36.60 FastKV 42.45 46.81 45.62 SpecPrefill 34.06 41.99 N/A CLAA 42.93 47.13 46.05 Keep Token Rate = 20% 
+
+Oracle 44.35 48.39 48.27 GemFilter 40.93 42.29 40.89 FastKV 42.45 47.33 47.38 
+
+SpecPrefill 35.90 44.57 N/A CLAA 43.78 48.12 46.99 
+
+Keep Token Rate = 40% 
+
+Oracle 44.52 48.88 48.24 GemFilter 41.37 45.11 44.83 FastKV 44.17 47.68 48.04 
+
+SpecPrefill 39.17 46.55 N/A CLAA 44.15 48.72 48.02 
+
+before generation begins. This information gap sets a ceil-ing on prefill compression: the difference between Oracle and heuristic performance is the cost of predicting with-out knowing the output. The Oracle also separates ranking quality from task difficulty. If a method scores poorly, we cannot tell whether the ranking is bad or the task is hard. The Oracle fixes a reference point, showing the minimum error given perfect information. We expect this gap to vary by task structure. When the rele-vant tokens (e.g., keywords or entity names) are predictable from the prompt alone, heuristics should approach the Or-acle. When the answer path depends on subtle contextual 
+
+Table 3. RULER benchmark performance by category with 64K context on LLaMA-3.1-8B with 40% token keep rate. 
+
+Method Retr. M-Hop Agg. QA Avg. 
+
+FullKV 98.27 86.88 86.67 63.30 83.78 GemFilter 82.23 58.20 88.33 63.70 73.12 FastKV 87.69 87.16 86.67 63.60 81.28 CLAA 89.85 87.72 86.67 63.80 82.01 
+
+6CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+cues, the gap should widen. Token importance is not a static property of the prompt but depends on which output the model produces. Our results confirm this pattern. On TriviaQA, heuristics nearly match the Oracle: CLAA achieves 92.37% versus the Oracle’s 91.43% at 10% keep rate, within noise. The query explicitly names the target entity, so heuristics identify rele-vant tokens without knowing the answer. In contrast, tasks like Qasper show larger gaps (CLAA 42.36% vs. Oracle 43.94%), suggesting the relevant context is harder to predict from the query alone. The Oracle framework also clarifies the value of lookahead. Speculative Prefill generates tokens with a small model before ranking, partially closing the information gap. How-ever, it still lags behind simpler heuristics: at 10% keep rate, Speculative Prefill achieves 41.99% versus CLAA’s 47.13% (Table 2). The 1B speculator poorly predicts which tokens the 8B model will attend to, negating the benefit of lookahead. 
+
+5.4. Efficiency and Accuracy Trade-off 
+
+Figure 4 shows the accuracy-speed tradeoff for each method. CLAA tracks the Oracle ceiling more closely than single-layer methods, consistent with the diagnosis that layer in-stability was the limiting factor. At a 10% keep rate, CLAA reduces TTFT by 39% compared to FullKV (from roughly 900ms to 550ms). It achieves 47.13% accuracy, closely ap-proaching the oracle at 47.83%. FastKV offers the next best performance. In contrast, GemFilter and Speculative Prefill exhibit a larger accuracy degradation for a similar reduction in TTFT. Figure 5 provides a detailed breakdown of prefill and decode performance. CLAA leaves the first four layers uncompressed to maintain foundational token representa-tions before aggregation. This results in a minimal increase in KV cache size, for example, 0.3 GB for CLAA versus 0.1 GB for the Oracle at a 10% keep rate. This modest increase in memory is justified by accuracy improvements (Figure 4), showing a favorable trade-off between resource usage and performance. In contrast, the GemFilter approach results in a larger KV cache (1.3 GB at a 10% keep rate) because its implementation retains the full cache and indexes into it dur-ing decoding, which negatively impacts decode throughput (16 tps compared to 19-20 tps for others). 
+
+5.5. Comparison with Semantic Compression 
+
+Semantic compression methods take a different approach to prefill acceleration: they use auxiliary models to rewrite lengthy prompts into more concise representations before processing with the main model. We compare CLAA against two representative methods: Selective Context (Li et al., 2023) and LLMLingua (Jiang et al., 2023). Both use LLaMA-3.2-1B-Instruct as the compression model and 
+
+Table 4. Comparison with semantic compression methods on LLaMA-3.1-8B. Rewrite time is the compression model overhead; Total TTFT includes both rewrite and prefill.                                                      
+
+> Task Method Rewrite Total TTFT Speedup Score
+> Qasper Full KV —1084 ms 1.00x 0.487 Selective Context 3134 ms 3421 ms 0.32x 0.186 LLMLingua 901 ms 1141 ms 0.95x 0.129 CLAA (20%) —755 ms 1.44x 0.470
+> GovReport Full KV —13505 ms 1.00x 0.377 Selective Context 5642 ms 15391 ms 0.88x 0.327 LLMLingua 1815 ms 9888 ms 1.37x 0.236 CLAA (20%) —10055 ms 1.34x 0.310
+> TriviaQA Full KV —1768 ms 1.00x 0.944 Selective Context 5254 ms 6027 ms 0.29x 0.204 LLMLingua 1682 ms 2412 ms 0.73x 0.470 CLAA (20%) —1217 ms 1.45x 0.944
+
+LLaMA-3.1-8B-Instruct as the main model. Table 4 reports end-to-end TTFT including the compres-sion overhead. The autoregressive rewrite step dominates total latency for both semantic compression methods. Se-lective Context is slower than the Full-KV baseline on all three tasks due to its 3–5 second rewrite overhead, while also degrading task quality. LLMLingua achieves modest speedups on longer contexts (GovReport) but still underper-forms CLAA on both speed and quality. In contrast, CLAA achieves 1.34x–1.45x speedup over Full-KV while main-taining accuracy within 4% of the baseline. Semantic com-pression methods could benefit in amortized settings where the same rewritten prompt is reused across multiple queries; however, for single-query inference, token-ranking heuris-tics like CLAA offer a more favorable efficiency-quality tradeoff. 
+
+5.6. Ablation Studies Impact of Pruning Layer. Figure 6 (left) demonstrates a strong positive correlation between LongBench accuracy and the pruning layer index. For all heuristics, applying pruning at later layers results in higher accuracy. For in-stance, the accuracy of FastKV increases from 32.5% at layer 3 to 46.5% at layer 15. This finding indicates that pre-mature pruning at early layers, which compute foundational representations, leads to information loss. CLAA consis-tently outperforms both FastKV and GemFilter across all tested layers, particularly at earlier ones, which shows the robustness of cross-layer aggregation. As the pruning layer index increases, the performance of all methods improves and converges toward the upper bound established by the oracle. The selection of layer 15 for our main experiments, positioned approximately halfway through the model, is therefore justified as a balance between computational sav-ings and performance. 7CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 600 700 800 900 
+
+Time to First Token (ms) 
+
+37.5 
+
+40.0 
+
+42.5 
+
+45.0 
+
+47.5  
+
+> Accuracy (%)
+> 100%
+> 10%
+> 20% 40%
+
+LongBench Accuracy vs TTFT 
+
+> FullKV
+> Oracle
+> GemFilter
+> FastKV
+> SpecPrefill
+> CLAA
+
+Figure 4. LongBench accuracy versus Time-to-First-Token (TTFT) for LLaMA-3.1-8B-Instruct on a 10k token sequence. Points correspond to 10%, 20%, and 40% keep rates. Oracle 
+
+> GemFilter
+> FastKV
+> SpecPrefill
+> CLAA
+> 0
+> 500
+> 1000
+> 1500
+> 2000
+> Time (ms)
+> 0.1
+> GB
+> 20
+> tps
+> 1.3
+> GB
+> 16
+> tps
+> 0.1
+> GB
+> 20
+> tps
+> 0.1
+> GB
+> 19
+> tps
+> 0.3
+> GB
+> 20
+> tps
+
+10% Keep Rate 
+
+> Oracle
+> GemFilter
+> FastKV
+> SpecPrefill
+> CLAA
+> 0.2
+> GB
+> 19
+> tps
+> 1.3
+> GB
+> 16
+> tps
+> 0.2
+> GB
+> 19
+> tps
+> 0.3
+> GB
+> 18
+> tps
+> 0.4
+> GB
+> 19
+> tps
+
+20% Keep Rate 
+
+> Oracle
+> GemFilter
+> FastKV
+> SpecPrefill
+> CLAA
+> 0.5
+> GB
+> 18
+> tps
+> 1.3
+> GB
+> 15
+> tps
+> 0.5
+> GB
+> 19
+> tps
+> 0.5
+> GB
+> 16
+> tps
+> 0.6
+> GB
+> 18
+> tps
+
+40% Keep Rate 
+
+E2E Performance: Prefill vs Decode Time Breakdown  
+
+> Sequence Length 10k, Decode 32 tokens Prefill (TTFT) Decode
+
+Figure 5. End-to-end performance breakdown for a 10k token prompt and 32 token generation. Bars show Prefill (TTFT) and Decode time. Annotations indicate decode throughput (tokens per second) and KV cache size (GB) at the start of decode. 3 7 11 15      
+
+> Pruning Layer Index
+> 30
+> 40
+> LongBench Accuracy (%)
+> Impact of Token Pruning Layer
+> Oracle
+> GemFilter
+> FastKV
+> CLAA
+> 12345
+> Agg. Window n
+> 47
+> 48
+> 49
+> Token Keep Rate 10%
+> Token Keep Rate 20%
+> Token Keep Rate 40%
+> Impact of Cross Layer Agg.
+
+Figure 6. Left : Impact of the pruning layer index on LongBench accuracy. Pruning later in the model improves performance for all heuristics. Right : Impact of the cross-layer aggregation window size ( n) at different token keep rates. Increasing the window size improves accuracy. 
+
+Impact of Cross-Layer Aggregation Window. Figure 6 (right) illustrates the effect of the aggregation window size, 
+
+n, on the performance of CLAA at different token keep rates. For all keep rates, expanding the window from n = 1 
+
+to n = 2 provides an accuracy boost, validating the core hypothesis that cross-layer aggregation mitigates the insta-bility of single-layer ranking. Larger windows have varied effects, with performance for higher token keep rates (20% and 40%) typically stabilizes around n = 4 . For the highly aggressive 10% keep rate, performance is more volatile, peaking at n = 2 . These results demonstrate that a small aggregation window is sufficient to stabilize rankings. A window size of n = 4 was selected for our experiments as it offers a robust performance benefit across various keep rates with minimal overhead. 
+
+## 6. Limitations 
+
+While CLAA achieves strong performance across retrieval and QA tasks, several limitations warrant discussion. First, summarization tasks such as Multi-News exhibit relatively flat rank correlations for all methods, including CLAA (Fig-ure 2). In these tasks, token importance appears to evolve dynamically throughout generation rather than being fixed at the prompt boundary. Static prefill pruning, which commits to a single importance ranking before any tokens are gen-erated, may be fundamentally limited for such workloads. Future methods may need to re-assess token importance dynamically during decoding to capture these shifts. Second, our evaluation focuses on single-turn inference. In multi-turn conversation settings, token pruning methods face an additional challenge: importance estimates from the first user turn may not remain valid as the conversation evolves. While these methods could theoretically be re-run for each additional turn, doing so would eventually negate the efficiency gains. Extending token-ranking heuristics to multi-turn settings remains an open problem shared by all methods in this class. Finally, all methods in our evaluation, including CLAA, use FlashAttention-2 for the main forward pass. The scoring computation required by CLAA (an W × L attention com-putation per layer in the aggregation window) accounts for less than 2% of total TTFT and is already included in our reported wall-clock times. No modifications to underlying CUDA kernels are required. 
+
+## 7. Conclusion 
+
+We introduce the Answer-Informed Oracle, a framework that defines ground-truth token importance for evaluating prefill acceleration heuristics. The oracle reveals that ex-isting methods suffer from layer-wise ranking instability, a failure mode invisible to end-to-end benchmarks. This diagnosis suggests a simple fix: aggregate across layers. CLAA implements this idea and closes the gap to the oracle ceiling while reducing Time-to-First-Token by up to 39%. 8CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+## Impact Statement 
+
+This paper presents work whose goal is to advance the field of machine learning. There are many potential societal consequences of our work, none of which we feel must be specifically highlighted here. 
+
+## References 
+
+Bai, Y., Lv, X., Zhang, J., Lyu, H., Tang, J., Huang, Z., Du, Z., Liu, X., Zeng, A., Hou, L., et al. Longbench: A bilingual, multitask benchmark for long context under-standing. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL) .Association for Computational Linguistics, 2024. Dao, T. Flashattention-2: Faster attention with bet-ter parallelism and work partitioning. arXiv preprint arXiv:2307.08691 , 2023. Dao, T., Fu, D., Ermon, S., Rudra, A., and R ´e, C. Flashat-tention: Fast and memory-efficient exact attention with io-awareness. Advances in neural information processing systems , 35:16344–16359, 2022. Grattafiori, A., Dubey, A., Jauhri, A., Pandey, A., Kadian, A., Al-Dahle, A., Letman, A., Mathur, A., Schelten, A., Vaughan, A., et al. The llama 3 herd of models. arXiv preprint arXiv:2407.21783 , 2024. Gu, A. and Dao, T. Mamba: Linear-time sequence modeling with selective state spaces. arXiv preprint arXiv:2312.00752 , 2023. Hsieh, C.-P., Sun, S., Kriman, S., Acharya, S., Rekesh, D., Jia, F., Zhang, Y., and Ginsburg, B. Ruler: What’s the real context size of your long-context language models? 
+
+arXiv preprint arXiv:2404.06654 , 2024. Jiang, H., Wu, Q., Lin, C.-Y., Yang, Y., and Qiu, L. Llmlin-gua: Compressing prompts for accelerated inference of large language models. arXiv preprint arXiv:2310.05736 ,2023. Jiang, H., Li, Y., Zhang, C., Wu, Q., Luo, X., Ahn, S., Han, Z., Abdi, A. H., Li, D., Lin, C.-Y., et al. Minference 1.0: Accelerating pre-filling for long-context llms via dy-namic sparse attention. Advances in Neural Information Processing Systems , 37:52481–52515, 2024. Jo, D., Song, J., Kim, Y., and Kim, J.-J. Fastkv: Kv cache compression for fast long-context processing with token-selective propagation. arXiv preprint arXiv:2502.01068 ,2025. Kamradt, G. Needle in a haystack - pressure testing llms, 2023. URL https://github.com/gkamradt/ LLMTest_NeedleInAHaystack .Li, Y., Dong, B., Guerin, F., and Lin, C. Compressing context to enhance inference efficiency of large language models. In Proceedings of the 2023 conference on empir-ical methods in natural language processing , pp. 6342– 6353, 2023. Lieber, O., Lenz, B., Bata, H., Cohen, G., Osin, J., Dalmedi-gos, I., Safahi, E., Meirom, S., Belinkov, Y., Shalev-Shwartz, S., et al. Jamba: A hybrid transformer-mamba language model. arXiv preprint arXiv:2403.19887 , 2024. Liu, J., Chen, B., and Zhang, C. Speculative prefill: Tur-bocharging ttft with lightweight and training-free token importance estimation. In Forty-second International Conference on Machine Learning , 2025. Mistral AI Team. Mistral-nemo, May 2024. URL https: //mistral.ai/news/mistral-nemo .Pan, Z., Wu, Q., Jiang, H., Xia, M., Luo, X., Zhang, J., Lin, Q., R ¨uhle, V., Yang, Y., Lin, C.-Y., et al. Llmlingua-2: Data distillation for efficient and faithful task-agnostic prompt compression. In Findings of the Association for Computational Linguistics: ACL 2024 , pp. 963–981, 2024. Shi, Z., Ming, Y., Nguyen, X.-P., Liang, Y., and Joty, S. Discovering the gems in early layers: Accelerating long-context llms with 1000x input token reduction. arXiv preprint arXiv:2409.17422 , 2024. Sun, Y., Dong, L., Zhu, Y., Huang, S., Wang, W., Ma, S., Zhang, Q., Wang, J., and Wei, F. You only cache once: Decoder-decoder architectures for language models. 
+
+Advances in Neural Information Processing Systems , 37: 7339–7361, 2024. Wang, H., Zhang, Z., and Han, S. Spatten: Efficient sparse attention architecture with cascade token and head prun-ing. In 2021 IEEE International Symposium on High-Performance Computer Architecture (HPCA) , pp. 97–110. IEEE, 2021. Zhang, Z., Sheng, Y., Zhou, T., Chen, T., Zheng, L., Cai, R., Song, Z., Tian, Y., R ´e, C., Barrett, C., et al. H2o: Heavy-hitter oracle for efficient generative inference of large language models. Advances in Neural Information Processing Systems , 36:34661–34710, 2023. 
+
+## A. Hyperparameter Configuration 
+
+This appendix details the hyperparameter configurations for all methods to ensure a transparent and reproducible compar-ison. Key architectural parameters, such as the pruning layer index, were swept across all applicable methods for our ab-lation studies (Section 5.6). The final values used in our 9CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+main results (e.g., Tables 1 and 2) were selected to provide a consistent and fair comparison point across methods. 
+
+## B. Ablation on First Compression Layer ( m)
+
+In our main experiments, we set the number of initial un-compressed layers for CLAA to m = 4 . This decision was based on an ablation study investigating the trade-off between early-layer compression and model accuracy. As shown in Figure 7, deferring compression to later layers con-sistently improves performance across all token keep rates. Starting compression from layer 0 (i.e., m = 0 ) results in the lowest accuracy, as it forces the model to build its initial representations from a compressed context. Delaying com-pression until layer 4 provides an accuracy boost, justifying the choice of m = 4 as a default that balances performance and computational efficiency. 0 1 2 4
+
+> First Compression Layer m
+> 46.5
+> 47.0
+> 47.5
+> 48.0
+> 48.5
+> 49.0
+> LongBench Accuracy (%)
+> Token Keep Rate 10%
+> Token Keep Rate 20%
+> Token Keep Rate 40%
+> Impact of First Compression Layer
+
+Figure 7. Impact of the first compression layer index ( m) on LongBench accuracy for CLAA. For m > 0, layers 0 to m − 1
+
+are kept uncompressed. The experiment shows that deferring compression to later layers (increasing m) improves accuracy, especially for higher token keep rates. These results are on Llama-3.1-8B-Instruct. 
+
+## C. Per-Task Ranking Correlation Analysis 
+
+This section analyzes token ranking performance by compar-ing various heuristics against the Answer-Informed Oracle. Figure 8 shows Spearman Rank Correlation for each heuris-tic across all model layers. • Layer-specific volatility: Single-layer heuristics show performance drops at specific layers. In NarrativeQA, GemFilter and FastKV exhibit sharp correlation drops around layer 10. This pattern repeats across QASPER, HotpotQA, and QMSum. CLAA avoids these drops through multi-layer aggregation. • Practical implications: Methods using single pre-selected layers risk severe performance degradation if their chosen layer coincides with a performance trough. CLAA provides more reliable token selection by ag-gregating across a layer window. • Performance convergence: While layer-dependent heuristics reach similar high performance in deep lay-ers (20-31), CLAA achieves comparable results with-out the intermediate volatility. • Universal patterns: Early layers (0-8) consistently fail to predict token importance across all methods. Speculative Prefill serves as a task-dependent baseline with varying competitiveness. These results demonstrate that CLAA provides more stable token ranking compared to single-layer methods, making it a robust choice for prefill acceleration. 
+
+## D. Token Ranking Heuristic Pseudocode 
+
+This section provides detailed and unified pseudocode for the token ranking heuristics discussed in the paper: Gem-Filter, FastKV, Speculative Prefill, our Answer-Informed Oracle, and our proposed method, CLAA. 
+
+D.1. GemFilter 
+
+GemFilter operates in a two-pass system. It first runs a partial forward pass to rank tokens using the query from the final prompt token. It then discards this intermediate state and executes a new, standard forward pass using only the top-ranked tokens and their original positions. This architectural approach is outlined in Listing 1. 
+
+D.2. FastKV 
+
+Unlike GemFilter’s two-pass system, FastKV operates in a single, continuous forward pass. At each layer, it uses an “observation window” of recent tokens to rank all prompt tokens and compress the stored KV cache. At a designated Token-Selective Propagation (TSP) layer, it performs a one-time sequence pruning, after which the forward pass contin-ues on the reduced sequence. This integrated architecture is outlined in Listing 2. 
+
+D.3. Speculative Prefill 
+
+Speculative Prefill uses a two-model architecture. A small “speculator” model first performs a full prefill and generates a few lookahead tokens. The queries from these generated tokens are used to rank the importance of the original prompt tokens. Finally, the large “base” model performs a selective prefill on only the top-ranked prompt tokens, using their original position IDs to maintain context. This multi-stage process is outlined in Listing 3. 
+
+D.4. Answer-Informed Oracle 
+
+The Answer-Informed Oracle provides a ground-truth to-ken ranking by leveraging knowledge of the final generated answer. Its operation is split into two phases. First, in an offline ranking phase, it generates a complete answer and 10 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill Single-Doc QA 
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+NarrativeQA 
+
+0 8 16 24 31 
+
+QASPER 
+
+0 8 16 24 31 
+
+MultiFieldQA 
+
+> Multi-Doc QA
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+HotpotQA 
+
+0 8 16 24 31 
+
+2WikiMQA 
+
+0 8 16 24 31 
+
+Musique 
+
+> Summarization
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+GovReport 
+
+0 8 16 24 31 
+
+QMSum 
+
+0 8 16 24 31 
+
+Multi-News 
+
+> Few-shot Learning
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+TREC 
+
+0 8 16 24 31 
+
+TriviaQA 
+
+0 8 16 24 31 
+
+SAMSum 
+
+> Synthetic Task
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+PassageCount 
+
+0 8 16 24 31 
+
+PassageRetrieval 
+
+> Code Completion
+
+0 8 16 24 31 
+
+0.0 
+
+0.5 
+
+LCC 
+
+0 8 16 24 31 
+
+RepoBench-P 
+
+> GemFilter
+> FastKV
+> CLAA
+> Spec. Prefill
+
+## Model Layer Index 
+
+> Spearman Rank Correlation with Oracle
+
+## Comparing Token Ranking Heuristics against Oracle 
+
+Figure 8. Detailed per-task comparison of token ranking heuristics against the Answer-Informed Oracle. 
+
+11 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+Table 5. Hyperparameter settings for all methods evaluated on LLaMA-3.1-8B-Instruct.                                                            
+
+> Method Parameter Symbol Value(s) Explored Final Value in Main Results Oracle Token Keep Rate -{0.1, 0.2, 0.4 }Main Variable (Ours) Pruning Layer Index lp{3, 7, 11, 15, 19 }15
+> FastKV Token Keep Rate -{0.1, 0.2, 0.4 }Main Variable TSP Layer Index lTSP {3, 7, 11, 15, 19 }15 Observation Window W{8}8Pooling Kernel Size -{7}7
+> GemFilter Token Keep Rate -{0.1, 0.2, 0.4 }Main Variable Routing Layer Index r{3, 7, 11, 15, 19 }15
+> SpecPrefill Token Keep Rate -{0.1, 0.2, 0.4 }Main Variable Lookahead Tokens k{8}8
+> CLAA Token Keep Rate -{0.1, 0.2, 0.4 }Main Variable (Ours) Pruning Layer Index lp{3, 7, 11, 15, 19 }15 Aggregation Window n{1, 2, 4, 8, 12 }4First Uncompressed Layer m{0, 2, 4, 6 }4Observation Window W{8}8Pooling Kernel Size -{7}7
+
+measures the attention from each generated token back to the original prompt tokens. Second, in an online evaluation phase, this pre-computed ranking is used to perform a se-lective prefill, establishing a theoretical performance upper bound. This process is detailed in Listing 4. 
+
+D.5. Cross-Layer Attention Aggregation (CLAA) 
+
+Our proposed method, CLAA, enhances the single-pass architecture by improving ranking stability. It first defers any compression for an initial m layers. Then, for each subsequent layer, it computes importance scores using an observation window and stores them in a buffer of size n.At a designated pruning layer, lp, it aggregates scores across this buffer by taking the maximum value for each token. This process is outlined in Listing 5. 12 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+def gemfilter_prefill(model, prompt_tokens, routing_layer, keep_rate): 
+
+# Run a partial forward pass to get the query from the last prompt token 
+
+hidden_states = model.forward(prompt_tokens, stop_at_layer=routing_layer) q_last = hidden_states.get_last_token_query(layer=routing_layer) k_all = hidden_states.get_keys(layer=routing_layer) 
+
+# Rank tokens by their raw attention (pre-softmax) to the last token q
+
+scores = aggregate_attention(q_last, k_all, use_softmax=False) top_k_indices = topk(scores, keep_rate).indices pruned_tokens = gather(prompt_tokens, top_k_indices) 
+
+# Restore position ids 
+
+original_position_ids = gather( range (len (prompt_tokens)), top_k_indices) 
+
+# Execute a full forward pass on pruned sequence 
+
+final_outputs, final_kv_cache = model.forward( pruned_tokens, position_ids=original_position_ids )
+
+return final_outputs, final_kv_cache 
+
+Listing 1. GemFilter Prefill Logic. 
+
+def fastkv_prefill(model, prompt_tokens, tsp_layer, window_size, keep_rate): hidden_state = model.embed(prompt_tokens) kv_cache = {} 
+
+for l in range (model.num_layers): 
+
+# Get queries from the observation window 
+
+q_window = hidden_state.get_last_n_queries(n=window_size, layer=l) k_all = hidden_state.get_keys(layer=l) v_all = hidden_state.get_values(layer=l) 
+
+# Rank tokens using post-softmax attention from the window 
+
+scores = aggregate_attention(q_window, k_all, use_softmax=True) top_k_indices = topk(scores, keep_rate).indices 
+
+# Compress KV cache using rankings (for decode) 
+
+kv_cache[l] = gather(k_all, v_all, on_indices=top_k_indices) hidden_state = model.layer_forward(l, hidden_state, use_kv=(k_all, v_all)) 
+
+# At the TSP layer, prune hidden state with rankings 
+
+if l == tsp_layer: hidden_state = gather(hidden_state, on_indices=top_k_indices) final_outputs = model.final_norm(hidden_state) 
+
+return final_outputs, kv_cache 
+
+Listing 2. FastKV Prefill Logic. 
+
+13 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+def speculative_prefill(base_model, spec_model, prompt_tokens, look_ahead_k, keep_rate): 
+
+# Run a small speculator model on the full prompt 
+
+spec_outputs, spec_kv_cache = spec_model.forward(prompt_tokens) spec_k_prompt = spec_kv_cache.get_all_keys() 
+
+# Generate ‘look_ahead_k‘ tokens with the speculator to get qs 
+
+q_generated = [] next_token = spec_outputs.get_next_token() 
+
+for _ in range (look_ahead_k): lookahead_out, spec_kv_cache = spec_model.forward(next_token, spec_kv_cache) q_generated.append(lookahead_out.get_query()) next_token = lookahead_out.get_next_token() 
+
+# Rank prompt tokens using draft qs 
+
+scores = aggregate_attention(q_generated, spec_k_prompt) top_k_indices = topk(scores, keep_rate).indices pruned_tokens = gather(prompt_tokens, top_k_indices) original_position_ids = gather( range (len (prompt_tokens)), top_k_indices) final_outputs, final_kv_cache = base_model.forward( pruned_tokens, position_ids=original_position_ids )
+
+return final_outputs, final_kv_cache 
+
+Listing 3. Speculative Prefill Logic. 
+
+def get_oracle_ranking(model, prompt_tokens, max_gen_len): _, prefill_kv_cache = model.forward(prompt_tokens) k_prompt = prefill_kv_cache.get_all_keys() q_generated = [] next_token = prefill_kv_cache.get_next_token() current_kv_cache = prefill_kv_cache 
+
+while not is_eos(next_token) and len (q_generated) < max_gen_len: output, current_kv_cache = model.forward(next_token, past_kv=current_kv_cache) q_generated.append(output.get_query()) next_token = output.get_next_token() scores = aggregate_attention(q_generated, k_prompt, use_softmax=False) 
+
+return scores 
+
+def oracle_prefill(model, prompt_tokens, oracle_scores, keep_rate): 
+
+# Use the pre-computed oracle scores to select the top-k indices 
+
+top_k_indices = topk(oracle_scores, keep_rate).indices pruned_tokens = gather(prompt_tokens, top_k_indices) original_position_ids = gather( range (len (prompt_tokens)), top_k_indices) final_outputs, final_kv_cache = model.forward( pruned_tokens, position_ids=original_position_ids )
+
+return final_outputs, final_kv_cache 
+
+Listing 4. Answer-Informed Oracle Prefill Logic. 
+
+14 CLAA: Cross-Layer Attention Aggregation for Accelerating LLM Prefill 
+
+def claa_prefill(model, prompt_tokens, pruning_layer, aggregation_window, defer_layers, window_size, keep_rate): hidden_state = model.embed(prompt_tokens) kv_cache = {} layer_scores_buffer = collections.deque(maxlen=aggregation_window) 
+
+for l in range (model.num_layers): 
+
+# Defer any compression for the first ‘defer_layers‘ 
+
+if l < defer_layers: hidden_state = model.layer_forward(l, hidden_state) kv_cache[l] = hidden_state.get_kv_pair() 
+
+continue 
+
+# Get queries from the observation window 
+
+q_window = hidden_state.get_last_n_queries(n=window_size, layer=l) k_all, v_all = hidden_state.get_keys(layer=l), hidden_state.get_values(layer=l) 
+
+# Compute importance scores for the current layer using the observation window 
+
+current_layer_scores = aggregate_attention(q_window, k_all, use_softmax=True) 
+
+# Store the scores in a rolling buffer for later aggregation. 
+
+layer_scores_buffer.append(current_layer_scores) 
+
+# Compress KV cache using rankings (for decode) 
+
+compression_indices = topk(current_layer_scores, keep_rate).indices kv_cache[l] = gather(k_all, v_all, on_indices=compression_indices) hidden_state = model.layer_forward(l, hidden_state, use_kv=(k_all, v_all)) 
+
+# At the TSP layer, prune hidden state with agg. rankings 
+
+if l == pruning_layer: 
+
+# Aggregate scores (Eq. 6 in paper) 
+
+aggregated_scores = max (layer_scores_buffer, dim=0) pruning_indices = topk(aggregated_scores, keep_rate).indices hidden_state = gather(hidden_state, on_indices=pruning_indices) final_outputs = model.final_norm(hidden_state) 
+
+return final_outputs, kv_cache 
+
+Listing 5. Cross-Layer Attention Aggregation (CLAA) Prefill Logic. 
+
+15

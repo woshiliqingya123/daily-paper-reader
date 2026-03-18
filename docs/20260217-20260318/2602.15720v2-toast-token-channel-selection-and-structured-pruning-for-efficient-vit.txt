@@ -1,0 +1,363 @@
+Title: ToaSt: Token Channel Selection and Structured Pruning for Efficient ViT
+
+URL Source: https://arxiv.org/pdf/2602.15720v2
+
+Published Time: Thu, 19 Feb 2026 01:42:16 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# ToaSt: Token Channel Selection and Structured Pruning for Efficient ViT 
+
+Hyunchan Moon * 1 Cheonjun Park * 2 Steven L. Waslander 3
+
+# Abstract 
+
+Vision Transformers (ViTs) have achieved remark-able success across various vision tasks, yet their deployment is often hindered by prohibitive com-putational costs. While structured weight pruning and token compression have emerged as promis-ing solutions, they suffer from prolonged retrain-ing times and global propagation that creates op-timization challenges, respectively. We propose ToaSt, a decoupled framework applying special-ized strategies to distinct ViT components. We apply coupled head-wise structured pruning to Multi-Head Self-Attention modules, leveraging attention operation characteristics to enhance ro-bustness. For Feed-Forward Networks (over 60% of FLOPs), we introduce Token Channel Selec-tion (TCS) that enhances compression ratios while avoiding global propagation issues. Our analysis reveals TCS effectively filters redundant noise during selection. Extensive evaluations across nine diverse models, including DeiT, ViT-MAE, and Swin Transformer, demonstrate that ToaSt achieves superior trade-offs between accuracy and efficiency, consistently outperforming existing baselines. On ViT-MAE-Huge, ToaSt achieves 88.52% accuracy (+1.64 %) with 39.4% FLOPs reduction. ToaSt transfers effectively to down-stream tasks, achieving 52.2 versus 51.9 mAP on COCO object detection. Code and models will be released upon acceptance. 
+
+# 1. Introduction 
+
+Vision Transformers (ViTs) (Dosovitskiy, 2020) have achieved remarkable success across a wide range of com-puter vision tasks, including image classification (Touvron et al., 2021), object detection (Liu et al., 2021), and seman-tic segmentation. By leveraging self-attention mechanisms 
+
+> *
+
+Equal contribution 1LG Electronics, Seoul, Republic of Korea 2Hankuk University of Foreign Studies, Yon-gin, Republic of Korea 3University of Toronto, Toronto, Canada. Correspondence to: Steven L. Waslander 
+
+<steven.waslander@robotics.utias.utoronto.ca >.
+
+Preprint. February 19, 2026. 
+
+Figure 1. ToaSt compression methodology. (a) Standard ViT block architecture. (b) Token compression propagates compression effects across layers due to inter-layer dependencies. (c) ToaSt independently compresses each layer through coupled weight prun-ing (MHSA) and token channel selection (FFN), preventing cross-layer propagation while reducing dk and D dimensions. 
+
+to capture global dependencies, ViTs have demonstrated competitive or superior performance compared to convolu-tional neural networks. Beyond vision, ViTs have become foundational architectures for multimodal learning (Rad-ford et al., 2021; Li et al., 2022a), with ongoing expansion into video understanding, 3D vision, and cross-modal ap-plications. However, this representational power comes at a significant computational cost. ViTs are substantially heavier than CNNs of comparable accuracy, and their per-formance advantages only emerge at larger scales of both data and network size, presenting critical challenges for deployment in resource-constrained environments such as mobile devices and edge computing platforms. The computational complexity of ViTs stems from two pri-mary sources. First, the self-attention mechanism exhibits quadratic complexity O(N 2) with respect to the sequence length N , requiring pairwise computations between all to-kens. Second, the linear projections in Multi-Head Self-Attention (MHSA) and the Feed-Forward Network (FFN) involve operations that scale with the hidden dimensions 
+
+D and Dmlp . In standard ViT architectures, FFN layers contribute approximately 61% of total FLOPs, while atten-tion operations account for approximately 19% (Dong et al., 2023). To address these computational demands, various compres-sion techniques (Park et al., 2023; 2024b;a; 2025) have been 1
+
+> arXiv:2602.15720v2 [cs.CV] 18 Feb 2026 Submission and Formatting Instructions for ICML 2026
+
+proposed. Weight pruning methods (Chen et al., 2021; Yu et al., 2022) reduce model parameters through struc-tured removal of channels, heads, or blocks. However, these approaches face critical limitations. First, they typically require extensive retraining—often comparable in length to the original training time—which is prohibitively expensive for ViTs requiring 300+ epochs. More importantly, exist-ing methods primarily target attention mechanisms, leaving substantial redundancy in FFN layers unaddressed despite FFNs contributing over 60% of total FLOPs, significantly limiting potential inference efficiency gains. 
+
+Token Compression methods (Rao et al., 2021; Liang et al., 2022; Bolya et al., 2022; Chen et al., 2023) offer an alternative by reducing computation through decreasing the sequence length N , directly targeting the quadratic atten-tion complexity. Methods such as DynamicViT (Rao et al., 2021), EViT (Liang et al., 2022), ToMe (Bolya et al., 2022), and DiffRate (Chen et al., 2023) have demonstrated sig-nificant speedups while maintaining competitive accuracy. Token merging further improves efficiency by combining similar tokens rather than simply discarding them. However, these methods operate exclusively on the sequence dimen-sion and do not address channel-level redundancy within MHSA and FFN modules. Since FFN layers contribute 61% of total FLOPs through D2 operations, token compres-sion alone cannot fully exploit the compression potential of ViTs. Additionally, token compression decisions propa-gate globally to all subsequent layers, creating inter-layer dependencies that complicate the optimization landscape. 
+
+Our approach addresses both limitations. We propose 
+
+Toast , a decoupled framework that eliminates the retraining overhead of weight pruning while targeting the FFN channel redundancy that token compression cannot address. Our method operates through two complementary components: 
+
+Structured Coupled Weight Pruning for MHSA . We re-duce the per-head dimension dk by pruning corresponding indices across the coupled weight matrices ( WQ, WK ,
+
+WV , Wproj ) while preserving input/output dimensions. This enables layer-independent compression without modi-fying the interface between transformer blocks. We apply aggressive pruning (90%) to all layers except the first, which processes the critical interface between patch embeddings and learned features. 
+
+Token Channel Selection (TCS) for FFN . Through com-prehensive analysis of FFN activation patterns across layers, we observe that deeper layers exhibit characteristic redun-dancy signatures: high activation sparsity in middle-to-late layers, low effective rank indicating limited expressiveness, and high R2 reconstruction scores revealing linear depen-dency among active neurons. We introduce a training-free pruning strategy that exploits these observations through layer-adaptive ratios. At inference, TCS dynamically se-lects channels based on token-wise activation patterns within each FFN layer (FC1 and FC2), adapting to layer-specific characteristics while meeting predefined sparsity targets— directly reducing the D2 complexity without retraining. Crit-ically, our analysis reveals that TCS effectively filters re-dundant noise during selection, which leads to consistent accuracy improvements observed across all architectures. The training-free nature eliminates the expensive retraining overhead while the layer-independent design avoids global propagation effects. We evaluate our method on ImageNet-1K (Deng et al., 2009) using DeiT, ViT-MAE, and Swin Transformer. On ViT-MAE-Huge, the model achieves 88.52% Top-1 accuracy 
+
+(+1.64% over baseline) with 39.4% FLOPs reduction . Per-formance recovery required only ∼15 fine-tuning epochs, significantly fewer than the ∼290 epochs for DeiT-Base. This demonstrates that larger models, with their richer rep-resentation capacity, benefit more from our attention-aware fine-grained approach, enabling faster convergence after compression. For downstream tasks on COCO (Cascade R-CNN with Swin-Base), our compressed model achieves 52.2 mAP ,surpassing the unpruned baseline of 51.9 mAP. This result was obtained with aggressive pruning (60% MHSA reduc-tion across layers and 90% FFN reduction in the final four layers), demonstrating effective redundancy elimination. Our contributions are summarized as follows: • We present a structured coupled weight pruning method for MHSA that reduces per-head dimensions by pruning corresponding indices across coupled weight matrices(Q-K, V-Proj pairs), enabling layer-independent compression (Section 3.1). • We provide empirical analysis of FFN activation pat-terns across layers using multiple complementary met-rics (sparsity, effective rank, R2 reconstruction), re-vealing characteristic redundancy signatures in deeper layers. We introduce Token Channel Selection (TCS), a training-free approach with layer-adaptive ratios that effectively filters redundant noise, eliminating the re-training overhead of conventional weight pruning (Sec-tion 3.2). • We demonstrate that ToasT achieves superior accuracy-efficiency trade-offs across multiple ViT architectures (9 models spanning DeiT, ViT-MAE and Swin families) and transfers to downstream object detection. Notably, larger models require fewer fine-tuning epochs, and compressed models consistently outperform baselines while significantly reducing computational cost (Sec-tion 4). 2Submission and Formatting Instructions for ICML 2026 
+
+# 2. Related Works 
+
+Token Compression Reducing sequence length ( N ) is the standard approach to mitigate quadratic attention costs. Early pruning methods including EViT (Liang et al., 2022), DynamicViT (Rao et al., 2021), Evo-ViT (Xu et al., 2022), SPViT (Kong et al., 2022), and Zero-TPrune (Wang et al., 2024) discard less informative tokens. To prevent informa-tion loss from hard removal, token merging strategies have emerged: ToMe (Bolya et al., 2022) aggregates similar to-kens via bipartite matching, TPS (Wei et al., 2023) squeezes pruned features into reserved tokens, while DiffRate (Chen et al., 2023) learns differentiable compression rates. Re-cently, STAR (Zhang et al., 2024) and PiToMe (Tran et al., 2024) advance this by leveraging inter-layer importance unification and spectral clustering, respectively. These con-cepts have also expanded to LLMs and VLMs for efficient KV-cache management (Zhang et al., 2023; Li et al., 2024) and visual token reduction (Chen et al., 2024; Huang et al., 2024; Chen et al., 2024; Shang et al., 2025). However, these methods reduce FFN computation only linearly with N ,leaving the dominant hidden-dimension complexity O(D2)
+
+unaddressed. Our ToaSt complements these sequence-level reductions by directly targeting the orthogonal channel di-mension in FFNs. 
+
+Structured Pruning. Structured pruning reduces model complexity by removing coherent parameter groups (heads, channels), enabling direct acceleration on standard GPUs without specialized sparse kernels. Due to this practicality, various methods have been proposed to identify unimpor-tant structures in ViTs, often utilizing magnitude-based or gradient-based criteria (Yang et al., 2021; Fang et al., 2023; Yu et al., 2022; Zheng et al., 2022; Fang et al., 2024; Chavan et al., 2022). However, broadly removing entire structural components typically leads to significant accuracy drops, necessitating expensive and time-consuming retraining (fine-tuning) to recover performance. This heavy computational overhead limits their applicability to large-scale founda-tion models. To address this limitation, our ToaSt employs activation-based statistics for structured removal in ViTs, achieving significant compression without the heavy retrain-ing costs of global pruning methods. 
+
+Joint and Hybrid Methods. Hybrid strategies aim to simul-taneously optimize multiple dimensions. Recent frame-works integrate token compression with channel prun-ing (Wang et al., 2025; 2022) or combine pruning with quantization (Dong et al., 2023; Yuan et al., 2022) to max-imize speedup. While effective, these strategies face dis-tinct limitations: joint pruning methods often involve com-plex coupled optimization landscapes, whereas quantization-integrated approaches typically require specialized hardware support to realize actual acceleration. In contrast, our ToaSt decouples the compression problem: we employ structured coupled weight pruning for MHSA and training-free token channel selection for FFNs. This separation simplifies the optimization landscape, allowing for aggressive compres-sion with minimal recovery overhead. 
+
+# 3. ToaSt 
+
+We propose ToaSt , a compression framework built upon the philosophy of Layer-Independent Compression. ToaSt operates in two decoupled stages: (1) MHSA Compression ,which reduces the internal head dimension dk via structured coupled weight pruning, and (2) FFN Compression , which mitigates depth-wise redundancy through analysis-driven channel selection. 
+
+Prerequisites Consider a Vision Transformer with L lay-ers. Let X ∈ RN ×D denote the input feature, where N is the number of tokens and D is the embedding dimension. For MHSA with H heads, each head h has internal dimen-sion dk = D/H with weight matrices WhQ, WhK , WhV ∈
+
+RD×dk and Wh 
+
+> proj
+
+∈ Rdk ×D . For structured pruning, we de-fine concatenated weight matrices WhQK = [ WhQ; WhK ] ∈
+
+Rdk ×2D and WhV O = [ WhV ; ( Wh
+
+> proj
+
+)⊤] ∈ Rdk ×2D. For FFN, WFC1 ∈ RD×4D and WFC2 ∈ R4D×D denote the expansion and reduction projections. We use GM (·) for the geometric median (He et al., 2019) and primed notation (e.g., d′
+
+> k
+
+) for compressed dimensions. 
+
+3.1. Structured Coupled Weight Pruning for MHSA 
+
+To realize our layer-independent philosophy in the attention mechanism, we target the internal head dimension dk rather than the global embedding dimension D. This ensures full compatibility with residual connections and preserves the feature landscape for downstream layers. 
+
+Step.1 Coupled Matrix Formulation and Constraints 
+
+The MHSA module relies on coupled linear transformations. For a specific attention head h, the operations are defined as: 
+
+Qh = XW hQ, Kh = XW hK ,
+
+Ah = softmax 
+
+ Qh(Kh)⊤
+
+√dk
+
+ (1) 
+
+Oh = AhVhWh 
+
+> proj
+
+= Ah(XW hV )Wh 
+
+> proj
+
+(2) where X ∈ RN ×D is the input. To maintain mathematical integrity during pruning, strict synchronization is required (Figure 2): • Q-K Synchronization: Pruning column j of WhQ ne-cessitates pruning column j of WhK to preserve the dot-product validity. 3Submission and Formatting Instructions for ICML 2026         
+
+> Figure 2. Overview of the ToaSt framework for layer-independent compression. (a) Structured Coupled MHSA Weight Pruning:
+> Pruning indices are synchronized across coupled groups (Q-K and V-Proj) to reduce the internal head dimension dkwhile preserving the attention mechanism’s functional integrity. (b) Token Channel Selection for FFN: Redundant channels in the intermediate FFN layer are identified and eliminated based on feature importance analysis, maintaining the global embedding dimension Dat the block interface.
+> Figure 3. Impact of coupled index synchronization on accuracy.
+> Compared to non-aligned pruning, our synchronized Q-K and V-Proj pruning significantly mitigates accuracy drop, especially at high pruning ratios. This empirical evidence justifies the necessity of our structural constraints.
+
+• V-Proj Synchronization: Pruning column j of WhV
+
+requires removing row j of Wh 
+
+> proj
+
+to maintain the out-put projection’s inner dimension. As empirically validated in Figure 3, ignoring these con-straints (non-align) leads to a catastrophic accuracy collapse, whereas our coupled approach maintains functional integrity even at high pruning ratios. 
+
+Step.2 Selection Criterion: Geometric Median-Based Im-portance We employ a static importance criterion based on the Geometric Median (GM) (He et al., 2019) of the pre-trained weights. The GM identifies redundant dimen-sions that are most replaceable by others within the same layer. Specifically, dimensions located closest to the weight distribution’s center are considered to possess the highest redundancy, as their information can be most effectively approximated by the remaining dimensions. Based on the synchronization constraints defined above, the unified importance score Ih[j] for the j-th dimension of head h is calculated as the Euclidean distance from the geometric median: 
+
+IhQK [j] = whQK,j − GM (WhQK ) 2
+
+IhV O [j] = whV O,j − GM (WhV O ) 2
+
+(3) where whj denotes the j-th weight vector of the correspond-ing coupled matrix. Dimensions with the lowest importance scores are prioritized for pruning, as GM-based scoring con-sistently outperforms alternative metrics such as L1 and L2
+
+norms in preserving model accuracy under high pruning ratios. 
+
+Step.3 Head-wise Uniform Strategy and Efficiency We apply the scores from Eq. (3) using a Head-wise Uniform Pruning strategy, enforcing d′
+
+> k
+
+(h) = d′ 
+
+> k
+
+for all h. This ensures computational regularity, enabling efficient batched matrix multiplication on standard hardware without padding overhead. Following a layer-adaptive schedule—skipping the first layer and applying 90% pruning to the rest—we achieve a 90% reduction in MHSA FLOPs. 4Submission and Formatting Instructions for ICML 2026 
+
+Fine-tuning Efficiency on Large Models. We observe an inverse relationship between model scale and fine-tuning requirements. ViT-MAE-Huge recovers performance within 
+
+∼15 epochs after 90% pruning. 
+
+3.2. Token Channel Selection for FFN 
+
+While MHSA pruning targets the internal head dimension, the FFN module introduces significant redundancy through its channel expansion ( D → 4D). As depicted in Figure 2(b), ToaSt addresses this by imple-menting an Attention-Guided Token Channel Selection 
+
+mechanism. This method dynamically evaluates and prunes channels in the expanded dimension based on a empirical analysis of Sparsity , Linear Reconstruction Fidelity ( R2),and Effective Rank , effectively reducing the computational cost of both expansion (FC1) and reduction (FC2) projec-tions without altering the block interface. 3.2.1. E MPIRICAL ANALYSIS OF FFN R EDUNDANCY 
+
+We investigated the internal feature characteristics of pre-trained ViTs (e.g., Swin-Base) to justify our design choices. As shown in Figure 4, we observe three critical phenomena that motivate our sampling-based pruning strategy: 
+
+1) High Linear Reconstruction Fidelity ( R2). To validate the feasibility of partial channel observation, we measure the coefficient of determination ( R2) by reconstructing a specific channel’s activations from a linear combination of others. For a target channel vector y ∈ Rn (where n is the number of tokens), we compute its linear reconstruction ˆy
+
+using the remaining channels in the same layer via least-squares optimization. The fidelity is defined as: 
+
+R2 = 1 −
+
+P(y − ˆy)2
+
+P(y − ¯y)2 (4) Empirical results show that the R2 score consistently ex-ceeds 0.9 across most layers (Figure 4, Center). This evi-dence demonstrates that the high-dimensional channels are linearly dependent, meaning the global importance distri-bution can be accurately estimated from a tiny subset of channels. 
+
+2) Collapsing Effective Rank. We analyze the spectral properties of the feature matrix X using the Effective Rank Ratio . This metric quantifies the data’s intrinsic dimension-ality: Rank ef f = exp( H(¯ σ)) 
+
+C , ¯σi = σi
+
+P σj
+
+(5) where H(·) denotes Shannon entropy. As shown in Figure 4 (Right), the effective rank exhibits a significant collapse 
+
+in deeper layers. This indicates that although the FFN ex-pands features to 4D, the essential information resides in a much lower-dimensional subspace, justifying our aggressive pruning strategy. 
+
+3) Increase in Sparsity. As shown in Figure 4 (Left), the sparsity ratio (the proportion of near-zero activations) in-creases significantly in later blocks. This phenomenon is driven by the GELU activation function, and as noted in recent studies, Transformers naturally exhibit higher activa-tion sparsity in deeper layers (Li et al., 2022b). This trend suggests that a large portion of neurons contribute minimally to the final representation. 3.2.2. P ROCESS : T OKEN CHANNEL SELECTION 
+
+Step.1 Statistical Sampling for Efficient Thresholding 
+
+Based on the high R2 observation, we introduce a Training-free Statistical Sampling strategy. Computing importance scores requires aggregating feature magnitudes across all 
+
+N tokens. This operation is computationally expensive (O(N · C)), as it must be performed for both the embedding dimension ( C = D) at the FC1 input and the expanded dimension ( C = 4 D) at the FC2 input. To mitigate this, we estimate the channel importance using only a randomly sampled subset of tokens S ⊂ { 1, ..., N }.The sampling rate is adaptively determined based on the layer depth, ranging from 2% to 20% of N (|S| ∈
+
+[0 .02 N, 0.2N ]). The strong linear dependency among chan-nels ( R2 ≈ 1.0) guarantees that this minimal subset is sufficient to accurately estimate the global importance distri-bution for any channel dimension C, reducing the analysis overhead by orders of magnitude. 
+
+Step.2 Attention-Guided Unified Importance Using the sampled tokens, we compute a Unified Importance Met-ric that synergizes global context and local saliency. The importance score Ic for channel c is defined as: 
+
+Ic = λcls |x(c)
+
+> cls
+
+| + λpatch 
+
+1
+
+|S| 
+
+X
+
+> i∈S
+
+
+
+Acls,i · | x(c) 
+
+> i
+
+|
+
+
+
+(6) where x(c) 
+
+> cls
+
+is the activation of the CLS token at channel c,and Acls,i is the attention weight from CLS to patch i.
+
+Prioritizing Global Context. For models with a designated class token (e.g., DeiT, ViT), we assign a dominant weight to the global term (e.g., λcls = 2 .0, λ patch = 1 .0). This weighting strategy ensures a fine-grained selection , prior-itizing channels that encode global semantic information over those that simply exhibit high local magnitude. For ar-chitectures without an explicit CLS token (e.g., Swin Trans-former), the first term is omitted, simplifying the problem to a purely patch-based importance calculation. 
+
+Hardware-Friendly Structured Reduction. Crucially, this 5Submission and Formatting Instructions for ICML 2026            
+
+> Figure 4. Layer-wise redundancy analysis of Swin-Base FFN. (Left) Sparsity increases in deeper stages, indicating many ”dead neurons.” (Center) Linear Reconstruction R2remains near 1.0, proving that feature channels are highly dependent. (Right) Effective Rank collapses in later stages, confirming that the 4Dexpansion contains massive redundancy.
+
+metric determines the survival of the entire channel index 
+
+c in the expanded dimension. By pruning the whole chan-nel (removing the c-th column of FC1 and the c-th row of FC2), we maintain dense matrix structures rather than creat-ing irregular sparsity. This structural regularity allows for 
+
+immediate acceleration on standard hardware (GPUs) 
+
+without the need for specialized sparse libraries or indexing overheads. 
+
+Step.3 Layer-Adaptive Pruning Policy Finally, we apply a differentiated pruning schedule aligned with our sparsity and rank analysis. 
+
+FC1 (Expansion): In early layers where Effective Rank is relatively high, we apply conservative pruning to preserve feature diversity. 
+
+FC2 (Reduction): In deeper layers where Sparsity is high and Rank is low, we aggressively prune (up to 90%) the redundant dimensions identified by Eq. (6) , directly translat-ing the ”Collapsing Rank” observation into computational savings. 
+
+# 4. Experiments 
+
+4.1. Experimental Setup Models and Datasets. We evaluate ToaSt on nine mod-els across three families: DeiT (T/S/B) (Touvron et al., 2021), ViT-MAE (B/L/H) (He et al., 2022), and Swin Trans-former (T/S/B) (Liu et al., 2021). Evaluations are conducted on ImageNet-1K (Deng et al., 2009) for classification and COCO 2017 (Lin et al., 2014) for object detection via Cas-cade Mask R-CNN (Cai & Vasconcelos, 2019). Throughput and latency are measured on a single NVIDIA H100 GPU 
+
+(batch size 128, fp32). 
+
+MHSA Structured Pruning (Fine-tuning): We apply 90% channel reduction (80% for tiny models) to all layers except the first to preserve the initial embedding interface. The compressed weights are fine-tuned using AdamW with a cosine learning rate scheduler. 
+
+FFN Token Channel Selection (Training-free): We apply asymmetric pruning ratios at inference time without retrain-ing. Based on redundancy analysis, we use conservative ratios (0–30%) for FC1 and aggressive ratios (50–90%) for FC2 in deeper layers. Importance is determined dynami-cally via the sampling-based statistical strategy described in Section 3.2. 
+
+4.2. ImageNet-1K Classification Results 
+
+Table 1 presents comprehensive comparison of ToaSt against state-of-the-art token compression methods includ-ing ToMe (Bolya et al., 2022) and DiffRate (Chen et al., 2023) across all evaluated architectures. We report Top-1/Top-5 accuracy, GFLOPs, FLOPs reduction ratio, and measured throughput on H100 GPU. 
+
+Accuracy Improvement via Regularization. ToaSt consis-tently improves accuracy over unpruned baselines despite significant FLOPs reduction. Specifically, DeiT-Base and ViT-MAE-Huge achieve gains of +3.02% and +1.64% with approximately 39% fewer FLOPs. This suggests that our token channel selection acts as an implicit regularizer, effec-tively removing redundant noise and enhancing generaliza-tion. 
+
+Superior Efficiency Trade-offs. Compared to token compression methods (Table 2), ToaSt provides a better accuracy-efficiency trade-off. By targeting channel dimen-sions instead of sequence length, our approach maintains higher representational density, yielding superior speedups and accuracy at equivalent FLOPs budgets. 
+
+Hardware-Level Acceleration. ToaSt translates theoretical FLOPs reduction into substantial hardware throughput gains on the NVIDIA H100. Throughput improves by 1.28 × to 
+
+6Submission and Formatting Instructions for ICML 2026 
+
+Table 1. Comparison with state-of-the-art methods on ImageNet-1K. Throughput measured on H100 GPU with batch size 128. Best results in bold . FFN TCS is applied training-free at inference time. FLOPs ↓ denotes percentage reduction from baseline. Speedup = compressed model throughput / baseline throughput.                                                                                                                                                                                                           
+
+> Model Method Top-1 (%) Top-5 (%) GFLOPs FLOPs ↓(%) Throughput (img/s) Speedup DeiT-Tiny Baseline 72.20 91.10 1.3 –2090.9 1.00 ×
+> ToMe (Bolya et al., 2022) 71.25 90.74 0.7 46.2 2484.6 1.19 ×
+> DiffRate (Chen et al., 2023) 71.78 90.87 0.9 30.8 2422.5 1.16 ×
+> ToaSt (Ours) 74.25 92.65 0.76 38.5 4249.7 2.03 ×
+> DeiT-Small Baseline 79.82 94.95 4.6 –2313.2 1.00 ×
+> ToMe (Bolya et al., 2022) 79.35 94.65 2.7 41.3 2737.1 1.18 ×
+> DiffRate (Chen et al., 2023) 79.56 94.80 2.9 37.0 2808.1 1.21 ×
+> ToaSt (Ours) 83.40 96.97 2.5 45.7 4783.3 2.07 ×
+> DeiT-Base Baseline 81.80 95.60 17.6 –1122.9 1.00 ×
+> ToMe (Bolya et al., 2022) 80.59 94.83 11.5 34.7 1628.4 1.45 ×
+> DiffRate (Chen et al., 2023) 81.51 95.40 11.5 34.7 1553.9 1.38 ×
+> ToaSt (Ours) 84.82 97.10 10.7 39.2 1690.9 1.51 ×
+> ViT-MAE-Base Baseline 83.75 96.54 17.6 –1140.2 1.00 ×
+> ToMe (Bolya et al., 2022) (r=13) 81.87 96.02 10.4 40.9 1783.3 1.56 ×
+> DiffRate (Chen et al., 2023) 82.90 96.14 11.5 34.7 1552.8 1.36 ×
+> ToaSt (Ours) 84.13 96.39 11.0 37.5 1692.6 1.48 ×
+> ViT-MAE-Large Baseline 85.96 97.55 61.6 –349.0 1.00 ×
+> ToMe (Bolya et al., 2022) (r=6) 84.58 97.12 38.5 37.5 523.2 1.50 ×
+> DiffRate (Chen et al., 2023) 85.66 97.44 42.3 31.3 474.7 1.36 ×
+> ToaSt (Ours) 88.94 97.95 38.5 37.5 527.0 1.51 ×
+> ViT-MAE-Huge Baseline 86.88 98.07 167.4 –129.7 1.00 ×
+> ToMe (Bolya et al., 2022) (r=5) 86.28 97.88 113.9 31.9 185.9 1.43 ×
+> DiffRate (Chen et al., 2023) 86.65 97.88 103.4 38.2 202.9 1.56 ×
+> ToaSt (Ours) 88.52 98.29 101.4 39.4 206.21 1.59 ×
+> Swin-Tiny Baseline 81.20 95.50 4.5 –2610.9 1.00 ×
+> ToaSt (Ours) 81.76 95.70 3.1 31.3 2705.8 1.04 ×
+> Swin-Small Baseline 83.20 96.20 8.7 –1534.4 1.00 ×
+> STViT-R (Chang et al., 2023) 82.60 96.07 5.8 33.3 1646.6 1.07 ×
+> ToaSt (Ours) 84.65 96.80 5.4 38.2 1909.5 1.24 ×
+> Swin-Base Baseline 83.50 96.50 15.4 –1100.1 1.00 ×
+> STViT-R (Chang et al., 2023) 83.20 96.40 10.3 33.1 1206.2 1.10 ×
+> ToaSt (Ours) 85.21 96.50 8.8 42.7 1408.6 1.28 ×
+
+2.07 × across architectures. Notably, DeiT-Small achieves 4783.3 img/s (2.07 × speedup) while improving accuracy by +3.58%, validating the hardware-friendliness of structured pruning. 
+
+Model Scale vs. Recovery Speed. We observe a strong correlation between model scale and the efficiency of the fine-tuning phase. ViT-MAE-Huge requires only 15 epochs 
+
+to exceed baseline performance, whereas Large and Base versions require 139 and 297 epochs, respectively. This indi-cates that larger foundation models possess higher intrinsic redundancy, allowing for near-instantaneous recalibration after aggressive pruning. 
+
+4.3. Downstream Task: COCO Object Detection 
+
+To validate that ToaSt removes genuine architectural re-dundancy rather than task-specific features, we evaluate on COCO object detection using Cascade Mask R-CNN with compressed Swin Transformer backbones. Table 3 presents object detection results. Applying the same TCS configuration from ImageNet classification, Swin-Small achieves 52.2 box mAP compared to the baseline’s 51.9 mAP—a +0.3 mAP improvement despite significant compression. Similarly, Swin-Base with 4-layer TCS im-proves to 52.2 mAP (+0.1 mask mAP), while more ag-gressive 6-layer compression maintains competitive perfor-mance at 51.8 box mAP and 44.9 mask mAP. These results demonstrate that ToaSt’s compression trans-fers effectively to dense prediction tasks. The improvement in box mAP despite compression supports our hypothesis that Token Channel Selection removes redundant features that may introduce noise during detection, rather than re-moving discriminative features essential for downstream tasks. 7Submission and Formatting Instructions for ICML 2026 
+
+Figure 5. Layer-wise FFN TCS Sensitivity Analysis. Sensitivity analysis of FC1, FC2, and combined pruning across DeiT-Small layers at various ratios (10%-90%). (a) FC1 shows high sensitivity in early layers but robustness in later layers (L9-11), with L11 improving accuracy up to 80% pruning. (b) FC2 exhibits lower sensitivity, enabling aggressive pruning (50-90%) in later layers. (c) Combined pruning validates asymmetric layer-adaptive ratios exploiting distinct redundancy patterns between FC1 and FC2. 
+
+Table 2. Comparison at similar FLOPs budgets. ToaSt achieves +1–4% higher accuracy than token compression methods.                                                                           
+
+> Model Method GFLOPs Top-1 (%) ∆Acc Throughput(imgs/s) DeiT Tiny Baseline 1.3 72.2 –2090.95 DiffRate 0.8 71.67 - 0.53 2255.7
+> ToaSt (Ours) 0.8 74.30 +2.1 4249.68
+> DeiT Small Baseline 4.6 79.82 –2313.2 ToMe 2.7 79.35 - 0.47 2737.05 DiffRate 2.7 79.38 - 0.44 3259.85
+> ToaSt (Ours) 2.7 83.89 +4.07 4783.32
+> DeiT Base Baseline 17.6 81.08 –1122.89 DiffRate 10.4 81.01 - 0.07 1659.79
+> ToaSt (Ours) 10.4 82.87 +1.79 1707.53
+> ViT-MAE Large Baseline 61.6 85.96 –349.03 ToMe (r=6) 38.5 84.58 - 1.38 523.2 DiffRate 38.5 85.38 - 0.58 513.26
+> ToaSt (Ours) 38.5 88.94 +2.98 527.01
+> ViT-MAE Huge Baseline 167.4 86.88 –129.68 DiffRate 103.4 86.65 - 0.23 202.85
+> ToaSt (Ours) 103.4 90.03 +3.15 206.21
+
+4.4. Ablation Studies Component-wise Contribution. Table 4 analyzes the in-dividual contributions of MHSA structured pruning and training-free TCS across representative architectures. Aconsistent pattern emerges: MHSA-only pruning achieves moderate speedups (1.22–1.59 ×) but causes significant ac-curacy degradation (2.6–4.2%). Adding TCS not only pro-vides additional speedup but remarkably recovers and ex-ceeds baseline accuracy by 1.7–3.6%, demonstrating that the two components are complementary. This validates our decoupled design—MHSA pruning reduces attention com-putation while TCS removes redundant FFN channels that act as noise. 
+
+Layer-wise Pruning Ratios. Figure 5 examines the ef-fect of different FC1/FC2 pruning configurations on DeiT-Small. We observe that asymmetric pruning (conservative FC1, aggressive FC2) consistently outperforms symmetric approaches, validating our analysis that FC1 performs in-formation expansion while FC2 exhibits higher redundancy suitable for aggressive pruning. 
+
+Table 3. Object detection results on COCO val2017 with Cascade Mask R-CNN. Our compressed backbones maintain or improve detection performance. 
+
+Backbone Method GFLOPs Box Mask mAP mAP Swin Small Baseline 194 51.9 45.0 
+
+ToaSt 144 (25.8% ↓) 52.2 45.0 Swin Base Baseline 343 51.9 45.0 
+
+ToaSt 251 (26.8% ↓) 52.2 45.1 
+
+ToaSt 246 (28.3% ↓) 51.8 44.9 
+
+Table 4. Ablation study on representative architectures. ToaSt consistently outperforms MHSA-only pruning across supervised (DeiT), self-supervised (ViT-MAE), and hierarchical (Swin) trans-formers.                                          
+
+> Model Method Top-1 (%) GFLOPs Throughput Speedup DeiT Small Baseline 79.82 4.6 2313.20 1.00 ×
+> MHSA Only 76.12 3.1 3684.59 1.59 ×
+> ToaSt 83.40 2.5 4783.32 2.07 ×
+> ViT-MAE Large Baseline 85.96 61.6 349.03 1.00 ×
+> MHSA Only 81.81 42.8 492.07 1.41 ×
+> ToaSt 88.94 38.5 527.01 1.51 ×
+> Swin Base Baseline 83.50 15.4 1100.10 1.00 ×
+> MHSA Only 80.90 10.94 1345.46 1.22 ×
+> ToaSt 85.21 8.8 1408.60 1.28 ×
+
+# 5. Conclusion and Future Work 
+
+We presented ToaSt, a decoupled ViT compression frame-work combining structured coupled MHSA pruning with training-free Token Channel Selection for FFNs. Exper-iments across various models and downstream object de-tection demonstrate strong generalization across diverse architectures and tasks. The inverse scaling of fine-tuning requirements with model size suggests larger models are par-ticularly amenable to our approach. A current limitation is the manual tuning of layer-wise pruning ratios; future work includes learnable ratio optimization, extension to vision-language models, and combination with quantization. 8Submission and Formatting Instructions for ICML 2026 
+
+# References 
+
+Bolya, D., Fu, C.-Y., Dai, X., Zhang, P., Feichtenhofer, C., and Hoffman, J. Token merging: Your vit but faster. arXiv preprint arXiv:2210.09461 , 2022. Cai, Z. and Vasconcelos, N. Cascade r-cnn: High quality object detection and instance segmentation. IEEE trans-actions on pattern analysis and machine intelligence , 43 (5):1483–1498, 2019. Chang, S., Wang, P., Lin, M., Wang, F., Zhang, D. J., Jin, R., and Shou, M. Z. Making vision transformers efficient from a token sparsification view. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 6195–6205, 2023. Chavan, A., Shen, Z., Liu, Z., Liu, Z., Cheng, K.-T., and Xing, E. P. Vision transformer slimming: Multi-dimension searching in continuous optimization space. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pp. 4931–4941, 2022. Chen, L., Zhao, H., Liu, T., Bai, S., Lin, J., Zhou, C., and Chang, B. An image is worth 1/2 tokens after layer 2: Plug-and-play inference acceleration for large vision-language models. In European Conference on Computer Vision , pp. 19–35. Springer, 2024. Chen, M., Shao, W., Xu, P., Lin, M., Zhang, K., Chao, F., Ji, R., Qiao, Y., and Luo, P. Diffrate: Differentiable compression rate for efficient vision transformers. In 
+
+Proceedings of the IEEE/CVF international conference on computer vision , pp. 17164–17174, 2023. Chen, T., Cheng, Y., Gan, Z., Yuan, L., Zhang, L., and Wang, Z. Chasing sparsity in vision transformers: An end-to-end exploration. Advances in Neural Information Processing Systems , 34:19974–19988, 2021. Deng, J., Dong, W., Socher, R., Li, L.-J., Li, K., and Fei-Fei, L. Imagenet: A large-scale hierarchical image database. In 2009 IEEE conference on computer vision and pattern recognition , pp. 248–255. Ieee, 2009. Dong, P., Sun, M., Lu, A., Xie, Y., Liu, K., Kong, Z., Meng, X., Li, Z., Lin, X., Fang, Z., et al. Heatvit: Hardware-efficient adaptive token pruning for vision transform-ers. In 2023 IEEE International Symposium on High-Performance Computer Architecture (HPCA) , pp. 442– 455. IEEE, 2023. Dosovitskiy, A. An image is worth 16x16 words: Trans-formers for image recognition at scale. arXiv preprint arXiv:2010.11929 , 2020. Fang, G., Ma, X., Song, M., Mi, M. B., and Wang, X. Dep-graph: Towards any structural pruning. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pp. 16091–16101, 2023. Fang, G., Ma, X., Mi, M. B., and Wang, X. Isomorphic pruning for vision models. In European Conference on Computer Vision , pp. 232–250. Springer, 2024. He, K., Chen, X., Xie, S., Li, Y., Doll ´ar, P., and Girshick, R. Masked autoencoders are scalable vision learners. In 
+
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pp. 16000–16009, 2022. He, Y., Liu, P., Wang, Z., Hu, Z., and Yang, Y. Filter prun-ing via geometric median for deep convolutional neural networks acceleration. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,pp. 4340–4349, 2019. Huang, K., Zou, H., Xi, Y., Wang, B., Xie, Z., and Yu, L. Ivtp: Instruction-guided visual token pruning for large vision-language models. In European Conference on Computer Vision , pp. 214–230. Springer, 2024. Kong, Z., Dong, P., Ma, X., Meng, X., Niu, W., Sun, M., Shen, X., Yuan, G., Ren, B., Tang, H., et al. Spvit: Enabling faster vision transformers via latency-aware soft token pruning. In European conference on computer vision , pp. 620–640. Springer, 2022. Langley, P. Crafting papers on machine learning. In Langley, P. (ed.), Proceedings of the 17th International Conference on Machine Learning (ICML 2000) , pp. 1207–1216, Stan-ford, CA, 2000. Morgan Kaufmann. Li, J., Li, D., Xiong, C., and Hoi, S. Blip: Bootstrapping language-image pre-training for unified vision-language understanding and generation. In International confer-ence on machine learning , pp. 12888–12900. PMLR, 2022a. Li, Y., Huang, Y., Yang, B., Venkitesh, B., Locatelli, A., Ye, H., Cai, T., Lewis, P., and Chen, D. Snapkv: Llm knows what you are looking for before generation. Advances in Neural Information Processing Systems , 37:22947– 22970, 2024. Li, Z., You, C., Bhojanapalli, S., Li, D., Rawat, A. S., Reddi, S. J., Ye, K., Chern, F., Yu, F., Guo, R., et al. The lazy neuron phenomenon: On emergence of activation sparsity in transformers. arXiv preprint arXiv:2210.06313 , 2022b. Liang, Y., Ge, C., Tong, Z., Song, Y., Wang, J., and Xie, P. Not all patches are what you need: Expediting vision transformers via token reorganizations. arXiv preprint arXiv:2202.07800 , 2022. 9Submission and Formatting Instructions for ICML 2026 
+
+Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ra-manan, D., Doll ´ar, P., and Zitnick, C. L. Microsoft coco: Common objects in context. In European conference on computer vision , pp. 740–755. Springer, 2014. Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., and Guo, B. Swin transformer: Hierarchical vision transformer using shifted windows. In Proceedings of the IEEE/CVF international conference on computer vision ,pp. 10012–10022, 2021. Park, C., Park, M., Oh, H. J., Kim, M., Yoon, M. K., Kim, S., and Ro, W. W. Balanced column-wise block pruning for maximizing gpu parallelism. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 37, pp. 9398–9407, 2023. Park, C., Park, M., Moon, H., Yoon, M. K., Go, S., Kim, S., and Ro, W. W. Deprune: Depth-wise separable convolu-tion pruning for maximizing gpu parallelism. Advances in Neural Information Processing Systems , 37:106906– 106923, 2024a. Park, C., Oh, H. J., Park, M., Moon, H., Kim, M., Kim, S., Yoon, M. K., and Ro, W. W. Wins: Winograd structured pruning for fast winograd convolution. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pp. 22477–22487, 2025. Park, M., Kim, D., Park, C., Park, Y., Gong, G. E., Ro, W. W., and Kim, S. Reprune: Channel pruning via kernel representative selection. In Proceedings of the AAAI Con-ference on Artificial Intelligence , volume 38, pp. 14545– 14553, 2024b. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., Agarwal, S., Sastry, G., Askell, A., Mishkin, P., Clark, J., et al. Learning transferable visual models from natural language supervision. In International conference on machine learning , pp. 8748–8763. PmLR, 2021. Rao, Y., Zhao, W., Liu, B., Lu, J., Zhou, J., and Hsieh, C.-J. Dynamicvit: Efficient vision transformers with dynamic token sparsification. Advances in neural information processing systems , 34:13937–13949, 2021. Shang, Y., Cai, M., Xu, B., Lee, Y. J., and Yan, Y. Llava-prumerge: Adaptive token reduction for efficient large multimodal models. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pp. 22857– 22867, 2025. Touvron, H., Cord, M., Douze, M., Massa, F., Sablayrolles, A., and J ´egou, H. Training data-efficient image transform-ers & distillation through attention. In International con-ference on machine learning , pp. 10347–10357. PMLR, 2021. Tran, C., MH Nguyen, D., Nguyen, M.-D., Nguyen, T., Le, N., Xie, P., Sonntag, D., Zou, J. Y., Nguyen, B., and Niepert, M. Accelerating transformers with spectrum-preserving token merging. Advances in Neural Informa-tion Processing Systems , 37:30772–30810, 2024. Wang, A., Chen, H., Lin, Z., Zhao, S., Han, J., and Ding, G. Cait: Triple-win compression towards high accuracy, fast inference, and favorable transferability for vits. IEEE Transactions on Pattern Analysis and Machine Intelli-gence , 2025. Wang, H., Dedhia, B., and Jha, N. K. Zero-tprune: Zero-shot token pruning through leveraging of the attention graph in pre-trained transformers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pp. 16070–16079, 2024. Wang, Z., Luo, H., Wang, P., Ding, F., Wang, F., and Li, H. Vtc-lfc: Vision transformer compression with low-frequency components. Advances in Neural Information Processing Systems , 35:13974–13988, 2022. Wei, S., Ye, T., Zhang, S., Tang, Y., and Liang, J. Joint token pruning and squeezing towards more aggressive compression of vision transformers. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pp. 2092–2101, 2023. Xu, Y., Zhang, Z., Zhang, M., Sheng, K., Li, K., Dong, W., Zhang, L., Xu, C., and Sun, X. Evo-vit: Slow-fast token evolution for dynamic vision transformer. In Pro-ceedings of the AAAI conference on artificial intelligence ,volume 36, pp. 2964–2972, 2022. Yang, H., Yin, H., Molchanov, P., Li, H., and Kautz, J. Nvit: Vision transformer compression and parameter redistribu-tion. CoRR , 2021. Yu, F., Huang, K., Wang, M., Cheng, Y., Chu, W., and Cui, L. Width & depth pruning for vision transformers. In Pro-ceedings of the AAAI conference on artificial intelligence ,pp. 3143–3151, 2022. Yuan, Z., Xue, C., Chen, Y., Wu, Q., and Sun, G. Ptq4vit: Post-training quantization for vision transformers with twin uniform quantization. In European conference on computer vision , pp. 191–207. Springer, 2022. Zhang, Y., Wei, L., and Freris, N. Synergistic patch pruning for vision transformer: unifying intra-& inter-layer patch importance. In The Twelfth International Conference on Learning Representations , 2024. Zhang, Z., Sheng, Y., Zhou, T., Chen, T., Zheng, L., Cai, R., Song, Z., Tian, Y., R ´e, C., Barrett, C., et al. H2o: Heavy-hitter oracle for efficient generative inference of large language models. Advances in Neural Information Processing Systems , 36:34661–34710, 2023. 10 Submission and Formatting Instructions for ICML 2026 
+
+Zheng, C., Zhang, K., Yang, Z., Tan, W., Xiao, J., Ren, Y., Pu, S., et al. Savit: Structure-aware vision transformer pruning via collaborative optimization. Advances in Neural Information Processing Systems , 35:9010–9023, 2022. 11

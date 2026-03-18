@@ -1,0 +1,640 @@
+Title: MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs
+
+URL Source: https://arxiv.org/pdf/2602.20191v1
+
+Published Time: Wed, 25 Feb 2026 01:06:22 GMT
+
+Number of Pages: 17
+
+Markdown Content:
+# MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Dongwei Wang * 1 2 Jinhee Kim * 3 Seokho Han * 4 Denis Gudovskiy 2 Yohei Nakata 2 Tomoyuki Okuno 2
+
+KhayTze Peong 2 Kang Eun Jeon 5 Jong Hwan Ko 4 Yiran Chen 3 Huanrui Yang 1 #
+
+# Abstract 
+
+Changing runtime complexity on cloud and edge devices necessitates elastic large language model (LLM) deployment, where an LLM can be in-ferred with various quantization precisions based on available computational resources. However, it has been observed that the calibration parame-ters for quantization are typically linked to spe-cific precisions, which presents challenges dur-ing elastic-precision calibration and precision switching at runtime. In this work, we at-tribute the source of varying calibration parame-ters to the varying token-level sensitivity caused by a precision-dependent outlier migration phe-nomenon. Motivated by this observation, we propose MoBiQuant , a novel Mixture-of-Bits quantization framework that adjusts weight pre-cision for elastic LLM inference based on token sensitivity. Specifically, we propose the many-in-one recursive residual quantization that can iteratively reconstruct higher-precision weights and the token-aware router to dynamically select the number of residual bit slices. MoBiQuant enables smooth precision switching while improv-ing generalization for the distribution of token outliers. Experimental results demonstrate that MoBiQuant exhibits strong elasticity, enabling it to match the performance of bit-specific cal-ibrated PTQ on LLaMA3-8B without repeated calibration. 
+
+# 1. Introduction 
+
+Large language models (LLMs) have reshaped the artifi-cial intelligence field, demonstrating strong performance in reasoning, coding and other generative tasks (Touvron et al., 2023; OpenAI et al., 2023; Gemini-Team et al., 2024; 
+
+> *
+
+Equal contribution 1University of Arizona 2Panasonic AI Lab 
+
+> 3
+
+Duke University 4Sungkyunkwan University 5Korea Advanced Institute of Science and Technology. Correspondence to: Huanrui Yang <huanruiyang@arizona.edu >.
+
+Preprint. February 25, 2026. 
+
+DeepSeek-AI et al., 2025; Singhal et al., 2025). Despite these advances, their immense scale remains a major barrier to practical deployment due to substantial memory foot-prints and compute requirements (Ma & Patterson, 2026). To address these challenges, quantization (Gholami et al., 2021) has emerged as an effective compression technique, reducing the precision of weights and activations from floating-point to low-precision integer format. In partic-ular, post-training quantization (PTQ) (Frantar et al., 2023; Shao et al., 2024) has become widely adopted due to its data and train-time efficiency while largely preserving LLM accuracy. Meanwhile, the current quantization landscape is dominated by static schemes, where PTQ methods opti-mize the model for a single fixed target bit-width e.g., 4-bit. This rigidity is ill-suited for real-world serving scenarios where system constraints such as varying request loads or battery levels on the edge dynamically fluctuate. Ideally, an inference engine should possess elasticity : the ability to seamlessly trade off accuracy for speed, or vice versa, at runtime without the overhead of reloading different LLM checkpoints. Although recent works have begun to explore flexibility at inference time, they largely operate at coarse-grained quan-tization. For example, any-precision quantization methods aim to support multiple bit-widths within a single calibration or training pipeline by constructing multi-scale matryoshka representations (Park et al., 2024; Nair et al., 2025). How-ever, the precision choice is still typically assigned globally (per model or per layer), and each assigned precision in-troduces additional calibration parameters which leads to overhead in model switching. In this work, we identify a critical factor limiting the ef-fectiveness of flexible quantization: the non-uniform and precision-dependent nature of token sensitivity . It is well-established that outliers in activations govern quantization errors (Dettmers et al., 2022). However, we observe that the specific subset of tokens leading to high quantization error is not static. We demonstrate that token sensitivity is precision-dependent : a token that constitutes a dominant outlier under a 4-bit weight model may be well-processed by 3-bit weights, while previously benign tokens may emerge as critical error sources when precision drops. We term this phenomenon outlier migration . Consequently, static 1
+
+> arXiv:2602.20191v1 [cs.LG] 21 Feb 2026 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs
+
+calibration strategies, which freeze quantization parameters (e.g., scaling factors or clipping ranges) based on a single precision, often fail to generalize. They inevitably overfit to an improper set of tokens when the bit-width changes, lead-ing to suboptimal performance in flexible inference setting. To address this, we propose MoBiQuant , a token-aware quantization framework that mitigates outlier migration by incorporating token-adaptive precision adjustment during calibration. Rather than enforcing a global uniform pre-cision, MoBiQuant dynamically assigns bit-widths to to-kens on the fly based on their sensitivity. Our approach consists of two core components. The first is MoBiSlice ,a “many-in-one” recursive residual quantization that de-composes weights into a low-precision base and successive residual bit slices. This allows a single model to support multiple precisions (e.g., 2, 4, 6-bit) via hierarchical re-construction, thereby eliminating memory redundancy in precision switching. The second component is a lightweight learnable MoBiRoute router that implements token-aware routing and predicts the quantization difficulty of each to-ken. Acting as a gate, the MoBiRoute dynamically selects the optimal number of MoBiSlice residual components to activate for each token during generation. Then, the LLM can seamlessly shift its average bit-width in response to a target load without retraining. In summary, our paper makes the following contributions: • The “many-in-one” MoBiSlice recursive quantiza-tion method that explicitly shares bits across precision levels and progressively refines weights through resid-ual experts, ensuring that the accumulated contribu-tions of activated slices reconstruct a coherent higher precision representation. • Our lightweight token-aware MoBiRoute router that dynamically activates the appropriate number of resid-ual slices per token, allowing the model to adapt its average precision to latency targets while preventing the bit-dependent outlier migration phenomenon. • The proposed MoBiQuant enables seamless switch-ing across 2–6-bit, exhibiting strong elasticity that matches or even outperforms state-of-the-art PTQ methods. Moreover, our specialized kernel design de-livers up to 2.7× speedup on NVIDIA A100 GPUs. 
+
+# 2. Related Work 
+
+Static quantization. Most existing methods focus on statically-defined quantization schemes, where LLM perfor-mance is particularly optimized for the selected bit-width configuration. Representative works include: LLM-QAT (Liu et al., 2024) for quantization-aware training (QAT) with knowledge distillation, OPTQ (Frantar et al., 2023) for more practical post-training quantization (PTQ) of large-scale LLMs, OmniQuant (Shao et al., 2024) with an effective PTQ using few extra learnable parameters, QuIP family of methods (Chee et al., 2023; Tseng et al., 2024) with extreme compression ratios for PTQ by addressing the incoherence in LLM quantization, SmoothQuant (Xiao et al., 2023) and SpinQuant (Liu et al., 2025) with special linear transforma-tions to mitigate peaking outliers, AWQ (Lin et al., 2024) that targets a small subset of salient weights using activation-aware method. Their main advantage is thorough optimiza-tion for the selected bit precision, but static schemes are less flexible and require offline re-calibration or re-training for on-device bit precision adaptation. 
+
+Any-precision quantization. Recently, Park et al. (2024) have extended the concept of any-precision quantization (Yu et al., 2021) to LLMs. This concept addresses the inflex-ibility of the above static schemes by allowing the model to select varying bit-widths. In their scheme, quantized weights can be compressed (truncated) simply by taking the most significant bits. Park et al. (2024) leverage the idea of incremental upscaling using clustering-based non-uniform quantization (Kim et al., 2024). (Park et al., 2025) refines scaling factors while reusing previous precisions’ assigned binary codes. Concurrently, MatQuant (Nair et al., 2025) and D2MoE (Wang et al., 2025) introduce multi-scale quan-tization, which trains the model to operate across a range of bit-widths. Although these schemes are more flexible, they are still constrained to rely on the globally assigned bit-width from a limited set of options and suffers from the overhead of either non-uniform quantization or quantization parameter refinement when switching precisions. 
+
+Elastic generation for LLMs. Another concept related to this work has been proposed by Cai et al. (2024). Their Flex-tron approach dynamically adapts LLM’s computational graph to user-defined latency and accuracy targets during inference with no additional fine-tuning. It is enabled by mixture-of-expert (MoE) networks (Fedus et al., 2022; Jiang et al., 2024) that select optimal sub-networks in the modified transformer architecture (Devvrit et al., 2024). However, these methods usually rely on training from scratch, and therefore cannot be efficiently applied to existing founda-tion models for elastic inference. In this paper, we apply the high-level concept of MoE-enabled elastic generation to quantization, where bit-width selection is guided by token-aware routers during the generation process. Therefore, our MoBiQuant token-aware quantization extends previous methods and generalizes any-precision quantization to the granularity of the LLM token sequence. 
+
+# 3. Motivations 
+
+Limitations of existing PTQ. PTQ is an effective technique to reduce the memory footprint and inference latency of 2MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs PPL ↓ on Wikitext2  10     
+
+> 7
+> 9
+> 202
+> 9.11
+> 7.31
+> 9.01
+> 120
+> Retain 10%
+> at 3 -bit
+> 8
+> 10.06
+> Existing PTQ MoBiQuant
+> 7.31
+> On par with
+> Calib. 4 -bit
+> Calib. 3 -bit -Infer 4 -bit
+> Calib. 4 -bit -Infer 4 -bit
+> Elastic MoBiQuant (ours )
+> Calib. 3 -bit -Infer 4 -bit -Retain 10% at 3-bit
+> 7.41
+> 2.65 g ap
+
+Figure 1. Precision generalization performance on LLaMA3-8B. Existing PTQ methods poorly generalize under calibra-tion–inference precision mismatch, e.g., calibrating for 3-bit but in-ferring at 4-bit ( green ). Incorporating token-aware bit adjustment partially mitigates this degradation ( pink ). Our elastic MoBiQuant improves generalization achieving performance parity with the 4-bit calibrated model ( orange ). Well -fitted at 4 -bit  
+
+> Under -fitted at 3 -bit
+> Top values 3-bit 4-bit
+
+Figure 2. Per-token quantization error distribution at layer 5 in LLaMA3-8B: quantization outliers are highly non-uniform at each bit-width. Tokens well-fitted at 4-bit can become outliers at 3-bit, while 4-bit outliers may not be the primary error source at 3-bit. 
+
+LLMs without changing the original weights. Typically, PTQ involves a calibration phase, during which an addi-tional set of quantization parameters Θq is introduced to adapt the pretrained weights W to a target bit-width b. For example, Shao et al. (2024) learn a weight clipping to rescale 
+
+W and Liu et al. (2025) a rotation matrix to reduce outliers in W, respectively. Then, given a calibration set X = {Xi}Ni=1 , where each sequence Xi ∈ RT ×d consists of T tokens, the calibration process for prior PTQ methods can be formulated as 
+
+arg min 
+
+> Θq
+
+EX∼X D X, Q (W|Θq , b ), (1) where Q(·) represents the weight quantizer and D(·) is the distance function, e.g., the difference between the quantized model’s output and the full-precision output, respectively. The limitation of static PTQ methods is that the calibrated quantization parameters are overfitting to the target bit-width b. We illustrate this phenomenon in Fig. 1, where the LLaMA-3-8B model poorly generalizes when the infer-ence quantization deviates from the training-phase weight precision. Model calibrated at 3-bit encounters a 2.65 point increase in perplexity when inferred at 4-bit compared to a 4-bit calibrated model. This observation suggests that the learned Θq overfits to the assigned target bit-width b.To enable elastic precision inference, Nair et al. (2025); Park et al. (2024) explore mixed-precision strategies that opti-mize Θq to work across a set of bit-widths {bk}. However, Park et al. (2024) state that their approach is only effective for non-uniform cluster-based quantization, while suffering from significant degradation in uniform quantization scenar-ios. Although Nair et al. (2025) mitigate this degradation using QAT, it introduces substantial training overhead, mak-ing it less practical for large-scale LLMs. The challenge of achieving mixed-precision generalization for the PTQ framework remains largely unresolved. 
+
+Analysis of the poor generalization. Previous work (Chen et al., 2024) has shown that token sensitivity is highly non-uniform, causing Θq trained at a fixed bit-width to fit some tokens well while underfitting others with excessive quanti-zation errors. To find a reason behind the poor generaliza-tion, we plot the per-token quantization error distributions with 3-bit and 4-bit PTQ weights. As shown in Fig. 2, each precision setting exhibits non-uniform quantization errors across tokens, providing evidence that Θq indeed suffers from the aforementioned token-wise variation. Moreover, quantization outliers for 3/4-bit weights are also distributed differently. Specifically, tokens that are accu-rately represented by 4-bit weights may emerge as dominant outliers for 3-bit weights. However, outliers with 4-bit pre-cision may no longer be the primary source of quantization error with 3-bit weights. Hence, our empirical analysis proves that Θq fails to generalize across bit-widths since it overfits to different regions of the overall token distribution. To further strengthen our hypothesis, we evaluate a 3-bit cal-ibrated model at 4-bit precisions, but additionally retain the top 10% of token outliers to be processed with 3-bit weights. As shown in the pink bar in Fig. 1, counter-intuitively, infer-ring some tokens at a lower precision yields better overall performance. This observation suggests a promising direc-tion to improve generalization: token-adaptive precision adjustment, rather than uniform precision across tokens, im-proves generalization and enables PTQ models to operate elastically across multiple bit-widths. 
+
+Inspired by this observation and recent advances in MoE networks (Dai et al., 2024), MoBiQuant proposes an elastic inference architecture in which token precision is selected via bit slicing and routing based on learned sensitivity to quantization. 3MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs (b) MoBiSlice (𝐸 = 4, 𝑏 𝑒 = 2𝑏𝑖𝑡 )                 
+
+> Obtain {2, 4, 6, 8} -bit by summation
+> (a) MoBiQuant Linear Block
+> Route each
+> token to the
+> optimal bit slices
+> (c) MoBiRoute
+> 𝑋 1→(𝑊 1,𝑊 2)4bit
+> 𝑋 2→(𝑊 1,𝑊 2,𝑊 3)6bit
+> 𝑋 3→(𝑊 1)2bit
+> Avgbits =4bit
+> Figure 3. Overview of MoBiQuant. (a) MoBiQuant enables token-adaptive elastic inference for linear blocks in LLMs, consisting of two components: (b) MoBiSlice, which decomposes FP16 weights into bit slices via recursive quantization, providing multiple precisions; and (c) MoBiRoute, which is trained to route each token to the optimal bit slice under a budget, achieving token-adaptive precision adjustment.
+
+# 4. The MoBiQuant Framework 
+
+In this section, we introduce MoBiQuant , a Mixture-of-Bits quantization framework that incorporates token-aware bit-width adjustment for elastic LLM inference with the key components shown in Fig. 3. To achieve elastic infer-ence, it has to satisfy the following properties: 1) seamless switching across multiple precisions for each token, and 2) routing mechanism to dynamically assign the precision while converging to the average bit-width budget. 
+
+4.1. Bit Slicing via Recursive Quantization 
+
+Achieving token-level granularity requires a model to effi-ciently support multiple quantization levels (e.g., 2–8-bit range). A na ¨ıve solution with separate models for each preci-sion incurs high memory overhead. The “many-in-one” any-precision approaches (Park et al., 2024; Nair et al., 2025) propose to explicitly slice bits of the quantized weights and thus minimize memory overhead. However, each precision remains a monolithic unit: switching a token to a differ-ent precision requires discarding the original precision and reloading the full-precision weights to re-slice them, which is memory-inefficient for elastic LLM inference. To address this limitation, we propose a novel many-in-one quantization scheme MoBiSlice tailored for MoBi-Quant, where multiple precisions can be efficiently obtained from the same checkpoint. Our MoBiSlice decomposes the weight matrix W of each linear layer in the LLM into 
+
+E slices {W1, W2, . . . , WE }, each containing a slice of 
+
+be bits from the quantized weight. This decomposition is implemented by recursively quantizing the residuals as 
+
+R1 = W,
+
+We = Q(Re | Θq , b e),
+
+Re+1 = Re − We, ∀e ≥ 1,
+
+(2) where the first shared most significant bit (MSB) slice W1
+
+is obtained by quantizing the original W and the remaining slices We> 1 quantize the residuals Re between the weight and existing slices in a recursive fashion. All slices are quan-tized under the same quantization parameter Θq to ensure composability without additional parameter overhead. Consequently, a weight W(b) at a target precision b can be constructed by summing a selection of k bit slices as 
+
+W(b) = Xke=1 We, where b = Xke=1 be. (3) In this paper, we adopt a default scheme with a total of 
+
+E = 4 slices and 2-bit quantized slices each, as shown in Fig. 3(b). In this way, weights with 4-bit and 6-bit precision can be constructed using 2 and 3 slices, respectively. Mo-BiSlice can be paired with existing PTQ pipelines, and we use OmniQuant (Shao et al., 2024) as our PTQ backbone in experiments. Further details on the MoBiSlice formulation and analysis are provided in Appendix B. 
+
+4.2. Token Routing with Binary Decisions 
+
+Given bit slices provided by MoBiSlice, we propose a lightweight MoBiRoute router that dynamically assigns a different number of slices to each token with binary deci-sions. Specifically, given a sequence of T tokens X ∼ X ,the routing score matrix S ∈ RT ×E is obtained as 
+
+S = R(X, Θr ), (4) where R(·) is a learnable 2-layer MLP with the router pa-rameters Θr , and each element of the score matrix Si,j 
+
+represents the confidence that the i-th token will require the 
+
+j-th slice. Two key challenges exist when training the router in Eq. (4): 4MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Challenge 1: Learning binary routing decisions. Ex-isting MoE routing methods typically force each token to select exactly the top-k experts based on scores (Dai et al., 2024), which contradicts our elastic inference motivation. Another approach is to adopt a threshold-based routing strat-egy. However, fixed thresholds cannot adapt to a varying score distribution during the training stage. Therefore, our MoBiRoute learns a decision boundary implicitly using a differentiable gating function G(·). When training is com-plete, G(S) acts as a learned binary mask applied to tokens. We formulate the proposed gating function as 
+
+G(S) = σ (τ (t) · S) , τ (t) = ln( L)ln( L) − ln( t) , (5) where σ is the conventional sigmoid, S is the score matrix from Eq. (4), and τ is the temperature defined by the current training step t and the total number of steps L. At the final step, the temperature τ (L) = ∞, effectively converting the continuous gating function into a binary mask G(S) = 
+
+I (S > 0) . The change in scores and the gating function during training are illustrated in Fig. 3(c). Instead of full-precision linear layer processing with matrix multiply Yi = W⊤Xi, we compute the output token ˆYi
+
+using the learned mask (5) given the input token Xi as 
+
+ˆYi = XEe=1 W⊤ 
+
+> e
+
+(G(S)i,e ⊙ Xi) , (6) where input tokens are gated by the router’s binary scores, 
+
+We is the bit slice with the be bits. The use of the sigmoid function implies a zero threshold when converting the router score S into a binary mask at the end of the training. Meanwhile, the gradient behavior during the training process pushes the score away from zero if the router is confident about selection/exclusion of a bit slice, whereas the score remains at 0 with the lack of confident decision. Importantly, this separation allows us to achieve elastic precision adjustment at runtime by shifting the thresh-old of the score conversion process. Specifically, instead of using a fixed zero threshold, we convert the router score to the binary selection mask with an adjustable threshold δ as 
+
+Gδ (S) = I (( S − δ) > 0) , (7) where δ can be adjusted for all layers at runtime. Then, the positive change in δ reduces the number of acti-vated slices per token and, therefore, lowers the precision and vice versa. This enables our elastic quantization for fine-grained control over computation and memory usage. 
+
+Challenge 2: Generalizing across precisions. Elastic inference requires the router to effectively accommodate a dynamic target precision budget (i.e., average bit-width). To achieve this, we apply a target precision scheduling 
+
+mechanism in the training process to enforce the router to explore different precision combinations during the training process. Specifically, we control router convergence through a budget-aware regularization objective defined by 
+
+Lreg (t) = (AvgBits −b(t)) · ∥G (S)∥1 ,b(t) = binit − (binit − b) · ln( t)ln( L) , (8) where the term (AvgBits −b(t)) adaptively encourages bit slice pruning when the current average bit-width exceeds the target, and promotes slice activation otherwise. The average number of bits ( AvgBits ) in (8) is estimated during training by counting activated bit slices per token. We define entries that exceed 0.5 score in G(S) as active which can be formulated as 
+
+AvgBits = 1
+
+T
+
+XTi=1 
+
+XEj=1 I(G(S)i,j > 0.5) bj , (9) where bj denotes the bit slice size (e.g., 2 bits). The scheduling term b(t) starts with a higher precision binit 
+
+(e.g., 8-bit) and gradually decays to the target b. This forces the router to explore a wide spectrum of token-slice assign-ments before converging to binary routing decisions. During training, the target b is a hyperparameter and is set to 3-bit by default in our experiments. While MoBiQuant does not rely on a specific choice of b and its elastic behavior remains robust across different target precisions, selecting a target value different from 3-bit may introduce minor performance variations, which we analyze in Appendix D.2. 
+
+4.3. Joint MoBiQuant Optimization 
+
+Our framework consists of two sets of trainable parameters: 
+
+Θq and Θr for MoBiSlice and MoBiRoute, respectively. They are jointly optimized during the PTQ process by 
+
+arg min 
+
+> Θq,r
+
+EX∼X 
+
+h
+
+D
+
+
+
+W⊤X, ˆY|Θq,r 
+
+
+
++ λ Lreg 
+
+i
+
+, (10) where D is the L2 quantization error i.e. ∥Y − ˆY∥2, ˆY
+
+is computed by the proposed Eq. (6) using MoBiQuant parameters Θq,r and the regularization Lreg is from Eq. (8) .Before starting the optimization using Eq. (10) , we freeze all weights from the pretrained LLM and calibrate only our 
+
+Θq and Θr. We also treat W1 as a shared-expert slice such that tokens always pass through for stable training. We replace all linear layers in LLM transformer blocks with the proposed MoBiQuant processing. Furthermore, we adopt a layer-wise calibration strategy from (Shao et al., 2024). With this approach, each layer is calibrated with the same target bit-width scheduling. A detailed calibration strategy is presented in the Appendix A. 5MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs                                                                                                  
+
+> Figure 4. Elastic-inference performance comparison. MoBiQuant outperforms PTQ baselines across multiple unseen target bit-widths on various LLaMA-family models, maintaining smooth and fine-grained precision scaling even at extremely low 2–3-bit precision range.
+> Table 1. Comparison with static PTQ methods. We report perplexity (lower is better ) on WikiText2. MoBiQuant matches or surpasses static PTQ baselines. For fair comparison, MoBiQuant is elastic but restricted to 3.0 to 4.0 bit range. The observed average bits for MoBiQuant are in italic . Entries marked NR denote settings not reported by the corresponding baseline papers. Method Type LLaMA 2 7B LLaMA 2 13B LLaMA 3.2 1B LLaMA 3.2 3B LLaMA 3 8B 3 bit 4 bit 3 bit 4 bit 3 bit 4 bit 3 bit 4 bit 3 bit 4 bit FP16 —5.5 5.0 13.4 9.2 6.1 RTN Static 6.66 7.20 5.51 6.40 NR NR NR 7.80 SmoothQuant NR 7.50 NR 6.10 NR NR NR 10.70 AWQ 6.24 5.83 5.32 5.07 NR NR NR 7.36 GPTQ 6.29 5.90 5.42 5.60 NR NR NR 7.43 SpinQuant NR 5.60 NR 5.00 NR NR NR 6.40
+> OmniQuant 6.03 5.74 5.28 5.02 23.92 16.79 15.21 12.71 9.11 7.41 MoBiQuant (ours) Elastic 6.07 5.82 5.31 5.08 19.40 14.02 14.76 9.41 7.97 7.31
+> 3.08 3.90 3.00 4.00 2.99 3.95 3.02 3.94 2.99 3.99
+
+# 5. Experiments 
+
+5.1. Experimental Setup Models and datasets. We conduct experiments using sev-eral open-source LLMs, including LLaMA2-7B/13B (Tou-vron et al., 2023), LLaMA3-8B, and LLaMA3.2-1B/3B. We evaluate the quantized models by reporting perplexity scores on WikiText2 (Merity et al., 2016). In addition, we assess performance on six zero-shot commonsense reasoning tasks: BoolQ (Clark et al., 2019), PIQA (Bisk et al., 2020), Hel-laSwag (Zellers et al., 2019), WinoGrande (Sakaguchi et al., 2021), and both ARC-Easy and ARC-Challenge (Clark et al., 2018). 
+
+Baselines and implementation. We focus on weight-only quantization and compare MoBiQuant to other PTQ meth-ods such as RTN (Round-to-Nearest), GPTQ (Frantar et al., 2022) OmniQuant (Shao et al., 2024), AWQ (Lin et al., 2024), SmoothQuant (Xiao et al., 2023) and SpinQuant (Liu et al., 2025). We also compare MoBiQuant to any-precision baselines AnyPrecisionLLM (Park et al., 2024) and Any-BCQ (Park et al., 2025). To train the router and quantization parameters, we employ 128 sequences of 2048-token length from the WikiText2 as the calibration set. We provide ad-ditional details about the experiments in Appendix C. The baseline results in the experiments are either taken from the published papers or obtained by running their open-source code. 
+
+5.2. Main Results Elastic-inference performance. We compare the elastic-ity of MoBiQuant with our integrated PTQ method, Omni-Quant (Shao et al., 2024). Specifically, we set the calibration bit-width for both OmniQuant and MoBiQuant to 3-bit, and then evaluate their performance across higher and lower bit-widths at inference time to assess generalization beyond the training precision. As shown in Fig. 4, MoBiQuant con-sistently outperforms OmniQuant at all unseen bit-widths across various LLMs from the LLaMA family. Importantly, even at extremely low 2–3-bit range, MoBiQuant maintains smooth and stable precision scaling, whereas OmniQuant exhibits significant performance degradation. We also compare our method with AnyPrecisionLLM (Park et al., 2024) and AnyBCQ (Park et al., 2025). Note that these methods are based on the non-uniform quantization and thus inherently differ from the uniform scheme. Nevertheless, MoBiQuant outperforms them at low bit-widths (2–3-bit), demonstrating high generalization. Another key advantage of MoBiQuant over existing methods is its ability to support 6MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+fine-grained precision adjustment , rather than being limited to discrete bit-widths such as 2, 3, or 4-bit. The elasticity of MoBiQuant also extends to activation quantization, as shown in Fig. 12 in Appendix E.1. 
+
+Comparison with static PTQ methods. We further com-pare the elastic MoBiQuant with the static PTQ methods. Specifically, we evaluate prior PTQ baselines that are in-dividually trained at 3/4-bit precision, while keeping Mo-BiQuant elastic but restricting it to the 3.9–4.0-bit range for fair comparison. As shown in Tab. 1, MoBiQuant con-sistently matches the performance of state-of-the-art PTQ methods on LLaMA2 models, and even surpasses them on LLaMA-3 models with the 1B/3B size. Zero-shot task re-sults are reported in Tab. 3 of Appendix E.2. These results demonstrate that MoBiQuant can attain the performance of static quantization methods while simultaneously preserving elasticity .
+
+5.3. Analytical Results Improved generalization with reduced outlier migration. 
+
+As discussed in Section 3, the failure to generalize across precisions mainly stems from severe token outlier migration under different bit-widths. To verify our MoBiQuant, we visualize the same token-wise quantization error distribu-tions at different precisions in Fig. 5. Compared with PTQ in Fig. 1, MoBiQuant exhibits significantly more consis-tent error distributions across bit-widths with substantially reduced token outlier migration. This directly leads to im-proved generalization across various precisions, enabling a smooth and continuous adjustment at inference time. Reduced token  
+
+> outlier migration !
+> Figure 5. Per-token quantization error distribution for MoBiQuant at layer 5 in LLaMA3-8B: MoBiQuant shows largely reduced outlier migration phenomenon and, hence, improves generalization for elastic precision switching.
+
+Token-wise precision distributions. Our method enables each token to adaptively select its optimal bit-width. We collect statistics on token bit assignments for elastic infer-ence across different target precisions. As shown in Fig. 6, tokens occupy heterogeneous precisions, and their distribu-  
+
+> Figure 6. Precision distributions for elastic inference, showing heterogeneous token assignments across target bit-widths.
+> Figure 7. Average precision of different MoBiQuant linear blocks, showing block-level variation and higher precisions in initial lay-ers.
+
+tion shifts consistently with the target inference bit-width. Specifically, with the 3-bit inference, most tokens are as-signed to 2- or 4-bit precisions, whereas for the 5-bit infer-ence, the majority of tokens shift toward the 4–6-bit range. Overall, the average precision remains within the prescribed bit target, demonstrating that MoBiQuant achieves token-aware bit adjustment across different budgets. 
+
+Block-wise precision variations. In addition to token-wise bit assignment variation, we observe that the average preci-sion varies across different linear blocks, even though each layer is trained with the same target bit-width. As shown in Fig. 7, the down proj in MLP blocks exhibits the largest variation across layers, while other blocks may have higher or lower average bit-width assignments in the first layers. This pattern is consistent with the Hooper et al. (2025) study that allocates different precisions to blocks based on their sensitivity, indicating that MoBiQuant also benefits from block-level precision variations. 
+
+5.4. Ablation Study Calibration dataset comparison. MoBiQuant uses 128 segments from the WikiText2, each with 2048 tokens, as the default calibration set. This choice raises concerns about potential overfitting to its distribution. To investigate this, we evaluate the sensitivity to calibration data by replacing WikiText2 with two alternative datasets: C4 and PTB. As shown in Tab. 2, MoBiQuant consistently achieves supe-7MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs                                     
+
+> Table 2. Ablation study: calibration set. Perplexity on LLaMA-3.2-1B with 3-bit weights. The best values are highlighted. Calibration Set Method Evaluation Set Wiki C4 PTB Wiki OmniQuant 21.6 32.9 37.5 MoBiQuant 18.9 27.9 34.9
+> C4 OmniQuant 22.6 33.2 38.1
+> MoBiQuant 26.4 33.4 43.9 PTB OmniQuant 22.7 33.5 35.4 MoBiQuant 16.9 24.8 29.3
+> mix OmniQuant 22.3 33.3 36.8 MoBiQuant 21.1 30.1 33.6
+
+rior perplexity across most calibration–evaluation set pairs. This indicates that MoBiQuant is robust to the choice of calibration set and does not overfit to a specific calibration distribution. The full results which include downstream task performance are shown in Tab. 4 of Appendix E.3. We also report ablation studies on router regularization scheduling in Appendix D.1, and examine router generalization under different target bit training in Appendix D.2. 
+
+5.5. MoBiQuant Kernel Implementation Bit-major packing and binary matrix multiplication. Ex-isting weight-only kernels often rely on bit-packing , where multiple low-bit weights are compressed into a single array. However, this layout is inefficient for MoBiQuant’s elastic setting due to the coarse-grained nature of GPU transactions. Even when a token requests only low-bit weights, the hard-ware is forced to perform a full-precision memory fetch. This ” all-or-nothing ” access nullifies MoBiQuant’s savings. To address this, we adopt a bit-major packing representation (Fig. 8), decomposing k-bit weights into independent bit-vectors. This layout enables on-demand memory loading, where reduced bit-widths translate directly into proportional speedup by fetching only the required bit-planes. Building upon this, we integrate ABQ-LLM kernels to execute Binary Matrix Multiplication (BMMA) directly on the bit-plane packed data. This approach supports arbitrary-bit multiplica-tion without the overhead of decomposing mixed-precision tasks into multiple fixed-precision GEMMs. By aligning ex-ecution granularity with MoBiQuant’s bit-adaptive pattern, we significantly reduce total bit operations and maximize hardware utilization in memory-bound scenarios. 
+
+Bit slice-major token permutation. Another bottleneck in MoBiQuant arises from irregular memory access patterns during routing. Since each token is dynamically assigned to different bit slices, executing matrix multiplications across slices requires fetching tokens from non-contiguous mem-ory. This severely degrades bandwidth utilization. To re-solve this, we implement bit slice-major token permutation after routing (Fig. 8). By reordering tokens so that those sharing the same bit slice are stored contiguously, we signif-𝑊 1 𝑊 2 𝑊 3 𝑊 4
+
+> Router
+
+[𝑇 1 , 𝑇 2 , 𝑇 3 ] 
+
+> Input Tokens
+> Permutation
+
+[𝑇 1 , 𝑇 1 , 𝑇 2 , 𝑇 2 , 𝑇 3 , 𝑇 3 , 𝑇 3 , 𝑇 3 ]
+
+[𝑇 1 , 𝑇 2 , 𝑇 3 , 𝑇 1 , 𝑇 3 , 𝑇 3 , 𝑇 2 , 𝑇 3 ]    
+
+> MSB LSB
+> Bit -major packing
+> 𝑊 4𝑊 3𝑊 2𝑊 1
+> BMMA
+> Stream 1 Stream 2
+> Bit Slices
+> Figure 8. Overview of MoBiQuant kernel implementation: binary matrix multiplication (BMMA) using parallel stream-based execu-tion for bit-major packed slices with permutations.
+> Figure 9. Inference speedups for MoBiQuant over the FP16 base-line on LLaMA-2-7B. Evaluated on an NVIDIA A100 GPU.
+
+icantly improve memory coalescing and cache locality. 
+
+Stream-based bit slice overlap. The activation frequency of bit slices in MoBiQuant is inherently skewed, as the most significant bits (MSBs) are invoked more frequently than other slices. Sequential execution of these slices often leads to hardware underutilization. To alleviate this, we implement a parallel execution strategy using independent CUDA streams to overlap the computation of the first bit slice with subsequent slices. An overview of MoBiQuant kernel implementation is shown in Fig. 8. 
+
+Elastic-inference latency scaling. We evaluate our Mo-BiQuant kernel on LLaMA-2-7B as shown in Fig. 9. It achieves up to 2.7× speedup over the FP16 baseline. Our latency scales proportionally with the sequence length, as our kernel alleviates the memory bottlenecks that are inher-ent in long-sequence decoding. Overall, results highlight MoBiQuant’s high efficiency in handling long contexts. 
+
+# 6. Conclusion 
+
+In this paper, we identify the outlier migration phenomenon in conventional PTQ methods, which limits generaliza-tion across precisions. Motivated by this, we propose 
+
+MoBiQuant , an elastic quantization framework that in-tegrates MoBiSlice for fine-grained precision selection and MoBiRoute for token-adaptive routing. Extensive experiments demonstrate its strong elasticity and practical inference speedups. 8MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+# Impact Statement 
+
+This paper presents work whose goal is to advance the field of machine learning. There are many potential societal consequences of our work, none of which we feel must be specifically highlighted here. 
+
+# References 
+
+Bisk, Y., Zellers, R., Bras, R. L., Gao, J., and Choi, Y. Piqa: Reasoning about physical commonsense in natural language. In AAAI , 2020. Cai, R., Muralidharan, S., Heinrich, G., Yin, H., Wang, Z., Kautz, J., and Molchanov, P. Flextron: Many-in-one flexible large language model. In ICML , 2024. Chee, J., Cai, Y., Kuleshov, V., and De Sa, C. M. QuIP: 2-bit quantization of large language models with guarantees. In NeurIPS , 2023. Chen, M., Liu, Y., Wang, J., Bin, Y., Shao, W., and Luo, P. PrefixQuant: Static quantization beats dynamic through prefixed outliers in LLMs. arXiv:2410.05265 , 2024. Clark, C., Lee, K., Chang, M.-W., Kwiatkowski, T., Collins, M., and Toutanova, K. BoolQ: Exploring the surprising difficulty of natural yes/no questions. In Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics: Human Lan-guage Technologies , 2019. Clark, P., Cowhey, I., Etzioni, O., Khot, T., Sabharwal, A., Schoenick, C., and Tafjord, O. Think you have solved question answering? try ARC, the AI2 reasoning chal-lenge. arXiv:1803.05457 , 2018. Dai, D., Deng, C., Zhao, C., Xu, R. X., Gao, H., Chen, D., Li, J., Zeng, W., Yu, X., Wu, Y., Xie, Z., Li, Y. K., Huang, P., Luo, F., Ruan, C., Sui, Z., and Liang, W. DeepSeekMoE: Towards ultimate expert specialization in mixture-of-experts language models. In Proceedings of the Annual Meeting of the Association for Computational Linguistics , 2024. DeepSeek-AI et al. Deepseek-v3 technical report, 2025. Dettmers, T., Lewis, M., Belkada, Y., and Zettlemoyer, L. GPT3.int8(): 8-bit matrix multiplication for transformers at scale. In NeurIPS , 2022. Devvrit, F., Kudugunta, S., Kusupati, A., Dettmers, T., Chen, K., Dhillon, I. S., Tsvetkov, Y., Hajishirzi, H., Kakade, S. M., Farhadi, A., and Jain, P. MatFormer: Nested transformer for elastic inference. In NeurIPS , 2024. Fedus, W., Zoph, B., and Shazeer, N. Switch transform-ers: Scaling to trillion parameter models with simple and efficient sparsity. The Journal of Machine Learning Research , 2022. Frantar, E., Ashkboos, S., Hoefler, T., and Alistarh, D. GPTQ: Accurate post-training quantization for generative pre-trained transformers. arXiv:2210.17323 , 2022. Frantar, E., Ashkboos, S., Hoefler, T., and Alistarh, D. OPTQ: Accurate quantization for generative pre-trained transformers. In ICLR , 2023. Gemini-Team et al. Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context, 2024. Gholami, A., Kim, S., Dong, Z., Yao, Z., Mahoney, M. W., and Keutzer, K. A survey of quantization methods for efficient neural network inference. arXiv:2103.13630 ,2021. Hooper, C., Sakr, C., Keller, B., Venkatesan, R., Keutzer, K., Shao, S., and Khailany, B. FGMP: Fine-grained mixed-precision weight and activation quantization for hardware-accelerated LLM inference. arXiv:2504.14152 ,2025. Jiang, A. Q., Sablayrolles, A., Roux, A., Mensch, A., Savary, B., Bamford, C., Chaplot, D. S., Casas, D. d. l., Hanna, E. B., Bressand, F., et al. Mixtral of experts. 
+
+arXiv:2401.04088 , 2024. Kim, J., Yoon, S., Lee, T., Lee, J. C., Jeon, K. E., and Ko, J. H. Truncquant: Truncation-ready quantization for dnns with flexible weight bit precision. arXiv preprint arXiv:2506.11431 , 2025. Kim, S., Hooper, C. R. C., Gholami, A., Dong, Z., Li, X., Shen, S., Mahoney, M. W., and Keutzer, K. SqueezeLLM: Dense-and-sparse quantization. In ICML , 2024. Lin, J., Tang, J., Tang, H., Yang, S., Chen, W.-M., Wang, W.-C., Xiao, G., Dang, X., Gan, C., and Han, S. AWQ: Activation-aware weight quantization for on-device llm compression and acceleration. In Proceedings of Machine Learning and Systems , 2024. Liu, Z., Oguz, B., Zhao, C., Chang, E., Stock, P., Mehdad, Y., Shi, Y., Krishnamoorthi, R., and Chandra, V. LLM-QAT: Data-free quantization aware training for large lan-guage models. In ACL (Findings) , 2024. Liu, Z., Zhao, C., Fedorov, I., Soran, B., Choudhary, D., Kr-ishnamoorthi, R., Chandra, V., Tian, Y., and Blankevoort, T. SpinQuant: LLM quantization with learned rotations. In ICLR , 2025. Ma, X. and Patterson, D. Challenges and research di-rections for large language model inference hardware. 
+
+arXiv:2601.05047 , 2026. 9MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Merity, S., Xiong, C., Bradbury, J., and Socher, R. Pointer sentinel mixture models. arXiv preprint arXiv:1609.07843 , 2016. Nair, P. A., Datta, P., Dean, J., Jain, P., and Kusupati, A. Matryoshka quantization. In ICML , 2025. OpenAI et al. Gpt-4 technical report, 2023. Park, G., Bae, J., Kwon, B., Kim, B., Kwon, S. J., and Lee, D. AnyBCQ: Hardware efficient flexible binary-coded quantization for multi-precision LLMs. 
+
+arXiv:2510.10467 , 2025. Park, Y., Hyun, J., Cho, S., Sim, B., and Lee, J. W. Any-precision LLM: Low-cost deployment of multiple, different-sized LLMs. In ICML , 2024. Sakaguchi, K., Bras, R. L., Bhagavatula, C., and Choi, Y. Winogrande: An adversarial winograd schema challenge at scale. Communications of the ACM , 2021. Shao, W., Chen, M., Zhang, Z., Xu, P., Zhao, L., Li, Z., Zhang, K., Gao, P., Qiao, Y., and Luo, P. OmniQuant: Omnidirectionally calibrated quantization for large lan-guage models. In ICLR , 2024. Singhal, S. et al. Llama-Nemotron: Efficient reasoning models. In The Exploration in AI Today Workshop at ICML , 2025. Touvron, H. et al. Llama 2: Open foundation and fine-tuned chat models. arXiv:2307.09288 , 2023. Tseng, A., Chee, J., Sun, Q., Kuleshov, V., and Sa, C. D. QuIP#: Even better LLM quantization with hadamard incoherence and lattice codebooks. In ICML , 2024. Wang, H., Zhou, Q., Hong, Z., and Guo, S. D2MoE: Dual routing and dynamic scheduling for efficient on-device MoE-based LLM serving. In Proceedings of the Annual International Conference on Mobile Computing and Net-working , 2025. Xiao, G., Lin, J., Seznec, M., Wu, H., Demouth, J., and Han, S. SmoothQuant: Accurate and efficient post-training quantization for large language models. In ICML , 2023. Yu, H., Li, H., Shi, H., Huang, T. S., and Hua, G. Any-precision deep neural networks. In AAAI , 2021. Zellers, R., Holtzman, A., Bisk, Y., Farhadi, A., and Choi, Y. HellaSwag: Can a machine really finish your sentence? In AAAI , 2019. 10 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+# Appendix Contents 
+
+A. Overall Algorithm of MoBiQuant .......................................................................................................... 11 B. MoBiSlice Construction: Formulation and Further Analysis......................................................................... 11 C. Experiment Details.............................................................................................................................13 C.1. MoBiQuant Training Setup ...........................................................................................................13 C.2. Flexible Inference and Effective Bit Control .....................................................................................14 D. Ablation Studies ................................................................................................................................14 D.1. Scheduling Methods for Router Regularization..................................................................................14 D.2. Router Generalization Under Different Target Bit Training...................................................................15 E. Additional Experiments .......................................................................................................................15 E.1. Elasticity with Activation Quantization ............................................................................................15 E.2. Comparison with Static PTQ Methods: Full results for Fig. 1................................................................16 E.3. Downstream Task Performance: Full results for Fig. 2.........................................................................16 
+
+# A. Overall Algorithm of MoBiQuant 
+
+As shown in Alg. 1, MoBiQuant performs layer-wise quantization by matching each quantized layer to a full precision reference output using a two stage iterative process. For each layer, it first runs the original full-precision layer to obtain a full precision output activation, then initializes the shared MSB quantization parameters and the router. In Stage 1 , it stabilizes the shared MSB path by optimizing only the MSB quantization parameters to minimize the reconstruction error to the full-precision target. In Stage 2 , it initializes residual slice quantization parameters from the stabilized MSB settings, computes the router score for each token, and produces the quantized output as the MSB output plus a routed sum of residual slice refinements. This stage jointly optimizes the MoBiSlice objective that combines reconstruction loss with a routing regularizer, updating the MSB, residual slices, and router. After the optimization converges for the layer, MoBiQuant commits the learned quantization parameters, propagates both full-precision and quantized activations to the next layer, and repeats the same procedure until all layers are quantized. 
+
+# B. MoBiSlice Construction: Formulation and Further Analysis 
+
+In this section, we formalize the MoBiSlice quantization scheme and describe how we decompose a full precision weight into a set of composable low-bit slices, enabling a many-in-one representation for elastic precision. 
+
+Quantizer design for bit slice accumulation. MoBiSlice requires that precision be adjustable by either accumulating residual bits or truncating them. To satisfy this property, we adopt a floor aligned mapping following the truncation ready quantization principle (Kim et al., 2025), where a lower precision code is obtained by simply dropping least significant bits (LSB) rather than re-rounding. Concretely, for bit width b, scale s, and continuous zero point z, we quantize as 
+
+xint = clamp 
+
+j xs + z
+
+k
+
+, 0, 2b − 1
+
+
+
+, (11) 
+
+xdeq = s (xint − z + 0 .5) . (12) The floor operator enforces hierarchical nesting of integer codes, so switching bit width corresponds to adding or dropping bit slices without changing previously formed higher order bits. The +0 .5 dequantization shift centers each bin, which reduces bias when residual slices are accumulated. 11 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Algorithm 1 MOBIQUANT 
+
+Input: Input tokens X, model M with L layers {f (ℓ)fp }Lℓ=1 , epochs ep , number of experts E, regularization weight λ
+
+Output: Quantized model cM
+
+Notation: We omit the layer superscript (ℓ) for readability. 
+
+Hfp , Hq: Full precision and quantized activation input for layer ℓ
+
+Yfp , Yq: Full precision and quantized activation output for layer ℓ
+
+G: Router scores, ⊙: element wise product  
+
+> 1:
+
+Initialize activations Hfp , Hq ← X 
+
+> 2:
+
+for ℓ = 1 to L do  
+
+> 3:
+
+FP output Yfp ← ffp (Hfp ; W) 
+
+> 4:
+
+Initialize MSB parameters Θq, msb and router parameters Θr 
+
+> 5:
+
+for t = 1 to ep do 
+
+Stage 1: MSB stabilization  
+
+> 6:
+
+Ymsb ← fmsb (Hq; Θ q, msb ) ▷ MSB only forward pass  
+
+> 7:
+
+LMSB ← ∥ Ymsb − Yfp ∥22 ▷ match FP reference output  
+
+> 8:
+
+Update Θq, msb by gradient descent ▷ update MSB quantization params 
+
+Stage 2: MoBiQuant and routed forward flow  
+
+> 9:
+
+Slices {Θq,e }Ee=1 ← Derive(Θ q, msb ) ▷ construct MoBi slices from MSB params  
+
+> 10:
+
+Router score G ← Router( Hq; Θ r ) ▷ token wise gating weights  
+
+> 11:
+
+Yq ← Ymsb + PEe=1 Ge ⊙ fe(Hq; Θ q,e ) ▷ sum MSB and routed outputs  
+
+> 12:
+
+LMoBi ← ∥ Yq − Yfp ∥22 + λ R(G, Θr ) ▷ reconstruction loss and router regularization  
+
+> 13:
+
+Update Θq, msb , {Θq,e }Ee=1 , Θr ▷ joint update of quantization and router params  
+
+> 14:
+
+end for  
+
+> 15:
+
+cW ← Quantize( W; Θ q, msb , Θr ) 
+
+> 16:
+
+Hfp ← Yfp  
+
+> 17:
+
+Hq ← fq(Hq; cW) 
+
+> 18:
+
+end for  
+
+> 19:
+
+return cM
+
+To ensure consistent refinement across slices, MoBiSlice iteratively refines the scaling factor so that each slice represents progressively finer increments. Let (s0, z 0) be the calibrated parameters of the first slice. After assigning be bits to slice 
+
+e, the next slice refines the resolution as se+1 = se/2be . Finally, while the first slice uses the calibrated zero point z0,slices fix ze = 2 be−1 for e ≥ 1, placing the midpoint code at the center of the integer range so that positive and negative residual corrections are represented symmetrically, which avoids systematic drift during slice accumulation. Together, the floor aligned mapping, scale refinement, and centered residual quantization make the slice decomposition compatible with truncation based precision control, enabling stable elastic reconstruction by activating a subset of slices. 
+
+Bias and Error Bounds for Bit Slice Activation. We now analyze truncation based bit slice activation and show that activating residual slices performs a true refinement: it leaves the coarse quantization code unchanged and only adds a bounded zero mean remainder term that recovers finer detail. First, we assume a two slice scenario, consisting of a shared base slice at (b − k) bits and a single k bit residual slice that can be activated or dropped. Let W be the original weight. The base slice produces an MSB code with parameters (s1, z 1), and the residual slice quantizes the residual R using parameters (s2, z 2) derived from the base slice: 
+
+MSB b−k =
+
+j Ws1
+
++ z1
+
+k
+
+, (13) 
+
+LSB k =
+
+j Rs2
+
++ z2
+
+k
+
+, s2 = s1
+
+2k , z2 = 2 k−1. (14) 12 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Using the centered dequantization, the two-slice reconstruction is: 
+
+cW = s1(MSB b−k − z1 + 0 .5) + s2(LSB k − z2 + 0 .5) . (15) Although the reconstruction in Eq. (15) is written for a base (b − k) bit slice plus a k bit residual slice, our goal is to characterize any intermediate precision obtained by activating only a subset of the residual information. We therefore introduce a generic truncation level p that drops p least significant bits from the merged code. This captures all partial activation cases: p = 0 corresponds to using all k residual bits, and larger p corresponds to deactivating progressively more of the finest bits. We truncate p least significant bits of the merged integer code INT 8 = (MSB b−k ≪ k) + LSB k using a right shift: 
+
+I = INT 8 ≫ p =
+
+j INT 8
+
+2p
+
+k
+
+, INT 8 = 2 pI + r, r ∈ { 0, 1, . . . , 2p − 1} (16) Substituting Eq. (16) into Eq. (15) and noting that s2 = s1/2k, we can rearrange terms to express cW as a coarse quantizer applied to the truncated code I, plus an additive truncation noise term determined by the dropped remainder r:
+
+cW = s2
+
+ INT 8 − 2kz1 + 0 .5
+
+= s2
+
+ 2pI + r − 2kz1 + 0 .5
+
+= (2 ps2)
+
+| {z } 
+
+s′
+
+I − 2k−pz1
+
+| {z } 
+
+z′
+
++ 0 .5|{z} 
+
+mid 
+
+ + s2
+
+ r + 0 .5 − 2p−1| {z }
+
+Ep
+
+. (17) Therefore, truncating s least significant bits is equivalent to quantizing with coarser parameters: 
+
+s′ = 2 ps2, z′ = 2 k−pz1, mid = 0 .5, (18) Eq. (17) makes the role of p explicit: truncation does not change the coarse code I, and its only effect is an additive perturbation Ep determined by the discarded remainder r. Thus, analyzing Ep directly characterizes the impact of partially activating bit slices. Assuming the residue r is approximately uniform over {0, 1, . . . , 2p − 1}, we obtain: 
+
+E[Ep] = s2
+
+ E[r] + 0 .5 − 2p−1 = s2
+
+ 2p − 12 + 0 .5 − 2p−1
+
+
+
+= 0 , (19) This yields E[Ep] = 0 , indicating that slice-based reconstruction does not introduce bias in expectation. Moreover, since 
+
+r ∈ { 0, 1, . . . , 2p − 1},
+
+−
+
+
+
+2p−1 − 0.5
+
+
+
+≤ r + 0 .5 − 2p−1 ≤
+
+
+
+2p−1 − 0.5
+
+
+
+, (20) which implies the error bound: 
+
+|Ep| ≤ s2
+
+
+
+2p−1 − 0.5
+
+
+
+< 2p−1s2 =⇒ |Ep|
+
+s22p < 12 . (21) Eq. (21) implies that the truncation error is strictly smaller than one half step of the coarser quantizer. Equivalently, the perturbation Ep cannot move cW across a decision boundary of the base MSB quantizer, and therefore cannot flip any bit of the coarse code. As a result, activating residual slices performs a true residual refinement: it only fills in finer bit slices without altering the coarser representation, yielding an accurate and stable activation with controlled error. Therefore, this establishes that bit slice activation yields a guaranteed residual refinement: it adds finer information while preserving the coarse code, and its only effect is an additive truncation noise term that is bounded and zero mean. 
+
+# C. Experiment Details 
+
+C.1. MoBiQuant Training Setup 
+
+We use weight-only quantization in all reported runs in the main paper, with abits =16 and group size =128, while the base bit slice uses wbits =2. Weight-activation quantization results and their experimental setup are reported in 13 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Appendix E.1. Slice decomposition is enabled by slice bits list , and our default configuration uses four bit slices with slice bits list = 2 2 2 2 . Training proceeds for epochs =20 and nsamples =128, with batch size =1 for all models. The total number of router annealing steps is used by the router temperature schedule and calculated as follows: 
+
+global steps =
+
+ nsamples batch size 
+
+
+
+· epochs ,
+
+For each layer, we optimize three parameter groups with AdamW: learnable weight clipping parameters (LWC), learnable equivalent transformation parameters (LET), and MoBiQuant parameters. Group specific learning rates are denoted as follows: lwc lr , let lr , and mobi lr . We typically use lwc lr in the range 1e−3 to 1e−2 , and mobi lr in the range 5e−6 to 4e−5 , depending on model size. 
+
+C.2. Flexible Inference and Effective Bit Control 
+
+A core feature of MoBiQuant is flexible inference, where the effective precision is controlled by activating a subset of residual bit slices. At evaluation time, this is exposed by target activation ratio eval or target bit eval .When target bit eval is used, we convert it into a desired routing ratio based on the base MSB bits and the sum of residual slice bits: 
+
+ρ = target bit eval − bmsb 
+
+P 
+
+> e≥1
+
+be
+
+, bmsb = slice bits list [0] .
+
+Hard binary gating is applied in evaluation using router scores and a threshold selected to satisfy the target ratio. 
+
+Layer-wise threshold calibration. To make the realized routing ratio stable across layers and modules, we calibrate a layer specific threshold from calibration samples whenever target bit eval requests residual activation. This calibration collects router scores over the calibration set and sets each layer threshold to the appropriate quantile so that approximately a fraction ρ of routed experts are active. We set the calibration sample to be the same as nsamples .
+
+# D. Ablation Studies 
+
+D.1. Scheduling Methods for Router Regularization 
+
+We conduct an ablation study to identify the most effective scheduling strategy for router regularization. We compare four schedules, Linear, Cosine, Exponential, and Logarithmic, and measure their impact on model perplexity (PPL) on WikiText2, C4, and PTB. As shown in Fig. 10, performance differences are most pronounced in the low precision regime of 2.5 to 3.0 average effective bits. In this range, both Logarithmic and Exponential scheduling consistently outperform the Linear and Cosine alternatives. The relative ordering of the two best schedules is dataset dependent: Exponential offers a slight advantage on WikiText2, while Logarithmic performs better on C4 and PTB within the same bit-width range.  
+
+> Figure 10. Comparison of PPL ( ↓) sweep between different scheduling methods across WikiText2, C4, PTB datasets.
+
+We adopt Logarithmic scheduling for our regularization scheme because it converges to its intended target precision during inference, and also aligns naturally with the router temperature annealing used in the router gating mechanism. The router temperature is annealed following a logarithmic trajectory, to control gating sharpness by encouraging exploration early and progressively promoting slice specialization as training proceeds. Using a matching Logarithmic schedule for regularization 14 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+maintains methodological consistency and synchronizes the evolution of two coupled components, routing sharpness and precision allocation. In practice, this alignment encourages a smoother adaptation between slice selection and resource constraint demands, leading to a more stable and predictable training process. 
+
+D.2. Router Generalization Under Different Target Bit Training 
+
+We train LLaMA3.2 1B with five target bit budgets, 2.5, 3.0 (default), 3.5, 4.0, and 5.0, to quantify how the training target affects router generalization across precisions. For each training configuration, we run a sweep over inference time budgets and measure how the resulting PPL curves shift as a function of the training target, reporting results on WikiText2, C4, and PTB datasets. Fig. 11 shows consistent trends across datasets, with the largest differences appearing around the transition region near 3.0 average bits, where the router must decide whether to aggressively prune slices or to preserve more precision. 
+
+Across all datasets, the router trained with a 3.0 bit target provides the best overall trade off. Training at a lower target such as 2.5 bit improves PPL in the sub 3.0 bit region, but this comes at a clear cost in higher bit ranges, where PPL degrades. In contrast, training at higher targets ( 3.5, 4, and 5 bit) leads to substantially worse PPL in the sub 3.0 bit region, while improvements above 3.0 are modest and often saturate quickly. Elastic inference requires the router to accommodate a changing target budget, and the target precision scheduling objective in Eq. 8 is designed to encourage exploration of diverse token slice allocations before converging. However, the training target still sets the operating point around which the router learns stable binary decisions: a low target biases the router toward early and persistent slice pruning, while a high target biases it toward maintaining many active slices. The 3.0 bit target sits near a balanced regime and improves calibration of routing decisions across a broader range of average bits. This motivates us to adopt 3.0 bits as the default training target throughout all experiments.  
+
+> Figure 11. Comparison of PPL ( ↓) sweep between different target bit-widths for training across WikiText2, C4, PTB datasets.
+
+# E. Additional Experiments 
+
+E.1. Elasticity with Activation Quantization  
+
+> Figure 12. PPL ( ↓) tradeoff under 4 bit activation quantization on LLaMA2-13B. We compare with SmoothQuant (Xiao et al., 2023) and OmniQuant (Shao et al., 2024) W4A4 baselines.
+
+The elasticity of MoBiQuant also extends to activation quantization, as shown in Fig. 12, where we report re-sults on LLaMA2-13B. We keep the same slice decompo-sition as the weight-only setting, with four residual slices 
+
+slice bits list = 2 2 2 2 and the same calibra-tion hyperparameters: group size =128, nsamples =128, 
+
+batch size =1, epochs =20. We also keep the same reg-ularization parameter reg weight =1e−5 and learning rate 
+
+mobi lr =5e−6 . Since we compare against baselines that quantize both weights and activations to 4 bits, routing target is set to target activation ratio =0.3, which corre-sponds to an average 4 bit budget. A key practical detail in this setting is the interaction between learnable equivalent transforms (LET) from OmniQuant (Shao 15 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+et al., 2024) and router training. LET preserves the main linear path by transforming the input activation and compensating the linear weights so that the layer output remains equivalent. For a linear layer, 
+
+Y = XW + B, ˜X = ( X − δ) ⊘ s, ˜W = s ⊙ W, ˜B = B + δW, (22) where X ∈ RT ×d denote the input activations with T tokens and d input channels; W ∈ Rd×m the weight matrix; and 
+
+B ∈ Rm the bias. LET introduces a learnable per channel shift δ ∈ Rd and scale s ∈ Rd, producing the transformed input 
+
+˜X and the compensated parameters ˜W, ˜B so that the layer output is preserved. However, the router is a separate linear branch whose weights are not re-parameterized by LET, so feeding ˜X directly changes the routing function and can distort router scores. This is important because LET parameters evolve during calibration, so the router would otherwise see a moving input distribution, which can drive logits into saturation under sharp gating schedules and small calibration budgets, especially when the router input is quantized. For stability, we undo LET for the router input by reconstructing the activation in the original space before routing as follows: 
+
+Xr = ˜X ⊙ s + δ, (23) This keeps the router operating in a fixed activation space while LET continues to re-parameterize the main linear path, improving routing stability. 
+
+E.2. Comparison with Static PTQ Methods: Full results for Tab. 1                                                             
+
+> Table 3. Comparison with static PTQ methods. We report average accuracy over six zero-shot commonsense reasoning tasks. For fair comparison with 4-bit PTQ, MoBiQuant is elastic but restricted to 3.9–4.0 bit range. MoBiQuant matches or surpasses static PTQ baselines. The precise bits is indicated in gray. Method Avg. Bits Type LLaMA-2-7B LLaMA-2-13B LLaMA-3.2-1B LLaMA-3.2-3B LLaMA-3-8B 0-shot 0-shot 0-shot 0-shot 0-shot Avg.( ↑)Avg.( ↑)Avg.( ↑)Avg.( ↑)Avg.( ↑)Floating-point 16 -69.68 73.19 59.42 66.71 74.19 RTN 4Static 64.72 64.19 --70.40 SmoothQuant 63.87 67.46 --67.47 AWQ 69.40 72.64 --72.64
+> GPTQ 65.54 70.22 --70.21 SpinQuant 68.00 72.68 --72.62 OmniQuant 68.41 71.68 56.99 63.8 71.66 MoBiQuant (ours) 3.9-4.0 Elastic 67.22 71.54 55.49 63.2 71.84 3.9 4.0 3.95 3.94 3.99
+
+We further compare elastic MoBiQuant against static PTQ baselines on downstream zero shot evaluation. We report average accuracy over six zero shot commonsense reasoning tasks in Tab. 3, where prior methods are evaluated at fixed 4 bit precision and MoBiQuant is restricted to the 3.9 to 4.0 bit regime for a fair comparison. Across model families and sizes, MoBiQuant is consistently competitive and improves over multiple widely used static PTQ baselines, while remaining close to the strongest results. In particular, MoBiQuant delivers clear gains over several static baselines on LLaMA2 models, and on LLaMA 3 8B it matches or exceeds a number of strong static PTQ methods on the same task suite. Overall, these results support that MoBiQuant preserves elasticity while maintaining strong zero shot task performance at near 4 bit precision. 
+
+E.3. Downstream Task Performance: Full results for Tab. 2 
+
+The results in Tab. 2 report perplexity and downstream accuracy for LLaMA3.2-1B under different calibration datasets and compare them with OmniQuant (Shao et al., 2024). Overall, MoBiQuant remains stable across calibration choices, delivering low perplexity while preserving strong task performance at roughly three average effective bits. In particular, calibrating on WikiText2 and PTB leads to clear perplexity improvements over OmniQuant across WikiText2, C4, and PTB, with the PTB calibrated setting showing the largest gains and improving all three benchmarks simultaneously. The mixed calibration setup exhibits similarly favorable behavior, reducing perplexity across benchmarks while keeping the operating 16 MoBiQuant: Mixture-of-Bits Quantization for Token-Adaptive Elastic LLMs 
+
+Table 4. Performance on different calibration sets (Llama3.2-1B): Omni. (OmniQuant) vs. Ours (MobiQuant) Best values are bolded (PPL lower is better, Acc higher is better).                                                                                                                 
+
+> Perplexity (PPL ↓)Downstream Tasks (Acc ↑)Dataset Method Avg. Bits Wiki C4 PTB ARC E ARC E (n) ARC C ARC C (n) BoolQ Hella Hella (n) Wino
+> Wiki Omni. —21.597 32.860 37.467 0.510 0.472 0.245 0.284 0.593 0.378 0.488 0.551 Ours 3.01 18.947 27.924 34.915 0.521 0.481 0.261 0.294 0.613 0.382 0.497 0.533 C4 Omni. —22.611 33.198 38.096 0.503 0.470 0.245 0.282 0.583 0.378 0.488 0.548 Ours 3.03 26.360 33.382 43.888 0.522 0.452 0.282 0.293 0.619 0.369 0.477 0.538 PTB Omni. —22.689 33.519 35.353 0.503 0.471 0.241 0.281 0.586 0.376 0.488 0.556 Ours 3.02 16.909 24.849 29.268 0.588 0.532 0.284 0.312 0.589 0.402 0.526 0.556
+> Mix Omni. —22.335 33.327 36.763 0.502 0.474 0.246 0.277 0.599 0.374 0.488 0.553 Ours 3.03 21.070 30.072 33.646 0.534 0.502 0.258 0.300 0.612 0.382 0.500 0.530
+
+point in average bits nearly unchanged, indicating that MoBiQuant generalizes beyond a single domain specific calibration distribution. On downstream tasks, MoBiQuant typically matches or exceeds OmniQuant across downstream evaluations including ARC Easy, ARC Challenge, BoolQ, HellaSwag, and WinoGrande (Clark et al., 2018; 2019; Zellers et al., 2019). The most consistent improvements again appear when using PTB or WikiText2 for calibration. Notably, PTB calibration yields broad accuracy gains alongside the strongest perplexity reductions, suggesting that higher fidelity reconstruction from slice based residual refinement transfers to improved reasoning and common sense performance. Overall, these results indicate that MoBiQuant generally performs well, yielding reliable performance across both language modeling and task accuracy under varying calibration choices. 17
