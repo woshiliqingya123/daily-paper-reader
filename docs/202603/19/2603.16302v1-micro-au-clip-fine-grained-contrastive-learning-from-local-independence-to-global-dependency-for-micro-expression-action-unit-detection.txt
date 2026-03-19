@@ -1,0 +1,325 @@
+Title: Micro-AU CLIP: Fine-Grained Contrastive Learning from Local Independence to Global Dependency for Micro-Expression Action Unit Detection
+
+URL Source: https://arxiv.org/pdf/2603.16302v1
+
+Published Time: Wed, 18 Mar 2026 00:55:04 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+> JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+
+# Micro-AU CLIP: Fine-Grained Contrastive Learning from Local Independence to Global Dependency for Micro-Expression Action Unit Detection 
+
+Jinsheng Wei, Fengzhou Guo, Yante Li, Haoyu Chen, Guanming Lu, Guoying Zhao 
+
+Nanjing university of posts and telecommunications 1,2,5, Center for Machine Vision and Signal Analysis, University of Oulu 3,4,6
+
+Abstract —Micro-expression (ME) action units (Micro-AUs) provide objective clues for fine-grained genuine emotion analysis. Most existing Micro-AU detection methods learn AU features from the whole facial image/video, which conflicts with the inherent locality of AU, resulting in insufficient perception of AU regions. In fact, each AU independently corresponds to specific localized facial muscle movements (local independence), while there is an inherent dependency between some AUs under specific emotional states (global dependency). Thus, this paper explores the effectiveness of the independence-to-dependency pattern and proposes a novel micro-AU detection framework, micro-AU CLIP, that uniquely decomposes the AU detection process into local semantic independence modeling (LSI) and global semantic de-pendency (GSD) modeling. In LSI, Patch Token Attention (PTA) is designed, mapping several local features within the AU region to the same feature space; In GSD, Global Dependency Attention (GDA) and Global Dependency Loss (GDLoss) are presented to model the global dependency relationships between different AUs, thereby enhancing each AU feature. Furthermore, considering CLIP’s native limitations in micro-semantic alignment, a micro-AU contrastive loss (MiAUCL) is designed to learn AU features by a fine-grained alignment of visual and text features. Also, Micro-AU CLIP is effectively applied to ME recognition in an emotion-label-free way. The experimental results demonstrate that Micro-AU CLIP can fully learn fine-grained micro-AU features, achieving state-of-the-art performance. 
+
+Index Terms —Micro-AU detection, local semantic indepen-dence, global semantic dependency, ME recognition, fine-grained. 
+
+I. I NTRODUCTION 
+
+# MICRO-expressions (MEs), as fleeting and involuntary facial expressions, reveal genuine emotions that in-dividuals may attempt to suppress or conceal. As MEs re-flect true emotions, ME analysis plays an important role and significance in lie detection, criminal investigation, deep-level human-computer interaction, etc [1], [2]. At present, ME analysis mainly focuses on ME recognition (MER) that predicts the emotion label of MEs [3]–[5]. However, ME emotion labels are subjective, and different annotators may label different types of emotions for the same ME sample. The facial action unit (AU) objectively encodes the action state of facial local regions, and research has shown that AU detection can promote fine-grained expression analysis [6]. By detecting micro-expression AU (Micro AU), MEs can be objectively described, avoiding the ambiguity of subjective emotional labels in MER. 
+
+Fig. 1: The illustration of the local semantic independence and global semantic dependence. Macro-expression (MaE) AU detection typically detects AUs from the entire face, achieving good performance [7]– [9]. In micro-AU detection, many works [6], [10] have also adopted this pattern to detect micro-AUs and achieved certain results. However, this pattern may hinder the further ad-vancement of micro-AU detection. The primary reason is that the actions encoded by AUs in MaEs are more pronounced, allowing detection models to adaptively capture AU movement information, whereas the subtle actions encoded by micro-AUs in MEs are inherently weak and challenging to detect [11]. Therefore, the detection model is difficult to adaptively capture the micro-AU movement information from the whole facial image/video. Some works [12], [13] have also attempted to learn micro-AU features from a local perspective. However, these works have not formed an explicit independent pipeline to focus accurately on each micro-AU region, failing to achieve a fine-grained micro-AU detection. In fact, on the one side, AUs have local semantic indepen-dence, namely, each AUs can be distinguished individually without the other AUs’ information [14]. If an AU is activated, the specific muscle group corresponding to this AU will move, and this movement information is sufficient to represent this AU without other AU activation information [6]. As shown in Fig. 1, peoples only need to observe the movement information  
+
+> arXiv:2603.16302v1 [cs.CV] 17 Mar 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+
+of the lip corner area to determine whether AU12 is activated, without needing to check the movement information of other AU-specific areas, such as the cheek. On the other side, certain AUs exhibit global semantic dependencies, that is, specific true emotions trigger the co-occurrence of AU groups in MEs [14]. Fig. 1 shows that AU12 and AU6 usually exhibit co-activation in a ”Happiness” ME instance. If AU12 is activated, even if the confidence level of AU6 being activated is around 0.5 (borderline confidence), we can still infer that the probability of AU6 being activated should be positive [6]. Subtle facial movements make micro-AU detection challeng-ing [11]. Based on the above theory, we argue that modeling local semantic independence and global semantic dependence can alleviate this challenge to enhance micro-AU detection performance. Therefore, this paper proposes a fine-grained micro-AU detection framework in a ”from local independence to global dependence ( independence-to-dependence )” pattern and explores the effectiveness of this pattern. Inspired by the excellent visual-text alignment ability of Contrastive Language-Image Pre-training (CLIP) [15], this paper instantiates the above framework based on CLIP and proposes a novel Micro-AU CLIP model that designs fine-grained text to guide the visual encoder to learn fine-grained micro-AU features. Micro-AU CLIP model includes a local semantic independence (LSI) and a global semantic depen-dency (GSD) module. LSI independently infers the movement features of each AU, and GSD learns the global dependency between all AU features. However, conventional CLIP excels at macro semantic alignment and has limitations in fine-grained semantic alignment [16]. Therefore, we design amicro-AU contrast loss (MiAUCL) for the local fine-grained alignment between AU visual and text semantics. MiAUCL can guide the model to learn a single fine-grained AU visual feature by utilizing the textual description of the individual AU. Furthermore, as is well known [17], there is a strong and clear correlation between micro-AU and facial MEs. Thus, the AU detection results can be used for ME recognition (MER). However, directly inferring ME categories based on discrete AU predicted labels may lead to accumulated errors and fail to achieve competitive performance. Some works [6], [18] introduce AU information to improve the MER performance, but these works still need ME label to achieve MER tasks through supervised learning or weakly supervised learning. Differently, our work combines Micro-AU CLIP with emotion-label-free methods to achieve MER. To our knowledge, this is the first work that applied emotion-label-free to MER, based on AU-supervised transfer. Thus, the main contributions of this paper are as follows:  
+
+> •
+
+This work explores a novel Micro-AU detection paradigm from local independence to global dependence learning by transforming isolated local estimation into a unified modeling of both local independence and global depen-dency for effective AU modeling. Micro-AU CLIP model can be applied to MER, showing strong generalization beyond supervised settings.  
+
+> •
+
+In LSI, Patch Token Attention (PTA) is designed to learn AU semantic consistency features within the correspond-ing AU region.  
+
+> •
+
+In GSD, Global Dependency Attention (GDA) with global dependency loss is designed to build the global dependency relationship between AUs to enhance micro-AU features.  
+
+> •
+
+To achieve fine-grained cross-modal alignment, MiAUCL is proposed to achieve fine-grained guidance of text information on visual micro-AU feature learning. II. R ELATED WORKS 
+
+Micro-expression analysis involves multiple tightly related research topics, including Micro-AU detection, model learning strategies and MER. Existing works have explored these aspects from different perspectives, such as global or local feature modeling, the idea of contrastive learning and various supervised or weakly supervised learning paradigms. In this section, we review the most relevant literature from three directions: Micro-AU detection paradigm, which focuses on extracting discriminative AU representations from subtle fa-cial motions; Contrastive learning for ME analysis, which emphasizes visual–text or intra-/inter-sample alignment; and MER learning ways, which summarize mainstream learning paradigms for emotion recognition. The related works high-lights the limitations of existing methods and motivates the design of our Micro-AU CLIP framework. 
+
+A. Micro-AU Detection Paradigm 
+
+Micro-AU detection aims to recognize subtle facial mus-cle movements associated with micro-expressions, and has attracted increasing attention in recent years. Many studies [12], [19], [20] mainly attempted to capture micro-AU move-ment information from the entire facial ME images or video sequences. For example, Liu et al. [21] extracted intermediate and high-level visual features from the 3D-CNN backbone across the entire face and fuse them for AU detection. Tuomas et al. [19] extracted global spatio-temporal information from video sequences via 3D convolution in order to capture the global trend of MEs. Although global modeling strategies can capture holistic motion patterns, they often overlook the fact that AUs are inherently localized and correspond to specific facial muscle groups. To address this issue, several studies focus on feature extraction in local regions. To extract local AU features, Li et al. [22] propose the Spatio-Channel Attention (SCA) mecha-nism to model intra- and inter-region information interactions, enabling the model to emphasize AU-related regions. How-ever, these works tend to entangle multiple AUs into holistic features, weakening AU-level discriminability and ignore the independence of local micro-AUs. Zhang et al. [13] use facial marker points to segment the image into 11 key regions, and extract AU features of each region, making independent AU predictions for each region. Although they make independent judgments for each AU, they overlook the global dependencies of AUs and the structured relationships among AUs. Different from these methods, this paper designs a unified framework that follows a from local independence to global dependence paradigm. Specifically, each AU feature is first JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3
+
+Fig. 2: Framework of the proposed Micro-AU CLIP. (a) ViT-based visual backbone extracts patch-level visual tokens from the input image.; (b) Text backbone encodes AU-related textual prompts into text features; (c) In LSI, the model utilizes PTA to learn each AU feature individually; (d) GSD models the global dependence between different AUs and propagates the global context information to the features of each AU. independently learned through explicitly separated pipelines to preserve local semantic independence, and then global AU dependencies are modeled by a dedicated module, balancing local independence and global dependency, thus achieving the integration of local and global features. 
+
+B. Contrastive Learning 
+
+Contrastive learning has demonstrated remarkable ef-fectiveness in multimodal representation learning and vi-sion–language alignment, and has recently been introduced into fine-grained vision tasks. In the context of ME analysis, Li et al. [10] proposed an Intra- and Inter-Contrastive Learning (ICL) strategy to enlarge the feature differences between onset and apex frames, as well as between different AUs, thereby enhancing motion-sensitive features. Based on CLIP, Liu et al. [23] perform alignment between global ME visual features and emotion-level text descriptions, enabling cross-modal contrastive learning. In other fields, such as multimodal sentiment analysis and generative artificial intelligence, re-search has also applied the contrastive learning idea based on CLIP. Qi et al. [24] fine-tuned CLIP for the multimodal sentiment recognition task, aligning video frame features with emotional text descriptions semantically, in order to extract video features with stronger sentiment discriminability. Guo et al similarly aligned image features with text features, achieving controllable guidance from text semantics to video generation. Although existing contrastive learning methods have achieved success in ME analysis, they primarily operate at the global level and cannot effectively distinguish fine-grained AU semantics from a local perspective. Furthermore, standard CLIP-style contrastive learning was originally designed for single-label single-label classification tasks and is not suitable for multi-label AU detection tasks. Different from these methods, we design a novel MiAUCL loss to achieve fine-grained alignment between local visual features and text semantics for each AU. MiAUCL does not perform contrastive learning on global features, but instead performs visual-language alignment for each AU, allowing each local AU visual feature to be guided by its corresponding semantic concept. This fine-grained alignment strategy pro-vides effective text-level supervision for local visual features and is more in line with the multi-label characteristics of AU detection. 
+
+C. MER Learning Way 
+
+So far, the dominant learning approaches of most existing MER methods [25], [26] are supervised learning in MER. However, ME datasets are typically small-scale, and emotion annotations are often ambiguous and subjective, some works [24], [27] attempt to implement MER tasks using weakly supervised learning methods. For instance, Almushrafy et al. achieved efficient intensity estimation solely through sparse temporal labeling of micro-expressions, without relying on frame-by-frame intensity annotation. Nguyen et al. [27] pre-train models on large-scale unlabeled data by constructing self-supervised tasks to learn general ME features. While these approaches reduce dependence on fully labeled data, they still require emotion labels or pseudo-labels during training. Different from these methods, based on the proposed Micro-AU CLIP, we exploit the emotion-label-free MER, mitigating the reliance on ME emotion labels. This provides a new perspective for MER, mitigating reliance on explicit emotion annotations and enabling flexible transfer to downstream emo-tion recognition tasks. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4
+
+III. P ROPOSED METHOD 
+
+Fig. 2 presents the framework of Micro-AU CLIP model. First, the visual and text backbones extract visual features and text features, respectively; second, LSI learn micro-AU independence features using patch token attention (PTA) in an independent pipeline pattern; next, GSD module models the dependence relationship between AUs feature using global dependence attention (GDA) with global dependence loss (GDL); then, MiAUCL enhances the positive (P) and negative (N) sample differences for each AU, and Multi-Task Loss constrain the classifier to detect the activation status of each AU. Finally, Micro-AU CLIP model is employed to achieve emotion-label-free MER. 
+
+A. Visual and Text Backbone 
+
+CLIP has powerful visual and text alignment capabilities and is effectively applied in some image analysis tasks [23], [28]. Micro-AU CLIP employed CLIP’s visual and text en-coders as the backbone networks for visual and text feature extractions, respectively. Optical flow (OF) can represent the motion information between two frames, which is consistent with the dynamic nature of micro-AUs. OF between the onset and apex frames has been widely used in MER [6], [18], [29]. Thus, the proposed method input OF to a visual encoder (VE) with pre-trained weights, extracting the visual token F VO ∈ Rh×w×d,where d is the feature dimension; h and w represent the token number in the horizontal and vertical directions, respectively. To learn fine-grained micro-AU features, the proposed method sets the text descriptions of positive (P) and negative (N) samples for each AU, as shown in Fig. 2. For example, for AU4, the description of P samples is ”The eyebrows are lowering”; that of N samples is “The eyebrows are not lowering”. Assuming there are N AUs, each sample obtains 
+
+N text descriptions Tn(n = 1 , 2, ..., N ). Tn is processed by the text encoder to obtain AU text features F Tn .
+
+B. LSI Module 
+
+Micro-AUs have local semantic independence, and in the feature learning stage, independent feature learning for each AU can avoid semantic interference between different AUs [13]. Therefore, we design an LSI module to learn fine-grained micro-AU features, including two parts: fine-grained local feature partitioning and patch token attention. 
+
+1) Fine-Grained Local Feature Partitioning: AU activates specific facial muscle movements, and facial landmarks can locate these specific muscle regions [30]. Furthermore, there is spatial position consistency between the patch token of the visual encoder and the input OF. Thus, to partition the motion features corresponding to each AU region, facial landmarks are extracted to partition F VO features into multiple local AU feature groups. 68 facial landmarks are extracted. The mapping relationship between AUs and the corresponding landmarks is shown in Table I and Fig. 3, based on the FACS (Facial Action Coding System). Specifically, AU1, AU2, and AU4 all involve 
+
+Fig. 3: Illustration of AU and the corresponding facial land-marks. the eyebrow region, so the landmarks in the middle of the eyebrows (19–24) were selected; AU7 corresponds to lower eyelid contraction, so keypoints below the eyes (38, 41, 44, 47) were selected; AU12 and AU15 affect the upward or downward movement of the corners of the mouth, so points in the corner of the mouth region (48, 54) were jointly selected; AU14 affects the outward pulling of the lips, involving points in the middle and sides of the mouth (55, 59, 60, 64); AU17 represents chin contraction or lip upward movement, so points at the center of the chin (7, 8, 9, 57) were selected. This landmark selection strategy, based on the correspondence between anatomical regions and landmarks, enables the model to perform more precise region localisation and feature extrac-tion for each AU’s key region, thereby enhancing the spatial sensitivity and interpretability of AU detection.           
+
+> TABLE I THE MAPPING BETWEEN AU S AND FACIAL LANDMARKS
+> AU The index number of facial landmarks
+> 119, 20, 21, 22, 23, 24 219, 20, 21, 22, 23, 24 419, 20, 21, 22, 23, 24 738, 41, 44, 47 12 48, 54 14 55, 59, 60, 64 15 48, 54 17 7, 8, 9, 57
+
+To obtain the location information of AUs, the landmarks are extracted from the apex frame. Assuming that the facial area corresponding to the n-th AU includes NL facial land-marks Lnj , j = 1 , 2, ..., N L. Given a landmark Lnj (xnj , y nj ) ,we locate the corresponding patch token KVn,j in F VO based on the coordinate (xnj , y nj ) of Lnj as follows: 
+
+KVn,j = F VO (xnj × hh0
+
+, y nj × ww0
+
+, :) ∈ Rd, (1) where h0 and w0 are the height and width of OF, namely those of apex frame, respectively. Thus, for each AU, we can obtain a group of patch tokens {KVn,j }(j = 1 , 2, ..., N L).
+
+2) Patch Token Attention: A group of patch tokens cor-responding to a specific AU has local semantic consistency JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5  
+
+> (a) Patch Token Attention
+> (b) Global Dependency Attention
+
+Fig. 4: The details of PTA and GDA. information. However, the contribution of each patch token to micro-AU detection varies. For example, AU1 represents the raising of the inner eyebrow. That is, the patch token cor-responding to the inner eyebrow is definitely more important than the patch token corresponding to the outer eyebrow. Thus, as shown in Fig. 4a, this paper designs a PTA that weights and fuses all patch tokens within the n-th AU region, based on their contributions. For n-th AU, we first learn a contribution weight W nj for 
+
+j-th patch token KVn,j :
+
+W nj = eMLP( KVn,j )
+
+PNL 
+
+> j=1
+
+eMLP( KVn,j ) , (2) where MLP is Multiple Layer Perceptron that map d-dimensional vector KVn,j to a scalar. Then, the learned weights 
+
+{W nj } are used to the weighted sum for the patch tokens 
+
+{KVn,j } to obtain local micro-AU features ˜F Vn :
+
+˜F Vn =
+
+> NL
+
+X
+
+> j=1
+
+W nj KVn,j ∈ Rd, (3) 
+
+C. GSD Module 
+
+Under specific emotions, certain facial action units (AUs) tend to appear synergistically, indicating a global semantic de-pendency between them. The Bayesian criterion provides [31] a theoretical basis for modeling this dependency relationship: given specific emotional conditions, if there is a conditional dependency relationship between AUs, observing the state of some AUs can help infer the probability of other AUs appearing [6]. Based on this principle, this paper designs a GSD module aimed at learning and establishing the global dependency relationship between AUs. In GSD module, Global Dependency Attention models the global dependency relationship of micro-AU feature ˜F Vn to learning global dependency features that then are introduced with each micro-AU feature ˜F Vn . Also, the labels of the co occurring AUs in the ME samples are used to constrain the attention weights learned by GDA, for focusing on the AU features with dependency relationship, as shown in Fig. 4b. 
+
+1) Global Dependency Attention: Inspired by the self-attention mechanism, we first learn the self-attention weights between different AU features and perform nonlinear map-ping to learn the dependency weights between different AU features. First, self-attention weights are calculated by: 
+
+A = softmax 
+
+ QK T
+
+√Dh
+
+
+
+(4) , where Q = ˜F V W Q, K = ˜F V W K , and Q, K ∈ Rd×d;
+
+˜F V = { ˜F V 
+
+> 1
+
+, ˜F V 
+
+> 2
+
+, ..., ˜F VN } ∈ RN ×d. W Q, W K are the learn-able linear projection matrices. Then, we apply a fully connected layer FC and softmax layer ( Sof tmax ) to obtain the dependency weights: 
+
+Wd = Sof tmax (ReLU (FC( A)) ∈ R1×N (5) Next, based on the dependency weight Wd, the global dependency feature FG is obtained by: 
+
+FG = Wd ˜F V W V ∈ R1×d, (6) where W V is a linear projection matrix. Finally, the global dependency information is introduced to each AU into obtain the probability of n-th AU being activated or not by: 
+
+Pn = Sof tmax (MLP( FG + ˜F Vn )) ∈ R2, (7) where, FG + ˜F Vn is the final n-th AU visual feature. 
+
+2) Global Dependency Attention Loss: To avoid interfer-ence from AU features without dependency relationships, we designed the global dependency loss to ensure consistency between the dependency weights and the AUs that have the dependency relationship. Assuming the label of N AUs is 
+
+Y ∈ R1×N , then GDL loss is defined as: 
+
+LGD = 1
+
+N ∥Wd − Y ∥22 (8) It is worth noting that although the dependency weights are supervised by the real labels of AU, the proposed GSD module dependencies at the feature interaction level rather than the label level. Dependency weights are generated based on the interactions between the features of each action unit, and determine how each AU feature aggregates information from other action unit features, thereby constructing a clear information flow from action unit to action unit. Therefore, the model can still learn AU-AU conditional dependencies or co-occurrence structures. 
+
+D. MiAUC Loss 
+
+CLIP can align visual and text features, and enhance the consistency of positive sample pairs and the difference of negative sample pairs through contrastive loss [15]. However, the CLIP model has limitations in fine-grained tasks [16]. Therefore, this paper proposes a fine-grained Micro-AU Con-trastive Loss (MiAUCL), which utilizes text features to guide the model in learning more fine-grained visual micro-AU features. MiAUC Loss align visual and textual features separately for each AU, explicitly guiding them at a fine-grained level. First, for n-th AU, given a training batch with B samples, B visual JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6
+
+AU features {F Vn } and B text features {F Tn } can be obtained. Then, we can obtain the cosine similarity matrix: 
+
+Mn = CS([ F Vn, 1; ... ; F Vn,B ], [( F Tn, 1; ... ; F Tn,B ]) , (9) where F Vn,b and F Tn,b express the visual and text AU feature of 
+
+b-th sample in a batch for n-th AU, respectively; Mn ∈ RB×B ;CS is the cosine similarity function. In CLIP, only the diagonal matrix in the similarity label is set to 1 [15]. However, each AU has only two categories, namely activated and inactivated, and simply using diagonal matrices as label matrices can easily overlook the similarity between different samples with the same category. If the b1-th and b2-th samples have the same category for n-th AU, the similarity between F Vn,b 1 and F Tn,b 2 should be 1. Thus, the label matrix LM n of MiAUC loss is: 
+
+LM n(b1, b 2) = 
+
+(
+
+1, if C(F Vn,b 1) = C(F Tn,b 2)0, otherwise. (10) , where C(X) expresses the AU label corresponding to X; b1
+
+and b2 are from 1 to B.Finally, cross-entropy loss is used for LM n and Mn to obtain the contrastive loss CL n of the n-th AU, and then the contrastive losses of all AUs are added together to obtain the final MiAUC loss: 
+
+LMiAUC =
+
+> N
+
+X
+
+> n=1
+
+CL n. (11) As a result, the total loss is calculated by: 
+
+Loss = MultiTask Loss + αLM iAU C + βLGD , (12) where α and β is the trade-off coefficient. MultiTaskLoss is a multi-label AU classification loss, which is implemented as the sum of cross-entropy losses for each AU. 
+
+E. Emotion-Label-Free MER 
+
+There is a strong correlation between ME emotions and micro-AU. MEs can be identified by the activation status of AU [6]. Directly using AU detection results for MER can easily lead to information loss due to AU discretization. This paper calculates the similarity between the visual features F Vn
+
+and label text features LF Tr of each AU and sums them up to determine the emotional category of MEs: 
+
+MaxME( 
+
+> N
+
+X
+
+> n=1
+
+CS( F Vn , LF Tr )) , r = 1 , ..., R, (13) where MaxME(*) expresses the emotion category with max similarity; R is the total number of label texts. IV. E XPERIMENTS 
+
+This section reports the experimental results. We study the effectiveness of local independence to global dependence pattern and evaluate the performance of the proposed method. Firstly, the effectiveness of the proposed pattern is studied for micro-AU. Secondly, we carry out the ablation analysis with some visualizations to evaluate the proposed model and                            
+
+> TABLE II THE ABLATION RESULTS ON LSI AND GSD
+> Module CASME II SAMM LSI GSD F1 ACC F1 ACC
+> ✓×0.761 0.904 0.714 0.846
+> ×✓0.730 0.898 0.638 0.812
+> ✓✓0.782 0.917 0.730 0.863
+
+components, including PTA, GDA and MiAUC loss. Thirdly, the parameter evaluation is carried out; Finally, we compare the proposed method with state-of-the-art (SOTA) methods. 
+
+A. Experiment Setting 1) Datasets and Evaluation Metrics: As following existing works [6], [19], [22], CASME II and SAMM are adopted to evaluate the performance of the proposed method. CASME II [32] contains 255 samples with 26 subjects, collected by high-speed cameras with 200 fps. SAMM [33] contains 159 samples with 32 subjects, collected by high-speed cameras with 200 fps. Consistent with existing works [13], [34], common AUs with a number of samples greater than 14 are utilized. Thus, eight and four AUs are selected on CASME II and SAMM, respectively. Select AU1, 2, 4, 7, 12, 14, 15, 17 on CASME II; select AU2, 4, 7, 12 on SAMM. For MER task, MEs are classified into three categories: positive, negative and surprise, as follows existing works [35], [36]. Following existing mainstream works [6], [19], [22], All experiments were performed under Leave-One-Subject-Out (LOSO) cross-validation. The results of all subjects are ac-cumulated to calculate the F1-score (F1) as the evaluation metric. In addition, following the mainstream work on macro-expression AU detection [7], [9], we add the accuracy (ACC) as an evaluation metric. 
+
+2) Implementation Setting: As in existing works [10], the onset and apex frames were obtained using database labels, and their detection belongs to another task in ME analysis. Facial micro-actions are magnified using learning-based am-plification [37] with a magnification factor of 3. The Dlib package is employed to detect facial landmarks. The ViT-B/32 visual encoder are employed. The OF image is resized to 224×224 pixels. In model training, we fine-tune the last three layers of both the visual and text encoders. The epoch number and batch size are set to 80 and 8, respectively. The model is optimized by an SGD optimizer with a 0.001 learning rate for visual and text encoders, and a 0.01 learning rate for other modules. The learning rate is divided by 10 at the fortieth epoch. Random seed set to 1. All models are trained on a RTX 4060 Ti (16G) with Pytorch 2.6.0 version. 
+
+B. The Study on the Effectiveness of Local Independence to Global Dependence Pattern 
+
+This paper explores the effectiveness of the fine-grained Micro-AU detection framework from local independence to global dependence. Thus, we conduct the ablation experi-ments on LSI and GSD to evaluate the effectiveness of the framework. As shown in Table II, whether removing LSI or GSD, performance has decreased. It turns out that the JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+
+TABLE III THE EVALUATION ON THE FINETUNE OF THE TEXT -E NCODER .TEXT SI : S IMILARITY BETWEEN POSITIVE AND NEGATIVE TEXT                 
+
+> Module CASME II SAMM TextSi F1 ACC F1 ACC fixed 0.769 0.898 0.702 0.812 0.994 finetune 0.776 0.912 0.716 0.853 -0.902
+
+TABLE IV THE ABLATION STUDY ON α                         
+
+> αCASME II SAMM F1 ACC F1 ACC 0.2 0.770 0.908 0.712 0.852 0.4 0.776 0.908 0.687 0.833 0.6 0.776 0.912 0.715 0.849 0.8 0.764 0.911 0.696 0.849 1.0 0.767 0.912 0.716 0.853
+
+two components are effective, and this framework can be effectively applied to micro-AU detection tasks. Furthermore, to verify whether the text encoder requires fine-tuning, we compared two ways: fixed weights and fine-tuning. Table III shows that the fine-tuning is superior to fixed weights. Under fixed weights, the text feature similarity of negative sample pairs is close to 1, while that under fine-tuning is close to -1. Thus, fine-tuning is more suitable for our task requirements. More analysis is available in the supplementary materials. 
+
+C. Ablation Study 1) The Evaluation on α: We evaluated the trade-off co-efficient α from 0.2 to 1 with a 0.2 interval. As shown in Table IV, the optimal α on CASME II dataset is 0.6, and increasing or decreasing it will cause a significant decrease in performance; On SAMM dataset, the optimal α is 1, and the performance is similar at 0.2 and 0.6. This difference may be due to different numbers of AUs. In addition, the differences in sample distribution and collection equipment in the dataset can also cause variations. 
+
+2) The Evaluation on β: We evaluated the trade-off coeffi-cient β from 0.2 to 1 with a 0.2 interval based on α is set to 0.6 on CASME II and 1 on SAMM. As shown in Table V, on the CASME II dataset, the model achieves optimal performance at 
+
+β = 1 and the accuracy under all parameters remains between 0.911 and 0.917, demonstrating strong robustness. On the SAMM dataset, the model reached a better performance at 
+
+β = 0.6, with performance generally declining as β increased thereafter, demonstrating that SAMM is more sensitive to β
+
+than α.
+
+3) The Evaluation on PTA and GDA: We evaluated the effectiveness of PTA in LSI. As shown in Table VI, compared to maxpooling and meanpooling, PTA has better performance. It indicates that weighting the contribution of different patch tokens is effective. Also, meanpooling is worse than max-pooling, indicating that it is not appropriate to consider the contributions of different patch tokens as equal. To further evaluate the methods of GDA in GSD module. Table VII demonstrate that Add+MLP is superior to Cat+MLP. The reason may be that although concatenation preserves all 
+
+TABLE V THE ABLATION STUDY ON β                         
+
+> βCASME II SAMM F1 ACC F1 ACC 0.2 0.780 0.914 0.704 0.848 0.4 0.775 0.912 0.712 0.852 0.6 0.776 0.914 0.730 0.863
+> 0.8 0.769 0.911 0.693 0.843 1.0 0.782 0.917 0.711 0.855
+
+TABLE VI THE ABLATION RESULTS ON PTA                      
+
+> Method Module CASME II SAMM F1 ACC F1 ACC meanpool LSI 0.754 0.902 0.680 0.837 maxpool LSI 0.765 0.909 0.709 0.849 PTA LSI 0.776 0.912 0.716 0.853
+
+information, it also stacks up potentially unrelated, redundant, and even noisy information together. Subsequent MLP requires a larger model capacity and training data to learn how to ignore irrelevant information and correctly associate features from different locations, which increases the difficulty of learning micro AU features. 
+
+4) The Evaluation on Fine-Grained Contrastive Loss: 
+
+MiAUC Loss plays an important role in fine-grained micro-AU feature learning. We compared it with three other methods: No CL, without contrastive learning, i.e. without the text encoder; global OrigCL, the label matrix of the text encoder is the overall description of all AU; local OrigCL, the label matrix of the text encoder is a diagonal matrix. Table VIII shows the comparison results. Overall, our method achieved the best performance, indicating that the proposed fine-grained contrastive loss is effective for micro AU detection. Furthermore, global OrigCL achieved the worst performance, indicating that it is inappropriate to guide the model to learn global micro-AU features through the coarse-grained AU description. Compared to global OrigCL, local OrigCL has achieved significant advantages, indicating that partitioning global features into individual AU features and applying fine-grained constraints through several local con-trastive losses is an effective fine-grained learning approach. Compared to the proposed method, local OrigCL has a slight disadvantage, which also indicates that label vectors based on diagonal matrices ignore the similarity between samples with the same AU category. Interestingly, No CL is superior to global OrigCL, indicating that 1) our framework is also effec-tive without text guidance; 2) using global text descriptions to guide the model in learning micro-AU features did not have a positive effect. 
+
+D. Visualization. 
+
+To further validate the Micro-AU CLIP’s interpretability and region-specific sensitivity in AU detection tasks, a visual analysis based on the attention headmap is conducted as shown in Fig. 5. It turns out that the proposed model mainly focuses on the area where AU is activated. For example, for Figs. 5a and 5b, when AU1 (Inner Brow Raiser) is activated, the model has a higher level of attention in the eyebrow area; for Fig. 5e, JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8                                                
+
+> TABLE VII THE ABLATION RESULTS ON GDA
+> Method Module CASME II SAMM F1 ACC F1 ACC Cat+MLP GSD 0.771 0.909 0.641 0.833 Add+MLP GSD 0.776 0.912 0.716 0.853 GDA GSD 0.782 0.917 0.730 0.863
+> TABLE VIII THE ABLATION STUDY ON MIAUC L OSS
+> Loss CASME II SAMM F1 ACC F1 ACC No CL 0.759 0.902 0.725 0.853 global OrigCL 0.730 0.898 0.638 0.812 local OrigCL 0.756 0.907 0.691 0.848 MiAUCL 0.782 0.917 0.730 0.863
+
+when AU17 (Chin Lifting Upward) is activated, the model has a higher level of attention in the chin area. It demonstrates that Micro-AU CLIP can effectively focus on the relevant regions where AU is activated. Furthermore, as shown in Fig. 6, we visualize the similarity of visual features between positive (AU label is 1) and negative (AU label is 0) samples under Local OrigCL and MiAUCL. We selected four samples with AU1 label {1,0,1,0 } and calculated the similarity between their visual features. For the similarity (such as row 1 column 2) between a positive sample and a negative sample, the model with Local OrigCL (Fig. 6a) has a higher similarity than the model with MiAUCL (Fig. 6b). The above results indicate that setting the similarity label as a diagonal matrix does not take into account the high similarity between different samples with similar AU labels, while MiAUCL can learn their high similarity. As a result, the proposed MiAUCL can effectively learn the discriminative AU features. By visualizing features using t-SNE, we further analyze the effectiveness of the proposed framework. Fig. 7 shows scatter plots of AU1 features learned by different models. Micro-
+
+## (a) AU1 (b) AU1+L2 
+
+## (c) AU4+7 (d) AU12+15 (e) AU17 
+
+Fig. 5: Attention heatmap visualization results    
+
+> (a) Local OrigCL (b) MiAUCL
+
+Fig. 6: Visualisation of similarity matrix AU CLIP without LSI performs poorly in both inter-class and intra-class distances. Specifically, there is a significant overlap in feature points between activated and inactivated samples. Compared to it, the other two have advantages by introducing local semantic independence into the construction of the micro-AU detection framework, which demonstrates that learning each micro-AU feature through explicit indepen-dent channels is effective. Furthermore, compared to Micro-AU CLIP without GSD, Micro-AU CLIP has better intra-class distance, e.g., a clearly separated feature point area appears in the upper left corner. It demonstrates that introducing GSD can improve the intra-class distance. Overall, the proposed framework can learn micro AU features with smaller intra-class distance and larger inter-class distance through learning each AU features independently and modeling global depen-dence. 
+
+E. Comparing With the Existing Methods 
+
+As shown in Table IX, Micro-AU CLIP is compared to existing methods on CASME II and SAMM. Overall, Micro-AU CLIP outperforms existing methods. Compared to the traditional method and traditional deep-learning mod-els, our method achieves a better performance; Compared to graph model-based ME-GraphAU and Transformer-based AUFormer, the advantage is still maintained. AU-LLM is the SOTA method based on Large Language Model. Although AU-LLM performs better on CASME II, our advantage is very evident on SAMM. Moreover, in terms of the performance difference on the two datasets, Micro-AU CLIP achieves a smaller difference (0.052) compared to AU-LLM (0.195), indicating that our method has better robustness and stability across datasets. Thus, Micro-AU CLIP achieves competitive performance and is more robust. 
+
+F. The Evaluation on MER 
+
+It is worth noting that in the actual micro expression dataset, some AUs have a low frequency of occurrence and were not included in our AU detection task. Therefore, when performing MER, it is necessary to remove the less frequently used AUs based on the standard correspondence between facial AU and ME categories in commonly used AU combinations, and summarize a filtered AU micro expression correspondence. For JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9
+
+(a) Micro-AU CLIP (b) Micro-AU CLIP without GSD (c) Micro-AU CLIP without LSI 
+
+Fig. 7: Visualization of the AU1 visual features using t-SNE, with different models. 
+
+TABLE IX F1 R ESULTS COMPARED TO OTHER METHODS                               
+
+> Methods Year CASME II SAMM SP [38] 2019 0.633 0.487 LKFSR [13] 2021 0.506 0.455 SCA [22] 2021 0.668 0.505 ME-GraphAU [39] 2022 0.624 N/A Resnet18 [19] 2023 0.773 0.573 AUFormer [40] 2024 0.704 N/A MG [6] 2025 0.530 0.500 AU-LLM [21] 2025 0.814 0.619 Micro-AU CLIP 2025 0.782 0.730
+
+TABLE X F1 R ESULTS COMPARED TO OTHER METHODS . LW: L EARNING 
+
+WAY                                     
+
+> Methods Year LW CASME II SAMM Sup [41] 2022 SL 0.881 0.713 SME [4] 2023 SL 0.908 N/A Bert [27] 2023 WS 0.903 N/A 3CC [42] 2024 SL 0.723 0.701 TFT [29] 2024 SL 0.907 0.709 CoT [43] 2025 SL 0.802 0.737 w/o GDA 2025 ZSL 0.872 0.696 Our method 2025 ZSL 0.889 0.747
+
+more detailed information, please refer to the supplementary materials. As shown in Table X, we evaluated Micro-AU CLIP on the MER task in a zero-shot learning (ZSL) way. Micro-AU CLIP without GDA (w/o GDA) achieves suboptimal results in micro-AU detection task. For this method, our method maintains an advantage in ZSL based MER tasks. Also, com-pared to existing MER methods based on supervised learning (SL) and weakly-supervised learning (WSL), our method did not achieve optimal performance, but the difference is not significant, even surpassing some latest works with SL, such as CoT on CASME II, TFT on SAMM, and 3CC on both datasets. The main reason is that supervised learning uses emotional labels for constraining models. Our method explores ZSL-based MER. Compared to these works, our method does not use ME labels, avoiding the impact of label ambiguity on recognition results. V. C ONCLUSION 
+
+This paper systematically explored the effectiveness of the framework from local independence to global dependence, and proposes a novel Micro-AU CLIP model that achieves the micro-AU detection and emotion-label-free MER. Firstly, PTA in LSI module aggregates the visual features of each AU to learn its semantic consistency features. Then, GSD module is introduced to transmit contextual information between AU features, thereby modeling the dependencies between AUs and enhancing the features of AUs from a global perspective. Subsequently, we design a MiAUCL loss function to achieve fine-grained alignment between visual semantics and textual semantics, as well as textual guidance for AU visual features; meanwhile, a GD loss is introduced to constrain the depen-dency modeling between AUs. Through this combination, the framework can simultaneously model local independence and global dependence. Extensive experiments were conducted, including quan-titative analysis and visualization analysis. The experi-mental results demonstrate that the designed framework, in ”independence-to-dependence” pattern, is effective, and Micro-AU CLIP can fully learn fine-grained micro-AU fea-tures by modeling local semantic independence and global semantic dependence. Also, the ablation analysis demonstrates the rationality and effectiveness of LSI, GSD, PTA, GDA, MiAUC Loss and GD Loss for the micro-AU detection task. Finally, compared with SOTA methods, the proposed method achieves competitive performance, and a more robust result across datasets. Furthermore, Micro-AU CLIP can effectively be applied to MER with emotion-label-free and achieve a competitive performance. ACKNOWLEDGMENTS 
+
+The authors would like to thank all collaborators involved in this work for their valuable discussions and contributions. The authors also sincerely appreciate the constructive suggestions from the anonymous reviewers, which helped improve the quality of this paper. In addition, we thank the providers of the public micro-expression datasets used in this study for making their resources available to the research community. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 10 
+
+REFERENCES [1] M. Auflem, S. Kohtala, M. Jung, and M. Steinert, “Facing the facs—using ai to evaluate and control facial action units in humanoid robot face development,” Frontiers in Robotics and AI , vol. 9, p. 887645, 2022. [2] M. G. Frank and P. Ekman, “The ability to detect deceit generalizes across different types of high-stake lies.” Journal of personality and social psychology , vol. 72, no. 6, p. 1429, 1997. [3] J. Wei, G. Lu, J. Yan, and Y. Zong, “Learning two groups of discrimi-native features for micro-expression recognition,” Neurocomputing , vol. 479, pp. 22–36, 2022. [4] X. Fan, X. Chen, M. Jiang, A. R. Shahid, and H. Yan, “Selfme: Self-supervised motion learning for micro-expression recognition,” in 
+
+Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 13 834–13 843. [5] J. Wei, H. Chen, G. Lu, J. Yan, Y. Xie, and G. Zhao, “Prior information based decomposition and reconstruction learning for micro-expression recognition,” IEICE TRANSACTIONS on Information and Systems , vol. 106, no. 10, pp. 1752–1756, 2023. [6] L. Zhou, Q. Mao, and M. Dong, “Objective class-based micro-expression recognition through simultaneous action unit detection and feature aggregation,” Tsinghua Science and Technology , vol. 30, no. 5, pp. 2114–2132, 2025. [Online]. Available: https://www.sciopen.com/ article/10.26599/TST.2024.9010095 [7] Z. Shao, Z. Liu, J. Cai, and L. Ma, “J ˆ Aa-net: Joint facial action unit detection and face alignment via adaptive attention,” International Journal of Computer Vision , p. 321–340, Feb 2021. [Online]. Available: http://dx.doi.org/10.1007/s11263-020-01378-z [8] W. Li, F. Abtahi, Z. Zhu, and L. Yin, “Eac-net: Deep nets with enhancing and cropping for facial action unit detection,” IEEE transactions on pattern analysis and machine intelligence , vol. 40, no. 11, pp. 2583– 2596, 2018. [9] Z. Shao, Z. Liu, J. Cai, Y. Wu, and L. Ma, “Facial action unit detection using attention and relation learning,” IEEE transactions on affective computing , vol. 13, no. 3, pp. 1274–1289, 2019. [10] Y. Li and G. Zhao, “Intra-and inter-contrastive learning for micro-expression action unit detection,” in Proceedings of the 2021 Interna-tional Conference on Multimodal Interaction , 2021, pp. 702–706. [11] X. Huang, G. Zhao, X. Hong, W. Zheng, and M. Pietik¨ ainen, “Sponta-neous facial micro-expression analysis using spatiotemporal completed local quantized patterns,” Neurocomputing , vol. 175, pp. 564–578, 2016. [12] G. Zhou, S. Yuan, H. Xing, Y. Jiang, P. Geng, Y. Cao, and X. Ben, “Micro-expression action unit recognition based on dynamic image and spatial pyramid.” Journal of Supercomputing , vol. 79, no. 17, 2023. [13] L. Zhang, O. Arandjelovic, and X. Hong, “Facial action unit detection with local key facial sub-region based multi-label classification for micro-expression analysis,” in Proceedings of the 1st workshop on facial micro-expression: advanced techniques for facial expressions generation and spotting , 2021, pp. 11–18. [14] P. Ekman and W. Friesen, “Facial action coding system: a technique for the measurement of facial movement,” Jan 1978. [15] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in International conference on machine learning . PmLR, 2021, pp. 8748–8763. [16] J. Zhang, X. Qu, T. Zhu, and Y. Cheng, “Clip-moe: Towards building mixture of experts for clip with diversified multiplet upcycling,” in 
+
+Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing , 2025, pp. 5406–5419. [17] J. Wei, W. Peng, G. Lu, Y. Li, J. Yan, and G. Zhao, “Geometric graph representation with learnable graph structure and adaptive au constraint for micro-expression recognition,” IEEE Transactions on Affective Computing , vol. 15, no. 3, pp. 1343–1357, 2023. [18] L. Wang, P. Huang, W. Cai, and X. Liu, “Micro-expression recognition by fusing action unit detection and spatio-temporal features,” in ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2024, pp. 5595–5599. [19] T. Varanka, W. Peng, and G. Zhao, “Learnable eulerian dynamics for micro-expression action unit detection,” in Scandinavian Conference on Image Analysis . Springer, 2023, pp. 385–400. [20] Y. Li and S. Shan, “Contrastive learning of person-independent repre-sentations for facial action unit detection,” IEEE Transactions on Image Processing , vol. 32, pp. 3212–3225, 2023. [21] Z. Liu, K. Yuan, B. Zhao, Y. Xu, and Z. Yu, “Au-llm: Micro-expression action unit detection via enhanced llm-based feature fusion,” arXiv preprint arXiv:2507.21778 , 2025. [22] Y. Li, X. Huang, and G. Zhao, “Micro-expression action unit detection with spatial and channel attention,” Neurocomputing , p. 221–231, May 2021. [Online]. Available: http://dx.doi.org/10.1016/j.neucom.2021.01. 032 [23] S. Liu, X. Mao, S. Zhao, P. Li, T. Xu, and E. Chen, “Mer-clip: Au-guided vision-language alignment for micro-expression recognition,” 
+
+IEEE Transactions on Affective Computing , 2025. [24] A. Qi, Z. Liu, X. Zhou, J. Xiao, F. Zhang, Q. Gan, M. Tao, G. Zhang, and L. Zhang, “Multimodal emotion recognition with vision-language prompting and modality dropout,” in Proceedings of the 2nd Interna-tional Workshop on Multimodal and Responsible Affective Computing ,2024, pp. 49–53. [25] W. Gong, Y. Zhang, W. Wang, P. Cheng, and J. Gonzalez, “Meta-mmfnet: Meta-learning-based multi-model fusion network for micro-expression recognition,” ACM Transactions on Multimedia Computing, Communications and Applications , vol. 20, no. 2, pp. 1–20, 2023. [26] W. Cai, J. Zhao, R. Yi, M. Yu, F. Duan, Z. Pan, and Y.-J. Liu, “Mfdan: Multi-level flow-driven attention network for micro-expression recognition,” IEEE Transactions on Circuits and Systems for Video Technology , 2024. [27] X.-B. Nguyen, C. N. Duong, X. Li, S. Gauch, H.-S. Seo, and K. Luu, “Micron-bert: Bert-based facial micro-expression recognition,” in Pro-ceedings of the ieee/cvf conference on computer vision and pattern recognition , 2023, pp. 1482–1492. [28] Z. Zhao, Y. Liu, H. Wu, Y. Li, S. Wang, L. Teng, D. Liu, Z. Cui, Q. Wang, and D. Shen, “Clip in medical imaging: A comprehensive survey,” CoRR , 2023. [29] Z. Wang, M. Yang, Q. Jiao, L. Xu, B. Han, Y. Li, and X. Tan, “Two-level spatio-temporal feature fused two-stream network for micro-expression recognition,” Sensors , vol. 24, no. 5, p. 1574, 2024. [30] J. Wei, J. Sun, G. Lu, J. Yan, and D. Zhang, “Multi-information hierar-chical fusion transformer with local alignment and global correlation for micro-expression recognition,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5873–5882. [31] R. Van de Schoot, S. Depaoli, R. King, B. Kramer, K. M¨ artens, M. G. Tadesse, M. Vannucci, A. Gelman, D. Veen, J. Willemsen et al. ,“Bayesian statistics and modelling,” Nature Reviews Methods Primers ,vol. 1, no. 1, p. 1, 2021. [32] W.-J. Yan, X. Li, S.-J. Wang, G. Zhao, Y.-J. Liu, Y.-H. Chen, and X. Fu, “Casme ii: An improved spontaneous micro-expression database and the baseline evaluation,” PLoS ONE , p. e86041, Jan 2014. [Online]. Available: http://dx.doi.org/10.1371/journal.pone.0086041 [33] A. K. Davison, C. Lansley, N. Costen, K. Tan, and M. H. Yap, “Samm: A spontaneous micro-facial movement dataset,” IEEE transactions on affective computing , vol. 9, no. 1, pp. 116–129, 2016. [34] Y. Li, W. Peng, and G. Zhao, “Micro-expression action unit detection with dual-view attentive similarity-preserving knowledge distillation,” in 2021 16th IEEE International Conference on Automatic Face and Gesture Recognition (FG 2021) . IEEE, 2021, pp. 01–08. [35] L. Zhang, X. Hong, O. Arandjelovi´ c, and G. Zhao, “Short and long range relation based spatio-temporal transformer for micro-expression recognition,” IEEE Transactions on Affective Computing , vol. 13, no. 4, pp. 1973–1985, 2022. [36] S.-T. Liong, J. See, K. Wong, and R. C.-W. Phan, “Less is more: Micro-expression recognition from video using apex frame,” Signal Processing: Image Communication , vol. 62, pp. 82–92, 2018. [37] T.-H. Oh, R. Jaroensri, C. Kim, M. Elgharib, F. Durand, W. T. Free-man, and W. Matusik, “Learning-based video motion magnification,” in 
+
+Proceedings of the European conference on computer vision (ECCV) ,2018, pp. 633–648. [38] F. Tung and G. Mori, “Similarity-preserving knowledge distillation,” in Proceedings of the IEEE/CVF international conference on computer vision , 2019, pp. 1365–1374. [39] C. Luo, S. Song, W. Xie, L. Shen, and H. Gunes, “Learning multi-dimensional edge feature-based au relation graph for facial action unit recognition.” International Joint Conferences on Artificial Intelligence Organization, 2022. [40] K. Yuan, Z. Yu, X. Liu, W. Xie, H. Yue, and J. Yang, “Auformer: Vision transformers are parameter-efficient facial action unit detectors,” in European Conference on Computer Vision . Springer, 2024, pp. 427– 445. [41] R. Zhi, J. Hu, and F. Wan, “Micro-expression recognition with super-vised contrastive learning,” Pattern Recognition Letters , vol. 163, pp. 25–31, 2022. [42] C.-T. Fang, T.-J. Liu, and K.-H. Liu, “Micro-expression recognition by 3d-cnn in combination with gru,” in 2024 International Conference on Consumer Electronics-Taiwan (ICCE-Taiwan) . IEEE, 2024, pp. 95–96. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 11 
+
+[43] J. Yang, Z. Wu, and R. Wu, “Micro-expression recognition based on contextual transformer networks,” The Visual Computer , vol. 41, no. 3, pp. 1527–1541, 2025.

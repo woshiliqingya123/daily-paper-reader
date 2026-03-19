@@ -1,0 +1,93 @@
+{
+  "label": "2026-03-19",
+  "date": "2026-03-19",
+  "generated_at": "2026-03-19T20:02:11",
+  "count": 6,
+  "papers": [
+    {
+      "paper_id": "202603/19/2603.11971v2-multimodal-emotion-recognition-via-bi-directional-cross-attention-and-temporal-modeling",
+      "section": "deep",
+      "title_en": "Multimodal Emotion Recognition via Bi-directional Cross-Attention and Temporal Modeling",
+      "authors": "Junhyeong Byeon, Jeongyeol Kim, Sejoon Lim",
+      "date": "2026-03-12",
+      "pdf": "https://arxiv.org/pdf/2603.11971v2",
+      "score": "10.0",
+      "evidence": "利用交叉注意力和时序建模的多模态情感识别框架",
+      "tldr": "针对野外视频中单模态情感识别不足的问题，本文提出一种多模态框架。该框架利用预训练模型提取视听特征，通过时间建模捕捉面部动态，并引入双向交叉注意力机制实现模态间深度融合。此外，利用文本引导的对比学习增强语义对齐。在ABAW第10届挑战赛中，该方法显著提升了识别性能，证明了时序建模与跨模态融合在复杂环境下的有效性。",
+      "tags": "query:msa",
+      "abstract_en": "Expression recognition in in-the-wild video data remains challenging due to substantial variations in facial appearance, background conditions, audio noise, and the inherently dynamic nature of human affect. Relying on a single modality, such as facial expressions or speech, is often insufficient for capturing these complex emotional cues. To address this limitation, we propose a multimodal emotion recognition framework for the Expression (EXPR) task in the 10th Affective Behavior Analysis in-the-wild (ABAW) Challenge. Our framework builds on large-scale pre-trained models for visual and audio representation learning and integrates them in a unified multimodal architecture. To better capture temporal patterns in facial expression sequences, we incorporate temporal visual modeling over video windows. We further introduce a bi-directional cross-attention fusion module that enables visual and audio features to interact in a symmetric manner, facilitating cross-modal contextualization and complementary emotion understanding. In addition, we employ a text-guided contrastive objective to encourage semantically meaningful visual representations through alignment with emotion-related text prompts. Experimental results on the ABAW 10th EXPR benchmark demonstrate the effectiveness of the proposed framework, achieving a Macro F1 score of 0.32 compared to the baseline score of 0.25, and highlight the benefit of combining temporal visual modeling, audio representation learning, and cross-modal fusion for robust emotion recognition in unconstrained real-world environments.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/19/2603.15922v1-machine-translation-in-the-wild-user-reaction-to-xiaohongshus-built-in-translation-feature",
+      "section": "deep",
+      "title_en": "Machine Translation in the Wild: User Reaction to Xiaohongshu's Built-In Translation Feature",
+      "authors": "Sui He",
+      "date": "2026-03-16",
+      "pdf": "https://arxiv.org/pdf/2603.15922v1",
+      "score": "8.0",
+      "evidence": "用户对翻译功能反应的情感分析",
+      "tldr": "本研究探讨了社交媒体平台小红书于2025年1月推出的内置翻译功能的用户反应。通过分析11个官方帖子下的6,723条评论，结合情感分析和主题分析，研究发现用户对该功能普遍持积极态度，尤其是在翻译帖子和评论方面。用户还积极测试了包括网络俚语、拼音缩写和表情符号在内的多样化输入。该研究强调了跨学科合作在优化真实交际语境下翻译技术的重要性。",
+      "tags": "query:msa",
+      "abstract_en": "The growing integration of machine translation into social media platforms is transforming how users interact with each other across cultural and linguistic boundaries. This paper examines user reactions to the launch of Xiaohongshu's built-in translation feature in January 2025. Drawing on a dataset of 6,723 comments collected from 11 official posts promoting the translation function, this paper combines sentiment analysis with thematic analysis to investigate how users perceived and experimented with the function. Results show that reactions were generally positive, particularly for translating posts and comments, although concerns regarding functionality, accessibility, and translation accuracy were also expressed. In addition to evaluative feedback, users actively tested the function with diverse inputs, including words and phrases in English and Chinese, abbreviations in pinyin, internet slang, and other language forms such as emoji, kaomoji, coded texts, etc. The findings highlight the importance of closer collaboration among computer scientists, translation scholars, and platform designers to better understand and improve translation technologies in real world communicative context.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/19/2603.16302v1-micro-au-clip-fine-grained-contrastive-learning-from-local-independence-to-global-dependency-for-micro-expression-action-unit-detection",
+      "section": "deep",
+      "title_en": "Micro-AU CLIP: Fine-Grained Contrastive Learning from Local Independence to Global Dependency for Micro-Expression Action Unit Detection",
+      "authors": "Jinsheng Wei, Fengzhou Guo, Yante Li, Haoyu Chen, Guanming Lu, Guoying Zhao",
+      "date": "2026-03-17",
+      "pdf": "https://arxiv.org/pdf/2603.16302v1",
+      "score": "8.0",
+      "evidence": "通过微表情检测进行细粒度情感分析",
+      "tldr": "针对微表情动作单位（Micro-AU）检测中全局特征学习忽略局部特性的问题，本文提出Micro-AU CLIP框架。该框架通过局部语义独立性建模（LSI）捕捉特定肌肉运动，并利用全局语义依赖性建模（GSD）分析AU间的关联。结合微细粒度对比损失（MiAUCL）优化视觉与文本对齐，实现了高效的Micro-AU检测及无标签微表情识别，在多个实验中达到了SOTA性能。",
+      "tags": "query:msa",
+      "abstract_en": "Micro-expression (ME) action units (Micro-AUs) provide objective clues for fine-grained genuine emotion analysis. Most existing Micro-AU detection methods learn AU features from the whole facial image/video, which conflicts with the inherent locality of AU, resulting in insufficient perception of AU regions. In fact, each AU independently corresponds to specific localized facial muscle movements (local independence), while there is an inherent dependency between some AUs under specific emotional states (global dependency). Thus, this paper explores the effectiveness of the independence-to-dependency pattern and proposes a novel micro-AU detection framework, micro-AU CLIP, that uniquely decomposes the AU detection process into local semantic independence modeling (LSI) and global semantic dependency (GSD) modeling. In LSI, Patch Token Attention (PTA) is designed, mapping several local features within the AU region to the same feature space; In GSD, Global Dependency Attention (GDA) and Global Dependency Loss (GDLoss) are presented to model the global dependency relationships between different AUs, thereby enhancing each AU feature. Furthermore, considering CLIP's native limitations in micro-semantic alignment, a microAU contrastive loss (MiAUCL) is designed to learn AU features by a fine-grained alignment of visual and text features. Also, Micro-AU CLIP is effectively applied to ME recognition in an emotion-label-free way. The experimental results demonstrate that Micro-AU CLIP can fully learn fine-grained micro-AU features, achieving state-of-the-art performance.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/19/2603.17455v1-face-net-factual-calibration-and-emotion-augmentation-for-retrieval-enhanced-emotional-video-captioning",
+      "section": "deep",
+      "title_en": "FACE-net: Factual Calibration and Emotion Augmentation for Retrieval-enhanced Emotional Video Captioning",
+      "authors": "Weidong Chen, Cheng Ye, Zhendong Mao, Peipei Song, Xinyan Liu, Lei Zhang, Xiaojun Chang, Yongdong Zhang",
+      "date": "2026-03-18",
+      "pdf": "https://arxiv.org/pdf/2603.17455v1",
+      "score": "8.0",
+      "evidence": "结合事实与情感线索挖掘的情感视频描述",
+      "tldr": "针对情感视频描述（EVC）中事实与情感信息挖掘不足及样本间需求差异（事实-情感偏差）的问题，本文提出FACE-net框架。该框架通过检索增强获取语义信息，利用不确定性估计进行事实校准，并结合情感字典进行渐进式视觉情感增强。此外，引入动态偏差调整路由模块以平衡不同样本的事实与情感权重，实现了更准确且富有情感的视频描述生成。",
+      "tags": "query:msa",
+      "abstract_en": "Emotional Video Captioning (EVC) is an emerging task, which aims to describe factual content with the intrinsic emotions expressed in videos. Existing works perceive global emotional cues and then combine with video content to generate descriptions. However, insufficient factual and emotional cues mining and coordination during generation make their methods difficult to deal with the factual-emotional bias, which refers to the factual and emotional requirements being different in different samples on generation. To this end, we propose a retrieval-enhanced framework with FActual Calibration and Emotion augmentation (FACE-net), which through a unified architecture collaboratively mines factual-emotional semantics and provides adaptive and accurate guidance for generation, breaking through the compromising tendency of factual-emotional descriptions in all sample learning. Technically, we firstly introduces an external repository and retrieves the most relevant sentences with the video content to augment the semantic information. Subsequently, our factual calibration via uncertainty estimation module splits the retrieved information into subject-predicate-object triplets, and self-refines and cross-refines different components through video content to effectively mine the factual semantics; while our progressive visual emotion augmentation module leverages the calibrated factual semantics as experts, interacts with the video content and emotion dictionary to generate visual queries and candidate emotions, and then aggregates them to adaptively augment emotions to each factual semantics. Moreover, to alleviate the factual-emotional bias, we design a dynamic bias adjustment routing module to predict and adjust the degree of bias of a sample.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/19/2603.17610v1-adamus-adaptive-multi-view-sparsity-learning-for-dimensionally-unbalanced-data",
+      "section": "deep",
+      "title_en": "AdaMuS: Adaptive Multi-view Sparsity Learning for Dimensionally Unbalanced Data",
+      "authors": "Cai Xu, Changhao Sun, Ziyu Guan, Wei Zhao",
+      "date": "2026-03-18",
+      "pdf": "https://arxiv.org/pdf/2603.17610v1",
+      "score": "8.0",
+      "evidence": "情感识别中维度不平衡数据的多视图学习",
+      "tldr": "针对多视图学习中维度极度不平衡的问题（如视频与生理信号），本文提出AdaMuS框架。该框架通过视图特定编码器将不同维度特征映射至统一空间，并利用无参数剪枝和稀疏融合机制消除低维数据映射产生的冗余与过拟合。结合自监督学习增强泛化性，在分类和语义分割任务中均表现优异。",
+      "tags": "query:msa",
+      "abstract_en": "Multi-view learning primarily aims to fuse multiple features to describe data comprehensively. Most prior studies implicitly assume that different views share similar dimensions. In practice, however, severe dimensional disparities often exist among different views, leading to the unbalanced multi-view learning issue. For example, in emotion recognition tasks, video frames often reach dimensions of $10^6$, while physiological signals comprise only $10^1$ dimensions. Existing methods typically face two main challenges for this problem: (1) They often bias towards high-dimensional data, overlooking the low-dimensional views. (2) They struggle to effectively align representations under extreme dimensional imbalance, which introduces severe redundancy into the low-dimensional ones. To address these issues, we propose the Adaptive Multi-view Sparsity Learning (AdaMuS) framework. First, to prevent ignoring the information of low-dimensional views, we construct view-specific encoders to map them into a unified dimensional space. Given that mapping low-dimensional data to a high-dimensional space often causes severe overfitting, we design a parameter-free pruning method to adaptively remove redundant parameters in the encoders. Furthermore, we propose a sparse fusion paradigm that flexibly suppresses redundant dimensions and effectively aligns each view. Additionally, to learn representations with stronger generalization, we propose a self-supervised learning paradigm that obtains supervision information by constructing similarity graphs. Extensive evaluations on a synthetic toy dataset and seven real-world benchmarks demonstrate that AdaMuS consistently achieves superior performance and exhibits strong generalization across both classification and semantic segmentation tasks.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/19/2603.16483v1-on-the-emotion-understanding-of-synthesized-speech",
+      "section": "quick",
+      "title_en": "On the Emotion Understanding of Synthesized Speech",
+      "authors": "Yuan Ge, Haishu Zhao, Aokai Hao, Junxiang Zhang, Bei Li, Xiaoqian Liu, Chenglong Wang, Jianjin Wang, Bingsen Zhou, Bingyu Liu, Jingbo Zhu, Zhengtao Yu, Tong Xiao",
+      "date": "2026-03-17",
+      "pdf": "https://arxiv.org/pdf/2603.16483v1",
+      "score": "7.0",
+      "evidence": "评估语音情感识别模型",
+      "tldr": "本研究系统地评估了语音情感识别（SER）模型在合成语音上的表现，挑战了SER模型能直接泛化至合成语音并作为评估指标的普遍假设。通过对多种数据集、判别式与生成式模型及合成技术的测试，发现现有模型因合成过程中的表征失配而难以泛化，且生成式语音语言模型往往依赖文本语义而非副语言特征。该研究揭示了现有SER模型在捕捉情感本质特征方面的局限性，为提升合成语音的情感理解提供了新见解。",
+      "tags": "query:msa",
+      "abstract_en": "Emotion is a core paralinguistic feature in voice interaction. It is widely believed that emotion understanding models learn fundamental representations that transfer to synthesized speech, making emotion understanding results a plausible reward or evaluation metric for assessing emotional expressiveness in speech synthesis. In this work, we critically examine this assumption by systematically evaluating Speech Emotion Recognition (SER) on synthesized speech across datasets, discriminative and generative SER models, and diverse synthesis models. We find that current SER models can not generalize to synthesized speech, largely because speech token prediction during synthesis induces a representation mismatch between synthesized and human speech. Moreover, generative Speech Language Models (SLMs) tend to infer emotion from textual semantics while ignoring paralinguistic cues. Overall, our findings suggest that existing SER models often exploit non-robust shortcuts rather than capturing fundamental features, and paralinguistic understanding in SLMs remains challenging.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
