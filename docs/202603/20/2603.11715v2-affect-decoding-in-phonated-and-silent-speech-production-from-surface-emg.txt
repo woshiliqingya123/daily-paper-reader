@@ -1,0 +1,292 @@
+Title: Affect Decoding in Phonated and Silent Speech Production from Surface EMG
+
+URL Source: https://arxiv.org/pdf/2603.11715v2
+
+Published Time: Fri, 20 Mar 2026 01:40:51 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Affect Decoding in Phonated and Silent Speech Production from Surface EMG 
+
+# Simon Pistrosch ID 1,5,∗, Kleanthis Avramidis ID 2,∗, Zhao Ren ID 3, Tiantian Feng ID 2, Jihwan Lee ID 2,Monica Gonzalez-Machorro ID 1,4, Anton Batliner ID 1,5, Tanja Schultz ID 3, Shrikanth Narayanan ID 2,Bj¨ orn W. Schuller ID 1,4,51 CHI – Chair of Health Informatics, TUM University Hospital, Munich, Germany 
+
+2 SAIL – Signal Analysis and Interpretation Lab, University of Southern California, USA 
+
+3 CSL – Cognitive Systems Lab, University of Bremen, Germany 
+
+4 GLAM – Group on Language, Audio, & Music, Imperial College London, UK 
+
+5 MCML – Munich Center for Machine Learning, Germany 
+
+simon.pistrosch@tum.de, avramidi@usc.edu 
+
+# Abstract 
+
+The expression of affect is integral to spoken communication, yet, its link to underlying articulatory execution remains un-clear. Measures of articulatory muscle activity such as EMG could reveal how speech production is modulated by emotion alongside acoustic speech analyses. We investigate affect de-coding from facial and neck surface electromyography (sEMG) during phonated and silent speech production. For this pur-pose, we introduce a dataset comprising 2,780 utterances from 12 participants across 3 tasks, on which we evaluate both intra-and inter-subject decoding using a range of features and model embeddings. Our results reveal that EMG representations reli-ably discriminate frustration with up to 0.845 AUC, and gener-alize well across articulation modes. Our ablation study further demonstrates that affective signatures are embedded in facial motor activity and persist in the absence of phonation, high-lighting the potential of EMG sensing for affect-aware silent speech interfaces. 
+
+Index Terms : affective modulation, silent speech, electromyo-graphy, paralinguistics, emotion recognition 
+
+# 1. Introduction 
+
+Affect modulation is a central component of spoken commu-nication. Beyond conveying lexical intent, the speech signal encodes paralinguistic information such as attitude, politeness, frustration, and other emotional states [1]. These affective cues are expressed through coordinated muscle activations leading to changes in prosody, articulation, and speech timing across the facial, laryngeal, and respiratory systems. Acoustic analy-sis has traditionally been used to study affect in speech [1], as the acoustic signal reflects the downstream consequences of un-derlying motor control. Understanding how affect is embedded within the motor execution of speech itself remains an impor-tant and relatively underexplored question. Robust affect decoding is particularly relevant in settings where acoustic information is limited, distorted, or unavailable. In assistive communication technologies, silent speech inter-faces, and speech prostheses, the ability to recover not only lex-ical content but also affective intent is crucial for natural and ex-pressive communication [2]. Similarly, in atypical speech con-ditions—such as motor speech disorders [3], post-laryngectomy speech [4], or low-audibility environments—acoustic cues may 
+
+> *
+
+These authors contributed equally. 
+
+Figure 1: Conceptual overview of the study. We present a dataset and computational analysis on EMG-based affect de-coding during phonated and silent speech production. During articulation, surface EMG from neck and facial muscles was recorded alongside audio speech. Note: The schematic human illustration was generated with AI assistance for visualization purposes and is not meant to reflect the exact sensor hardware design, number of channels, or placement used in the study. 
+
+not reliably convey emotional nuance [5]. Thus, sensing periph-eral speech motor activity may provide an alternative pathway to estimate both speech content and affective state [6]. Surface electromyography (sEMG) offers a non-invasive method for measuring muscle activity underlying speech pro-duction. Prior work has demonstrated that articulatory and neck EMG signals can be used to decode phonetic content, recognize silently mouthed words, and even reconstruct phonated speech [7, 8, 9]. These advances have positioned sEMG as a promis-ing approach for silent speech recognition and speech prosthesis applications [10]. As sEMG captures peripheral motor execu-tion, it provides access to the neuromuscular processes underly-ing speech production, potentially revealing aspects that are not fully observable in the acoustic domain. However, most EMG-to-speech research has focused on re-covering linguistic content rather than characterizing paralin-guistic or affective modulation [11, 12]. In parallel, facial EMG has been widely used to study emotion-related muscle activ-ity, typically in passive paradigms involving reactions to emo-tional stimuli [13, 14]. Relatively little work has examined 
+
+> arXiv:2603.11715v2 [eess.AS] 19 Mar 2026
+
+how affective state modulates the structured motor programs of speech production, particularly across articulation modes such as phonated and silent speech, or under varying recording con-ditions [15, 16]. As a result, it remains unclear whether affective signatures are reliably encoded in peripheral muscles and how robust such signatures are across speakers and contexts. 
+
+Contributions This study systematically investigates af-fective modulation of speech production as reflected in periph-eral muscle activity recorded from neck and facial sEMG. We are particularly interested in how affect is embedded in motor execution across articulation modes, speakers, and recording contexts. We address the following research questions: • RQ1: To what extent can affective state be decoded from sur-face EMG during speech production? We evaluate affect pre-diction from facial and neck EMG signals during phonated speech, and establish whether peripheral motor activity car-ries discriminative affective signatures. • RQ2: How does affective state decoding differ between phonated and silent speech production? We compare decod-ing performance and signal characteristics across articulation modes to determine whether affective modulation persists in the absence of overt phonation and acoustic output. • RQ3: How does the experimental context influence affec-tive motor signatures? We examine differences between con-trolled and spontaneous speech settings to assess the robust-ness and ecological validity of affective state decoding. 
+
+# 2. Related Work 
+
+2.1. EMG-based speech recognition 
+
+Surface electromyography (sEMG) has been widely studied for silent speech recognition and EMG-to-speech reconstruction [10]. Prior work demonstrates that articulatory and neck EMG signals can be used to decode phonetic content, words, and even reconstruct intelligible speech in both phonated and silent artic-ulation settings [8, 12, 17]. These studies primarily focus on recovering linguistic content or acoustic waveforms, often ad-dressing transfer between phonated and silent speech or improv-ing recognition robustness. In contrast, our work does not aim to reconstruct lexical content. Instead, we investigate whether affective state modulates speech motor execution and whether such modulation can be decoded from peripheral muscle activ-ity across phonated and silent speech production. 
+
+2.2. Affect decoding from facial EMG 
+
+A separate body of research has examined affect detection from facial EMG, typically measuring activity from muscles such as the corrugator supercilii and zygomaticus major [13, 18, 19]. These studies often rely on passive emotion elicitation paradigms (e.g., emotional images or videos) and analyze spon-taneous facial expressions associated with valence or arousal [20]. While this literature establishes that affective states are reflected in facial muscle activity, it generally does not con-sider speech production as a structured motor act under lin-guistic constraints [21]. In speech, affective modulation must operate within already defined articulatory and prosodic varia-tions [22, 23]. Our work therefore examines affect not as a stan-dalone facial expression, but as modulation embedded within controlled and spontaneous speech production. 
+
+2.3. Robustness across speakers and contexts 
+
+Relatively little work has investigated affect decoding from speech-related EMG under varying generalization conditions, such as cross-speaker transfer, cross-session robustness, or dif-ferences between controlled and spontaneous speech [8]. Silent speech recognition studies often focus on subject-dependent performance [12], and facial EMG emotion studies frequently emphasize intra-subject analyses [24]. The extent to which affective modulation of speech motor execution generalizes across speakers and articulation modes remains underexplored. By evaluating affect decoding across multiple speakers and across controlled and spontaneous speech conditions, our study contributes to understanding the stability and transferability of affective motor signatures in peripheral speech musculature. 
+
+# 3. Data Collection 
+
+To address our research questions, we designed a controlled yet ecologically grounded speech production protocol that system-atically varied affective state, articulation mode (phonated vs. silent), and interaction context (scripted vs. spontaneous). The resulting dataset comprises multimodal recordings of facial and neck sEMG, as well as audio recordings. 
+
+3.1. Participant recruitment 
+
+Participants were recruited from the city of Munich through fliers that were distributed across the TUM University Hos-pital, TUM and LMU campuses, as well as in other public places within the centre of Munich. Participants received 12 EUR per hour for their participation. The recruitment materi-als were approved by the Ethics Committee of the University of Augsburg. The fliers prompted prospective participants to complete an interest form, through which they indicated their demographic information and answered questions to assess el-igibility. To qualify for the study, individuals needed to (1) be at least 18 years old, (2) not have any current psychiatric or neurological diagnoses, (3) have normal or corrected-to-normal hearing, and (4) be native in English or have obtained a C2-equivalent degree. The last qualification was required because the experimental task, which also included production of spon-taneous speech, was designed in English. The dataset could not be made publicly available to protect the pariticpants’ privacy. However, data may be shared with third parties if appropriate safeguards are in place according to Article 46 of the General Data Protection Regulation (GDPR). These safeguards include the execution of the European Commission’s Standard Contrac-tual Clauses (SCCs). 
+
+3.2. Experimental protocol 
+
+Eligible participants then scheduled an in-person meeting to complete the recording. The experimental session required ap-proximately two hours per participant, comprising one hour of preparation and one hour of active recording. The participants were instructed before the recording day to shave appropriately and avoid makeup, so that the relevant positions for electrode placement are accessible. At the beginning of the experiment, participants were briefed on the protocol and gave informed consent. Subsequently, they completed a detailed demographic questionnaire, which included age, gender, height, weight, and sociolinguistic (dialect/accent) and sociodemographic data as well as the Ten-Item Personality Inventory (TIPI; Gosling et al. [25]) survey. Initially, 15 participants were recruited for the Figure 2: Annotation results for Task 2A (designed to induce politeness) and Task 2B (designed to induce frustration). In-dividual trial annotations are overlaid to the boxplots, pooled across the 3 annotators. Inter-annotator agreement is included in terms of Krippendorff’s alpha. Light jittering is applied to the integer annotation values for visualization purposes. 
+
+study. Two participants were excluded from analyses due to severely distorted signal recordings, and one withheld consent for data sharing, resulting in a final sample of 12 participants. The experiment was divided into three tasks. The first was a prompted reading task , in which participants were asked to read simple sentences displayed on the screen. While the sen-tences were generally unrelated, they were purposely selected within a conversational context of apartment search (example sentences are displayed in Table 1). There were 50 sentences in total, spanning three different affective states: neutral, polite, and frustration. Each trial directed the participants to articulate the sentence in one of those three ways. The sentences were presented in the following temporal order: 1. 10 neutral sentences in a neutral way 2. 10 polite-worded sentences in a polite way 3. 10 neutral sentences (same as the first 10) in a polite way 4. 10 frustration-worded sentences in a frustrated way 5. 10 neutral sentences (same as the first 10) in a frustrated way Moreover, each sentence was prompted twice; the first time the participants were directed to phonate the sentence aloud, whereas the second time, immediately following the first, to do it silently without vocalizing. Therefore, Task 1 resulted in 100 trials per participant. Task 3, conducted after about 30 minutes, was an exact repetition of the first task. For the second task, participants were asked to sponta-neously converse with a Wizard-of-Oz agent. The conversa-tional context was a car insurance discussion . Participants were given a sheet with all information necessary for the task, includ-ing a fake name, and were asked to only speak audibly. The task was further divided into two scenarios; the first was designed to naturally elicit polite responses, whereas the second to elicit frustration. While the responses of the participant were spon-taneous, the topics discussed were controlled and the agent’s responses were selected by a member of the experimental team. In the first session, participants were required to request a bonus to reduce their insurance costs, register a second vehi-cle, and apply for a green card for driving abroad. In the sec-ond session, participants were instructed to contact the insur-ance company to request payment of an outstanding quotation. The agents’ speech was synthesized using ElevenLabs (eleven-labs.io). The polite agent employed a warm, friendly prosody and formal language. The frustration agent used a harsher vo-cal tone and abrupt, impolite language. Additionally, this agent simulated poor comprehension, frequently requesting repeti-tions. Participants were blinded to the Wizard-of-Oz method-ology, operating under the premise that they were interacting with an autonomous ChatGPT agent. They remained unaware that the two agents were explicitly designed to elicit politeness and frustration. Upon completing both tasks, participants were fully debriefed regarding the experimental setup. 
+
+3.3. Sensor Apparatus 
+
+All recordings took place at the TUM University Hospital, and were conducted in an acoustically treated room. The recording conditions were optimized using wall-mounted acoustic pan-els, bass traps, and curtains to suppress reverberation and min-imize ambient noise. The EMG signal was recorded using an actiCHamp Plus (Brain Products GmbH, Gilching, Germany) amplifier with 8 bipolar surface EMG electrodes (Ag/AgCl). The device was connected via USB to the recording computer. Before attaching an electrode to a specific site on the partic-ipant’s skin, the area was cleaned with an alcoholic solution and skin preparation gel. Electrode placements are summarized in Table 3, with the ground electrode placed at the the end of the nasal bone. Neck and facial muscles of interest were de-termined based on their utility in speech production and affec-tive expression [12, 26, 27, 28, 29, 30]. Ten20 conductive gel was applied to each electrode, and impedances were kept below 100 k Ω. EMG was sampled at an initial rate of 10 kHz. Additionally, speech audio was recorded using a Rode NT1-A microphone at a sampling rate of 48 kHz and Focus-rite Scarlett 2i2 audio interface. The amplifier and the audio in-terface were connected to a microprocessor, which transmitted start and end markers for each utterance to all modalities to en-able subsequent alignment. For data recording, we adapted the EMG-GUI software originally developed by Diener [31] and extended by Scheck et al. [32]. Each trial recording was initi-ated by the participant pressing a button on the computer screen. The recording lasted for as long as the button was pressed and finished when the participant released the button. All partici-pants were asked to avoid rushing into their response immedi-ately after pressing the button, and to release the button only when they are done speaking. If the participant was not satis-fied with a certain trial recording, they were given the option to repeat it as many times as needed. 
+
+3.4. ST-Case dataset 
+
+The ST-CASE (SAIL-TUM Corpus on Affective Speech & EMG) dataset comprises a sample of N = 12 participants ( 9
+
+female), five of whom were native English speakers. The mean age of the participants was 26 .2 years (SD = 5.2, MIN =20 , MAX = 36 ). The dataset consists of a total of 2 780 utter-ances, divided into 1 588 phonated and 1 192 silent recordings. As shown in Table 4, these are further categorized into 1 143 frustrated, 479 neutral, and 1 158 polite utterances (see Table 2 and Table 4). The prompted Tasks 1 and 3 followed a distribution where frustrated and polite labels were approximately twice as fre-quent as neutral labels across both recording modes. The spon-taneous Task 2 was limited to the phonated mode and focused on frustration and politeness, contributing 64 utterances for po-liteness and 113 for frustration. For this task, three annotators rated the participants’ spontaneous utterances on two 5-point Likert scales (ranging from “disagree” to “agree”) to assess whether speakers sounded frustrated or polite. The distribution of the annotator scores is shown in Figure 2. We then averaged the annotators’ scores for each scale separately. Due to the spontaneous nature of Task 2, the average num-Table 1: Example sentences from the prompted reading task (apartment search). Neutral sentences were articulated in three expressive tones (neutral, polite, frustrated), whereas polite- and frustration-worded sentences were spoken congruently with their lexical content. 
+
+Utterance Lexical category Expressed tone(s) 
+
+I am looking for a furnished apartment. Neutral Neutral, polite, frustrated I would be delighted if you had a furnished apartment available. Polite-worded Polite Why isn’t the landlord responding to my inquiry? Frustration-worded Frustrated Table 2: Dataset statistics by task and speaking mode. Utt. denotes number of utterances; Mins denotes total minutes. Recording duration is shown in seconds (s). 
+
+Task Phonated Silent Combined Utt. Mins Per recording (s) Utt. Mins Per recording (s) Utt. Mins Per recording (s) 
+
+Task 1 593 36.6 3.70 ± 1.09 592 38.3 3.88 ± 1.21 1185 74.9 3.79 ± 1.15 Task 2 396 47.5 7.20 ± 6.14 – – – 396 47.5 7.20 ± 6.14 Task 3 599 36.3 3.63 ± 1.07 600 35.5 3.55 ± 1.02 1199 71.8 3.59 ± 1.05 Total 1588 120.4 4.55 ± 3.55 1192 73.9 3.72 ± 1.13 2780 194.2 4.19 ± 2.81 ber of utterances per participant was 16 .50 ± 1.88 for the “Re-quest of a bonus” scenario and 16 .50 ± 0.90 for the “Unpaid invoice” scenario. On average, the prompted reading tasks yielded shorter utterance durations compared to spontaneous speech (Task 1: 3.79 s; Task 3: 3.59 s; Task 2: 7.20 s). 
+
+3.5. Pre-processing methods 
+
+Raw 8-channel EMG recordings were filtered using a 4th-order high-pass Butterworth filter at 100 Hz, iterative notch filtering at 50 Hz (and up to 8 harmonics), and anti-aliasing low-pass fil-tering prior to decimation. Signals were downsampled to 1 kHz with an IIR filter and extreme outliers (±10 standard deviations) were clipped. Each task also includes a baseline recording, which was processed the same way. The baseline was used to compute the median and inter-quartile ratio of the signal at rest, which was subsequently used for robust scaling. Phonated speech trials are loaded as audio waveforms and denoised using the noisereduce Python package. The sig-nals were then normalized by peak RMS (target RMS was 0.5), and downsampled to 16 kHz. For the second task, the utter-ance text is obtained via an automatic Whisper-small transcrip-tion and stored in the trial metadata, although this study did not use the transcriptions. We compute conservative onset/offset in-dices, set as 0.56 s onset and 0.54 s margin from the end, applied to both EMG and aligned audio signals. 
+
+# 4. Methodology 
+
+4.1. EMG feature extraction 
+
+We extracted a set of handcrafted features and TD-n fea-tures [11, 16] from the EMG signals. Let xc ∈ RT denote the baseline-corrected and z-scored EMG signal of channel c,and let ˜xc[i] = |xc[i]| denote its rectified version. For each channel c, we computed the mean rectified value ˜xc along with its standard deviation and coefficient of variation. We also com-puted the peak amplitude of ˜xc as well as the root mean square value px2 
+
+> c
+
+of the signal. Additionally, let PSD c(f ) denote the Welch-estimated power spectral density of xc. We computed the median frequency and spectral entropy of the signal, 
+
+fmed ,c = 12
+
+Z fmax 
+
+> 0
+
+PSD c(f ) df, (1) 
+
+Hspec ,c = − X
+
+> k
+
+pc,k log pc,k , (2) where pc,k denotes normalized spectral power. Finally, we de-rived cross-channel Pearson correlation upon the rectified sig-nals. Each trial was thus encoded into a 92-dimensional vector. To compute the TD-0 features, the signal is first split into low- and high-frequency components using a triangular filter with a 134 Hz cutoff, implemented via a double moving aver-age. The signal is then segmented into rectangular windows of 27 ms with a 10 ms frame shift. TD features are calculated for each frame with the low- and high-frequency parts and zero-crossing rate (ZCR). For each TD feature, we computed the mean, standard deviation, and the 0th, 25th, 75th, and 100th percentiles across frames. The TD features are defined as: 
+
+TD( xlow , x high ) = 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(xlow [i]) 2, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+xlow [i],
+
+1
+
+n
+
+> n
+
+X
+
+> i=1
+
+(xhigh [i]) 2, 1
+
+n
+
+> n
+
+X
+
+> i=1
+
+|xhigh [i]|, ZCR( xhigh )
+
+!
+
+. (3) To test the applicability of deep learning-based (foundation) models, we also extracted embedding features for our EMG in-put. We used the BioCodec [33] model, which is one of the very few open-source models trained on sEMG signals. Although BioCodec was pre-trained on gesture signals from the wrist, we empirically verified its robustness to our data by inspecting the reconstruction quality of the input. For the purpose of this study, we extracted the output embedding of the BioCodec encoder, i.e., the channel-wise 128D input to the quantization module. 
+
+4.2. Speech feature extraction 
+
+Prosodic features were obtained through the eGeMAPSv02 set via openSMILE [34]. We also extracted deep-learning based speech emotion features using Vox-Profile [35], in the form of 256D embeddings. These were obtained from a dimensional Table 3: Electrode placement and functional classification of recorded muscles. Speech- and emotion-related assignments are derived from reported functional associations [12, 26, 27, 28, 29, 30]. A schematic of the described placement is shown in ablation Figure 4. 
+
+ID Muscle site Positioning Speech Emotion 
+
+E1 Infrahyoid 2.5 cm lateral to thyroid prominence. Avoid direct prox-imity to reduce signal contamination. 
+
+✓ –E2 Suprahyoid Midway between mandible and relaxed hyoid, 0.5 cm lat-eral to midline. 
+
+✓ –E3 Mylohyoid Midway between chin center and lateral endpoint, 2 cm inferior to chin line (submental). 
+
+✓ –E4 Mentalis 0.5 cm lateral to midline and 0.5 cm superior to pogonion. ✓ ✓
+
+E5 Orbicularis Oris Superioris Facial midline above upper lip. ✓ –E6 Depressor Supercilii Between nasal bone and eyebrow. – ✓
+
+E7 Zygomaticus Major (left) Caudal end of zygomatic bone along line to lip corner. ✓ ✓
+
+E8 Zygomaticus Major (right) Mirrored placement of E7. ✓ ✓
+
+Table 4: Label distribution in terms of number of utterances across tasks and speaking modes. For Task 2, we report on the affect label anticipated by the experimental design. 
+
+Phonated Silent Task Frust. Neut. Polit. Frust. Neut. Polit. 
+
+Task 1 233 120 240 232 120 240 Task 2 198 – 198 – – –Task 3 240 119 240 240 120 240 Total 671 239 678 472 240 480 speech emotion model (i.e., trained to estimate arousal, va-lence, and dominance) that was fine-tuned with the Whisper-Large [36] backbone on the MSP-Podcast dataset [37]. 
+
+4.3. Machine learning models 
+
+All subsequent experiments were conducted using either hand-crafted feature representations or latent model embeddings. Specifically, we trained two classifiers: a Support Vector Ma-chine (SVM) with a radial basis function (RBF) kernel applied to the handcrafted features, and a linear probe classifier with L2 regularization applied to the latent embeddings. Prior to model training, handcrafted features were z-scored using statis-tics computed from the training set, whereas latent embeddings were scaled using a robust scaler fitted on the training data. 
+
+# 5. Experimental Setup 
+
+5.1. RQ1: Affect decoding from sEMG 
+
+To investigate whether affective states can be decoded from sEMG during speech production, we conducted both intra-subject and inter-subject evaluations using EMG data from Tasks 1 and 3. In all cases, the objective was to predict the af-fect label of each individual trial. For the intra-subject analysis, models were trained and evaluated separately for each partici-pant using 5-fold cross-validation over trials. Specifically, trials were partitioned such that all repetitions of a given sentence ap-peared in the same fold, thereby preventing sentence-level data leakage. For the inter-subject analysis, we employed nested cross-validation. The outer loop followed a leave-one-subject-out (LOSO) scheme to evaluate generalization to unseen partici-pants. Within each training split, we used the same trial-level 5-fold cross-validation over the available data, again ensuring that sentences were not repeated across folds. Model performance was evaluated using the Area-Under-the-Curve (AUC) and bal-anced accuracy (BAC). The results were reported as mean and standard deviation between subjects for each metric. 
+
+5.2. RQ2: Phonated and silent speech 
+
+We employed the same pre-processing pipeline, modeling and evaluation procedure described in 5.1. For this analysis, the dataset (Tasks 1 and 3) was partitioned into two articulation modes: phonated and silent speech. Each subset was evaluated independently using the same cross-validation strategy as de-scribed above. In addition, we investigated cross-setting gener-alization by training models on one articulation mode (phonated or silent) and evaluating their generalizability on the other. 
+
+5.3. RQ3: From controlled to spontaneous speech 
+
+To investigate the influence of the experimental context, we evaluated model performance on Task 2, containing sponta-neous, conversational speech. We employed the same pre-processing pipeline and model configurations as in Section 5.1. Because data from Task 2 are relatively scarce (see Table 2), we trained our models on both the controlled tasks (Tasks 1 and 3) and the spontaneous Task 2, and we share results for the inter-subject configuration, where data from the test speaker were excluded entirely from the training set. Label assignment was based on the conducted data annotations, and specifically on the annotation of frustration , as this had a higher agreement with the pre-defined target affect of each sub-task than the an-notation of politeness (see Figure 2). Specifically, we assigned the label of frustration to all trials annotated higher than 3.5, and the label of politeness to all trials annotated lower than 2.5, with the remaining ambiguous trials discarded for clarity. 
+
+# 6. Results 
+
+6.1. RQ1: Reliable affect decoding from EMG 
+
+Table 5 summarizes the binary classification performance for intra-subject and inter-subject settings across EMG and speech modalities, where the neutral trials were excluded to minimize ambiguity. In the intra-subject setting, EMG-based approaches consistently outperformed speech-based features. TD achieves the highest performance (AUC = 0.845), however all three modalities performed similarly, without significant statistical differences. In contrast, speech features yielded more modest Table 5: Classification performance for affective mode decoding across varying modalities. Results present the mean ± standard deviation for Balanced Accuracy (BAC) and Area Under the Curve (AUC) across subjects under intra-subject and inter-subject settings. 
+
+Modality Features Intra-subject Inter-subject BAC AUC BAC AUC 
+
+EMG Structural 0.749 ± 0.075 0.820 ± 0.081 0.546 ± 0.054 0.568 ± 0.074 TD-0 0.762 ± 0.063 0.845 ± 0.058 0.541 ± 0.052 0.567 ± 0.082 BioCodec 0.721 ± 0.053 0.792 ± 0.075 0.547 ± 0.052 0.574 ± 0.080 Speech eGeMAPS 0.610 ± 0.125 0.644 ± 0.168 0.527 ± 0.058 0.495 ± 0.115 Vox-Profile 0.659 ± 0.097 0.732 ± 0.104 0.582 ± 0.041 0.657 ± 0.071 Table 6: Intra-subject classification performance in terms of mean ± standard deviation of subject-wise AUC across affec-tively unique and repeated trials. Repeated trials are those who were encountered in the experiment once for each available la-bel (here, Polite and Frustrated). 
+
+Modality Features Unique Repeated 
+
+EMG Structural 0.856 ± 0.069 0.720 ± 0.159 TD-0 0.824 ± 0.126 0.751 ± 0.145 BioCodec 0.799 ± 0.058 0.747 ± 0.145 Speech eGeMAPS 0.643 ± 0.060 0.559 ± 0.132 Vox-Profile 0.889 ± 0.075 0.469 ± 0.202 Table 7: Inter-subject classification performance. Results are reported in terms of mean ± standard deviation of subject-wise AUC for Task 1 and Task 3 separately. A Wilcoxon signed-rank test was used to determine significant changes between tasks. FDR correction was applied to all p-values. 
+
+Features Task 1 Task 3 p-value 
+
+Structural 0.527 ± 0.059 0.613 ± 0.100 0.038 TD-0 0.469 ± 0.121 0.617 ± 0.116 0.038 BioCodec 0.520 ± 0.079 0.603 ± 0.112 0.056 eGeMAPS 0.489 ± 0.126 0.458 ± 0.113 0.534 Vox-Profile 0.667 ± 0.070 0.632 ± 0.076 0.464 results, with eGeMAPS (AUC = 0.644) and Vox-Profile (AUC = 0.732) substantially underperforming the EMG-based models (McNemar p < 0.001 ). These findings suggest that prompted affective modulation was strongly expressed through muscle ac-tivity, but did not translate to perceived acoustic differences. Under the more challenging inter-subject classification sce-nario, overall performance showed regressions across modali-ties. While EMG-based models yielded comparable results with marginally higher than chance discriminability, Vox-Profile achieved the strongest cross-subject generalization with an AUC of 0.657. These findings verified the large participant het-erogeneity when it comes to affective expression, for which a participant cohort of N = 12 does not suffice to yield global affect markers. We further assume that the higher performance of the speech foundation model was partially attributed to lexi-cal decoding of affective elements in the sentences. To control for potential lexical confounds, we further evalu-ated model performance separately for sentences presented only once, with a single affective label (termed unique ) and for sen-tences presented twice, each time with a different affective la-
+
+Figure 3: Comparison of intra-subject AUC between Task 1 and Task 3 across speaking conditions. Left : tested on all sentences. 
+
+Right : tested on the repeated sentences (see also Table 6). Dots correspond to average individual performance. 
+
+bel (termed repeated ). This separation reduces the possibility that models rely on sentence-specific lexical cues rather than affective expression. The results are reported in Table 7. As expected, all models achieved higher AUC on the unique subset and showed a consistent drop in performance on the repeated sentences, all regressions being statistically significant. Im-portantly, EMG-based models retain moderate discriminability even in the repeated condition (AUC > 0.7), indicating robust-ness to lexical overlap. In contrast, speech models degrade sub-stantially: while Vox-Profile achieves the highest performance overall on unique trials (AUC = 0.889), its performance col-lapses to random-chance levels on repeated sentences (AUC = 0.469). eGeMAPS features exhibit a more modest decline, indi-cating that prosodic descriptors still captured some affect varia-tion in a controlled lexical context. Overall, EMG representations demonstrated stronger dis-criminability than the speech features, indicating that the affec-tive modulation was directed primarily to paralinguistic chan-nels and facial expressions rather than core speech production elements. We tested this assumption through an ablation on the electrode set, and trained separate, single-channel classifiers un-der identical settings. A topographical heatmap of the results is provided in Figure 4, separately for intra-subject (left) and inter-subject (right) scenarios. Several facial channels—most prominently the frontal site (E6)—achieved high discriminabil-ity, with additional contributions from perioral and submental locations. Performance appears spatially differentiated, sug-gesting that affective information is not uniformly distributed across recording sites. In contrast, the inter-subject setting Table 8: Affect decoding performance in terms of AUC (average ± SD) for two experimental settings and three EMG input sets. Intra-mode refers to testing within the same articulation mode; cross-mode refers to training on one mode and testing on the other. 
+
+Setting Features Intra-mode Cross-mode 
+
+Phonated → Phonated Silent → Silent Phonated → Silent Silent → Phonated Intra-subject Structural 0.815 ± 0.110 0.829 ± 0.056 0.707 ± 0.158 0.663 ± 0.168 TD-0 0.806 ± 0.113 0.811 ± 0.100 0.705 ± 0.118 0.626 ± 0.145 BioCodec 0.758 ± 0.066 0.792 ± 0.102 0.763 ± 0.094 0.745 ± 0.075 Inter-subject Structural 0.567 ± 0.112 0.608 ± 0.073 0.639 ± 0.085 0.646 ± 0.101 TD-0 0.589 ± 0.103 0.563 ± 0.077 0.612 ± 0.071 0.644 ± 0.103 BioCodec 0.575 ± 0.075 0.592 ± 0.090 0.624 ± 0.099 0.615 ± 0.095 
+
+Figure 4: Channel-wise decoding performance across evalu-ation settings (RQ1). Topographic visualization of electrode-specific AUC for the intra- (left) and inter-subject (right) set-tings in Tasks 1, 3. Each marker corresponds to an EMG chan-nel, with warmer colors reflecting higher discriminability. 
+
+(right) showed regressions in AUC across nearly all channels, indicating limited inter-subject generalization at the individual electrode level. Attenuation was especially pronounced in the frontal and cheek sites, while submental channels retained rela-tively moderate performance. 
+
+6.2. RQ2: Affect decoding of phonated and silent speech 
+
+Since affect information was found concentrated on the facial region, we hypothesized that changes in articulation manner would not cause severe performance regressions. Table 8 shows the experimental results on Tasks 1 and 3, where we trained and validated our models in either phonated or silent trials. In par-ticular, intra-mode performance appeared consistent with our earlier results and did not differ significantly between phonated and silent settings. We even observed a marginal improvement for silent speech of about 2 percentage points, particularly for BioCodec embeddings. This difference was even larger for inter-subject models, however, did not reach significance. With respect to cross-mode performance, the intra-subject results indicate that training on phonated speech could robustly transfer to silent-speech settings, whereas the reverse was true only for the BioCodec embeddings, i.e., both structural and TD features showed regressions of 3 to 7 percentage points. This result holds promise for silent speech interfaces that could be 
+
+Figure 5: Channel-wise decoding performance across ar-ticulation conditions (RQ2). Topographic visualization of electrode-specific AUC for the phonated (left) and silent (right) conditions in Tasks 1 and 3. Each numbered marker corre-sponds to an EMG channel, and color indicates intra-subject AUC, with warmer colors reflecting higher discriminability. 
+
+trained on typical phonated speech without explicitly requiring silent-speech recordings. For the inter-subject setting, this ef-fect was attenuated with no significant differences. Figure 3 further compares intra-subject AUC between Task 1 and Task 3 across phonated and silent speaking conditions. When evaluated on all sentences (left panel), performance in the phonated condition remains largely unchanged between the two tasks, whereas the silent condition shows a clear increase in Task 3. This improvement is marginally significant (paired t-test, p = 0 .046 ) and likely reflects increased familiarity with the task, particularly for silent articulation, which constitutes the less natural and more demanding mode for typical speak-ers. This familiarity effect also extends to the more challeng-ing subset of repeated sentences (right panel), where silent performance again improves in Task 3 (albeit underpowered, 
+
+p = 0 .252 ), while phonated performance remains relatively unchanged. Overall, these findings suggest that task repetition primarily benefits silent EMG-based decoding, and that silent articulation performance is more sensitive to learning and adap-tation effects than phonated speech. We additionally performed the same interpretability analy-sis, and present channel-wise results in Figure 5, for phonated and silent articulation conditions. Overall, E6 exhibited the Table 9: Inter-subject performance on frustration detection (Task 2) in terms of mean ± standard deviation of trial-wise Balanced Accuracy (BAC) and Area Under the Curve (AUC). 
+
+Modality Features BAC AUC 
+
+EMG Structural 0.616 ± 0.003 0.623 ± 0.005 TD-0 0.527 ± 0.006 0.518 ± 0.004 BioCodec 0.595 ± 0.014 0.630 ± 0.009 Speech eGeMAPS 0.607 ± 0.002 0.679 ± 0.003 Vox-Profile 0.670 ± 0.006 0.743 ± 0.004 highest discriminability in both settings, with increased perfor-mance in the silent condition, i.e., from 0.725 to 0.771 mean AUC. In contrast, submental and lower-neck channels display more variability, with some sites demonstrating improved AUC during silent speech production. This pattern suggests that while upper facial regions consistently encode affect-related ef-fort, silent articulation may reflect increased reliance on artic-ulatory muscle engagement in the absence of overt phonation. Such an effect is plausible given that silent articulation is a less familiar and less automatized motor behavior. 
+
+6.3. RQ3: EMG markers in spontaneous speech 
+
+Having established the feasibility of EMG-based affect decod-ing in prompted trials, we proceeded to evaluate whether these models could generalize to spontaneous speech across speakers. In Table 9, we present the results regarding Task 2 of our exper-iment. Here, models were trained on controlled phonated and silent tasks (Tasks 1 and 3) from all but the held-out speaker, and test on the spontaneous (phonated) frustrated and polite trials of that speaker. We note that evaluation metrics are reported here on the individual-trial level to account for the variable number of spontaneous utterances across the 12 participants. As shown in Table 9, speech-based models achieve the highest inter-subject performance on spontaneous frustration detection, with Vox-Profile embeddings yielding the best over-all results (BAC = 0.670; AUC = 0.743), followed by the prosodic eGeMAPS feature set (AUC = 0.679). In contrast, EMG-based models demonstrate more moderate but consis-tently above-chance performance. BioCodec achieves the high-est discriminability (AUC = 0.630), while structural features yield a comparable BAC of 0.616. TD performs lower overall in this spontaneous cross-speaker setting. These findings suggest that spontaneous speech provides richer acoustic cues for af-fect decoding, benefiting pretrained speech representations. At the same time, EMG models achieve performance comparable to handcrafted prosodic features (eGeMAPS) and exhibit im-proved balanced accuracy relative to the inter-subject controlled condition, indicating partial generalization from prompted to spontaneous affect expression. Figure 6 further contrasts the spatial distribution of channel-wise inter-subject decoding performance between controlled (prompted) and spontaneous speech settings. In the prompted-phonated condition, performance is relatively homogeneous across facial sites, with moderate discriminability observed in perioral and cheek channels. In the spontaneous setting, overall AUC decreases for several frontal and mid-face channels while certain submental and lower facial sites exhibit comparatively enhanced performance. This redistribution suggests that affect-related neuromuscular patterns differ between controlled artic-ulation and naturalistic speech, with spontaneous production 
+
+Figure 6: Channel-wise decoding comparison between con-trolled and spontaneous settings (RQ3). Topographic visual-ization of electrode-specific AUC for inter-subject performance in Tasks 1 and 3 (prompted, left) and Task 2 (spontaneous, right). Each numbered marker corresponds to an EMG chan-nel, with warmer colors reflecting higher discriminability. 
+
+potentially engaging more prosodic/acoustic elements, which could also explain the robust performance of the audio mod-els in this task (Table 9). Overall, the results highlight a shift in spatial encoding of affect when moving from structured to ecologically valid speaking contexts. 
+
+# 7. Conclusions 
+
+The presented findings support the view that affective modu-lation is embedded in broad facial motor execution rather than solely at the acoustic level. Extending prior EMG studies con-ducted in passive emotion paradigms [18, 19], we demonstrate that affective signatures persist within structured speech pro-duction and even during silent articulation. Interestingly, our ablation study indicated that cross-speaker transfer shifted dis-criminability from facial toward lower-neck channels, pointing to greater inter-speaker consistency in laryngeal and prosodic-related motor components. This aligns with findings from silent speech research showing substantial heterogeneity in fa-cial EMG [38]. Overall, while our models showed a moder-ate degree of generalizability, this should be assessed under the assumption of inherent heterogeneity in both muscle physiol-ogy [39] and speech emotion expression [40]. Despite this variability, relatively simple EMG features were sufficient to capture affective patterns in most of our ex-perimental settings, which could enable rich future work into model interpretability, specifically regarding the coupling be-tween motor patterns to specific prosodic variations [23]. Still, the competitive performance of BioCodec features in inter-subject, repeated-sentence, and cross-mode conditions suggests that learned embeddings may capture more transferable struc-ture than handcrafted features in challenging inference scenar-ios. This comes despite the fact that this model was pretrained on non-speech EMG [33] and applied in a zero-shot manner. 
+
+Study limitations: Several limitations should be acknowl-edged in the context of this study. The participant cohort was modest in size and demographically imbalanced, which would limit any population-level conclusions from our inter-subject performance. Furthermore, the decoded affective states (po-liteness and frustration) were experimentally prompted and in-duced, rather than occurring in ecological settings. The same applies to silent articulation, which was explicitly acted and inherited a learning curve for the participants (Figure 3). Fi-nally, it is important to note that our study by design could not disentangle articulatory modulation from co-activated facial ex-pressions accompanying speech. Overall, these findings suggest that affect is not only audible but embodied in the neuromuscu-lar processes underlying speech production, motivating future work in larger and more ecologically valid settings. 
+
+# 8. Acknowledgments 
+
+The authors would like to thank the Bavarian Californian Tech-nology Center (BaCaTec) for their financial support and for facilitating this collaboration. This work was also supported by the German Research Foundation (DFG) under the project ”Silent Paralinguistics” (Grant No. 40301193). 
+
+# 9. Generative AI Use Disclosure 
+
+Generative AI tools were used in this study to assist with lan-guage polishing, manuscript editing, and assisting code imple-mentations for analyses and visualizations relevant to this paper. These tools were not used for results generation, data analysis, data interpretation, or at any stage of data collection. All au-thors are fully aware of the extent of generative AI use in this work, take full responsibility for the content of the manuscript. 
+
+# 10. References 
+
+[1] B. W. Schuller and A. Batliner, Computational Paralinguistics: Emotion, Affect and Personality in Speech and Language Process-ing . Chichester, UK: John Wiley & Sons, 2014. [2] B. Denby, T. Schultz, K. Honda, T. Hueber, J. M. Gilbert, and J. S. Brumberg, “Silent speech interfaces,” Speech Communica-tion , vol. 52, no. 4, pp. 270–287, 2010. [3] M. D. Pell, H. S. Cheang, and C. L. Leonard, “The impact of parkinson’s disease on vocal-prosodic communication from the perspective of listeners,” Brain and language , vol. 97, no. 2, pp. 123–134, 2006. [4] T. Haderlein, E. N¨ oth, H. Toy, A. Batliner, M. Schuster, U. Eysh-oldt, J. Hornegger, and F. Rosanowski, “Automatic evaluation of prosodic features of tracheoesophageal substitute voice,” Euro-pean Archives of Oto-Rhino-Laryngology , vol. 264, no. 11, pp. 1315–1321, 2007. [5] B. Schuller, D. Arsic, F. Wallhoff, and G. Rigoll, “Emotion recog-nition in the noise applying large acoustic feature sets,” in Proc. Speech Prosody 2006 , 2006, p. paper 128. [6] G. S. Meltzner, J. T. Heaton, Y. Deng, G. De Luca, S. H. Roy, and J. C. Kline, “Silent speech recognition as an alternative com-munication device for persons with laryngectomy,” IEEE/ACM transactions on audio, speech, and language processing , vol. 25, no. 12, pp. 2386–2398, 2017. [7] J. M. Vojtech, M. D. Chan, B. Shiwani, S. H. Roy, J. T. Heaton, G. S. Meltzner, P. Contessa, G. De Luca, R. Patel, and J. C. Kline, “Surface electromyography–based recognition, synthesis, and perception of prosodic subvocal speech,” Journal of Speech, Language, and Hearing Research , vol. 64, no. 6S, pp. 2134–2153, 2021. [8] K. Scheck, Z. Ren, T. Dombeck, J. Sonnert, S. van Gogh, Q. Hou, M. Wand, and T. Schultz, “Cross-speaker training and adaptation for electromyography-to-speech conversion,” in 2024 46th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC) , 2024, pp. 1–4. [9] J. Lee, K. Huang, K. Avramidis, S. Pistrosch, M. Gonzalez-Machorro, Y. Lee, B. W. Schuller, L. Goldstein, and S. Narayanan, “Articulatory Feature Prediction from Surface EMG during Speech Production,” in Interspeech , 2025. [10] J. A. Gonzalez-Lopez, A. Gomez-Alanis, J. M. M. Do˜ nas, J. L. P´ erez-C´ ordoba, and A. M. Gomez, “Silent speech interfaces for speech restoration: A review,” IEEE access , vol. 8, pp. 177 995– 178 021, 2020. [11] M. Janke and L. Diener, “Emg-to-speech: Direct generation of speech from facial electromyographic signals,” IEEE/ACM Trans-actions on Audio, Speech, and Language Processing , vol. 25, no. 12, pp. 2375–2385, 2017. [12] D. Gaddy and D. Klein, “Digital voicing of silent speech,” in Pro-ceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2020, pp. 5521–5530. [13] J. M. Rutkowska, T. Ghilardi, S. V. Vacaru, J. E. van Schaik, M. Meyer, S. Hunnius, and R. Oostenveld, “Optimal processing of surface facial emg to identify emotional expressions: A data-driven approach,” Behavior Research Methods , vol. 56, no. 7, pp. 7331–7344, 2024. [14] S. Jerritta, M. Murugappan, K. Wan, and S. Yaacob, “Emotion recognition from facial emg signals using higher order statistics and principal component analysis,” Journal of the Chinese Insti-tute of Engineers , vol. 37, no. 3, pp. 385–394, 2014. [15] Z. Ren, S. Pistrosch, B. Cos ¸kun, K. Scheck, A. Batliner, B. W. Schuller, and T. Schultz, “An introduction to silent paralinguis-tics,” arXiv preprint arXiv:2508.18127 , 2025. [16] L. Diener, S. Amiriparian, C. Botelho, K. Scheck, D. K¨ uster, I. Trancoso, B. W. Schuller, and T. Schultz, “Towards silent par-alinguistics: deriving speaking mode and speaker id from elec-tromyographic signals,” Interspeech , 2020. [17] L. Diener, M. Janke, and T. Schultz, “Direct conversion from fa-cial myoelectric signals to speech using deep neural networks,” in 2015 International Joint Conference on Neural Networks (IJCNN) . IEEE, 2015, pp. 1–7. [18] J.-W. Tan, A. O. Andrade, H. Li, S. Walter, D. Hrabal, S. Rukav-ina, K. Limbrecht-Ecklundt, H. Hoffman, and H. C. Traue, “Recognition of intensive valence and arousal affective states via facial electromyographic activity in young and senior adults,” 
+
+PloS one , vol. 11, no. 1, p. e0146691, 2016. [19] W. Sato, T. Fujimura, T. Kochiyama, and N. Suzuki, “Relation-ships among facial mimicry, emotional experience, and emotion recognition,” PloS one , vol. 8, no. 3, p. e57889, 2013. [20] K. Rymarczyk, Ł. ˙ Zurawski, K. Jankowiak-Siuda, and I. Sza-tkowska, “Do dynamic compared to static facial expressions of happiness and anger reveal enhanced facial mimicry?” PloS one ,vol. 11, no. 7, p. e0158534, 2016. [21] S. Topolinski, I. T. Maschmann, D. Pecher, and P. Winkielman, “Oral approach–avoidance: Affective consequences of muscular articulation dynamics.” Journal of personality and social psychol-ogy , vol. 106, no. 6, p. 885, 2014. [22] S. Lee, S. Yildirim, A. Kazemzadeh, and S. S. Narayanan, “An ar-ticulatory study of emotional speech production.” in Interspeech ,2005, pp. 497–500. [23] C. Busso and S. S. Narayanan, “Interrelation between speech and facial gestures in emotional utterances: a single subject study,” 
+
+IEEE Transactions on Audio, Speech, and Language Processing ,vol. 15, no. 8, pp. 2331–2347, 2007. [24] M. Kołodziej, A. Majkowski, and M. Jurczak, “Acquisition and analysis of facial electromyographic signals for emotion recognition,” Sensors , vol. 24, no. 15, 2024. [Online]. Available: https://www.mdpi.com/1424-8220/24/15/4785 [25] S. D. Gosling, P. J. Rentfrow, and W. B. Swann, “A very brief measure of the big-five personality domains,” 
+
+Journal of Research in Personality , vol. 37, no. 6, pp. 504– 528, 2003. [Online]. Available: https://www.sciencedirect.com/ science/article/pii/S0092656603000461 [26] R. Parent, S. King, and O. Fujimura, “Issues with lip sync an-imation: can you read my lips?” in Proceedings of Computer Animation 2002 (CA 2002) . IEEE, 2002, pp. 3–10. [27] J. Chen, T. Ro, and Z. Zhu, “Emotion recognition with audio, video, eeg, and emg: a dataset and baseline approaches,” IEEE Access , vol. 10, pp. 13 229–13 242, 2022. [28] E. Lopez-Larraz, O. M. Mozos, J. M. Antelis, and J. Minguez, “Syllable-based speech recognition using emg,” in 2010 Annual International Conference of the IEEE Engineering in Medicine and Biology . IEEE, 2010, pp. 4699–4702. [29] M. Wand, M. Janke, and T. Schultz, “The emg-uka corpus for electromyographic speech processing.” in Interspeech , 2014, pp. 1593–1597. [30] Y. Zhang, H. Cai, J. Wu, L. Xie, M. Xu, D. Ming, Y. Yan, and E. Yin, “Emg-based cross-subject silent speech recognition using conditional domain adversarial network,” IEEE Transactions on Cognitive and Developmental Systems , vol. 15, no. 4, pp. 2282– 2290, 2023. [31] L. Diener, “The impact of audible feedback on emg-to-speech conversion,” Ph.D. dissertation, University of Bremen, 2021. [Online]. Available: https://www.csl.uni-bremen.de/cms/images/ documents/publications/Diener2021Diss.pdf [32] K. Scheck, T. Dombeck, Z. Ren, P. Wu, M. Wand, and T. Schultz, “Diffmv-ets: Diffusion-based multi-voice electromyography-to-speech conversion using speaker-independent speech training tar-gets,” in Interspeech , 2025, pp. 5573–5577. [33] K. Avramidis, T. Feng, W. Jeong, J. Lee, W. Cui, R. M. Leahy, and S. Narayanan, “Neural codecs as biosignal tokenizers,” arXiv preprint arXiv:2510.09095 , 2025. [34] F. Eyben, M. W¨ ollmer, and B. Schuller, “Opensmile: the mu-nich versatile and fast open-source audio feature extractor,” in 
+
+Proceedings of the 18th ACM international conference on Mul-timedia , 2010, pp. 1459–1462. [35] T. Feng, J. Lee, A. Xu, Y. Lee, T. Lertpetchpun, X. Shi, H. Wang, T. Thebaud, L. Moro-Velazquez, D. Byrd et al. , “Vox-profile: A speech foundation model benchmark for characterizing diverse speaker and speech traits,” arXiv preprint arXiv:2505.14648 ,2025. [36] A. Radford, J. W. Kim, T. Xu, G. Brockman, C. McLeavey, and I. Sutskever, “Robust speech recognition via large-scale weak supervision,” in International conference on machine learning .PMLR, 2023, pp. 28 492–28 518. [37] R. Lotfian and C. Busso, “Building naturalistic emotionally bal-anced speech corpus by retrieving emotional speech from existing podcast recordings,” IEEE Transactions on Affective Computing ,vol. 10, no. 4, pp. 471–483, 2017. [38] Y. Golland, A. Hakim, T. Aloni, S. Schaefer, and N. Levit-Binnun, “Affect dynamics of facial emg during continuous emotional ex-periences,” Biological psychology , vol. 139, pp. 47–58, 2018. [39] A. D. Vigotsky, I. Halperin, G. J. Lehman, G. S. Trajano, and T. M. Vieira, “Interpreting signal amplitudes in surface elec-tromyography studies in sport and rehabilitation sciences,” Fron-tiers in physiology , vol. 8, p. 985, 2018. [40] P. Van Rijn and P. Larrouy-Maestri, “Modelling individual and cross-cultural variation in the mapping of emotions to speech prosody,” Nature Human Behaviour , vol. 7, no. 3, pp. 386–396, 2023.

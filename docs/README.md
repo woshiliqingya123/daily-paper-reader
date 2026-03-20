@@ -6,39 +6,34 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-19
-- 运行时间：2026-03-19 20:01:26 UTC
+- 最新运行日期：2026-03-20
+- 运行时间：2026-03-20 19:32:05 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：5
-- 速读区：1
+- 本次总论文数：4
+- 精读区：2
+- 速读区：2
 
 ### 今日简报（AI）
-今日聚焦 6 篇前沿论文，深度解析多模态情感识别与社交媒体机器翻译的实战表现。
-重点
-- 详情：[/202603/19/README](/202603/19/README)
+今日深度探索多模态情感计算，重点解析 AlignMamba-2 架构与视频学习中的情感交互预测。
+满分论文展示了 Mamba 在模态感知融合中的巨大潜力，同时揭示了说话者表现力对学习参与度的关键影响。
+建议关注轻量化大模型在情感解码与多模态推荐系统中的跨界应用。
+- 详情：[/202603/20/README](/202603/20/README)
 
 ### 精读区论文标签
-1. [Multimodal Emotion Recognition via Bi-directional Cross-Attention and Temporal Modeling](/202603/19/2603.11971v2-multimodal-emotion-recognition-via-bi-directional-cross-attention-and-temporal-modeling)  
+1. [AlignMamba-2: Enhancing Multimodal Fusion and Sentiment Analysis with Modality-Aware Mamba](/202603/20/2603.18462v1-alignmamba-2-enhancing-multimodal-fusion-and-sentiment-analysis-with-modality-aware-mamba)  
    标签：评分：10.0/10、query:msa
-   evidence：利用交叉注意力和时序建模的多模态情感识别框架
-2. [Machine Translation in the Wild: User Reaction to Xiaohongshu's Built-In Translation Feature](/202603/19/2603.15922v1-machine-translation-in-the-wild-user-reaction-to-xiaohongshus-built-in-translation-feature)  
-   标签：评分：8.0/10、query:msa
-   evidence：用户对翻译功能反应的情感分析
-3. [Micro-AU CLIP: Fine-Grained Contrastive Learning from Local Independence to Global Dependency for Micro-Expression Action Unit Detection](/202603/19/2603.16302v1-micro-au-clip-fine-grained-contrastive-learning-from-local-independence-to-global-dependency-for-micro-expression-action-unit-detection)  
-   标签：评分：8.0/10、query:msa
-   evidence：通过微表情检测进行细粒度情感分析
-4. [FACE-net: Factual Calibration and Emotion Augmentation for Retrieval-enhanced Emotional Video Captioning](/202603/19/2603.17455v1-face-net-factual-calibration-and-emotion-augmentation-for-retrieval-enhanced-emotional-video-captioning)  
-   标签：评分：8.0/10、query:msa
-   evidence：结合事实与情感线索挖掘的情感视频描述
-5. [AdaMuS: Adaptive Multi-view Sparsity Learning for Dimensionally Unbalanced Data](/202603/19/2603.17610v1-adamus-adaptive-multi-view-sparsity-learning-for-dimensionally-unbalanced-data)  
-   标签：评分：8.0/10、query:msa
-   evidence：情感识别中维度不平衡数据的多视图学习
+   evidence：基于高效 Mamba 模型的多模态融合与情感分析
+2. [Dual-Model Prediction of Affective Engagement and Vocal Attractiveness from Speaker Expressiveness in Video Learning](/202603/20/2603.18758v1-dual-model-prediction-of-affective-engagement-and-vocal-attractiveness-from-speaker-expressiveness-in-video-learning)  
+   标签：评分：9.0/10、query:msa
+   evidence：在真实世界的异步视频学习场景中预测情感参与度
 
 ### 速读区论文标签
-1. [On the Emotion Understanding of Synthesized Speech](/202603/19/2603.16483v1-on-the-emotion-understanding-of-synthesized-speech)  
+1. [Affect Decoding in Phonated and Silent Speech Production from Surface EMG](/202603/20/2603.11715v2-affect-decoding-in-phonated-and-silent-speech-production-from-surface-emg)  
    标签：评分：7.0/10、query:msa
-   evidence：评估语音情感识别模型
+   evidence：通过面部和颈部表面肌电图及声学语音进行情感解码
+2. [VLM4Rec: Multimodal Semantic Representation for Recommendation with Large Vision-Language Models](/202603/20/2603.12625v1-vlm4rec-multimodal-semantic-representation-for-recommendation-with-large-vision-language-models)  
+   标签：评分：6.0/10、query:msa
+   evidence：利用视觉语言模型进行推荐的多模态语义表示
 
 
 <div class="dpr-home-promo-card">

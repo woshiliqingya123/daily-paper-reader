@@ -1,0 +1,65 @@
+{
+  "label": "2026-03-20",
+  "date": "2026-03-20",
+  "generated_at": "2026-03-20T19:32:13",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202603/20/2603.18462v1-alignmamba-2-enhancing-multimodal-fusion-and-sentiment-analysis-with-modality-aware-mamba",
+      "section": "deep",
+      "title_en": "AlignMamba-2: Enhancing Multimodal Fusion and Sentiment Analysis with Modality-Aware Mamba",
+      "authors": "Yan Li, Yifei Xing, Xiangyuan Lan, Xin Li, Haifeng Chen, Dongmei Jiang",
+      "date": "2026-03-19",
+      "pdf": "https://arxiv.org/pdf/2603.18462v1",
+      "score": "10.0",
+      "evidence": "基于高效 Mamba 模型的多模态融合与情感分析",
+      "tldr": "AlignMamba-2 针对多模态情感分析中 Transformer 计算复杂度高和 Mamba 难以捕捉全局非序列关系的问题，提出了一种高效的融合框架。该框架通过双重对齐策略（最优传输与最大均值差异）增强模态间的一致性，并设计了包含模态特定与共享专家的混合专家（MoE）架构 Mamba 层，以处理数据异构性。实验证明其在动态序列和静态图像任务上均达到了 SOTA 水平。",
+      "tags": "query:msa",
+      "abstract_en": "In the era of large-scale pre-trained models, effectively adapting general knowledge to specific affective computing tasks remains a challenge, particularly regarding computational efficiency and multimodal heterogeneity. While Transformer-based methods have excelled at modeling inter-modal dependencies, their quadratic computational complexity limits their use with long-sequence data. Mamba-based models have emerged as a computationally efficient alternative; however, their inherent sequential scanning mechanism struggles to capture the global, non-sequential relationships that are crucial for effective cross-modal alignment. To address these limitations, we propose \\textbf{AlignMamba-2}, an effective and efficient framework for multimodal fusion and sentiment analysis. Our approach introduces a dual alignment strategy that regularizes the model using both Optimal Transport distance and Maximum Mean Discrepancy, promoting geometric and statistical consistency between modalities without incurring any inference-time overhead. More importantly, we design a Modality-Aware Mamba layer, which employs a Mixture-of-Experts architecture with modality-specific and modality-shared experts to explicitly handle data heterogeneity during the fusion process. Extensive experiments on four challenging benchmarks, including dynamic time-series (on the CMU-MOSI and CMU-MOSEI datasets) and static image-related tasks (on the NYU-Depth V2 and MVSA-Single datasets), demonstrate that AlignMamba-2 establishes a new state-of-the-art in both effectiveness and efficiency across diverse pattern recognition tasks, ranging from dynamic time-series analysis to static image-text classification.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/20/2603.18758v1-dual-model-prediction-of-affective-engagement-and-vocal-attractiveness-from-speaker-expressiveness-in-video-learning",
+      "section": "deep",
+      "title_en": "Dual-Model Prediction of Affective Engagement and Vocal Attractiveness from Speaker Expressiveness in Video Learning",
+      "authors": "Hung-Yue Suen, Kuo-En Hung, Fan-Hsun Tseng",
+      "date": "2026-03-19",
+      "pdf": "https://arxiv.org/pdf/2603.18758v1",
+      "score": "9.0",
+      "evidence": "在真实世界的异步视频学习场景中预测情感参与度",
+      "tldr": "本研究提出了一种以演讲者为中心的情感AI方法，旨在通过分析MOOC视频中演讲者的面部动态、眼动特征、韵律和语义等表达，预测观众的情感参与度和演讲者的声音吸引力。该方法采用双回归模型，无需采集观众端数据，在保护隐私的同时实现了高精度的预测。研究证明了演讲者的多模态特征能有效反映观众的反馈，为异步在线学习提供了可扩展的情感计算方案。",
+      "tags": "query:msa",
+      "abstract_en": "This paper outlines a machine learning-enabled speaker-centric Emotion AI approach capable of predicting audience-affective engagement and vocal attractiveness in asynchronous video-based learning, relying solely on speaker-side affective expressions. Inspired by the demand for scalable, privacy-preserving affective computing applications, this speaker-centric Emotion AI approach incorporates two distinct regression models that leverage a massive corpus developed within Massive Open Online Courses (MOOCs) to enable affectively engaging experiences. The regression model predicting affective engagement is developed by assimilating emotional expressions emanating from facial dynamics, oculomotor features, prosody, and cognitive semantics, while incorporating a second regression model to predict vocal attractiveness based exclusively on speaker-side acoustic features. Notably, on speaker-independent test sets, both regression models yielded impressive predictive performance (R2 = 0.85 for affective engagement and R2 = 0.88 for vocal attractiveness), confirming that speaker-side affect can functionally represent aggregated audience feedback. This paper provides a speaker-centric Emotion AI approach substantiated by an empirical study discovering that speaker-side multimodal features, including acoustics, can prospectively forecast audience feedback without necessarily employing audience-side input information.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/20/2603.11715v2-affect-decoding-in-phonated-and-silent-speech-production-from-surface-emg",
+      "section": "quick",
+      "title_en": "Affect Decoding in Phonated and Silent Speech Production from Surface EMG",
+      "authors": "Simon Pistrosch, Kleanthis Avramidis, Zhao Ren, Tiantian Feng, Jihwan Lee, Monica Gonzalez-Machorro, Anton Batliner, Tanja Schultz, Shrikanth Narayanan, Björn W. Schuller",
+      "date": "2026-03-12",
+      "pdf": "https://arxiv.org/pdf/2603.11715v2",
+      "score": "7.0",
+      "evidence": "通过面部和颈部表面肌电图及声学语音进行情感解码",
+      "tldr": "本研究探讨了如何通过面部和颈部表面肌电图（sEMG）在有声和无声语音生成过程中解码情感。研究团队构建了一个包含12名受试者、2780条话语的数据集，并利用多种特征和模型嵌入评估了受试者内及受试者间的情感识别性能。结果表明，sEMG能有效识别挫败感等情感，且在无声语音中依然保持鲁棒性，为开发具备情感感知能力的无声语音交互界面提供了重要依据。",
+      "tags": "query:msa",
+      "abstract_en": "The expression of affect is integral to spoken communication, yet, its link to underlying articulatory execution remains unclear. Measures of articulatory muscle activity such as EMG could reveal how speech production is modulated by emotion alongside acoustic speech analyses. We investigate affect decoding from facial and neck surface electromyography (sEMG) during phonated and silent speech production. For this purpose, we introduce a dataset comprising 2,780 utterances from 12 participants across 3 tasks, on which we evaluate both intra- and inter-subject decoding using a range of features and model embeddings. Our results reveal that EMG representations reliably discriminate frustration with up to 0.845 AUC, and generalize well across articulation modes. Our ablation study further demonstrates that affective signatures are embedded in facial motor activity and persist in the absence of phonation, highlighting the potential of EMG sensing for affect-aware silent speech interfaces.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/20/2603.12625v1-vlm4rec-multimodal-semantic-representation-for-recommendation-with-large-vision-language-models",
+      "section": "quick",
+      "title_en": "VLM4Rec: Multimodal Semantic Representation for Recommendation with Large Vision-Language Models",
+      "authors": "Ty Valencia, Burak Barlas, Varun Singhal, Ruchir Bhatia, Wei Yang",
+      "date": "2026-03-13",
+      "pdf": "https://arxiv.org/pdf/2603.12625v1",
+      "score": "6.0",
+      "evidence": "利用视觉语言模型进行推荐的多模态语义表示",
+      "tldr": "针对多模态推荐中原始视觉特征与用户高层语义偏好不匹配的问题，本文提出VLM4Rec框架。该框架不再依赖复杂的特征融合，而是利用大视觉语言模型（LVLM）将商品图像转化为显式的文本描述，并将其编码为稠密语义表示。通过简单的画像语义匹配机制，VLM4Rec在多个数据集上显著提升了推荐性能，证明了语义对齐在多模态表示中的关键作用。",
+      "tags": "query:msa",
+      "abstract_en": "Multimodal recommendation is commonly framed as a feature fusion problem, where textual and visual signals are combined to better model user preference. However, the effectiveness of multimodal recommendation may depend not only on how modalities are fused, but also on whether item content is represented in a semantic space aligned with preference matching. This issue is particularly important because raw visual features often preserve appearance similarity, while user decisions are typically driven by higher-level semantic factors such as style, material, and usage context. Motivated by this observation, we propose LVLM-grounded Multimodal Semantic Representation for Recommendation (VLM4Rec), a lightweight framework that organizes multimodal item content through semantic alignment rather than direct feature fusion. VLM4Rec first uses a large vision-language model to ground each item image into an explicit natural-language description, and then encodes the grounded semantics into dense item representations for preference-oriented retrieval. Recommendation is subsequently performed through a simple profile-based semantic matching mechanism over historical item embeddings, yielding a practical offline-online decomposition. Extensive experiments on multiple multimodal recommendation datasets show that VLM4Rec consistently improves performance over raw visual features and several fusion-based alternatives, suggesting that representation quality may matter more than fusion complexity in this setting. The code is released at https://github.com/tyvalencia/enhancing-mm-rec-sys.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
