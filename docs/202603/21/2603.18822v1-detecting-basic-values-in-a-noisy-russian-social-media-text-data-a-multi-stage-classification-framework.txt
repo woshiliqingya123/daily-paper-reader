@@ -1,0 +1,1396 @@
+Title: 2603.18822v1.pdf
+
+URL Source: https://arxiv.org/pdf/2603.18822v1
+
+Published Time: Fri, 20 Mar 2026 01:04:28 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+Detecting Basic Values in A Noisy Russian Social Media Text Data: A Multi-Stage Classification Framework 
+
+Maria Milkova 
+
+Independent researcher, Lisbon, Portugal 
+
+m.a.milkova@gmail.com 
+
+Maksim Rudnev 
+
+University of Waterloo, Waterloo, ON, Canada 
+
+Abstract. This study presents a multi-stage classification framework for detecting human values in a noisy Russian-language social media (VKontakte), validated via a random sample of ~7.5 million public text posts. Drawing on Schwartz’s theory of basic human values, we design a multi-stage pipeline that includes spam and nonpersonal content filtering, targeted selection of value- and politically relevant posts, LLM-based annotation, and multi-label classification. Particular attention is given to verifying the quality of LLM annotations and model predictions against human experts. We treat human expert annotations not as a ground truth but as an interpretative benchmark with its own uncertainty. To account for annotation subjectivity, we aggregate multiple LLM-generated judgments into soft labels that reflect varying levels of agreement. These labels are then used to train transformer-based models capable of predicting the probability of each of the ten basic values. The best-performing model, XLM-RoBERTa-large, achieves an F1-macro of 0.83 and an F1 of 0.71 on held-out test data. By treating value detection as a multi-perspective interpretive task, where expert labels, GPT annotations, and model predictions represent coherent but not identical readings of the same texts, we show that the model generally aligns with human judgments but systematically overestimates the Openness to Change value domain. Empirically, the study reveals distinct patterns of value expression and their co-occurrence in Russian social networks, contributing to broader research agenda on cultural variation, communicative framing, and value-based interpretation in digital environments. All models are released publicly. 
+
+# 1 Introduction 
+
+Understanding how abstract social constructs, such as values, beliefs, or ideological orientations, are expressed in text is a central topic in computational social science. Recent work highlights both the promise and the methodological challenges of applying automated text analysis and large language models (LLMs) for studying such elusive phenomena [23, 44, 4, 43, 7]. As digital platforms become increasingly central to sharing and consuming value-based content, the importance of research into value expression in social media becomes a key for understanding individual behavior and societal change. 
+
+While prior research has investigated value-related phenomena in social media, much of it has focused on user-level profiling or predicting survey-based value scores from aggregated online behavior [9, 10]. These studies typically emphasize the inference of latent individual characteristics, treating social media traces as stable indicators of underlying dispositions. However, recent studies have highlighted important limitations of this approach, including conversational norms that constrain value expression and potential biases in mapping personal values to social media output [48, 17]. More recent studies have shifted attention to text-level expressions of values, but often use lexicon-based methods [41, 42, 48, 60, 64] or are limited to curated datasets and constrained formats [56, 34, 59]. Most of these studies rely on English-language platforms, thereby narrowing the cultural scope and empirical linguistic basis of current findings (for exceptions, see e.g., [28, 61-63]). As a result, relatively little is known about how values are expressed and articulated in corpora in contexts characterized by distinct cultural, political, and linguistic conditions. Such contexts often involve different norms of communication, forms of self-presentation, and patterns of value expression shaped by local media ecosystems and political environments. In addition, platform architectures and usage practices may differ substantially from those prevalent in Western environments. 
+
+Analyzing value expression in social media at scale poses several methodological and empirical challenges. First, existing computational pipelines are often developed to deal with curated rather than organic data, limiting their applicability in a different environment. Second, operationalizing abstract categories such as "values" requires conceptual clarity and methodological transparency, particularly when obtaining annotations for training supervised models. Third, cultural and linguistic variation affects not only vocabulary and syntax but also value salience, framing, and patterns of expression. Addressing these challenges calls for approaches that integrate annotation pipelines with domain-adapted modeling, while being sensitive to the social and cultural context of communication. 
+
+This study responds to these challenges by developing and evaluating a multi-stage classification pipeline for value detection in a specific non-English social media. Drawing on Schwartz theory of basic human values [56], we combine GPT-assisted annotation strategy with multi-label value classification. Our pipeline also includes spam and nonpersonal content filtering, targeted selection of value- and politically-relevant posts, validation of GPT-assisted annotation by expert coders, and fine-tuning of transformer-based classifiers using soft-labeled data. We apply this framework to a large dataset from Russia’s largest social network, VKontakte (VK), to examine the prevalence and co-occurrence of values in a culturally specific online environment. We argue that our framework, grounded in organically generated social media data and sensitive to the abstract and culturally embedded nature of value expression, opens new avenues for the sociological study of values in digital contexts. 
+
+The paper proceeds as follows. Section 2 reviews related work on value detection and computational annotation of subjective categories. Section 3 presents the data, annotation pipeline, and modeling approach. Section 4 reports the results, including annotation quality and consistency, model performance, and value distribution patterns. Section 5 discusses the findings and limitations in light of methodological implications. Section 6 includes conclusions and directions for future research. 
+
+# 2 Related work 
+
+A growing number of studies frame value detection as a supervised classification task, and more recently started to incorporate transformer-based models to improve classification performance. Transformer architectures, such as BERT [14], RoBERTa [36], DeBERTa [25], and XML-RoBERTa [11] have demonstrated their ability to capture contextual nuances and implicit semantic relationships in textual data, significantly improving model performance over traditional methods such as lexicon-based approaches or standard machine learning techniques [27, 8, 3, 65]. 
+
+Transformer-based models have expanded the analytical scope of value-centered research. Their ability to handle multi-label settings has enabled researchers to capture the co-occurrence of multiple values [29]. Pretrained multilingual models facilitate cross-linguistic transfer without the need for language-specific resources [11]. In political discourse research, transformer models have also been applied to interpret ideological framing and latent value orientations, demonstrating their utility in context-sensitive textual analysis [65]. These advances have opened new opportunities for integrating value analysis into large-scale, cross-linguistic studies of social and political communication. 
+
+Our study builds on recent advances in large-scale value detection initiated by the ValueEval (SemEval-2023) [56] and Touché (CLEF-2024) [34] shared tasks. These initiatives have established the first large expert-annotated corpora (around 70,000 sentence-level annotations) and demonstrated the effectiveness of transformer-based architectures for identifying human values in multilingual argumentative texts. The shared tasks have also defined the state of the art in this domain, showing that transformer-based encoders such as RoBERTa, XLM-RoBERTa, and DeBERTa achieve the highest performance on value detection benchmarks. In particular, top-performing systems (e.g., [34]) employed transformer-based architectures for multi-label value detection, an approach also applied in the present study for social media data. Following this line of research, we adapt the general methodological principles of large-scale, transformer-based value detection to a different empirical context - noisy, user-generated social media posts. This allows us to explore how human values are expressed in naturally occurring, less curated communication environments. 
+
+At the same time, several methodological challenges remain in applying value detection techniques. First, the annotation of training data raises issues regarding both the recruitment and training of annotators and the design of annotation protocols, particularly for culturally embedded categories like values. Second, the abstractness of value expression complicates consistent labeling: unlike more concrete textual features, values are often implicit, metaphorical, and expressed through culturally and locally adjusted ways, which makes their interpretation highly sensitive to annotators’ personal background. Third, social media data are typically sparse with respect to value-related content. Only a small fraction of posts contain value expressions, and many specific values occur rarely, resulting in class imbalance and limited training signal for underrepresented categories. 
+
+To create training data for supervised models many studies rely on manual annotation, via experts or crowdworkers. This choice is often motivated by the need for domain-specific conceptual accuracy, interpretability, and cultural sensitivity, especially when dealing with abstract categories such as values, ideology, or political stance [26, 5, 40, 60, 35]. However, the development of LLMs has led to increasing interest in their use as annotators, with several studies reporting that LLM-generated annotations can match or exceed crowdworker performance in terms of accuracy and consistency [66, 22, 1, 24, 16]. This has led to a growing interest in evaluating the internal value representations of LLMs, assessing their ability to produce consistent and meaningful value-laden responses [18, 44, 68]. Although LLMs have shown promising results in terms of indicating values, their use for annotation still raises concerns about reliability, given the opacity of their underlying algorithms and the sensitivity of outputs to prompt wording, model version, and the semantic ambiguity of subjective categories [49,50]. As a result, their application in value-related tasks requires careful validation in each specific context. 
+
+Another key consideration in value detection is the choice of theoretical framework and textual environment in which values are extracted. A major development has been the adoption of Schwartz’s theory of basic human values [56, 57], which provides a psychologically grounded and cross-culturally validated typology of ten basic value categories. This framework has been widely used in recent computational social studies, including benchmark datasets [40] and shared tasks, such as ValueEval at SemEval-2023 [29, 54] and Touché at CLEF-2024 [34]. Alternative classification schemes (e.g., the communicative value clusters proposed by [58]), offer more specialized or media-specific value typologies. While potentially insightful in capturing platform-specific vernaculars, their grounding in specific topics or audiences renders them less applicable for large-scale annotation. 
+
+The textual context in which values are modeled also significantly affects both scalability and generalizability. For instance, models trained on datasets designed specifically for argumentation mining in socially relevant contexts (e.g., [40]) may achieve high predictive performance when applied to similarly structured texts [54]. However, such models often fail to distinguish between value-expressive and value-neutral discourse, which is a crucial limitation when aiming to map value expression in sparse, real-world data. Furthermore, diversity of linguistic and cultural contexts remains underexplored in value-extraction research. Most existing studies focus on English-language corpora and global platforms such as Facebook, Reddit, or Twitter, with relatively little attention to other languages and local platforms. 
+
+Taken together, existing work leaves several challenges for value detection in social media: integrating scalable annotation with interpretability, accounting for cultural and linguistic variation, and moving beyond curated corpora toward organically generated, heterogeneous discourse. In this study, we aim to address these challenges by developing and validating a scalable annotation and classification pipeline grounded in Schwartz’s value theory and applied to Russian-language social media data. 
+
+# 3. Data and Methods 
+
+3.1 Data Collection 
+
+The data for this study was collected from the VKontakte (VK) social network, the most widely used platform among Russian-speaking audiences. One million random user IDs were generated to ensure unbiased sampling. Due to limitations of the VK API, data were collected in several batches between August 2022 and January 2025 1. Consequently, the dataset represents the state of publicly accessible Russian social media after the beginning of Russia’s full-scale invasion of Ukraine and during a period of increasing censorship and self-censorship. From one million random IDs, 155,629 (15.6%) corresponded to users with public profiles and visible text posts 2.All posts from these timelines were collected, including original textual content, reposts, and link titles. Posts were gathered spanning the entire available timeline, ranging from the oldest posts available for each user. The collected data covered the period from when VK went online in 2007 up to January 2025 and consisted of 7,498,657 posts. Only texts including Cyrillic characters and consisting of at least two words were included in the analysis. This filtering yielded 122,668 users with at least one qualifying post, resulting in a corpus of 5,561,547 posts suitable for analysis. 
+
+Metadata such as the number of likes, reposts, and comments was collected, along with available user-level information (e.g., age, city, education). To ensure privacy and data security, user IDs were hashed prior to analysis, preventing the identification of individual users. All collected data was anonymized, and only publicly available posts were used in accordance with the platform’s terms of service. As part of the anonymization process, personal information such as usernames, mentions of other users, phone numbers, and bank card numbers was removed from the data. 
+
+Because the data were obtained exclusively from publicly available, non-interactive online 
+
+sources and did not involve intervention or identifiable human subjects, this project did not meet 
+
+the criteria for ethical committee review under international research policies (e.g., [2, 20). All 
+
+data analyzed in this study were obtained from a publicly accessible Russian social media 
+
+platform (open accounts only). No private or password-protected content was used, and all user 
+
+identifiers were anonymized prior to analysis. Names and other identifying information was 
+
+never downloaded or used. Given the ongoing criminal cases based on social media posts we 
+
+preserved user anonymity and did not make the source dataset publicly available. 
+
+3.2 Overview of the study 
+
+In this study we developed a model capable of predicting the probability of expression for each of the values in social media posts. Recognizing that the performance of classification algorithms is closely tied to the quality and reliability of the underlying data, we employed a multi-stage approach that integrated extensive preprocessing, systematic annotation, accompanied with validation procedures. Fig. 1 shows the general flow of the data preparation, annotation and classification. 
+
+The study was conducted in four major stages. In the first stage, we developed rules and automated routines to detect spam and low-quality content. In the second stage, we developed a binary classification model to identify posts expressing any type of value. To construct a reliable training and test set for this task, both a large language model (ChatGPT-3.5) and human  
+
+> 1Data were retrieved in seven batches of randomly sampled user IDs. For each batch, all publicly
+> available posts from every selected user were collected, and previously sampled IDs were re-queried
+> during later batches to update posts for accounts that remained public.
+> 2The remaining IDs included private profiles, deleted or otherwise inaccessible accounts, and profiles
+> with no textual content.
+
+annotators – including crowd workers and experts – provided their indications. Annotation quality was assessed through measures of agreement and accuracy. The resulting dataset was used to train a compact BERT-based model. Following expert review of the classification outputs, posts referencing political events were deemed useful for value analysis due to their potential relevance to value expression. Accordingly, a third stage focused on developing a separate classifier to detect politically oriented posts. 
+
+In the fourth stage, all posts classified as either value-expressive and/or politically oriented were subjected to a multi-label classification to distinguish between specific value types. For this task, new training and test datasets were annotated using ChatGPT-4 and subsequently compared to the experts’ annotations. We experimented with different multi-label classification BERT-based models, and the best-performing model was used to calculate the probability of expression of each value in the whole dataset. The analysis was primarily carried out in Python 3, with additional steps in R.  
+
+> Fig. 1. Overview of the study
+
+3.3 Preparatory steps 
+
+Data preprocessing. The VKontakte data was noisy, containing a significant number of spam posts, such as advertisements and auto-generated messages from VKontakte applications. While spam and commercials might influence perceivers and shape the "value climate", they are often viewed with skepticism as long as social media users recognize that these posts are not genuine personal content. Following this logic, we also filtered out posts written on behalf of companies or organizations, including political. Manually filtering all these data would be time-intensive, so an iterative multi-step approach was utilized. 
+
+First, we constructed a rule-based filter using high-frequency lexical patterns and duplicated text fragments characteristic of spam. Posts flagged at this stage formed a preliminary dataset, which was then used to train a weakly supervised classifier to identify additional spam posts not captured by the initial rules. This approach allowed for scalable filtering while preserving flexibility in adapting to new spam patterns. A detailed description of Spam Filtering is available in the Github repository. 
+
+Detecting value-expressive text posts. Determination of whether a post is value-expressive or not is a necessary first step before the post can get its value profile [39]. Value-expressive posts were detected in three steps: first, we annotated a smaller subset of data; second, we trained a model based on this data which is capable of predicting value-expressiveness; finally, we used this trained model to detect value-expressive posts in the full dataset. 
+
+To ensure the quality of annotation, we compared labeling outcomes from three sources: ChatGPT (gpt-3.5-turbo), crowd-workers, and expert coders. Prior to annotation, we developed three annotation guides based on Schwartz's definition of basic human values [56]. Each post was annotated three times by ChatGPT and crowd-workers, and validated on a test dataset that was additionally labelled by three experts. Intercoder consistency, measured using Fleiss’ Kappa, was 0.44 among crowd-workers, 0.53 among experts, and 0.95 across ChatGPT annotations. Since the reliability of the majority label is often higher than any individual label [65], we used the majority labels for comparing different labeling strategies. At this stage, the majority label corresponded to at least 2 out of 3 independent annotations for all three annotator groups (experts, ChatGPT runs, and crowd-workers), and all subsequent comparisons and evaluation metrics were computed relative to these majority labels. 
+
+Annotation quality was assessed using precision, recall, and F1-score for the positive class, which better capture performance under class imbalance than accuracy. For crowd-workers, these metrics were 0.64, 0.65, and 0.65; for ChatGPT, they were 0.56, 0.76, and 0.65, indicating comparable alignment with expert judgments. However, our analysis identified biases in both sources of annotation. Crowd-workers tended to under-estimate value-expressive content in posts related to political issues, parental pride, and enjoyment of life, producing a substantial share of false negatives. ChatGPT often over-estimated value expression, frequently misclassifying promotional and boilerplate inspirational content as value-expressive. Given these error patterns, final labels for the training data were produced using a combination rule: ChatGPT labels were taken as the baseline and were overridden only when crowd-workers reached unanimous agreement that the post did not express values. This combination rule yielded a more accurate and stable annotation set than relying solely on raw ChatGPT or crowd-worker labels. 
+
+The resulting annotated subset of 5,035 posts (of which 34.4% were labeled as value-expressive) was used to train several classification models. The best results were obtained with a support vector machine (SVM) classifier using fine-tuned embeddings derived from the RuBERT-tiny model. The classification aimed to minimize false negatives to ensure valuable posts were not erroneously excluded from subsequent analysis. The model achieved an F1 score of 0.77 for value-expressive posts and an F1-macro score of 0.83 on the test data, providing a reliable foundation for subsequent multi-label classification tasks. 
+
+A detailed discussion of the annotation protocol for this stage of the study, as well as a comparative analysis of ChatGPT-, crowd-, and expert-based labeling, is available in a previously published preprint [39]. 
+
+Detecting politically oriented posts. To identify posts containing political content, we first randomly selected a dataset of 84,025 posts and compiled a list of politically relevant keywords. This list included names of political leaders, countries, regions, political organizations, and a range of terms related to military topics, including informal and slang words. Based on the presence of these keywords, we pre-selected a subset of 4,891 posts likely to refer to political issues. This keyword-filtered subset was then reviewed manually to correct for false positives and to recover political posts that the keyword filter might have missed. As a result of this manual verification, 1,808 posts were confirmed as political, corresponding to 2.1% of the full dataset, while the remaining 82,217 posts were labeled as non-political. To capture more latent and nuanced political discourse, we then trained a weakly supervised classifier on this dataset. The classifier used DistilRuBERT [30] sentence embeddings and a linear SVM, achieving an F1 score of 0.82 and an F1-macro score of 0.91 on the test data. 
+
+After the data preprocessing and filtering described above, the final dataset of value- and politically-expressive posts consisted of 1,105,085 posts belonging to 53,606 users. Note that this figure represents 30.8% of the posts without spam (~3,5mln), or 19.9% of initially selected Cyrillic text posts (~5.5mln, for summary statistics on data volume at preprocessing and classification stages see Table 11 in Appendix). 
+
+3.4 Main analysis – Detecting value types 
+
+Building on the binary classification of value-expressive or politically oriented posts, the next stage focused on detecting specific value types in value-expressive posts. For this purpose, we conducted multi-label classification, which accounts for the possibility that a single post may simultaneously express multiple values, and allows us to take into account the dependencies between values. 
+
+Values were classified into ten types according to Schwartz’s theory of values [56]. In line with this theory, the content of human values is organized in a continuum best represented as a circle with an arbitrary number of reference points which we refer to as value types. Ten value types are: Universalism, Benevolence (parts of the higher-order value of Self-Transcendence), Power and Achievement (parts of Self-Enhancement), Self-Direction, Stimulation, and Hedonism (Openness to Change), as well as Security, Conformity, and Tradition (Conservation values). Value types are systematically related to each other corresponding to their position in the circle, for example Tradition values are expected to have stronger and more positive association with Conformity values and weaker/more negative association with Self-Direction. We opted to use 10 rather than another number of value types because it is the most widely used version of the value continuum split. Unlike the original Schwartz theory and majority of the existing value studies, we did not attempt to detect values of social media users, but instead focused on the value content of the posts themselves. 
+
+For the classification across ten values, a new training dataset consisting of 20,000 value/political expressive posts was created. Each post was evaluated for the presence of all ten basic human values according to Schwartz’s theory. For each value category, the post was annotated five times using ChatGPT-4, with temperature of 0.1, random sampling seeds, and randomized batch order (i.e. varying the grouping and order of posts processed together). This setup ensured that (a) the low temperature minimized arbitrary lexical variation, yielding near-deterministic outputs when value signals were clear, and (b) the randomized seeds and batch reshuffling allowed genuine semantic ambiguity to manifest as variation across runs. This annotation strategy was designed to capture subjective signals while enabling label reliability. Expert reviewers subsequently annotated a subset of these posts. 
+
+First, three human experts provided annotations in a value-specific manner answering a binary question “Do these posts express the value of X?”. For each of the ten values, experts annotated a separate set of 200 posts, resulting in a total of 2000 annotated examples. Thus, rather than evaluating a single post across multiple value categories, the experts evaluated multiple posts with respect to a single value category at a time. This task design was intended to reduce cognitive load and ensure more focused judgments per value dimension. 
+
+Second, three new experts annotated a separate sample of 1,000 posts, allowing multiple values to be assigned to the same post. This complementary dataset enabled a more fine-grained evaluation of GPT and subsequent model predictions under a multi-label framework. 
+
+In line with recent work on subjective annotation, we did not treat expert labels as a ground truth, but rather as a benchmark with its own uncertainty. In inherently interpretive tasks annotators may systematically disagree with one another, often reflecting their individual biases and values [12, 53]. Moreover, scaling such annotations to large corpora is impractical. To address this, we used GPT-based annotation as an efficient proxy. Recognizing the subjective nature of value expression, we use the majority of expert labels as a point of comparison and analyze the discrepancies between expert and GPT annotations, treating them not only as possible biases, but also as competing reasonable interpretations. We evaluated the internal consistency of GPT judgments and their alignment with expert consensus. To evaluate annotation agreement, we used Fleiss’ Kappa, a statistical measure of inter-rater reliability for categorical data involving more than two raters [19]. This metric was applied both to assess inter-annotator agreement among the three human experts and to evaluate the consistency among five independent GPT-based annotations per post. Following common conventions in computational social science, we interpret Fleiss’ Kappa values above 0.60 as indicating substantial agreement [32]. To measure consistency of continuous measures, we employed an intra-class correlation coefficient (ICC), more specifically, a random-effects one-way model of consistency ICC(1,2). ICC less than 0.5 were considered poor consistency, .50 to .75 and >.75 as moderate and good, respectively [31]. 
+
+Importantly, we did not rely on GPT labels in a rigid binary form. Instead, we aggregated the five GPT judgments per value into soft labels, based on observed accuracy differences across levels of GPT agreement. Specifically, a label of 1.0 (strong agreement) was assigned when four or five annotations indicated the presence of a value; a label of 0.6 (moderate agreement) was assigned in cases of partial agreement (three positive annotations); and a label of 0.0 (no agreement) was assigned when two or fewer annotations marked the value as present 3.
+
+These soft labels were then used by a range of transformer-based models capable of predicting 
+
+the probability of expression for each of the ten basic values. By preserving the uncertainty 
+
+inherent in the annotation process, the model can learn to associate certain linguistic patterns 
+
+with stronger or weaker indications of a given value. In deployment, the model outputs predicted 
+
+scores per value, which naturally mirror this uncertainty: a value expressed clearly receives a 
+
+high predicted score, whereas an ambiguous case receives a lower one. 
+
+Thus, even in cases where GPT annotations disagree, its output still contributes valuable 
+
+information for training, provided that such disagreement is explicitly modeled. This approach 
+
+bridges the gap between large-scale annotation feasibility and conceptual fidelity to the nuanced 
+
+nature of value expression in social data. 
+
+To assess the model’s predictive performance, we evaluated it on a held-out test dataset of 4,000 
+
+posts, each annotated five times using ChatGPT-4 under the same multi-label protocol as the 
+
+training data. We report F1 and macro-averaged F1 (F1-macro) scores, which are standard 
+
+metrics for multi-label classification that account for both precision and recall, and are 
+
+particularly appropriate in imbalanced settings [67]. We consider F1 scores above 0.70 to 
+
+indicate strong predictive performance, while values between 0.50 and 0.70 suggest moderate 
+
+reliability. 
+
+To assess the model’s alignment with human judgments, we used the multi-label expert 
+
+annotations described above. These posts were not used during model training. Spearman 
+
+correlations between the model’s predicted probabilities and expert agreement scores provided 
+
+a complementary assessment of whether the model captures strength of value-related signals. 
+
+We considered correlations above 0.60 to reflect strong association, between 0.40 and 0.60 as 
+
+moderate association, and lower than 0.4 as weak [15]. 
+
+In addition, we used theory-informed measures of value agreement and consistency. In line with Schwartz theory, values are intercorrelated, so independent assessment of each value in isolation may underestimate the consistency of annotations. For example, when one annotation indicates Tradition and another annotation detects Conformity, it would be marked as inconsistency, whereas Tradition and Conformity are closely related and such misclassification is only a minor deviation from perfect consistency. Value distances are derived from the perfect representation of Schwartz circle with .5 radius and equally split 10 segments. Value coordinates are calculated by projecting an entire value profile of a post on the value circle by weighting it with the perfect circle’s coordinates. Each post received x and y coordinates indicating its location in the value  
+
+> 3We also experimented with the average value of value expression, but found that “blurring” the expression causes the predicted probabilities to compress toward the center, reducing the contrast between clearly and weakly expressed values.
+
+circle. The distance between different annotations of the same post was calculated as a Euclidean distance of the average location in the value circle. The distance varied from 0 (to itself) to 1 (the most incompatible, e.g., between Conformity and Self-Direction), with the closest value of distance of .31 (e.g., between Conformity and Tradition). In order to test the internal structure of the output labels, we applied multidimensional scaling (MDS) – a conventional method in the field of value research (e.g., [55, 6]). MDS allows for the comparison of the data-based structure of values with the theoretically postulated and globally supported Schwartz’s dynamic structure of values. The raw coordinates were rotated toward the target of the perfect circle using Procrustes rotation, and the congruence coefficient r c was calculated, where r c > .9 indicates excellent match. We used R packages smacof [33], psych [51], and irr [21]. 
+
+# 4. Results 
+
+First, we report results of our annotation strategy, next, the selection and performance of a multi-label classification into value types, and finally, describe the distributions of the value types detected with the trained model using the full dataset. 
+
+4.1 Annotation Validation 
+
+To evaluate annotation results we conducted two complementary stages, each addressing a 
+
+different question. The first stage assessed the internal reliability of GPT-based labels and was 
+
+used to derive the soft-labeling scheme later applied in model training. This stage relied on a 
+
+value-specific annotation protocol, where experts evaluated each value independently. 
+
+The second stage examined how well GPT annotations align with expert judgments when experts 
+
+could assign multiple values simultaneously. This assessment was performed on a separate multi-
+
+label expert dataset, enabling a more realistic comparison of full value profiles. 
+
+4.1.1. GPT versus expert value-specific annotations 
+
+We evaluated interrater agreement within humans, within GPT-based annotations, as well as precision, recall, and F1 of the latter’s replication of the human expert judgments, for each of the ten value categories. Table 1 reports interrater agreement within human expert and GPT-based annotations. Among GPT annotations Fleiss’ kappa ranged from 0.502 (for Conformity) to 0.757 (for Power), with a mean of 0.649. Expert interrater agreement varied between 0.093 (for Conformity) and 0.534 (for Hedonism), with a mean of 0.301, reflecting the inherent subjectivity of the social media posts interpretations. 
+
+Average value distances within GPT annotations were .31 (SD = .16) which is equal to the distance between two closest values (e.g., Tradition and Conformity), and indicates high agreement. 
+
+Next, we examined agreement between human and GPT annotations. To explore the soft labels thresholds, we examined agreement between the majority human and three versions of GPT annotations based on their internal consistency: unanimous (5 out of 5 labels, N=371), almost unanimous (at least 4 out of 5, N=561), and majority (at least 3 out of 5 labels, N=735) agreement. Table 2 shows that a majority vote (at least 3 out of 5 labels) achieved high recall (0.89) but low precision (0.44), resulting in moderate F1 (0.57). Almost-unanimous agreement (4 out of 5 labels) improved precision to 0.53 on average while maintaining relatively high recall (0.80), and therefore achieved the highest F1 on average (0.62). A unanimous vote (5 out of 5) showed the highest precision (0.58) but substantially reduced recall (0.59), which led to lower F1 (0.55) than the almost-unanimous vote. This pattern reflects the expected trade-off between conservativeness and coverage. Because the almost-unanimous vote provided the best balance between precision and recall, we treated it as the strongest indicator of consistent value expression. The fully unanimous labels, although more conservative, remained highly reliable and were grouped with the almost-unanimous labels in the soft annotation scheme. Accordingly, both 4/5 and 5/5 agreement levels were encoded as a soft label of 1.0. Majority-vote labels which capture weaker but still systematic signals were encoded as 0.6. Across all values, GPT tended to produce higher recall and lower precision. This means that when experts label a post as not expressing a given value, their decision may have reflected a preference for a different but related value, rather than an assessment that the post carried no value signal or expressed an opposite value. In such cases, GPT’s false positives could have indicated shifts within semantically neighboring values rather than bland misclassification. Because this distinction cannot be resolved within the original annotation setup, where experts assessed each value in isolation, we conducted an additional multi-label expert validation round, in which annotators were allowed to assign multiple values to the same post (see next section).                                                                                                                                        
+
+> Table 1. Interrater agreement (Fleiss’ Kappa) for GPT and Experts annotations across value categories, N (posts) = 200 per value type
+> Value GPT, N = 5
+> Experts,
+> N = 3
+> Self-direction 0.569 0.468
+> Stimulation 0.600 0.215
+> Hedonism 0.658 0.534
+> Achievement 0.700 0.352
+> Power 0.757 0.231
+> Security 0.604 0.342
+> Conformity 0.502 0.093
+> Tradition 0.735 0.373
+> Benevolence 0.719 0.234
+> Universalism 0.649 0.163
+> Mean 0.649 0.301
+> Table 2. Precision, Recall, F1 for the positive class at three levels of GPT consistency across value categories (reference experts majority), N (posts) = 200 per value type
+> Value Majority Match Almost-Unanimous Match Unanimous Match
+> PRF1 PRF1 PRF1
+> Self-direction 0.287 1.000 0.446 0.374 0.976 0.541 0.456 0.878 0.600
+> Stimulation 0.271 0.920 0.418 0.362 0.840 0.506 0.410 0.640 0.500
+> Hedonism 0.500 0.821 0.622 0.581 0.643 0.610 0.625 0.357 0.455
+> Achievement 0.565 0.897 0.693 0.681 0.821 0.744 0.719 0.59 0.648
+> Power 0.345 0.800 0.482 0.378 0.68 0.486 0.412 0.56 0.475
+> Security 0.552 0.889 0.681 0.622 0.778 0.691 0.769 0.556 0.645
+> Conformity 0.471 0.727 0.571 0.650 0.591 0.619 0.500 0.227 0.312
+> Tradition 0.667 0.850 0.747 0.810 0.850 0.829 0.857 0.600 0.706
+> Benevolence 0.592 0.961 0.733 0.628 0.922 0.747 0.792 0.740 0.765
+> Universalism 0.192 1.000 0.322 0.245 0.929 0.388 0.286 0.714 0.408
+> Mean 0.443 0.887 0.571 0.533 0.803 0.617 0.583 0.587 0.552
+
+To further investigate the relationship between the consistency of GPT-based annotations and human expert agreement, we grouped the data by the number of experts who labeled a given post as expressing a particular value (i.e., expert agreement level ranging from 0 to 3). For each group, we computed the average number of GPT annotations equal to 1 (indicating the strength of GPT agreement). Fig. 2 illustrates a positive association between expert agreement and internal GPT agreement (average number of GPT annotations voting 1). When all three experts identified a value as present, GPT was also highly consistent. In contrast, when only one expert labeled the value, GPT annotations were also more dispersed, indicating reduced internal certainty. We additionally measured the overall agreement between GPT and expert annotations by computing ICC between the average expert score (across three annotators) and the average GPT score (mean across five binary outputs). The overall ICC was moderate (.67), ranging from .58 for Stimulation to .86 for Tradition, with two outliers, Self-Direction (.23) and Universalism (.40). This supports the hypothesis that GPT’s annotations are, overall, not arbitrary, but rather reflect patterns similar to those found in human judgment. As such, this supports the use of GPT annotations as a scalable alternative to expert value annotation.  
+
+> Fig. 2. GPT vs Expert Agreement
+
+4.1.2. Multi-label annotations 
+
+Under the multi-label annotation protocol, experts showed higher interrater agreement than in 
+
+the first-stage single-value tasks. The overall consistency was moderate (Fleiss’ kappa was 0.60, 
+
+ranging from 0.27 for Conformity to 0.75 for Benevolence, see Table 3), reinforcing our 
+
+interpretation of expert labels as a benchmark rather than a ground truth. 
+
+The general F1 score for the positive class of the majority-GPT label relative to the majority-
+
+expert label was 0.53. Agreement varied systematically across values. Across values GPT 
+
+aligned well with experts on Benevolence (F1 = 0.75) and Achievement (F1 = 0.65). Lower 
+
+agreement occurred for values such as Conformity (F1 = 0.37) and Stimulation (F1 = 0.38), 
+
+which correspondingly showed low expert kappa (0.27 and 0.38). This pattern indicates that 
+
+GPT-expert discrepancies tend to arise in the same areas where experts themselves disagree 
+
+(Table 3).                       
+
+> Table 3. Value-level experts consistency and agreement between majority-expert labels and majority-
+> GPT annotations
+> Value Fleiss’
+> kappa
+> experts
+> F1-score
+> Self-direction 0.437 0.425
+> Stimulation 0.382 0.382
+> Hedonism 0.601 0.344
+> Achievement 0.537 0.651
+> Power 0.391 0.340
+> Security 0.479 0.479
+> Conformity 0.265 0.366
+> Tradition 0.616 0.427
+> Benevolence 0.753 0.754
+> Universalism 0.462 0.418
+
+Aggregating the ten basic values into the four higher-order value domains substantially increased expert interrater agreement. The overall Fleiss’ kappa increased to 0.61, ranging from 0.50 to 0.68 across domains (Table 4). GPT’s agreement with experts also improved, with F1 increasing to 0.64 and ranging across value domains from 0.52 for Conservation to 0.75 for Self Transcendence. These improvements indicate that a significant proportion of the disagreements observed at the value level reflect alternative allocations within the same value domain, rather than fundamentally different interpretations. Notably, Conservation had simultaneously lower GPT-expert F1 and lower expert consistency, whereas domains with higher consistency (Self-Transcendence) demonstrated higher GPT-expert agreement. 
+
+Average value distance between GPT and expert annotations was 0.40 (SD = 0.29) which is slightly higher than the distance between the closest values. At the same time, about 20% of posts had strong discrepancy with the distance greater than .60. Interestingly, the GPT-expert discrepancy was closely related to the post length ( β = 0.44, p < .001).           
+
+> Table 4. Domain-level expert consistency and agreement between majority-expert labels and majority-GPT annotations
+> Value Fleiss’ kappa experts
+> F1-score
+> Openness to Change 0.538 0.601
+> Self Enhancement 0.523 0.618
+> Conservation 0.499 0.522
+> Self Transcendence 0.684 0.747
+
+Analysis of critical discrepancies 
+
+To examine GPT-expert discrepancies, defined as cases in which GPT assigned values from domains that mismatched the domains selected by the majority of experts. Cases in which GPT and experts aligned on at least one additional domain were not treated as discrepancy. As shown in Table 5, across all domains identified by the experts, GPT exhibited a noticeable tendency to assign Openness to Change – even among posts labeled by experts as Conservation, GPT classified 9.9% of cases as Openness to Change. Critical discrepancies in all other directions were comparatively rare.                      
+
+> Table 5. Critical domain-level discrepancies between experts and GPT
+> Domain identified by majority of experts (N)
+> Predicted by GPT N (%)
+> Openness to Change (335)
+> Conservation 6 (1.8%)
+> Self Enhancement 3 (0.9%)
+> Self Transcendence 5(1.5%)
+> Conservation (314) Openness to Change 31 (9.9%)
+> Self Transcendence 15 (4.8%)
+> Self Enhancement 13 (4.1%)
+> Self Enhancement (145) Self Transcendence 3 (2.1%)
+> Openness to Change 12 (8.3%)
+> Conservation 0 (0.0%) Self Transcendence (592) Self Enhancement 11 (1.9%)
+> Conservation 12 (2.0%)
+> Openness to Change 60 (10%)
+
+Among the posts with mismatched annotations, we identified three recurrent themes in which GPT preferred Openness to Change values over the alternatives: First, posts that explicitly referred to health (“ I really, really, really want to be healthy ,” “ I follow a healthy lifestyle ”) were consistently coded by experts as one of the Conservation values - inherently assuming it is related to the fear of being unwell, while GPT seemed to interpret them as fitness-related activity or self-improvement. Second, posts describing crisis, skepticism, exhaustion, or the effort to endure difficult circumstances (“ I hate it when people lie to me, but I'm so tired of the truth ”, “Let everything take its course, life will show us how to live on, but right now I don't even want to live ”, “ She smiles to keep from crying [...] But in reality, she just wants to not break ”) were read by experts as attempts to preserve security and stability. GPT probably treated expressions of inner struggle as a potential for personal growth. Third, posts expressing care, attachment, empathy, or relational commitment (“ I really want to sit down and just have a heart-to-heart with someone. Talk all night long […] ”, “ I never betrayed anyone. You left. It was your choice ”), were labeled by experts as Self-Transcendence values while GPT seemed to focus on the language associated with personal reflection or change-oriented sentiments. 
+
+4.3 Model Performance 
+
+To model the probabilistic expression of values, we experimented with several transformer-based encoders in a multi-label classification setting. The choice of transformers was motivated by their proven effectiveness in related tasks [34, 58]. We used a GPT-annotated dataset of 20,000 posts for training, with 20% held out as a validation set for evaluating model performance during the training process. These annotations were represented as soft labels, as described above. The distribution of soft labels in the training data is shown in Table 12 in Appendix. All BERT-models were trained on input representations that combined contextual embeddings from a transformer with TF-IDF features. This hybrid approach allowed the models to leverage both semantic and lexical information. 
+
+Initially, all models were trained with frozen encoder weights, fine-tuning only the final classification layer. To further improve performance, we gradually unfroze the top encoder layers, selecting the optimal number of trainable layers based on validation F1 scores. RuBERT-base, RuRoberta-large, DeBERTa-v3-large, and Multilingual e5 performed best with only the last encoder layer unfrozen, XLM-Roberta-large benefited from unfreezing the top two layers, and BERTA - from three layers. RuBERT-tiny2 was trained with full fine-tuning of all layers. Models’ performance was then assessed on a separate test dataset of 4,000 posts using thresholds that were optimized on the validation dataset to maximize F1 score. Table 6 summarizes configurations that achieved the highest validation performance.                
+
+> Table 6. Training configurations for the best-performing transformer-based models
+> Model Encoder type Num. of
+> unfrozen layers
+> Optimise r
+> Learning rate
+> Num. of epochs
+> Threshhold
+> Finetuned rubert-tiny2
+> ai-forever/ruBert-tiny2
+> 4Adam 3e-5 30.35
+> Finetuned ruBert-base
+> ai-forever/ruBert-base
+> 1Adam 1e-4 30.30
+> Finetuned ruRoberta-large
+> ai-forever/ruRoberta-large
+> 1Adam 3e-4 30.33
+
+Finetuned 
+
+multilingual-e5-large 
+
+intfloat/multilingual -e5-large 
+
+1 Adam  3e-4  3 0.34 
+
+Deberta-large  microsoft/deberta-v3-large 
+
+1 Adam  3e-4  2 0.32 
+
+Xlm-roberta-large 
+
+FacebookAI/xlm-roberta-large 
+
+2 Adam  3e-4  3 0.34 
+
+BERTA  sergeyzh/BERTA  3 Adam  3e-4  3 0.36 
+
+4.3.1 Performance Relative to GPT Annotation 
+
+In Table 7 we report F1 and averaged F1-macro scores (both for validation and test dataset). Table 8 reports performance for each value category. Training details, including optimizer parameters, loss functions, thresholds and reproducible scripts, are available in our GitHub repository. 
+
+Table 7. F1, averaged F1-macro scores (validation/ test dataset) 
+
+Table 8. F1, averaged F1-macro scores per categories (validation/ test dataset) 
+
+Self-
+
+direct. 
+
+Stimula 
+
+tion 
+
+Hedoni 
+
+sm 
+
+Achiev.  Power  Securit 
+
+y
+
+Conform.  Traditio 
+
+n
+
+Benevo 
+
+l. 
+
+Univers. 
+
+RuBERT-tiny2 
+
+F1  0.696/ 
+
+0.705 
+
+0.639/ 
+
+0.648 
+
+0.553/ 
+
+0.550 
+
+0.633/ 
+
+0.603 
+
+0.751/ 
+
+0.589 
+
+0.624/ 
+
+0.551 
+
+0.422/ 
+
+0.442 
+
+0.704/ 
+
+0.597 
+
+0.768/ 
+
+0.768 
+
+0.538/ 
+
+0.502 
+
+F1-
+
+macro 
+
+0.751/ 
+
+0.761 
+
+0.769/ 
+
+0.775 
+
+0.747/ 
+
+0.743 
+
+0.789/ 
+
+0.772 
+
+0.857/ 
+
+0.780 
+
+0.788/ 
+
+0.756 
+
+0.675/ 
+
+0.690 
+
+0.835/ 
+
+0.781 
+
+0.839/ 
+
+0.818 
+
+0.737/ 
+
+0.724 
+
+RuBERT-base 
+
+F1  0.735/ 
+
+0.743 
+
+0.677/ 
+
+0.678 
+
+0.579/ 
+
+0.574 
+
+0.677/ 
+
+0.648 
+
+0.779/ 
+
+0.612 
+
+0.679/ 
+
+0.581 
+
+0.517/ 
+
+0.524 
+
+0.673/ 
+
+0.617 
+
+0.789/ 
+
+0.780 
+
+0.589/ 
+
+0.548 
+
+F1-
+
+macro 
+
+0.787/ 
+
+0.796 
+
+0.791/ 
+
+0.792 
+
+0.761/ 
+
+0.757 
+
+0.815/ 
+
+0.799 
+
+0.876/ 
+
+0.795 
+
+0.816/ 
+
+0.771 
+
+0.735/ 
+
+0.740 
+
+0.818/ 
+
+0.791 
+
+0.851/ 
+
+0.825 
+
+0.769/ 
+
+0.751 
+
+RuRobert a-large 
+
+F1  0.742/ 
+
+0.757 
+
+0.695/ 
+
+0.700 
+
+0.591/ 
+
+0.554 
+
+0.701/ 
+
+0.662 
+
+0.817/ 
+
+0.615 
+
+0.662/ 
+
+0.573 
+
+0.484/ 
+
+0.523 
+
+0.708/ 
+
+0.594 
+
+0.794/ 
+
+0.802 
+
+0.582/ 
+
+0.555 
+
+F1-
+
+macro 
+
+0.801/ 
+
+0.814 
+
+0.809/ 
+
+0.811 
+
+0.766/ 
+
+0.741 
+
+0.829/ 
+
+0.807 
+
+0.896/ 
+
+0.796 
+
+0.807/ 
+
+0.767 
+
+0.715/ 
+
+0.739 
+
+0.837/ 
+
+0.779 
+
+0.859/ 
+
+0.849 
+
+0.764/ 
+
+0.755 
+
+F1  0.680/ 
+
+0.684 
+
+0.581/ 
+
+0.594 
+
+0.494/ 
+
+0.442 
+
+0.579/ 
+
+0.530 
+
+0.753/ 
+
+0.492 
+
+0.584/ 
+
+0.412 
+
+0.321/ 
+
+0.346 
+
+0.613/ 
+
+0.465 
+
+0.730/ 
+
+0.766 
+
+0.492/ 
+
+0.447 
+
+F1  F1-macro avg 
+
+Finetuned RuBERT-tiny2  0.66/0.65  0.80/0.79 
+
+Finetuned RuBERT-base  0.69/0.68  0.81/0.81 
+
+Finetuned RuRoberta-large  0.70/0.69  0.82/0.81 
+
+Finetuned Multilingual-e5-large  0.69/0.67  0.81/0.81 
+
+DeBERTa-large  0.61/0.60  0.77/0.76 
+
+XLM-Roberta-large  0.71/0.71  0.83/0.83 
+
+BERTA  0.70/0.69  0.82/0.82 DeBERT     
+
+> a-v3-large
+> F1-
+> macro
+> 0.752/
+> 0.757
+> 0.730/
+> 0.741
+> 0.704/
+> 0.666
+> 0.758/
+> 0.728
+> 0.860/
+> 0.731
+> 0.765/
+> 0.682
+> 0.610/
+> 0.629
+> 0.785/
+> 0.710
+> 0.814/
+> 0.818
+> 0.709/
+> 0.693
+> Multiling
+> ual-e5-
+> large
+> F1 0.740/
+> 0.743
+> 0.682/
+> 0.677
+> 0.583/
+> 0.555
+> 0.695/
+> 0.669
+> 0.790/
+> 0.580
+> 0.652/
+> 0.554
+> 0.457/
+> 0.492
+> 0.671/
+> 0.555
+> 0.790/
+> 0.802
+> 0.545/
+> 0.531
+> F1-
+> macro
+> 0.797/
+> 0.800
+> 0.798/
+> 0.793
+> 0.764/
+> 0.746
+> 0.825/
+> 0.809
+> 0.880/
+> 0.777
+> 0.800/
+> 0.757
+> 0.704/
+> 0.724
+> 0.816/
+> 0.756
+> 0.856/
+> 0.847
+> 0.734/
+> 0.734
+> XLM-
+> Roberta-
+> large
+> F1 0.758/
+> 0.768
+> 0.727/
+> 0.725
+> 0.647/
+> 0.613
+> 0.725/
+> 0.693
+> 0.797/
+> 0.640
+> 0.689/
+> 0.628
+> 0.512/
+> 0.518
+> 0.746/
+> 0.627
+> 0.802/
+> 0.821
+> 0.615/
+> 0.604
+> F1-
+> macro
+> 0.814/
+> 0.823
+> 0.828/
+> 0.827
+> 0.799/
+> 0.779
+> 0.843/
+> 0.825
+> 0.884/
+> 0.809
+> 0.822/
+> 0.797
+> 0.735/
+> 0.740
+> 0.859/
+> 0.798
+> 0.864/
+> 0.862
+> 0.781/
+> 0.782
+> BERTA F1 0.753/
+> 0.768
+> 0.704/
+> 0.710
+> 0.622/
+> 0.581
+> 0.714/
+> 0.673
+> 0.812/
+> 0.640
+> 0.683/
+> 0.542
+> 0.513/
+> 0.512
+> 0.731/
+> 0.619
+> 0.815/
+> 0.819
+> 0.575/
+> 0.599
+> F1-
+> macro
+> 0.807/
+> 0.821
+> 0.808/
+> 0.812
+> 0.781/
+> 0.755
+> 0.838/
+> 0.815
+> 0.892/
+> 0.808
+> 0.820/
+> 0.752
+> 0.734/
+> 0.736
+> 0.849/
+> 0.791
+> 0.873/
+> 0.859
+> 0.753/
+> 0.774
+
+The best-performing model was XLM-Roberta-large, which achieved an F1 score of 0.71 and a macro-averaged F1 of 0.83 on the test dataset. It slightly outperformed all other models, including RuRoberta-large and BERTA, which scored with F1 of 0.69. Although XLM-Roberta was not trained specifically on Russian, its multilingual pretraining appears to have provided robust general representations that transferred well to our classification task. In particular, its performance improved substantially with partial fine-tuning, indicating that the model was able to effectively adapt to the specific linguistic and thematic characteristics of our dataset. We also observed negligible differences between validation and test scores, suggesting stable generalization and no signs of model overfitting. 
+
+As shown in Table 5, the highest F1 scores for XLM-Roberta were observed for Benevolence (0.82 on the test set), Self-direction (0.77), and Stimulation (0.73), while lower performance was noted for Hedonism (0.61), Universalism (0.60), and Conformity (0.52). These differences in F1 across values reflect general patterns observed across all models tested. It likely reflects the explicitness of value expression in language. Moreover, this pattern is consistent with prior research, which shows that some values are better articulated in language and therefore easier to detect, while others tend to be more implicit [12]. 
+
+Finally, we applied a theory-informed measure of agreement between GPT annotations and predictions of XLM-Roberta-large by calculating the location of each post in the value circle in terms of two coordinates. In the test dataset, the agreement between the coordinates of an average GPT annotation and predicted probability of value was good, ICC = .81 and .86 for x and y
+
+respectively. An average value distance between the highest rated value in GPT and XLM-Roberta-large was .25 (SD = .36, median = 0) which is smaller than the distance between the closest two values. 
+
+4.3.2 Comparison with Expert Judgments 
+
+While GPT-based annotations provide the primary supervision signal for model training, it is essential to evaluate how the fine-tuned XLM-RoBERTa model corresponds to human expert judgments. 
+
+Compared to expert majority-labels, the model achieved an overall F1 score of 0.53, which 
+
+equals the level of agreement previously observed between GPT and experts (also 0.53). Across 
+
+values, F1 varied between 0.21 (Power) and 0.78 (Benevolence), closely tracking domains where 
+
+expert consistency was lower. For example, higher F1 scores were obtained for Benevolence 
+
+(0.78) and Achievement (0.60), values that also exhibited stronger expert consistency (kappa 
+
+was 0.75 and 0.54). Lower F1 scores were obtained for Conformity (0.24) and Stimulation 
+
+(0.34), where expert kappa was lowest (0.27 and 0.38). See Table 13 in Appendix for detailed results. Average value distance between majority of experts and model predictions was 0.42 (SD 
+
+= 0.30) which is somewhat higher than the distance between the closest values. This pattern 
+
+supports the idea that value ambiguity may cause higher discrepancies in certain value categories 
+
+but does not necessarily translate into systematic errors. 
+
+Evaluation at the domain level substantially improved agreement with experts. Overall F1 
+
+increased to 0.63, ranging from 0.48 for Conservation to 0.77 for Self-Transcendence (See Table 
+
+14 in Appendix for detailed results). 
+
+An analysis of critical discrepancies for the model revealed patterns highly similar to those 
+
+observed for GPT-based annotations. In particular, the model showed a tendency to assign 
+
+Openness to Change in cases where experts selected Conservation (16%) or Self-Transcendence 
+
+(12%). As with GPT, critical discrepancies in all other directions were comparatively rare. 
+
+Correlation with expert consistency 
+
+To assess whether the model captures not only categorical decisions but also the intensity of value expression, we correlated the model-predicted probabilities for each value with expert consistency scores (0, 1/3, 2/3, 1), representing the proportion of experts assigning that value. 
+
+The Spearman ρ correlation for all values combined was 0.45, and value -specific correlations ranged from 0.33 for Power to 0.75 for Benevolence (Table 9). All correlations were statistically significant at p < 0.01.             
+
+> Table 9. Spearman correlations between expert consistency scores and XLM-RoBERTa predicted probabilities
+> Value Spearman
+> ρ
+> Self-direction 0.494
+> Stimulation 0.394
+> Hedonism 0.401
+> Achievement 0.553
+> Power 0.327
+> Security 0.507
+> Conformity 0.367
+> Tradition 0.356
+> Benevolence 0.745
+> Universalism 0.386
+
+Most correlations fall in the range typically interpreted as moderate, indicating that the model captures graded value signals similar to the experts even in cases where categorical agreement is imperfect. This supports the view that disagreements often reflect interpretive differences rather than a failure to detect value-related signals. 
+
+4.4 Value Distribution in Full Dataset 
+
+To characterize the overall tendencies in value expression, we examined the distribution of predicted values across the entire corpus of value- or politically expressive posts. On average, users contributed 20.6 value- or politically expressive text posts each (SD = 115), while the median was only 3, reflecting substantial variability and strong positive skewness in posting behavior. 
+
+We analyzed the probabilistic predictions assigned by the XLM-RoBERTa model, calculating mean and standard deviation (SD), as well as median and quartiles (Q1-Q3) for each value category. To estimate the prevalence of each value in the dataset, probabilistic predictions were subsequently binarized using thresholds individually optimized for each class by maximizing the F1 score on the validation set. Table 10 summarizes the descriptive statistics of predicted probabilities, the share of values derived from binarized predictions. Table 10. Values descriptive statistics and prevalence rates based on probabilities predicted by XML-Roberta-large                                 
+
+> Mean (SD) Median [Q1-Q3] Share of posts > threshold (%)
+> Self-direction 0.354 (0.310) 0.237 [0.076-0.618] 42.7
+> Benevolence 0.317 (0.338) 0.147 [0.034-0.590] 30.1
+> Stimulation 0.174 (0.246) 0.051 [0.017-0.219] 23.5
+> Universalism 0.149 (0.230) 0.039 [0.012-0.168] 12.5
+> Hedonism 0.136 (0.195) 0.046 [0.015-0.166] 12.8
+> Achievement 0.128 (0.218) 0.031 [0.011-0.119] 12.3
+> Security 0.119 (0.223) 0.021 [0.008-0.091] 10.5
+> Tradition 0.090 (0.213) 0.009 [0.003-0.039] 10.2
+> Power 0.089 (0.218) 0.009 [0.004-0.035] 7.7
+> Conformity 0.064 (0.139) 0.012 [0.005-0.046] 8.9
+
+The mean predicted probabilities varied across values, with Self-direction (0.354) and Benevolence (0.317) receiving the highest average scores. Self-direction emerged as the most frequently expressed value, appearing in over 43% of posts, followed by Benevolence (30%) and Stimulation (24%). These values, associated with the importance of personal autonomy, caring for others, and the pursuing of novelty and excitement, appear to be particularly salient in the discourse on Russian-language social media. For example, Self-Direction is commonly articulated through personal statements and goal-setting, such as "Never listen to anyone. Have your own opinion. Your own mind. Your own thoughts and ideas. Plans for your life." 4
+
+Expressions of Benevolence frequently center around appreciation and affection towards close family members and friends. Posts often include heartfelt messages to children, parents, or loved ones, such as “ How pleasant and wonderful it is to have my loved ones nearby ” or “ My beloved son, you are the most precious thing I have in my life .” In contrast, values associated with conservation and social order, such as Power and Conformity, have the lowest mean probability (0.089 and 0.064 respectively) and are expressed less frequently (8% and 9% respectively). 
+
+An overall ranking of values matches with the one provided by the recent surveys in Russia 5 [37] which also report Benevolence and Self-Direction among the most and Power and Conformity among the least popular values. However, our data indicated Stimulation values at the top and Security values at the bottom of the preference list whereas in the survey data they were reversed. These differences might be due to the fact that importance of a value (measured in surveys) does not always match with the frequency of its expression. 
+
+4.4.1 Internal structure and alignment with Schwartz model 
+
+After establishing the overall prevalence of values, we further explored their joint expression within individual posts by calculating pairwise correlations. The resulting correlation matrix is shown in Fig. 3 (all reported correlations were statistically significant at p < 0.001).   
+
+> 4All examples of social media posts are translated from Russian by the authors for the purposes of this
+> article.
+> 5Although a smaller part of the analyzed VK users is located outside Russia, the vast majority are Russians.
+
+Fig. 3. Heatmap of correlations among values 
+
+The strongest positive correlations were observed between Power and Security ( r=0.55), Self-Direction and Stimulation ( r = 0.43), and Security and Tradition ( r = 0.31), and Tradition and Conformity ( r = 0.28). These patterns correspond to the conceptual structure of Schwartz’s model, in which adjacent values are theorized to share compatible motivational goals and are therefore likely to be jointly expressed in communication [55,56]. For example, personal autonomy is frequently associated with the pursuit of novelty and exploration, while concerns about stability and social order often co-occur with appeals to tradition. Similarly, the frequent co-expression of Power and Security reflects narratives emphasizing strong leadership and national protection. For example, many posts explicitly affirm the authority of national leaders while invoking patriotic and national defense themes, as in "Our president is supported by all of Russia! We stand with him and for the victory and protection of our country." In contrast, correlations between values from opposing domains, such as Self-direction and Security ( r = -0.30), or Benevolence and Power ( r = -0.27), were negative, indicating limited co-expression in individual posts. The strongest negative correlations also roughly corresponded to the theoretically expected opposition between person-and group-focused values: Self-Direction appeared to be incompatible with Benevolence ( r = -0.46) and Security ( r = -0.30), Hedonism was opposed to Universalism (r = -0.30) and Security ( r = -0.25), and Power was in contradiction with Benevolence ( r = -0.27). 
+
+There are notable deviations from the expected pattern as well. Universalism demonstrated positive associations with Security ( r = 0.36) and Tradition ( r = 0.33). This suggests that, within our dataset, expressions of universalistic concerns are frequently linked to narratives emphasizing social protection, stability and traditional norms, rather than global inclusiveness. Typical examples include calls for peace and empathy, such as "I stand for peace — in the soul, in the family, in the country, so that no one suffers from war anymore," as well as commemorative and patriotic appeals that frame national defense as a form of collective protection and solidarity, for example, "Our fathers once stopped fascism — today we must protect our people and bring peace to every home." 
+
+Using the correlation matrix, we calculated distances between values and applied the MDS method with a target rotation towards theoretical coordinates. The results are plotted on Fig. 4. Congruence coefficient between the resulting coordinates with the ideal Schwartz structure indicated high overall similarity of structures ( r c= 0.927), while rank correlation was moderate (rtau = 0.556). There are two noticeable deviations. First, Hedonism and Self-Direction swapped places, so Self-Direction is next to Achievement, while Hedonism is distanced from the other values. This can be explained with the instantiations of Self-Direction which is often expressed in social media via personal achievements. Although this swap is interesting, it occurred within the higher-order value of Openness to Change, so it does not indicate a major deviation from theory. Second, deviating from Schwartz structure, Universalism is located among Conservation values. A likely explanation is underdevelopment of civic institutions in Russia that promote Universalism values which in turn are forced to find its grounding in the traditional institutions such as family and religion (see also [52]). To sum up, although we did not focus on personal values but rather on values in posts, we were able to replicate the theoretical structure of values, with minor deviations. It indicates internal validity of the trained model and points to its ability to indicate values compatible with Schwartz theory. A substantive analysis of value expression patterns, including temporal and discursive details, is out of scope of this paper and presented elsewhere ( Forthcoming ).  
+
+> Fig. 4. Theoretically postulated and empirically derived coordinates of values obtained via target-rotated
+> multidimensional scaling. Stress = 0.15 6.
+
+# 5. Discussion 
+
+This study aimed to find a feasible and effective pipeline to capture and analyze value expression in non-Western social media environments. By focusing on VKontakte, a major platform within the Russian-speaking digital ecosystem, we contribute to addressing an important gap in current research, which remains predominantly Western- and Anglophone-centric. 
+
+By applying a multi-stage classification framework to Russian-language VKontakte posts, we demonstrated the viability of combining GPT-assisted soft annotation with transformer-based models. This combination allows for both scalability and conceptual nuance in value detection. 
+
+The multi-stage classification framework of our study, incorporating spam filtering, value-expressive and politically-oriented post detection, as well as multi-label value classification,  
+
+> 6Following [38], we considered stress of 0.15 “considerably low”, and followed the two-dimensional representation for correspondence with the classic Schwartz plots.
+
+illustrates the importance of addressing data heterogeneity and noise in social media research. By integrating preliminary filtering stages, we ensured that the analysis focused on texts with meaningful potential for value expression, thus reducing the risk of spurious findings. 
+
+Our analysis highlights that value detection in text is inherently subjective, and multiple interpretations may coexist for the same post. Despite this, the use of GPT annotations for multi-label value classification appears to be a useful approach. The expert annotation seems a necessary benchmark, and a thorough comparison of human and GPT annotations can tell us a lot about both GPT and humans. In our experiments, GPT outputs exhibited higher internal consistency than expert annotations, reflecting high model certainty given stable textual cues and low temperature; however, it also showed some overconfidence toward particular interpretations of values. Specifically, GPT tended to emphasize transformative or aspirational aspects of texts, assigning Openness to Change value domain where experts saw Conservation or Self-Transcendence. These patterns suggest that GPT-based annotations capture an alternative but coherent reading of value expression, rather than random noise. 
+
+The fine-tuned XLM-RoBERTa-large model trained on GPT annotations demonstrated high predictive performance in multi-label classification (F1-macro = 0.83, F1 = 0.71) and was effective in capturing both dominant and marginal value patterns in heterogeneous discourse. As a multilingual transformer model, XLM-RoBERTa-large, despite not being trained specifically on Russian, outperformed language-specific alternatives, including RuRoBERTa and RuBERT, following partial fine-tuning. This suggests that cross-lingual pretraining can provide robust semantic representations even in culturally embedded, non-English classification tasks. 
+
+While XLM-RoBERTa achieved strong performance on GPT-based labels, the comparison with multi-label expert judgments showed moderate alignment and revealed interpretive variability at the level of individual values. We view this as a reflection of the intrinsic ambiguity of value expression in naturally occurring text. Experts themselves displayed only moderate consistency, and model-expert (and GPT-expert) discrepancies closely followed the same lines as expert-expert disagreement. Importantly, agreement improved substantially at the level of value domains, and model-predicted probabilities correlated meaningfully with expert consistency scores, indicating that the model captures graded value-relevant signals. 
+
+Finally, our results showed high congruence with Schwartz theory of values: the data-recovered structure closely replicated the theoretical one. For example, values linked to control, protection, and the defense of social order tended to co-occur, which suggests that narratives about national strength and stability, just like personal values of Security and Power, often intertwine these concerns. Similarly, co-occurrence between Security and Tradition points to the frequent integration of appeals to tradition within discourses about societal safety and resilience. An interesting deviation from theoretical structure was Universalism value type, typically associated with global inclusiveness and concern for all people – it demonstrated close connection with Tradition and Security suggesting that the content of communication norms may differ from the universal value structure. These patterns illustrate how universal value categories can take on locally specific meanings, shaped by national narratives and discursive repertoires. 
+
+5.1 Open issues and limitations 
+
+Some of the limitations of this study stem from the nature of the data analyzed. First, our dataset was limited to publicly available posts in a state-controlled social network. Given the recent criminalization of certain ideas in Russia, it is plausible that some users preferred making their accounts private or leaving VKontakte. As a result, our sample underrepresents certain types of value expressions or discourses that are less likely to be shared openly. Also, although we applied basic filtering to reduce the presence of spam and non-personal content, our pipeline does not explicitly exclude bots or orchestrated political actors. While such posts may not represent genuine individual value expression, they contribute to the perceived value climate and shape the broader discursive environment. Future research could explore which value-related narratives are promoted by coordinated actors and to what extent these efforts shape or distort broader patterns of value expression in public discourse. Second, our analysis was restricted to original posts published on user timelines and did not include comments or other interaction data. This limits our ability to capture value-related discourse that may occur in reactive or conversational settings, particularly in comment threads under public or political content. At the same time, user-initiated posts are more likely to reflect their spontaneous and routine articulations of what matters to users. Moreover, values in the interactive setting could be proxied by the associations between the value content of the posts and the number of likes it received. As such, they offer valuable insight into implicit value orientations embedded in everyday digital expression. 
+
+Third, our analysis focused exclusively on textual content, whereas contemporary social media communication increasingly incorporates multimodal formats such as images and videos. These modalities may carry value-relevant signals that remain beyond the scope of our current modeling approach. It is also important to note that our GPT-based annotation approach is not free from potential biases. Importantly, moderate alignment between GPT-based annotations and expert judgments should not be interpreted as direct evidence of annotation bias, but rather reflects the inherent ambiguity and interpretative nature of value expression. However, other sources of bias may arise from the annotation setup itself. In particular, the use of soft labels may lead the model to produce intermediate predicted probabilities for ambiguous cases, potentially obscuring clear-cut distinctions between value presence and absence. In addition, GPT annotations themselves can be highly sensitive to prompt phrasing and the specificity of annotation guidelines. Future experiments may generalize the specific prompts and annotation procedures used in our study to other research contexts. At the same time, we believe that our pipeline offers a scalable framework, as it can be directly applied to newly collected VKontakte and other Russian-language social media data or adapted to other platforms and languages. 
+
+While our method efficiently classifies social media content into ten value types using soft labels, one minor limitation is that we do not employ fully probabilistic annotations. Using probabilistic and multi-annotator labels could enable a more fine-grained assessment of value expression, but this would require increasing the number of annotations per post, which would require additional resources. 
+
+Several other research directions remain open. These include investigating which values tend to receive varying levels of attention and interaction, potentially shaping the perceived salience of different value orientations. Another promising direction is the effect of the annotators’ own values on their annotator decisions. Taken together, these avenues point toward a broader research agenda on cultural variation, communicative framing, and value-based interpretation in digital environments. 
+
+# 6. Conclusion 
+
+Despite these limitations, the study addressed the challenge of detecting human value expression 
+
+in large-scale, organically generated social media data from a non-Western context. The trained 
+
+models could be used in future substantive studies focusing on overall value outlook, temporal 
+
+variation in value expression, and responses to external events, whereas the pipeline showed to 
+
+be a cost-effective tool of developing classification models for abstract and subjective 
+
+phenomena such as basic human values. We conclude that value detection is best understood as 
+
+a multi-perspective interpretive task, where expert labels, GPT annotations, and model 
+
+predictions represent coherent but not identical readings of the same texts. 
+
+Acknowledgements We are grateful to the group of experts who helped with the post annotation, including Yulia Afanasyeva, Marharyta Fabrykant, Lidia Okolskaya, Boris Sokolov, and Nikita Zubarev. We appreciate advice and support provided by Vladimir Magun, Lidia Okoloskaya, Igor Grossmann, and two anonymous reviewers. 
+
+Data Availability All study materials, including annotation guidelines, VK API scripts, Python scripts for data preprocessing, annotation, and classification are available in the GitHub repository:  https://github.com/mmilkova/human-values-classification/ CONFLICT OF INTEREST 
+
+On behalf of all authors, the corresponding author declares that there is no conflict of interest. Appendix 
+
+Dataset Composition Across Processing Stages               
+
+> Table 11. Summary statistics on data volume at preprocessing and classification stages
+> Metric Number of posts Number of users
+> Initially randomly generated VK user IDs: 1,000,000
+> Time span: 2007-January 2025
+> Raw dataset, with public open text data
+> 7,498,657 155,629
+> After Cyrillic & min length filter (at least one two-word phrase)
+> 5,561,547 122,668
+> After spam and nonpersonal content removal
+> 3,583,536 103,242
+> Politically oriented content 90,522 9,059
+> Value-expressive content 1,040,505 52,378
+> Value-expressive and/or politically oriented content
+> 1,105,085 53,606
+
+Prevalence of Value Expressions in Training Data  
+
+> Table 12. Distribution of GPT soft labels in the training dataset
+
+Value  Soft label = 1.0 
+
+(4 –5 votes) 
+
+Soft label =
+
+0.6 (3 votes) 
+
+Soft label =
+
+0.0 (0 –2 votes) 
+
+Self-direction  0.247  0.083  0.670 
+
+Stimulation  0.131  0.060  0.808 
+
+Hedonism  0.079  0.039  0.882 
+
+Achievement  0.097  0.035  0.869 
+
+Power  0.087  0.026  0.887 
+
+Security  0.079  0.033  0.888 
+
+Conformity  0.050  0.032  0.917 
+
+Tradition  0.082  0.026  0.892 
+
+Benevolence  0.228  0.050  0.722 
+
+Universalism  0.083  0.039  0.878 
+
+Note. The distribution of soft labels indicates notable differences in how frequently each value is expressed in the dataset. Self-direction, Benevolence, and Stimulation are the most frequently and confidently expressed values. In contrast, values such as Conformity, Security, Hedonism, Tradition and Universalism are expressed more rarely. Intermediate cases (soft label = 0.6) are comparatively infrequent for all values, suggesting that GPT annotations tend to reflect clear judgments rather than uncertainty. 
+
+Expert–XLM-RoBERTa Agreement Results  
+
+> Table 13. Value-level expert consistency and agreement between majority-expert labels and XLM-RoBERTa
+
+Value 
+
+Fleiss’ kappa, experts 
+
+F1-score 
+
+Self-direction  0.437  0.400 
+
+Stimulation  0.382  0.335 
+
+Hedonism  0.601  0.374 
+
+Achievement  0.537  0.604 
+
+Power  0.391  0.205 
+
+Security  0.479  0.394 
+
+Conformity  0.265  0.236 
+
+Tradition  0.616  0.478 
+
+Benevolence  0.753  0.775 
+
+Universalism  0.462  0.340 
+
+Table 14. Domain-level expert consistency and agreement between majority-expert labels and XLM-RoBERTa 
+
+Value 
+
+Fleiss’ kappa, experts 
+
+F1-score 
+
+Openness to Change  0.538  0.588 
+
+Self Enhancement  0.523  0.559 
+
+Conservation  0.499  0.484 
+
+Self Transcendence  0.684  0.767 References 
+
+1. Aldeen , M., Luo, J., Lian A., Zheng, V., Hong, A., Yetuku, P., & Cheng, L. (2023). ChatGPT vs. Human Annotators: A Comprehensive Analysis of ChatGPT for Text Annotation. In Proceedings International Conference on Machine Learning and Applications (ICMLA), Jacksonville, FL, USA, 2023, pp. 602-609, 
+
+https://doi.org/10.1109/ICMLA58977.2023.00089 
+
+2. American Psychological Association (2017). Ethical Principles of Psychologists and Code of Conduct. Washington DC: American Psychological Association. 
+
+http://www.apa.org/ethics/code/index.aspx 
+
+3. Anggrainingsih, R., Hassan, G.M. & Datta, A. (2025) Evaluating BERT-based language models for detecting misinformation. Neural Computing & Applicications, 37, 9937–9968. 
+
+https://doi.org/10.1007/s00521-025-11101-z 
+
+4. Baden, C., Pipal, C., Schoonvelde, M., & van der Velden, M. A. C. G. (2021). Three Gaps 
+
+in Computational Text Analysis Methods for Social Sciences: A Research Agenda. 
+
+Communication Methods and Measures, 16(1), 1–18. 
+
+https://doi.org/10.1080/19312458.2021.2015574 
+
+5. Baly, R., Martino, G.S., Glass, J., & Nakov, P. (2020). We Can Detect Your Bias: 
+
+Predicting the Political Ideology of News Articles. In Proceedings of the 2020 Conference 
+
+on Empirical Methods in Natural Language Processing (EMNLP), pp. 4982–4991. 
+
+Association for Computational Linguistics.  https://doi.org/10.18653/v1/2020.emnlp-
+
+main.404 
+
+6. Bilsky, W., Janik, M., & Schwartz, S. H. (2011). The structural organization of human 
+
+values-evidence from three rounds of the European Social Survey (ESS). Journal of cross-
+
+cultural psychology, 42(5), 759-776.  https://doi.org/10.1177/0022022110362757 
+
+7. Birkenmaier, L., Lechner, C. M., & Wagner, C. (2023). The Search for Solid Ground in 
+
+Text as Data: A Systematic Review of Validation Practices and Practical Recommendations 
+
+for Validation. Communication Methods and Measures, 18(3), 249–277. 
+
+https://doi.org/10.1080/19312458.2023.2285765 
+
+8. Bokolo BG, & Liu Q. (2024). Advanced Comparative Analysis of Machine Learning and 
+
+Transformer Models for Depression and Suicide Detection in Social Media Texts. 
+
+Electronics, 13(20):3980.  https://doi.org/10.3390/electronics13203980 
+
+9. Boyd, R. L., Wilson, S. R., Pennebaker, J. W., Kosinski, M., Stillwell, D. J., & Mihalcea, 
+
+R. (2015). Values in words: Using language to evaluate and understand personal values. In 
+
+Proceedings of the Ninth International AAAI Conference on Web and Social Media, 31– 
+
+40.  https://doi.org/10.1609/icwsm.v9i1.14589 
+
+10. Chen, J., Hsieh, G., Mahmud, J., & Nichols, J. (2014). Understanding individuals’ personal 
+
+values from social media word use. In Proceedings of the 17th ACM Conference on 
+
+Computer Supported Cooperative Work & Social Computing, CSCW'14, 405–414. 
+
+https://doi.org/10.1145/2531602.2531608 
+
+11. Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán, F., Grave, 
+
+E., Ott, M., Zettlemoyer, L. & Stoyanov, V. (2020). Unsupervised Cross-lingual 
+
+Representation Learning at Scale. arXiv:1911.02116. 
+
+https://doi.org/10.48550/arXiv.1911.02116 
+
+12. Davani, A. M., Díaz, M., & Prabhakaran, V. (2022). Dealing with Disagreements: Looking 
+
+Beyond the Majority Vote in Subjective Annotations. Transactions of the Association for 
+
+Computational Linguistics , 10, 92-110.  https://doi.org/10.1162/tacl_a_00449 
+
+13. Dentale, F., Vecchione, M., Gebauer, J. E., & Barbaranelli, C. (2018). Measuring automatic 
+
+value orientations: the achievement–benevolence implicit association test. British Journal 
+
+of Social Psychology, 57(1), 210-229.  https://doi.org/10.1111/bjso.12229 
+
+14. Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of Deep 
+
+Bidirectional Transformers for Language Understanding. In Proceedings of NAACL-HLT 
+
+2019, 4171–4186.  https://doi.org/10.48550/arXiv.1810.04805 
+
+15. Evans, J. D. (1996). Straightforward statistics for the behavioral sciences. Thomson 
+
+Brooks/Cole Publishing Co. 
+
+16. Farahani, F.J., Hanke, S., Dima, C., Heiberger, R.H., & Staab, S. (2024). Who is targeted? 
+
+Detecting social group mentions in online political discussions. In Companion Publication of the 16th ACM Web Science Conference. Association for Computing Machinery, New 
+
+York, NY, USA, pp. 24–25.  https://doi.org/10.1145/3630744.3658412 
+
+17. Fischer, R., Karl, J., Fetvadjiev, V., Grener, A., & Luczak-Roesch, M. (2022). 
+
+Opportunities and challenges of extracting values in autobiographical narratives. Frontiers 
+
+in Psychology, 13:886455.  https://doi.org/10.3389/fpsyg.2022.886455 
+
+18. Fischer, R., Luczak-Roesch, M., & Karl, J. A. (2023). What does ChatGPT return about human values? Exploring value bias in ChatGPT using a descriptive value theory. 
+
+arXiv:2304.03612 . https://doi.org/10.48550/arXiv.2304.03612 
+
+19. Fleiss, J. L. (1971). Measuring nominal scale agreement among many raters. Psychological Bulletin, 76 (5), 378–382.  https://doi.org/10.1037/h0031619 
+
+20. Franzke, A. S., Bechmann, A., Zimmer, M., Ess, C.M., & the Association of Internet Researchers (2020). Internet Research: Ethical Guidelines 3.0. 
+
+https://aoir.org/reports/ethics3.pdf 
+
+21. Gamer, M., & Lemon, J. (2019). irr: Various Coefficients of Interrater. Reliability and Agreement. R package version 0.84.1.  https://CRAN.R-project.org/package=irr 
+
+22. Gilardi, F., Alizadeh, M., & Kubli, M. (2023). ChatGPT outperforms crowd-workers for text-annotation tasks. arXiv:2303.15056 . https://arxiv.org/abs/2303.15056 
+
+23. Grimmer J., & Stewart B.M. (2017). Text as Data: The Promise and Pitfalls of Automatic Content Analysis Methods for Political Texts. Political Analysis , 21(3), 267-297. 
+
+https://doi.org/10.1093/pan/mps028 
+
+24. Gunes, E. & Florczak, C.K. (2025) Replacing or Enhancing the Human Coder? Multiclass 
+
+Classification of Policy Documents with Large Language Models. Journal of 
+
+Computational Social Science, 8 (31).  https://doi.org/10.1007/s42001-025-00362-2 
+
+25. He, P., Liu, X., Gao, J., & Chen, W. (2021). DeBERTa: Decoding-enhanced BERT with 
+
+Disentangled Attention. arXiv:2006.03654.  https://doi.org/10.48550/arXiv.2006.03654 
+
+26. Iyyer, M., Enns, P., Boyd-Graber, J., & Resnik, P. (2014). Political Ideology Detection 
+
+Using Recursive Neural Networks. In Proceedings of the 52nd Annual Meeting of the 
+
+Association for Computational Linguistics (Volume 1: Long Papers) , pp. 1113–1122, 
+
+Baltimore, Maryland. Association for Computational Linguistics. 
+
+https://doi.org/10.3115/v1/P14-1105 
+
+27. Khan, J.Y., Khondaker, Md. T.I., Afroz, S., Uddin, G., & Iqbal, A. (2019). A Benchmark Study of Machine Learning Models for Online Fake News Detection. arXiv:1905.04749 
+
+https://doi.org/10.48550/arXiv.1905.04749 
+
+28. Khayrullin, R. M., Makarov, I., & Zhukov, L. E. (2017). Predicting Psychology Attributes of a Social Network User. In CEUR Workshop Proceeding , 1968, 2-8. 
+
+29. Kiesel, J., Alshomary, M., Handke, N., Cai, X., Wachsmuth, H., & Stein, B. (2022). Identifying the human values behind arguments. In Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics , 4459–4471. 
+
+https://doi.org/10.18653/v1/2022.acl-long.306 
+
+30. Kolesnikova, A., Kuratov, Y., Konovalov, V., & Burtsev, M. (2022). Knowledge Distillation of Russian Language Models with Reduction of Vocabulary. arXiv:2205.02340.  https://arxiv.org/abs/2205.02340 
+
+31. Koo, T. K., & Li, M. Y. (2016). A guideline of selecting and reporting intraclass correlation coefficients for reliability research. Journal of chiropractic medicine , 15(2), 155-163. 
+
+https://doi.org/10.1016/j.jcm.2017.10.001 
+
+32. Landis, J. R., & Koch, G. G. (1977). The measurement of observer agreement for categorical data. Biometrics , 33(1), 159–174.  https://doi.org/10.2307/2529310 
+
+33. de Leeuw, J., & Mair, P. (2009). Multidimensional Scaling Using Majorization: SMACOF in R. Journal of Statistical Software, 31 (3), 1–30.  https://doi.org/10.18637/jss.v031.i03 
+
+34. Legkas, S., Christodoulou, C., Zidianakis, M., Koutrintzes, D., Petasis, G., & Dagioglou, M. (2024). Hierocles of Alexandria at Touche: Multi-task & multi-head custom architecture with transformer-based models for human value detection. In Working Notes of the Conference and Labs of the Evaluation Forum (CLEF 2024) . CEUR Workshop Proceedings. 
+
+35. Licht, H., & Sczepanksi, R. (2024). Who are they talking about? Detecting mentions of social groups in political texts with supervised learning. ECONtribute Discussion Paper, No. 277, University of Bonn and University of Cologne, Reinhard Selten Institute (RSI), Bonn and Cologne 36. Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M., Zettlemoyer, L. & Stoyanov, V. (2019). RoBERTa: A Robustly Optimized BERT Pretraining Approach. 
+
+arXiv:1907.11692 . https://doi.org/10.48550/arXiv.1907.11692 
+
+37. Magun, V.S. (2023). The Evolution of Basic Human Values of the Russians, 2006–2021 [In Russian]. Sotsiologicheskie issledovaniya [Sociological Studies], 12, 44-58. 
+
+38. Mair, P., Borg, I., & Rusch, T. (2016). Goodness-of-fit assessment in multidimensional scaling and unfolding. Multivariate behavioral research , 51(6), 772-789. 
+
+39. Milkova, M., Rudnev, M., & Okolskaya, L. (2023). Detecting value-expressive text posts in Russian social media. arXiv:2312.08968.  https://doi.org/10.48550/arXiv.2312.08968 
+
+40. Mirzakhmedova, N., Kiesel, J., Alshomary, M., Heinrich, M., Handke, N., Cai, X., Valentin, B., Dastgheib, D., Ghahroodi, O., Sadraei, M., Asgari, E., Kawaletz, L., Wachsmuth, H., & Stein, B. (2023). The Touché23-ValueEval dataset for identifying human values behind arguments. arXiv:2301.13771. 
+
+https://doi.org/10.48550/arXiv.2301.13771 
+
+41. Mukta, M. S. H., Ali, M. E., & Mahmud, J. (2016). User generated vs. supported contents: Which one can better predict basic human values? In Spiro, E., & Ahn, Y. Y. (Eds.) Social Informatics (SocInfo). Lecture Notes in Computer Science, vol. 10047, pp. 454–470. Springer, Cham.  https://doi.org/10.1007/978-3-319-47874-6_31 
+
+42. Mukta, M. S. H., Ali, M. E., & Mahmud, J. (2018). Temporal modeling of basic human values from social network usage. Journal of The Associations for Information Science and Technology, 70(1), 1–13.  http://doi.org/10.1002/asi.24099 
+
+43. Németh, R., & Koltai, J. (2021). The potential of automated text analytics in social knowledge building. In Rudas, T., & Péli, G. (Eds.) Pathways Between Social Science and Computational Social Science. Computational Social Sciences , pp. 49–70. Springer, Cham. 
+
+https://doi.org/10.1007/978-3-030-54936-7_3 
+
+44. Nguyen, D., Liakata, M., DeDeo, S., Eisenstein, J., Mimno, D., Tromble, R., & Winters, J. (2020) How We Do Things With Words: Analyzing Text as Social and Cultural Data. 
+
+Frontiers in Artificial Intelligence, 3.  https://doi.org/10.3389/frai.2020.00062 
+
+45. Moore, J., Deshpande, T., & Yang, D. (2024) Are Large Language Models Consistent over Value-laden Questions?. In Findings of the Association for Computational Linguistics: EMNLP 2024 , 15185–15221, Miami, Florida, USA. Association for Computational Linguistics.  https://doi.org/10.18653/v1/2024.findings-emnlp.891 
+
+46. Pennebaker, J. W., Boyd, R. L., Jordan, K., & Blackburn, K. (2015). The development and psychometric properties of LIWC2015. Austin, TX: University of Texas at Austin. Retrieved from: 
+
+https://repositories.lib.utexas.edu/bitstream/handle/2152/31333/LIWC2015_LanguageMa 
+
+nual.pdf 
+
+47. Pennebaker, J. W., Chung, C. K., Ireland, M., Gonzales, A., & Booth, R. J. (2007). The development and psychometric properties of LIWC2007. Austin, TX: University of Texas at Austin. Retrieved from:  https://www.liwc.net/LIWC2007LanguageManual.pdf 
+
+48. Ponizovskiy, V., Ardag, M., Grigoryan, L., Boyd, R., Dobewall, H., & Holtz, P. (2020). Development and validation of the personal values dictionary: A theory-driven tool for investigating references to basic human values in text. European Journal of Personality, 34 (5), 885–902.  https://doi.org/10.1002/per.2294 
+
+49. Reiss, M. V. (2023). Testing the reliability of ChatGPT for text annotation and classification: A cautionary remark. OSF Preprint .
+
+https://doi.org/10.48550/arXiv.2304.11085 
+
+50. Rettenberger, L., Reischl, M. & Schutera, M. (2025). Assessing political bias in large language models. Journal of Computational Social Science, 8(42). 
+
+https://doi.org/10.1007/s42001-025-00376-w 
+
+51. Revelle, W. (2024). psych: Procedures for Psychological, Psychometric, and Personality Research . Northwestern University, Evanston, Illinois. R package version 2.4.12. 
+
+https://CRAN.R-project.org/package=psych 
+
+52. Rudnev, M., Magun, V., & Schwartz, S. (2018). Relations among higher order values around the world. Journal of Cross-Cultural Psychology, 49 (8), 1165-1182. 
+
+https://doi.org/10.1177/0022022118782644 53. Sandri, M., Leonardelli, E., Tonelli, S., & Jezek, E. (2023). Why Don’t You Do It Right? Analysing Annotators’ Disagreement in Subjective Tasks. In Proceedings of the 17th Conference of the European Chapter of the Association for Computational Linguistics, 2428–2441.  https://doi.org/10.18653/v1/2023.eacl-main.178 
+
+54. Schroter, D., Dementieva, D., & Groh, G. (2023). Adam-Smith at SemEval-2023 Task 4: Discovering human values in arguments with ensembles of transformer-based models. In 
+
+Proceedings of the 17th International Workshop on Semantic Evaluation (SemEval), pp. 532–541, Toronto, Canada. Association for Computational Linguistics. 
+
+https://doi.org/10.48550/arXiv.2305.08625 
+
+55. Schwartz, S. H., & Bilsky, W. (1990). Toward a theory of the universal content and structure of values: Extensions and cross-cultural replications. Journal of personality and social psychology , 58 (5), 878-891.  https://doi.org/10.1037/0022-3514.58.5.878 
+
+56. Schwartz, S. H. (1992). Universals in the content and structure of values: Theoretical advances and empirical tests in 20 countries. In Advances in experimental social psychology, 25 , pp. 1–65. Academic Press.  https://doi.org/10.1016/S0065-2601(08)60281-
+
+6
+
+57. Schwartz, S. H. (2012). An overview of the Schwartz theory of basic values. Online Readings in Psychology and Culture, 2 (1).  https://doi.org/10.9707/2307-0919.1116 
+
+58. Shifman, L., Trillò, T., Hallinan, B., Mizoroki, S., Green, A., Scharlach, R., & Frosh, P. (2025). The expression of values on social media: An analytical framework. New Media & Society , 0(0).  https://doi.org/10.1177/14614448241307035 
+
+59. Starovolsky-Shitrit, A., Neduva, A., Doron, N.A., Daniel, E., & Tsur, O. (2025). The Value of Nothing: Multimodal Extraction of Human Values Expressed by TikTok Influencers. 
+
+arXiv:2501.11770.  https://doi.org/10.48550/arXiv.2501.11770 
+
+60. Stromer-Galley, J., & Rossini, P. (2023). Categorizing political campaign messages on social media using supervised machine learning. Journal of Information Technology and Politics , 21 (4), 410-423.  https://doi.org/10.1080/19331681.2023.2231436 
+
+61. Silva, M., Lo, P-C., & Lim, E-P. (2020). On predicting personal values of social media users using community-specific language features and personal value correlation. 
+
+arXiv:2007.08107 . https://arxiv.org/abs/2007.08107 
+
+62. Son, B.H., Quan, L.M., & Thin, D.V. (2024). ABCD Team at HOPE2024: Hope Detection with BERTology Models and Data Augmentation. IberLEF(2024) , CEUR Workshop Proceedings.  https://ceur-ws.org/Vol-3756/HOPE2024_paper1.pdf 
+
+63. Sun, M., Zhang, H., Zhao, Y., & Shang, J. (2014). From post to values: Mining Schwartz values of individuals from social media. In Chinese National Conference on social media processing , pp. 206–219. Berlin, Heidelberg: Springer. 
+
+64. Takayama, Y., Tomiura, Y., Fleischmann, K. R., Cheng, A.-S., Oard, D. W., & Ishita, E. (2015). An Automatic Dictionary Extraction and Annotation Method Using Simulated Annealing for Detecting Human Values. In IIAI 4th International Congress on Advanced Applied Informatics . IEEE.  http://dx.doi.org/10.1109/IIAI-AAI.2015.268 
+
+65. Timoneda, J.C., & Vera, S.V. (2025). BERT, RoBERTa, or DeBERTa? Comparing Performance Across Transformers Models in Political Science Text. The Journal of Politics , 87 (1),  https://doi.org/10.1086/730737 
+
+66. Törnberg, P. (2023). GPT 3.5-4 outperforms experts and crowd workers in annotating political Twitter messages with zero-shot learning. arXiv:2304.06588 .
+
+> https://doi.org/10.48550/arXiv.2304.06588
+
+67. Van Rijsbergen, C.J. (1979). Information Retrieval . 2nd Edition, Butterworths, Waltham. 
+
+68. Yao, J.; Yi, X.; Gong, Y.; Wang, X.; & Xie, X. (2024). Value FULCRA: Mapping Large Language Models to the Multidimensional Spectrum of Basic Human Value. In Duh, K.; Gomez, H.; & Bethard, S., eds., Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) , 8762–8785. Mexico City, Mexico: Association for Computational Linguistics.

@@ -1,0 +1,79 @@
+{
+  "label": "2026-03-21",
+  "date": "2026-03-21",
+  "generated_at": "2026-03-21T19:25:20",
+  "count": 5,
+  "papers": [
+    {
+      "paper_id": "202603/21/2603.15981v1-aligning-paralinguistic-understanding-and-generation-in-speech-llms-via-multi-task-reinforcement-learning",
+      "section": "deep",
+      "title_en": "Aligning Paralinguistic Understanding and Generation in Speech LLMs via Multi-Task Reinforcement Learning",
+      "authors": "Jingxiang Chen, Minseok Kim, Seong-Gyun Leem, Yin Huang, Rashi Rungta, Zhicheng Ouyang, Haibin Wu, Surya Teja Appini, Ankur Bansal, Yang Bai, Yue Liu, Florian Metze, Ahmed A Aly, Anuj Kumar, Ariya Rastrow, Zhaojiang Lin",
+      "date": "2026-03-16",
+      "pdf": "https://arxiv.org/pdf/2603.15981v1",
+      "score": "9.0",
+      "evidence": "用于情感分类和响应生成的副语言感知语音大模型",
+      "tldr": "针对语音大模型在理解副语言信号（如情感、韵律）时面临的数据稀缺和词汇偏见问题，本文提出了一种多任务强化学习框架。通过引入思维链推理和两阶段优化流程，构建了副语言感知语音大模型（PALLM）。实验表明，该方法在多个情感识别数据集上显著优于现有基准和闭源模型，有效提升了语音大模型的情感智能。",
+      "tags": "query:msa",
+      "abstract_en": "Speech large language models (LLMs) observe paralinguistic cues such as prosody, emotion, and non-verbal sounds--crucial for intent understanding. However, leveraging these cues faces challenges: limited training data, annotation difficulty, and models exploiting lexical shortcuts over paralinguistic signals. We propose multi-task reinforcement learning (RL) with chain-of-thought prompting that elicits explicit affective reasoning. To address data scarcity, we introduce a paralinguistics-aware speech LLM (PALLM) that jointly optimizes sentiment classification from audio and paralinguistics-aware response generation via a two-stage pipeline. Experiments demonstrate that our approach improves paralinguistics understanding over both supervised baselines and strong proprietary models (Gemini-2.5-Pro, GPT-4o-audio) by 8-12% on Expresso, IEMOCAP, and RAVDESS. The results show that modeling paralinguistic reasoning with multi-task RL is crucial for building emotionally intelligent speech LLMs.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/21/2603.14889v1-modeling-and-benchmarking-spoken-dialogue-rewards-with-modality-and-colloquialness",
+      "section": "deep",
+      "title_en": "Modeling and Benchmarking Spoken Dialogue Rewards with Modality and Colloquialness",
+      "authors": "Jingyu Lu, Yuhan Wang, Fan Zhuo, Xize Cheng, Changhao Pan, Xueyi Pu, Yifu Chen, Chenyuhao Wen, Tianle Liang, Zhou Zhao",
+      "date": "2026-03-16",
+      "pdf": "https://arxiv.org/pdf/2603.14889v1",
+      "score": "8.0",
+      "evidence": "在多模态对话中融入了包括韵律和情感在内的副语言细微差别",
+      "tldr": "针对端到端语音对话系统在处理副语言特征（如韵律、情感）和口语化表达方面的不足，本文提出了SDiaReward模型。该模型通过在包含多轮对话偏好数据的SDiaReward-Dataset上进行训练，能够直接评估语音对话的模态质量和口语化程度。同时，研究者建立了ESDR-Bench基准测试。实验证明，SDiaReward在偏好预测准确率上达到了SOTA水平，显著优于通用音频大模型。",
+      "tags": "query:msa",
+      "abstract_en": "The rapid evolution of end-to-end spoken dialogue systems demands transcending mere textual semantics to incorporate paralinguistic nuances and the spontaneous nature of human conversation. However, current methods struggle with two critical gaps: the modality gap, involving prosody and emotion, and the colloquialness gap, distinguishing written scripts from natural speech. To address these challenges, we introduce SDiaReward, an end-to-end multi-turn reward model trained on SDiaReward-Dataset, a novel collection of episode-level preference pairs explicitly targeting these gaps. It operates directly on full multi-turn speech episodes and is optimized with pairwise preference supervision, enabling joint assessment of modality and colloquialness in a single evaluator. We further establish ESDR-Bench, a stratified benchmark for robust episode-level evaluation. Experiments demonstrate that SDiaReward achieves state-of-the-art pairwise preference accuracy, significantly outperforming general-purpose audio LLMs. Further analysis suggests that SDiaReward captures relative conversational expressiveness beyond superficial synthesis cues, improving generalization across domains and recording conditions. Code, data, and demos are available at https://sdiareward.github.io/.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/21/2603.14891v1-decision-level-ordinal-modeling-for-multimodal-essay-scoring-with-large-language-models",
+      "section": "deep",
+      "title_en": "Decision-Level Ordinal Modeling for Multimodal Essay Scoring with Large Language Models",
+      "authors": "Han Zhang, Jiamin Su, Li liu",
+      "date": "2026-03-16",
+      "pdf": "https://arxiv.org/pdf/2603.14891v1",
+      "score": "8.0",
+      "evidence": "结合大语言模型和视觉输入的多模态文章评分",
+      "tldr": "本研究针对大语言模型在自动作文评分（AES）中决策过程不透明且难以处理多模态信息的问题，提出了决策级序数建模（DLOM）。该方法通过复用语言模型头提取预定义分值标记的对数几率，将评分转化为显式的序数决策。针对多模态场景引入门控融合模块（DLOM-GF），针对纯文本场景加入距离感知正则化（DLOM-DA）。实验证明，该方法在多模态及纯文本基准测试上均优于现有生成式基准。",
+      "tags": "query:msa",
+      "abstract_en": "Automated essay scoring (AES) predicts multiple rubric-defined trait scores for each essay, where each trait follows an ordered discrete rating scale. Most LLM-based AES methods cast scoring as autoregressive token generation and obtain the final score via decoding and parsing, making the decision implicit. This formulation is particularly sensitive in multimodal AES, where the usefulness of visual inputs varies across essays and traits. To address these limitations, we propose Decision-Level Ordinal Modeling (DLOM), which makes scoring an explicit ordinal decision by reusing the language model head to extract score-wise logits on predefined score tokens, enabling direct optimization and analysis in the score space. For multimodal AES, DLOM-GF introduces a gated fusion module that adaptively combines textual and multimodal score logits. For text-only AES, DLOM-DA adds a distance-aware regularization term to better reflect ordinal distances. Experiments on the multimodal EssayJudge dataset show that DLOM improves over a generation-based SFT baseline across scoring traits, and DLOM-GF yields further gains when modality relevance is heterogeneous. On the text-only ASAP/ASAP++ benchmarks, DLOM remains effective without visual inputs, and DLOM-DA further improves performance and outperforms strong representative baselines.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/21/2603.13043v1-before-and-after-chatgpt-revisiting-ai-based-dialogue-systems-for-emotional-support",
+      "section": "quick",
+      "title_en": "Before and After ChatGPT: Revisiting AI-Based Dialogue Systems for Emotional Support",
+      "authors": "Daeun Lee, Dongje Yoo, Migyeong Yang, Jihyun An, Christine B. Cha, Jinyoung Han",
+      "date": "2026-03-13",
+      "pdf": "https://arxiv.org/pdf/2603.13043v1",
+      "score": "7.0",
+      "evidence": "回顾用于心理健康和情感支持的AI驱动对话系统",
+      "tldr": "本研究回顾了2020至2024年间用于心理健康支持的AI对话系统的技术演进，重点分析了从特定任务深度学习模型向大语言模型（LLM）的转变。通过对146项研究的文献计量和定性分析，揭示了LLM在灵活性和泛化能力上的优势，同时也指出了其在可靠性与安全性方面的挑战，为未来开发更有效的AI咨询系统提供了指导。",
+      "tags": "query:msa",
+      "abstract_en": "Mental health remains a major public health concern, while access to timely psychological support is often limited. AI-based dialogue systems have emerged as promising tools to address these barriers, and recent advances in large language models (LLMs) have significantly transformed this research area. However, a systematic understanding of this technological transition is still limited. This study reviews the technological evolution of AI-driven dialogue systems for mental health, focusing on the shift from task-specific deep learning models to LLM-based approaches. We conducted a bibliometric analysis and qualitative trend review of studies published between 2020 and May 2024 using Web of Science, Scopus, and the ACM Digital Library. The qualitative analysis compared research conducted before and after the widespread adoption of LLMs. Pre-LLM research was represented by highly cited studies and work based on the ESConv dataset, while post-LLM research included highly cited dialogue systems built on LLMs. A total of 146 studies met the inclusion criteria, showing a steady growth in publications over time. Before the widespread use of LLMs, empathetic response generation mainly relied on task-specific deep learning models. Highly cited and ESConv-based studies commonly focused on multi-task learning and the integration of external knowledge. In contrast, recent LLM-based dialogue systems demonstrate improved linguistic flexibility and generalization for emotional support. However, these systems also raise concerns related to reliability and safety in mental health applications. This review highlights the technological transition of AI-based dialogue systems for mental health in the LLM era. By identifying current research trends and limitations, the findings provide guidance for developing more effective and reliable AI-driven counseling systems.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/21/2603.18822v1-detecting-basic-values-in-a-noisy-russian-social-media-text-data-a-multi-stage-classification-framework",
+      "section": "quick",
+      "title_en": "Detecting Basic Values in A Noisy Russian Social Media Text Data: A Multi-Stage Classification Framework",
+      "authors": "Maria Milkova, Maksim Rudnev",
+      "date": "2026-03-19",
+      "pdf": "https://arxiv.org/pdf/2603.18822v1",
+      "score": "7.0",
+      "evidence": "检测社交媒体文本数据中的人类价值观和观点",
+      "tldr": "本研究针对嘈杂的俄罗斯社交媒体文本，基于施瓦茨基本人类价值理论，提出了一种多阶段分类框架。该框架结合了垃圾信息过滤、LLM 软标签标注及多标签分类技术，利用 XLM-RoBERTa 模型实现了对十种基本价值的高效检测。研究不仅验证了 LLM 在主观标注任务中的潜力，还揭示了俄罗斯社交网络中价值表达的独特模式，为数字环境下的文化研究提供了新工具。",
+      "tags": "query:msa",
+      "abstract_en": "This study presents a multi-stage classification framework for detecting human values in noisy Russian language social media, validated on a random sample of 7.5 million public text posts. Drawing on Schwartz's theory of basic human values, we design a multi-stage pipeline that includes spam and nonpersonal content filtering, targeted selection of value relevant and politically relevant posts, LLM based annotation, and multi-label classification. Particular attention is given to verifying the quality of LLM annotations and model predictions against human experts. We treat human expert annotations not as ground truth but as an interpretative benchmark with its own uncertainty. To account for annotation subjectivity, we aggregate multiple LLM generated judgments into soft labels that reflect varying levels of agreement. These labels are then used to train transformer based models capable of predicting the probability of each of the ten basic values. The best performing model, XLM RoBERTa large, achieves an F1 macro of 0.83 and an F1 of 0.71 on held out test data. By treating value detection as a multi perspective interpretive task, where expert labels, GPT annotations, and model predictions represent coherent but not identical readings of the same texts, we show that the model generally aligns with human judgments but systematically overestimates the Openness to Change value domain. Empirically, the study reveals distinct patterns of value expression and their co-occurrence in Russian social networks, contributing to a broader research agenda on cultural variation, communicative framing, and value based interpretation in digital environments. All models are released publicly.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

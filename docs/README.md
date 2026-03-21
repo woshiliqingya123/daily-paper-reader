@@ -6,34 +6,36 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-20
-- 运行时间：2026-03-20 19:32:05 UTC
+- 最新运行日期：2026-03-21
+- 运行时间：2026-03-21 19:25:10 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
+- 本次总论文数：5
+- 精读区：3
 - 速读区：2
 
 ### 今日简报（AI）
-今日深度探索多模态情感计算，重点解析 AlignMamba-2 架构与视频学习中的情感交互预测。
-满分论文展示了 Mamba 在模态感知融合中的巨大潜力，同时揭示了说话者表现力对学习参与度的关键影响。
-建议关注轻量化大模型在情感解码与多模态推荐系统中的跨界应用。
-- 详情：[/202603/20/README](/202603/20/README)
+今日聚焦语音大模型的情感对齐与口语化建模，深度解析多模态对话系统的演进。
+核心突破在于利用多任务
+- 详情：[/202603/21/README](/202603/21/README)
 
 ### 精读区论文标签
-1. [AlignMamba-2: Enhancing Multimodal Fusion and Sentiment Analysis with Modality-Aware Mamba](/202603/20/2603.18462v1-alignmamba-2-enhancing-multimodal-fusion-and-sentiment-analysis-with-modality-aware-mamba)  
-   标签：评分：10.0/10、query:msa
-   evidence：基于高效 Mamba 模型的多模态融合与情感分析
-2. [Dual-Model Prediction of Affective Engagement and Vocal Attractiveness from Speaker Expressiveness in Video Learning](/202603/20/2603.18758v1-dual-model-prediction-of-affective-engagement-and-vocal-attractiveness-from-speaker-expressiveness-in-video-learning)  
+1. [Aligning Paralinguistic Understanding and Generation in Speech LLMs via Multi-Task Reinforcement Learning](/202603/21/2603.15981v1-aligning-paralinguistic-understanding-and-generation-in-speech-llms-via-multi-task-reinforcement-learning)  
    标签：评分：9.0/10、query:msa
-   evidence：在真实世界的异步视频学习场景中预测情感参与度
+   evidence：用于情感分类和响应生成的副语言感知语音大模型
+2. [Modeling and Benchmarking Spoken Dialogue Rewards with Modality and Colloquialness](/202603/21/2603.14889v1-modeling-and-benchmarking-spoken-dialogue-rewards-with-modality-and-colloquialness)  
+   标签：评分：8.0/10、query:msa
+   evidence：在多模态对话中融入了包括韵律和情感在内的副语言细微差别
+3. [Decision-Level Ordinal Modeling for Multimodal Essay Scoring with Large Language Models](/202603/21/2603.14891v1-decision-level-ordinal-modeling-for-multimodal-essay-scoring-with-large-language-models)  
+   标签：评分：8.0/10、query:msa
+   evidence：结合大语言模型和视觉输入的多模态文章评分
 
 ### 速读区论文标签
-1. [Affect Decoding in Phonated and Silent Speech Production from Surface EMG](/202603/20/2603.11715v2-affect-decoding-in-phonated-and-silent-speech-production-from-surface-emg)  
+1. [Before and After ChatGPT: Revisiting AI-Based Dialogue Systems for Emotional Support](/202603/21/2603.13043v1-before-and-after-chatgpt-revisiting-ai-based-dialogue-systems-for-emotional-support)  
    标签：评分：7.0/10、query:msa
-   evidence：通过面部和颈部表面肌电图及声学语音进行情感解码
-2. [VLM4Rec: Multimodal Semantic Representation for Recommendation with Large Vision-Language Models](/202603/20/2603.12625v1-vlm4rec-multimodal-semantic-representation-for-recommendation-with-large-vision-language-models)  
-   标签：评分：6.0/10、query:msa
-   evidence：利用视觉语言模型进行推荐的多模态语义表示
+   evidence：回顾用于心理健康和情感支持的AI驱动对话系统
+2. [Detecting Basic Values in A Noisy Russian Social Media Text Data: A Multi-Stage Classification Framework](/202603/21/2603.18822v1-detecting-basic-values-in-a-noisy-russian-social-media-text-data-a-multi-stage-classification-framework)  
+   标签：评分：7.0/10、query:msa
+   evidence：检测社交媒体文本数据中的人类价值观和观点
 
 
 <div class="dpr-home-promo-card">
