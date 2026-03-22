@@ -1,0 +1,37 @@
+{
+  "label": "2026-03-22",
+  "date": "2026-03-22",
+  "generated_at": "2026-03-22T19:24:10",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202603/22/2603.17231v1-neuron-level-emotion-control-in-speech-generative-large-audio-language-models",
+      "section": "quick",
+      "title_en": "Neuron-Level Emotion Control in Speech-Generative Large Audio-Language Models",
+      "authors": "Xiutian Zhao, Ismail Rasim Ulgen, Philipp Koehn, Björn Schuller, Berrak Sisman",
+      "date": "2026-03-18",
+      "pdf": "https://arxiv.org/pdf/2603.17231v1",
+      "score": "7.0",
+      "evidence": "音频语言模型中的神经元级情感控制",
+      "tldr": "本研究针对大音频语言模型在语音生成中情感控制不可靠且易导致内容失真的挑战，首次开展了神经元级别的情感控制研究。通过成功过滤的激活聚合技术，研究者识别出情感敏感神经元（ESNs），实现了推理阶段无需训练的情感引导。在Qwen2.5-Omni、MiniCPM-o等模型上的实验验证了该方法在提升情感准确性的同时，能保持语言保真度并具备跨说话人的泛化性，为语音生成提供了机械论控制框架。",
+      "tags": "query:msa",
+      "abstract_en": "Large audio-language models (LALMs) can produce expressive speech, yet reliable emotion control remains elusive: conversions often miss the target affect and may degrade linguistic fidelity through refusals, hallucinations, or paraphrase. We present, to our knowledge, the first neuron-level study of emotion control in speech-generative LALMs and demonstrate that compact emotion-sensitive neurons (ESNs) are causally actionable, enabling training-free emotion steering at inference time. ESNs are identified via success-filtered activation aggregation enforcing both emotion realization and content preservation. Across three LALMs (Qwen2.5-Omni-7B, MiniCPM-o 4.5, Kimi-Audio), ESN interventions yield emotion-specific gains that generalize to unseen speakers and are supported by automatic and human evaluation. Controllability depends on selector design, mask sparsity, filtering, and intervention strength. Our results establish a mechanistic framework for training-free emotion control in speech generation.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/22/2603.17347v1-beyond-forced-modality-balance-intrinsic-information-budgets-for-multimodal-learning",
+      "section": "quick",
+      "title_en": "Beyond Forced Modality Balance: Intrinsic Information Budgets for Multimodal Learning",
+      "authors": "Zechang Xiong, Da Li, Kexin Tang, Pengyuan Li, Wenkang Kong, Yulan Hu",
+      "date": "2026-03-18",
+      "pdf": "https://arxiv.org/pdf/2603.17347v1",
+      "score": "7.0",
+      "evidence": "通过信息预算解决多模态学习中的模态不平衡问题",
+      "tldr": "针对多模态学习中主导模态抑制弱势模态导致的性能不佳问题，本文提出IIBalance框架。该框架不再盲目强制模态平衡，而是引入“内在信息预算（IIB）”概念，通过评估各模态的信息容量来指导贡献分配。利用原型对齐机制纠正语义漂移，并结合概率门控模块实现校准融合，有效提升了多模态信息的利用率。",
+      "tags": "query:msa",
+      "abstract_en": "Multimodal models often converge to a dominant-modality solution, in which a stronger, faster-converging modality overshadows weaker ones. This modality imbalance causes suboptimal performance. Existing methods attempt to balance different modalities by reweighting gradients or losses. However, they overlook the fact that each modality has finite information capacity. In this work, we propose IIBalance, a multimodal learning framework that aligns the modality contributions with Intrinsic Information Budgets (IIB). We propose a task-grounded estimator of each modality's IIB, transforming its capacity into a global prior over modality contributions. Anchored by the highest-budget modality, we design a prototype-based relative alignment mechanism that corrects semantic drift only when weaker modalities deviate from their budgeted potential, rather than forcing imitation. During inference, we propose a probabilistic gating module that integrates the global budgets with sample-level uncertainty to generate calibrated fusion weights. Experiments on three representative benchmarks demonstrate that IIBalance consistently outperforms state-of-the-art balancing methods and achieves better utilization of complementary modality cues. Our code is available at: https://github.com/XiongZechang/IIBalance.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

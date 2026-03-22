@@ -1,0 +1,598 @@
+Title: Neuron-Level Emotion Control in Speech-Generative Large Audio-Language Models
+
+URL Source: https://arxiv.org/pdf/2603.17231v1
+
+Published Time: Thu, 19 Mar 2026 00:32:26 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Neuron-Level Emotion Control in Speech-Generative Large Audio-Language Models 
+
+# Xiutian Zhao ID 1, Ismail Rasim Ulgen ID 1, Philipp Koehn ID 1, Björn Schuller ID 2, Berrak Sisman ID 11 Center for Language and Speech Processing (CLSP), Johns Hopkins University, USA 
+
+2 Group on Language, Audio & Music (GLAM), Imperial College London, UK 
+
+xzhao117@jhu.edu, sisman@jhu.edu 
+
+# Abstract 
+
+Large audio-language models (LALMs) can produce ex-pressive speech, yet reliable emotion control remains elusive: conversions often miss the target affect and may degrade lin-guistic fidelity through refusals, hallucinations, or paraphrase. We present, to our knowledge, the first neuron-level study of emotion control in speech-generative LALMs and demonstrate that compact emotion-sensitive neurons (ESNs) are causally ac-tionable, enabling training-free emotion steering at inference time. ESNs are identified via success-filtered activation aggre-gation enforcing both emotion realization and content preserva-tion. Across three LALMs (Qwen2.5-Omni-7B, MiniCPM-o 4.5, Kimi-Audio), ESN interventions yield emotion-specific gains that generalize to unseen speakers and are supported by auto-matic and human evaluation. Controllability depends on selector design, mask sparsity, filtering, and intervention strength. Our re-sults establish a mechanistic framework for training-free emotion control in speech generation. 
+
+Index Terms : large audio-language models, speech, emotion, voice conversion, neuron attribution 
+
+# 1. Introduction 
+
+Emotion is a core dimension of spoken communication: be-yond lexical content, prosody, pitch, intensity, and speaking rate convey affect and shape perceived intent and naturalness [1]. Recent large audio-language models (LALMs) that jointly pro-cess speech and text [2 –5] enable expressive speech generation from natural-language instructions, supporting new workflows in conversational agents and speech editing. In practice, how-ever, instruction-following speech generation remains challeng-ing [6, 7], particularly for emotion control: the same prompt may produce unintended affect, and even when the target emotion is realized, linguistic fidelity can degrade. Content-preservation failures such as refusals, uncontrolled paraphrasing, and seman-tic hallucinations are well-documented in autoregressive lan-guage models [8]. Unlike conventional acoustic distortions, which reduce intelligibility but preserve meaning, these failures alter the underlying message, as illustrated in Figure 1. Emotional voice conversion (EVC) aims to modify the emo-tional style of a speech signal while preserving its linguistic con-tent [9 – 11]. Classical and neural approaches achieve controllabil-ity by learning explicit style representations (e.g., reference en-coders or style tokens) [12, 13] or by modeling emotion strength as a continuous control variable [14, 15]. In large language model (LLM) research, training-free control through activation manipulation has emerged as an alternative to re-training [16]. In parallel, neuron-level interpretability studies show that individ-ual units can localize salient behaviors in deep networks [17 –19] and can be exploited via targeted interventions for controllable Generations                
+
+> Source Speech
+> Repeat the utterance
+> word -for -word exactly.
+> Speak with an Anger
+> emotion. Do not add or
+> remove any words.
+> Output speech only.
+> Unintervened
+> Speech Emotion: Neutral
+> Linguistic Content: The
+> ladybug told them proudly.
+> LALM
+> Textual Instruction
+> Input EVC
+> Success
+> Source Transcript
+> (Not Visible to LALMs)
+> The ladybug told them
+> proudly.
+> Mask 1
+> Mask 2
+> Mask 3
+> Speech Emotion: Neutral
+> Speech Emotion: Anger
+> Linguistic Content: The
+> ladybug told them proudly.
+> Speech Emotion: Anger
+> Linguistic Content: The
+> ladybug told them angrily .
+> Speech Emotion: Neutral
+> Linguistic Content: I'm sorry,
+> I can't repeat the audio.
+> Emotion -
+> Sensitive
+> Neuron Masks
+
+Figure 1: EVC with LALMs is inherently multi-objective: suc-cessful conversion requires both target-emotion realization and linguistic content preservation. 
+
+behavior [16, 20]. However, for speech-generative LALMs, we lack a mechanistic account of whether neuron-level units are systematically involved in emotional expressiveness during gen-eration, and whether compact neuron subsets can serve as a prac-tical control interface orthogonal to re-training or task-specific fine-tuning. This paper studies emotion controllability in LALMs from a neuron-level perspective, focusing on instruction-following EVC. Our central hypothesis is that compact neuron subsets associated with emotional expression exist in speech-generative LALMs, and that intervening on these subsets can causally af-fect measured EVC outcomes. We center the study around the following research questions: 1. Existence. Do ESNs exist in speech-generative LALMs, and does intervening on them causally affect EVC outcomes? If so, do these effects primarily alter emotional expressiveness or linguistic content? 2. Identification. Which neuron selection criteria most effec-tively isolate ESNs for controllable EVC, and how do mask sparsity and identification data size influence results? 3. Inference-Time Controllability. How do intervention type and strength affect emotion control and content preservation in EVC? 4. Localization. Where do ESNs concentrate across modules and across layers in LALMs, and what does this imply for controllable EVC? To answer these questions, we adopt a four-stage activation-based pipeline: (1) activation sampling during EVC with hooks on decoder MLP gates; (2) filtering successful EVC in-stances for activation aggregation; (3) ESN identification by various neuron ranking criteria: frequency-based, entropy-based, mean-deviation-based, and contrastive-margin-based; and (4) inference-time control via targeted steering, additive injection, 
+
+> arXiv:2603.17231v1 [cs.CL] 18 Mar 2026
+
+clamping, and deactivation, keeping model weights untouched. However, EVC’s inherently multi-objective nature makes isolating qualified conversions complex [9]. This motivates a multi-stage filtering and identification protocol (Figure 2) that aggregates activations only from outputs that achieve both emo-tion realization and content preservation. We later adapt the same two axes used for evaluating intervention effects. Using the Emotional Speech Dataset (ESD) [9], we evaluate three open speech-generative LALMs: Qwen2.5-Omni-7B [4], MiniCPM-o 4.5 [3], and Kimi-Audio [5]. Even without inter-vention, instruction-following EVC proves challenging: baseline emotion match rates are modest, target emotions vary substan-tially in difficulty, and stronger affect expression does not nec-essarily coincide with better content preservation. Despite this difficult baseline, neuron-level intervention produces consistent and interpretable effects. Compact ESN masks induce structured self–cross patterns rather than arbitrary degradation, indicating that they causally influence emotional rendering. Controllability first depends on the identification-time se-lection criteria. Our results show that the type of evidence em-phasized by a selector directly impacts ESN effectiveness for emotion control. In particular, contrastive-margin- and mean-deviation-based selectors isolate substantially more effective ESNs than frequency- or entropy-based ones. Masks that are too sparse fail to capture the distributed emotion signal, whereas overly large masks admit shared or generic generation features and reduce specificity. A similar trade-off holds for identifica-tion data: ESN estimates stabilize with a relatively small pool of qualified conversions, after which additional examples yield di-minishing returns and may increase cross-emotion interference. Intervention design then shapes inference-time controllabil-ity. In our Qwen2.5-Omni-7B strength sweep, moderate steering strengths yield the best observed balance between target-emotion gain and content preservation, whereas stronger interventions dramatically degrade linguistic fidelity, indicating that effective EVC control depends on calibrated rather than brute-force manip-ulation. These gains are observed in both automatic evaluation and human listening, where intervened samples are preferred in 62% of pairwise comparisons on average, supporting that ESN-masked models generate more perceptible emotion shifts. Localization analyses further show that the most actionable ESNs concentrate in intermediate-to-late decoder MLP layers on the language-model side across all three LALMs, while analogous interventions in downstream synthesis MLPs are largely inert. This is consistent with the view that emotion-related control is more accessible on the LM side before acoustic rendering than in the late-stage synthesis modules we tested. 
+
+Contributions. This paper provides, to our knowledge, one of the first systematic neuron-level analyses of emotion con-trol in speech-generative LALMs under an EVC setting. We show that compact ESN masks are causally actionable, enabling training-free intervention that produces consistent target-emotion control beyond purely correlational analysis. Within a unified framework, we systematically compare ESN selectors, mask sparsity, success set size, and inference-time intervention de-signs, identifying contrastive-margin- and mean-deviation-based criteria as the most favorable among the tested selectors for iso-lating actionable ESNs. We further localize the most impactful emotion-control signals to intermediate-to-late decoder MLP lay-ers on the language-model side, while analogous interventions in the downstream synthesis stack are largely ineffective. Finally, we show that these effects generalize beyond the identification split and are corroborated by human listening, establishing a practical and mechanistically grounded route to training-free emotion control in speech-generative LALMs. 
+
+# 2. Related Work 
+
+Affective speech synthesis and conversion aim to generate or transform speech while controlling paralinguistic affect, most prominently emotion [10]. In emotional speech synthesis, con-trollability is typically achieved by learning explicit style or emo-tion representations and conditioning generation, such as via ref-erence encoders [12] or global style tokens [13], with subsequent extensions incorporating semi- or weak supervision [21 –24]. Complementary work explores continuous affect control, in-cluding emotion intensity prediction or transfer [14, 15, 25, 26], while recent approaches investigate token-level manipulation for expressive text-to-speech (TTS) [27]. EVC [9] further studies mapping between emotional states, including non-parallel adver-sarial and multi-domain frameworks [28 – 31], diffusion-based approaches [32], and representation-factorized models [33]. In parallel, neuron-level interpretability work that local-izes functional units in deep neural networks [17, 18, 34] has encouraged explorations on neuron/activation-level control in LLMs [16,35 –37], alongside emerging interests for LLM-centric multimodal models [38 –41]. Among them, audio-language mod-els capable of speech understanding and generation [3 –5] enable studying affective control in instruction-following speech gen-eration settings. Recent studies report affective circuits in text LLMs [42,43], however, there have been very limited attempts to utilize emotion-related functional units in LALMs [20]. Unlike prior work, which primarily targets recognition, representation learning, or token-level manipulation, we probe the synthesis pathway in speech-generative LALMs by logging activations during EVC generation that yield successful conversions and applying training-free neuron-level interventions to directly steer emotion expressiveness. 
+
+# 3. Methodology 
+
+We study emotion control in speech-generative LALMs through a neuron-level intervention framework tailored to instruction-following EVC. While activation-based interpretability and steer-ing methods have been explored in text and multimodal mod-els, applying them to speech generation is non-trivial. Unlike text classification probes, speech generation exhibits two key challenges: (1) generation is harmed by diverse failure modes (hallucinated content, silence, refusals) that stem from language-model (LM) components; and (2) task success is inherently multi-objective, requiring both emotional style transfer and lin-guistic content preservation. To address these challenges, we design a four-stage pipeline that explicitly filters qualified EVC instances before activation aggregation (Figure 2). This struc-tured protocol enables more reliable identification of candidate emotion-sensitive neurons and interventional testing of their functional relevance in speech-generative LALMs. 
+
+3.1. Activation Sampling 
+
+For each source speech utterance x in the identification set, we instruct the LALM to perform EVC and generate audio y of the target emotion etgt . The instruction prompt is fixed across conditions, and we record activations during the forward passes of the modules that mediate generation. 
+
+Hooking Position. We instrument the decoder-side feed-forward blocks (MLPs) because they offer a stable, high-bandwidth location for neuron-level interventions [16,17]. Many Stage 1       
+
+> Activation Sampling
+> Stage 2
+> Success EVC Instance
+> Filtering
+> Stage 4
+> Controllable EVC via
+> Neuron -Level Intervention
+> LALMs
+> Speech
+> Emotion
+> Filter Emotion -Sensitive
+> Neuron Masks
+> Activation
+> Logs
+> Generated
+> Speeches
+> Aggregate dActivation sof
+> Success EVC Instances
+> …
+> 12𝑛
+> Neuron
+> Identification
+> Selectors
+> Source Speech
+> (Neutral)
+> Instruction
+> Prompt
+> Stage 3
+> Identifying Emotion -
+> Sensitive Neurons
+> SER Model
+> or
+> Human
+> Evaluation
+> Content
+> Preservation
+> Filter
+> Apply the Filters
+> WER
+> Construct
+> Filters
+> LALMs
+> Unintervened
+> Generations
+> Source Speech
+> (Neutral)
+> Instruction
+> Prompt
+> Intervened
+> Generations
+> Identification Set
+> Evaluation Set
+> Inference -time
+> Interventions
+
+Figure 2: The overview of our four-stage pipeline for identifying and manipulating emotion-sensitive neurons in LALMs for EVC. 
+
+LALMs employ gated MLPs (e.g., SwiGLU variants) [44], which offer a natural position for hooking. Concretely, let 
+
+ul,t , v l,t ∈ RDl be the two pre-activation streams at layer l
+
+and decoding step/token position t, and let 
+
+gl,t = ϕ(ul,t ) ∈ RDl (1) denote the gated branch after the nonlinearity ϕ(·) (e.g., SiLU ). The MLP output is hl,t = Wo (gl,t ⊙ vl,t ), where ⊙ is elemen-twise product. We log the scalar neuron activations al,n,t =[gl,t ]n, for neuron index n ∈ { 1, . . . , D l}. These logged values serve as the basis for our identification statistics and intervention hooks. In addition to the MLPs in the language-model component of LALMs, we also examine whether the synthesis MLP layers also contain ESNs, which we analyze later in § 5.5. For each conversion attempt, we store per-neuron counts and moments computed over the full activation tensor produced during genera-tion; we do not apply any success-based selection or modality restriction at this step. 
+
+3.2. Success Filtering and Set Construction 
+
+A key design choice is to record and utilize activations only on conversions that plausibly satisfy EVC. Raw generations include diverse failures, as we showed in Figure 1, and mixing them into activation statistics can obscure emotion-related signals. For each generated audio y, we apply a two-axis filter aligned with the standard decomposition of voice conversion evaluation into 
+
+speaking style and linguistic content [9]. 
+
+Emotion check via held-out judge. We employ a held-out SER model as an automatic judge. It predicts an emotion label ˆe(y). We accept the generation as emotion-matched if 
+
+ˆe(y) = etgt . In a subset of experiments, we also conduct human listening experiments to validate the automatic judges’ reliability; § 5.4 discusses differences and agreement patterns. 
+
+Content preservation via word error rate (WER) thresh-old. We examine linguistic content preservation by comparing the decoded text content produced by the LALM with the source transcription of x (or its reference transcript). Importantly, since the LALM emits decoded text alongside audio, we use the de-coded text directly rather than transcribing y with a separate automatic speech recognition (ASR) engine for evaluation of preservation. We set a fixed threshold τwer = 0 .15 to define/filter the successful instance across our experiments. 
+
+Success instance sets. For each target emotion e ∈ E , we denote the filtered success set as Se. The size of this set is capped by a parameter c (the set is uniformly sampled if |S e| > c ) to balance emotions (later analyzed in § 5.2.3). 
+
+3.3. Activation Aggregation and Emotion-Sensitive Neuron Identification 
+
+3.3.1. Activation Statistics on Filtered Successes 
+
+Using only the filtered success set Se, our method computes neuron-wise activation probabilities from positive-activation counts. For each neuron (l, n ) and emotion e, we accumulate 
+
+K(e) 
+
+> l,n
+
+← K(e) 
+
+> l,n
+
++ X
+
+> (x,y )∈S e
+
+X
+
+> t
+
+I(a(x→y) 
+
+> l,n,t
+
+> 0) , (2) 
+
+Te ← Te + X
+
+> (x,y )∈S e
+
+X
+
+> t
+
+1. (3) We then define the activation probability P (e) 
+
+> l,n
+
+= K(e) 
+
+> l,n
+> Te
+
+. Thus, 
+
+P (e) 
+
+> l,n
+
+measures how often neuron (l, n ) is active on successful EVC instances of target emotion e.Let N = PLl=1 Dl denote the total number of neurons across all instrumented layers, and let r ∈ (0 , 1) be the selection rate. In all four methods below, the implementation selects 
+
+Nsel = ⌊rN ⌋ neurons per emotion. 
+
+3.3.2. Neuron Ranking Methods 
+
+• LAP (Activation Probability) [45 – 47]. For each emotion e,neurons are ranked directly by their activation probability, i.e., 
+
+LAP (e) 
+
+> l,n
+
+= P (e) 
+
+> l,n
+
+, and the top Nsel are selected. • LAPE (Activation Probability Entropy) [40, 48, 49]. This implementation applies a two-stage procedure. First, for each neuron, activation probabilities are normalized across emotions, ˜P (e) 
+
+> l,n
+
+= P (e) 
+
+> l,n
+
+/ P 
+
+> e′
+
+P (e′) 
+
+> l,n
+
+, and an entropy score 
+
+Hl,n = − P 
+
+> e
+
+˜P (e) 
+
+> l,n
+
+log ˜P (e) 
+
+> l,n
+
+is computed, where lower en-tropy indicates stronger emotion selectivity. Neurons that are globally too inactive are then removed using a probability threshold τp computed from a global percentile over all P (e)
+
+> l,n
+
+values; a neuron is kept only if it exceeds τp for at least one emotion. Among the remaining neurons, the lowest-entropy 
+
+Ncand = ⌊min(1 , 5r)N ⌋ form a candidate pool. Finally, for each target emotion e, the method selects the top Nsel neurons from this pool by P (e) 
+
+> l,n
+
+.• MAD (Mean Activation Deviation) [19, 50, 51]. For each neuron, the implementation first computes its mean activation probability across emotions, ¯Pl,n = 1
+
+> |E|
+
+P 
+
+> e′
+
+P (e′) 
+
+> l,n
+
+. For target emotion e, the score is then the absolute deviation from this mean: 
+
+MAD (e) 
+
+> l,n
+
+= P (e) 
+
+> l,n
+
+− ¯Pl,n . (4) Hence, this implementation favors neurons whose activation probability for emotion e differs strongly, in either direction, from their average behavior across emotions. • CAS (Contrastive Activation Selection) [20, 52]. For each neuron, let P (1)  
+
+> l,n
+
+and P (2)  
+
+> l,n
+
+denote its largest and second-largest activation probabilities across emotions, respectively, and let 
+
+e(1)  
+
+> l,n
+
+be the corresponding top emotion. The margin is ∆l,n =
+
+P (1)  
+
+> l,n
+
+− P (2)  
+
+> l,n
+
+. For target emotion e, the method ranks a neuron by this margin only when e = e(1)  
+
+> l,n
+
+; otherwise, its score is set to −∞ . It then selects the top Nsel neurons for each emotion. • Random baseline. As a control, we additionally sample 
+
+Nsel = ⌊rN ⌋ neurons uniformly at random without replace-ment from all N = L × D hooked neurons, and map them back to their layers to form a mask with the same sparsity as the other selectors. 
+
+3.4. Inference-Time Emotion Control via Neuron-Level In-terventions 
+
+To test whether the identified neurons are causal for EVC, we intervene on the post-activation gate values of the hooked MLPs during generation, while keeping all model weights fixed. Con-cretely, for a hooked layer l, let gl,t ∈ RDl denote the activated gate vector at generation step t, and let I(m,e ) 
+
+> l
+
+be the set of selected neuron indices for method m and target emotion e. In-terventions are applied only on dimensions in I(m,e ) 
+
+> l
+
+, before the elementwise product with the parallel MLP branch and the output projection. • Targeted steering (gain scaling) [16]. For selected neurons, we multiply the activated gate values by a constant gain 1 + α
+
+(α ≥ 0). In compact form, 
+
+[˜ gl,t ]n =
+
+(
+
+(1 + α)[ gl,t ]n, n ∈ I (m,e ) 
+
+> l
+
+,
+
+[gl,t ]n, otherwise. (5) • Additive shift [36]. As an alternative intervention, we add a constant offset α (α ≥ 0) to the selected gate dimensions: 
+
+[˜ gl,t ]n =
+
+(
+
+[gl,t ]n + α, n ∈ I (m,e ) 
+
+> l
+
+,
+
+[gl,t ]n, otherwise. (6) Unlike steering, this is a uniform scalar shift and does not use neuron-specific reference values. • Floor clamping [53]. We also test a minimum-activation constraint, in which each selected dimension is clamped from below by a scalar threshold α (α ≥ 0): 
+
+[˜ gl,t ]n =
+
+(
+
+max ([ gl,t ]n, α ) , n ∈ I (m,e ) 
+
+> l
+
+,
+
+[gl,t ]n, otherwise. (7) This ensures that selected neurons remain at or above a fixed activation floor during generation. • Deactivation. Finally, we test necessity by zeroing the se-lected activated gate dimensions: 
+
+[˜ gl,t ]n =
+
+(
+
+0, n ∈ I (m,e ) 
+
+> l
+
+,
+
+[gl,t ]n, otherwise. (8) This removes the contribution of the selected neurons while leaving the rest of the computation unchanged. 
+
+3.5. Evaluation Metrics and Protocol 
+
+Echoing the filtering protocol in § 3.2 and in accordance with the EVC objectives, we evaluate three aspects: emotion shift ,
+
+content preservation , and naturalness . All generations are resampled to 16 kHz. • Emotion shift success. We report Emotion match rate ,the fraction of converted samples whose predicted emotion matches etgt . (1) SER judges are provided with (x, ˆxetgt ), for 
+
+emotion2vec+large [54], we directly use the predicted label. For Qwen3-Omni-30B [55], we prompt the model to perform five-way multiple-choice emotion classification. (2) Human evaluation uses pairwise A/B preference. See details in § 5.4. • Content preservation. We compute WER between the ref-erence transcript and the extracted decoded text from the LALMs, normalized by the whisper-normalizer. 1
+
+• Naturalness. We estimate perceptual quality using the UTokyo-SaruLab Mean Opinion Score (UTMOS) [56], a non-intrusive mean opinion score (MOS) estimator. 
+
+Interventions and evaluation conditions. For each emo-tion emask ∈ E, we identify a set of ESNs using each selector on the I DENTIFICATION split. We then evaluate emotion sensi-tivity on held-out utterances by comparing generation with and without intervention under two complementary conditions: (1) 
+
+self-effect (emask =etgt ), where the model is instructed to generate emotion etgt and is intervened with the ESN mask identified for that same emotion; and (2) cross-effect (emask ̸ =etgt ), where the model is instructed to generate emotion etgt but is intervened with an ESN mask identified for a different emotion. For posi-tive interventions (scaling, additive, and clamping), the expected effect is to strengthen evidence associated with emask . Comparing self- and cross-effect therefore helps distinguish emotion-specific modulation from broad degradation or nonspecific perturbation. 
+
+# 4. Experiment Setup 
+
+4.1. Models 
+
+As outlined, we evaluate three LALMs: Qwen2.5-Omni-7B [4], 
+
+Kimi-Audio [5], MiniCPM-o 4.5 [3], all of which are mul-timodal models with audio-generation capability. They were selected for their strong benchmark performance and instruction-following ability. Their architectural differences further enable comparative interpretability analysis. For automated conversion-success judgment, we employ two models: emotion2vec+large 
+
+[54] serves as a speech emotion recognition (SER) judge from a primarily acoustic perspective. On a 500-sample (100 per emo-tion) held-out subset of ESD, emotion2vec+large achieves 97.6% overall SER accuracy. In addition, we purposefully introduce an advanced LALM, Qwen3-Omni-30B [55] as a supplementary LALM-based judge to assess potential bias toward linguistic content in emotion evaluation. 
+
+> 1https://pypi.org/project/whisper-normalizer/
+
+4.2. Dataset 
+
+Our primary test bed is the Emotional Speech Database (ESD) 
+
+[9], which contains 20 speakers, each with 350 parallel utter-ances per emotion across five categories (“neutral”, “happy”, “angry”, “sad”, “surprise”). To avoid language-dependent con-founds, we restrict the dataset to the 10 English speakers. We further split the data by utterance index (parallel across emotions) to prevent lexical leakage across emotions. As summarized in Table 1, we use a hybrid split: a 6/2/2 speaker partition, with utterance-index splits within the seen-speaker portion. Unless noted otherwise, all reported results are computed on T EST -SEEN and T EST -U NSEEN , with no overlap in speakers or utter-ance indices relative to the identification or development splits. Table 1: Speaker and utterance-ID split of ESD. Utterance IDs are parallel across the five emotions for each speaker.                     
+
+> Speakers S1–S6 S7–S8 S9–S10 Total
+> IDENTIFICATION 001–200 (200) ––1200 DEVELOPMENT 201–250 (50) 001–250 (250) –1100 TEST -SEEN 251–350 (100) 251–350 (100) –800 TEST -UNSEEN ––001–350 (350) 700
+
+4.3. Task Implementation 
+
+Although EVC is inherently bidirectional, we focus on converting neutral speech to a target emotion etgt ∈{happy, angry, sad, surprise }. For LALM-based conversion, we use a fixed, emotion-agnostic system prompt instructing the model to convert speech emotion while preserving content, to-gether with a user prompt that provides (1) the input audio and (2) the EVC instruction that specifies a target emotion (Figure 1 shows an example). We employ deterministic decoding when available (greedy, temperature = 0 ) to facilitate reproducibility. 
+
+# 5. Results 
+
+5.1. Baseline Performance 
+
+Table 2: Baseline EVC performance of the three evaluated LALMs on ESD, before any neuron-level intervention. We report the three EVC axes used throughout the paper: target-emotion match rate in % (emotion2vec / Qwen3), content preservation (WER in %), and naturalness (UTMOS) on its 1–5 scale (the higher the more natural).                                  
+
+> Qwen2.5-Omni-7B MiniCPM-o 4.5 Kimi-Audio Angry 0.13 / 10.93 3.73 / 12.93 10.60 /16.00
+> Happy 45.40 /10.13 2.13 / 5.33 39.60 / 7.87 Sad 52.20 / 21.60 2.33 / 9.80 42.89 / 31.93
+> Surprise 2.67 / 5.07 0.07 / 3.47 7.13 /6.67
+> Avg. 25.10 /11.93 2.07 / 7.88 15.62 / 7.13 WER 19.00 2.95 2.82
+> UTMOS 4.00 4.26 3.18
+
+Before applying neuron-level intervention, we establish the unintervened EVC baseline of the evaluated LALMs on ESD. As shown in Table 2, baseline emotion match rates are modest across all three models, confirming that instruction-following EVC remains challenging in our setting. Notably, neutral is fre-quently predicted (e.g., 57.2% for Qwen2.5-Omni-7B), indicat-ing a strong bias toward emotionally conservative outputs. Kimi-Audio achieves the highest average emotion match rate (15.62%), followed by Qwen2.5-Omni-7B (11.93%) and MiniCPM-o 4.5 (7.88%). Across models, sad is the easiest target emotion, whereas surprise is consistently the hardest. Content preservation shows a contrasting trend: MiniCPM-o 4.5 and Kimi-Audio yield low WER (2.95% and 2.82%), while Qwen2.5-Omni-7B shows substantially higher WER (19.00%). This reveals a clear trade-off: models that produce stronger emotional shifts do not necessarily preserve linguistic content better. The mismatch between emotion success and content preservation motivates our two-stage success filtering (§ 3.2): ESN identification must be based on conversions satisfying both emotion correctness and linguistic fidelity. 
+
+5.2. Sensitivity to Identification Parameters 
+
+5.2.1. Identification Methods 
+
+Building on the baseline EVC performances in Table 2, we next examine which selector produces ESN masks that deliver the most favorable intervention effects, ideally across all three evaluation axes. We compare the four selectors introduced in § 3.3.1 under a shared parameter setting ( c=50 , r=0 .5% , steer-ing, α=1 .0). Table 3 shows a clear ranking in emotion specificity. For Qwen2.5-Omni-7B, CAS and MAD produce the strongest positive self-effects together with the largest self–cross sepa-ration, whereas LAP and LAPE are notably weaker and less selective. In particular, LAPE exhibits diffuse behavior in which off-target effects can rival or exceed on-target gains. MiniCPM-o 4.5 shows much smaller absolute changes overall, suggesting that it is comparatively less responsive to this intervention de-sign; however, the same qualitative pattern remains. Kimi-Audio further reinforces this conclusion, but also highlights greater judge sensitivity: CAS again gives the most favorable self–cross profile, yet the effect size differs more between the two SER judge models than in the other LALMs. We also notice that stronger emotion gains often come with some cost in content preservation, especially for Qwen2.5-Omni-7B, where CAS and MAD increase WER more than weaker selectors. By contrast, naturalness remains remarkably sta-ble across methods. This highlights a key finding, that the 
+
+main trade-off is not naturalness collapse but semantic drift .Across models and selectors, UTMOS shifts are generally small across settings, suggesting that interventions rarely cause the acoustic gibberish typical of failed conventional VC; instead, the LALM outputs remain largely intelligible and natural-sounding, but may deviate in meaning from the instructed content. Meanwhile, WER can increase (especially for Qwen2.5-Omni-7B under CAS/MAD), which we interpret as reflecting semantic shift rather than degradation of basic speech formation. In this sense, selector comparison is primarily about how specif-ically we can modulate target emotion while minimizing unin-tended content changes, and Table 3 indicates that contrastive-margin-based selector (CAS) best satisfies this requirement. We therefore adopt CAS as the default selector in subsequent experi-ments, as its margin-based assignment yields the most responsive and interpretable control behavior at inference time. 
+
+5.2.2. Selection Rate 
+
+We next examine the selection rate r, i.e., the fraction of top-ranked neurons retained for constructing ESN masks. By design, 
+
+r controls mask sparsity and balance between specificity and cov-erage : small r retains only the most confident neurons, whereas large r admits additional neurons that may encode weaker or non-specific signals [48]. Because ESN masks are subsequently Table 3: Comparison of ESN identification methods under activation steering, reported relative to the unintervened baseline in Table 2.                                                                                                        
+
+> ∆Emotion Match vs. Base (emotion2vec / Qwen3) LALM Selector Self-Effect ↑Cross-Effect Avg. ↓Self–Cross Gap ↑WER ↓(∆)UTMOS ↑(∆)Random +0.52 / +0.01 ––22.54 (+3.54) 3.99 (-0.01) LAP -2.15 / +0.04 -1.89 / +0.07 -0.25 / -0.03 18.94 (-0.06) 3.92 (-0.08) Qwen2.5-LAPE +1.82 / +1.07 +2.21 / +1.83 -0.39 / -0.77 34.70 (+15.70) 3.94 (-0.06) Omni-7B MAD +2.62 / +2.82 +0.81 / +0.05 +1.81 / +2.30 24.22 (+5.22) 3.99 (-0.01)
+> CAS +4.27 / +3.60 +0.34 / -0.05 +3.93 / +3.65 29.65 (+10.65) 3.99 (-0.01)
+> CAS-H +3.15 / +2.92 +0.62 / +0.11 +2.53 / +2.81 24.56 (+5.56) 3.99 (-0.01)
+> Random -0.05 / +0.14 ––3.14 (+0.19) 4.25 (-0.01) LAP -0.33 / -0.38 -0.42 / -0.16 +0.09 / -0.23 8.98 (+6.03) 4.25 (-0.01) MiniCPM-o 4.5 LAPE -0.28 / +0.33 -0.18 / +0.34 -0.10 / -0.01 2.81 (-0.14) 4.25 (-0.01) MAD -0.22 / +0.33 -0.17 / +0.16 -0.05 / -0.18 2.84 (-0.11) 4.26 (0.00)
+> CAS -0.20 / +0.40 -0.08 / +0.09 -0.12 / +0.31 2.95 (0.00) 4.25 (-0.01) Random -0.76 / -0.12 ––3.72 (+0.90) 3.17 (-0.01)
+> LAP +1.52 / +2.71 +0.35 / +1.49 +1.17 / +1.22 4.13 (+1.31) 3.15 (-0.03) Kimi-Audio LAPE -0.72 / -0.48 -0.89 / +0.46 +0.16 / -0.94 2.90 (+0.08) 3.16 (-0.02) MAD -0.90 / +1.17 -0.02 / +1.15 -0.88 / +0.02 4.69 (+1.87) 3.15 (-0.03) CAS +1.19 / +7.65 -0.19 / +0.96 +1.38 / +6.70 4.74 (+1.92) 3.16 (-0.02)
+
+(a) LAP (b) LAPE 
+
+(c) MAD (d) CAS 
+
+Figure 3: (Left) Intervention effects on EVC, under activation steering ( c=50 , α=1 .0). For each selector, we report changes in target-emotion match relative to the unintervened baseline in Table 2 , together with the corresponding changes in content preservation (WER) and post-intervention naturalness (UTMOS). The CAS-H row reports the results using human-filtered instances, see explanations in § 5.4. (Right) Per-emotion emotion match rate changes by ESN selectors for Qwen2.5-Omni-7B , under the same intervention. In each heatmap, rows denote the identified ESN mask emotion ( emask ) and columns denote the instructed target emotion ( etgt ); entries are signed changes (pp) in emotion match rate relative to the unintervened baseline. Diagonal cells represent self-effects (where emask =etgt ), and off-diagonal cells represent cross-effects (averaged over all emask ̸ =etgt pairs). 
+
+used for inference-time intervention, robustness to r is critical. 
+
+(a) r = 0 .1% (b) r = 0 .3% (c) r = 1% 
+
+Figure 4: Sensitivity to ESN selection rate r (Qwen2.5-Omni-7B, CAS, c=50 , steering, α=1 .0). 
+
+Figure 4 suggests a largely monotonic trend within the tested range: with r=0 .1% the effect is present but weak and sparse (consistent with under-selection), while increasing r to a moder-ate range, 0.3% and 0.5% (in Figure 3(d)) progressively strength-ens the diagonal/self-effect and clarifies the specificity pattern. However, when r reaches 1.0% , off-diagonal changes become more visible (e.g., +4.4 pp for Sad with a Happy-mask). This behavior supports that ESNs in LALMs are distributed rather than ultra-sparse, hence selecting too few neurons leaves part of the relevant signal unused. Since our sweep only extends to 
+
+r=1 .0% , we interpret this monotonicity as holding within the ex-plored range and retain r=0 .5% as a practical default balancing compactness and effect strength. 
+
+5.2.3. Success Set Size 
+
+We then vary the success instance size c, the maximum number of filtered EVC successes retained per target emotion for activation aggregation. c changes the amount of evidence used to estimate the neuron statistics in § 3.3.1, so it is expected to affect the stability of ESN ranking. Figure 5 shows a clear sample-efficiency trend. With very small caps ( c=10 ), the heatmaps are noisy and the diagonal is weak or inconsistent, indicating unstable ESN estimation 
+
+(a) c=10 (b) c=20 (c) c=100 
+
+Figure 5: Sensitivity to success instance size c (Qwen2.5-Omni-7B, CAS, r=0 .5% , steering, α=1 .0). 
+
+from too few successful instances. As c increases to 20 or 50 
+
+(Figure 3(d)), the diagonal structure becomes noticeably clearer, suggesting that the selector now receives enough instances to retrieve more reliable emotion-conditioned activation patterns. While increasing further to c=100 does not improve self-effects proportionally, off-diagonal changes diminish, showing a more denoised emotion-specific neuron separation. 
+
+5.3. Inference-Time Intervention Design 
+
+Having established that identification parameters can affect ESNs’ emotion control effects, we next analyze how inference-time intervention design affects the EVC outcome. We focus on two orthogonal choices: (1) intervention method and (2) intervention strength. 
+
+5.3.1. Intervention Methods 
+
+We further examine alternative ESN intervention methods be-yond the scaling-style steering used in our main experiments. Figure 6 shows that, although additive and clamping interven-tions can induce partial target-emotion effects (e.g., a visible self-effect for sad under both methods), they do not yield consis-tent positive self-effects across emotions. The deactivation results provide two additional insights. First, for EVC, merely removing or suppressing non-target-(a) Add, α=0.30 (b) Clamp, α=0.10 (c) Deactivation 
+
+Figure 6: Comparison of ESN intervention methods (Qwen2.5-Omni-7B, CAS, c=50 , r=0 .5% ). As explained in § 3.4, α is method-specific, so we use different values to keep intervention strength roughly comparable across methods. Deactivation is parameter-free and hence reported without α.
+
+emotion activations is often insufficient to reliably induce the desired expressive changes. Second, the consistently negative diagonal under deactivation offers additional evidence support-ing the functional role of ESNs: when the identified neurons are silenced, target-emotion realization is impaired rather than improved. This pattern strengthens the interpretation that these neurons actively participate in emotion-related generation. Based on this comparison, we adopt the best-performing gain-scaling steering intervention as the default in subsequent intervention strength analyses. 
+
+5.3.2. Intervention Strength 
+
+Table 4: Emotion match and WER trade-off when increas-ing the intervention strength (Qwen2.5-Omni-7B, CAS, c=50 ,
+
+r=0 .5% , steering).                                   
+
+> ∆Emotion Match vs. Base (emotion2vec / Qwen3)
+> αSelf-Effect ↑Cross-Effect Avg. ↓Self–Cross Gap ↑WER ↓(∆)UTMOS ↑(∆)0.3 +0.78 / +0.37 +0.48 / -0.09 +0.30 / +0.45 19.33 (+0.33) 4.00 (0.00)
+> 0.5 +2.00 / +1.13 -0.11 / -0.22 +2.11 / +1.36 20.67 (+1.67) 4.00 (0.00)
+> 1.0 +4.27 / +3.60 +0.34 / -0.05 +3.93 / +3.65 29.65 (+10.65) 3.99 (-0.01) 2.0 +8.89 / +20.67 -0.14 / +0.02 +9.02 / +20.64 203.65 (+184.65) 3.91 (-0.09)
+
+(a) α=0.30 (b) α=0.50 (c) α=2.00 
+
+Figure 7: Sensitivity to intervention strength α (Qwen2.5-Omni-7B, CAS, c=50 , r=0 .5% , steering). 
+
+Taking activation steering as a probe method, we report the sensitivity of intervention effects to the intervention strength α
+
+in Table 4 and Figure 7. Increasing α consistently strengthens the intended self-effect on emotion match, as reflected in pro-gressively darker diagonal cells in the heatmaps. Off-diagonal cross-effect, on the other hand, does not monotonically expand with α but rather fluctuates, leading to widening self–cross gaps. The largest α further highlights the trade-off with con-tent preservation. While α=2 .0 yields the strongest emo-tion match gains (+8.89/+20.67 pp) and a large self–cross gap (+9.02/+20.64 pp), it catastrophically harms content preserva-tion (WER 203.65%, +184.65 pp over baseline) and slightly lowers naturalness. In contrast, in this setting, moderate steering (α=0 .3–0.5) keeps WER near the baseline and leaves UTMOS unchanged, while still providing measurable improvements in target emotion match. 
+
+5.4. Human Evaluation and Human-Supervised ESN Identi-fication 62%      
+
+> 60%
+> 64%
+> 69%
+> 54%
+> 11%
+> 14%
+> 7%
+> 10%
+> 14%
+> 27%
+> 26%
+> 29%
+> 21%
+> 32%
+> 0% 20% 40% 60% 80% 100%
+> Avg.
+> Surprise
+> Sad
+> Happy
+> Angry
+> Win
+> Tie
+> Loss
+
+Figure 8: Human listening evaluation under the anchor inter-vention setting. Win/Tie/Loss rates comparing the intervened sys-tem (Qwen2.5-Omni-7B, CAS, c=50 , r=0 .5% , steering, α=1 .0)against the unintervened baseline. 20 participants. 
+
+To complement automatic SER evaluation, we conduct a human listening study under our anchor configuration, matching the SER-filtered setting in Figure 3(d) for direct comparability. In each trial, participants listen to a pair of speech samples and select the clip that better matches a specified target emotion; an “indecisive” option is available if the difference is unclear. Each pair consists of (1) the baseline output and (2) the corresponding output generated with identical source speech and instruction under an ESN intervention. Each participant was provided with the same test set of 100 sample pairs (25 per emotion). Samples are randomized and volume-normalized, and raters are blind to model identity. We collected valid responses from 20 partici-pants proficient in English. Listeners were aged 21–32 years; 7 identified as female, 13 as male. All reported normal hearing. Results are summarized in Figure 8: listeners prefer the inter-vened system in all four emotions, with average win/tie/loss rates of 62%/11%/27%. Gains are most pronounced for happy (69% win) and remain strong for sad and surprise, while angry is still favorable (54% win), supporting that ESN steering yields per-ceptible emotion shifts that are also reflected in human listening judgments. Table 5: Similarity between ESNs identified from human- vs. SER-filtered instances , measured in Jaccard overlap, direct match rate, and Jensen–Shannon divergence (JSD).                   
+
+> Emotion Jaccard Direct Match JSD Angry 0.217 35.71% 0.009 Happy 0.075 13.95% 0.040 Sad 0.109 19.57% 0.010 Surprise 0.071 13.27% 0.025 Average 0.118 20.63% 0.021
+
+To assess the consistency between automatic and human su-pervision during ESN identification, we further compare neuron sets obtained from SER-filtered versus human-filtered success instances. Table 5 shows that overlap at the neuron level is par-tial, indicating that the two filtering strategies select different specific units. However, the layer-wise distributions between the two are highly similar (average JSD 0.021), suggesting that both supervision signals concentrate ESNs in similar MLP layers. Agreement is strongest for angry (Jaccard 0.217, JSD 0.009), whereas happy and surprise exhibit lower overlap, consistent with their weaker or more ambiguous emotion signals. The CAS-H row in Table 3 replaces SER-filtered successes with human-judged ones for ESN identification, and yields the same qualitative behavior: positive self-effects with limited cross-emotion spillover. Compared to CAS, CAS-H slightly reduces self-effect and self–cross gap, but also substantially low-ers ∆WER, suggesting that human supervision preferentially retains content-faithful successes and produces a more conserva-tive yet robust ESN set for controllable EVC. 
+
+5.5. Localization of Emotion-Sensitive Neurons 
+
+(a) Qwen2.5-Omni-7B (b) MiniCPM-o 4.5 (c) Kimi-Audio 
+
+Figure 9: Layer-wise distribution of CAS-identified ESNs across three LALMs (r=0 .5% ). Heatmaps show the num-ber of selected ESNs per decoder layer and target emotion. Qwen2.5-Omni-7B and Kimi-Audio use 28-layer decoders, while MiniCPM-o 4.5 uses a 36-layer decoder. Values indicate where selected neurons are concentrated, not intervention effect size. 
+
+We then visualize the concentrations of the ESNs across the MLP layers in Figure 9, which shows that ESNs are not uniformly distributed. Across all three LALMs, they concentrate primarily in intermediate-to-late layers of the language-model decoder, with relatively few units selected in the earliest layers. For Qwen2.5-Omni-7B, ESNs cluster most strongly in approx-imately layers 11–15, with pronounced peaks for happy and surprise. MiniCPM-o 4.5 exhibits a more diffuse distribution but still places greater mass in the latter half of the decoder. Kimi-Audio shows the strongest late-layer concentration, partic-ularly in layers 19–22, with marked peaks for happy and angry in layer 26. This consistent pattern suggests that, in the tested models, emotion-relevant control signals are more prominently captured in intermediate-to-late language-model layers than in earlier layers. Table 6: Activation steering in the speech synthesis module of Qwen2.5-Omni-7B. Results obtained by applying the same settings ( c=50 , r=0 .5% , α=1 .0) as in Table 3, but identified and intervening on the synthesis module MLP layers.                                          
+
+> ∆Emotion Match vs. Base (emotion2vec / Qwen3) Selector Self-Effect ↑Cross-Effect Avg. ↓Self–Cross Gap ↑WER ↓(∆)UTMOS ↑(∆)Random +0.52 / +0.02 ––19.21 (+0.21) 4.01 (+0.01) LAP +0.32 / -0.08 +0.12 / +0.23 +0.20 / -0.32 19.00 (0.00) 3.96 (-0.04) LAPE -0.87 / -0.22 -0.13 / -0.27 -0.73 / +0.06 19.00 (0.00) 4.01 (+0.01)
+> MAD -0.68 / 0.08 +0.51 / +0.13 -1.19 / -0.04 19.00 (0.00) 4.00 (0.00) CAS +0.12 / -0.42 +0.45 / -0.19 -0.33 / -0.22 19.19 (+0.19) 3.99 (-0.01)
+
+We also explore an alternative module that could potentially contain ESNs. As demonstrated in Table 6, repeating the same identification-intervention pipeline in the speech synthesis MLP of Qwen2.5-Omni-7B under identical settings eliminates the clean positive self-effects observed in the language-model MLPs. Across selectors, self–cross gaps become near-zero or negative under both SER judges, regardless of selector. Minimal changes in WER and UTMOS further indicate that synthesis side inter-ventions are largely inert rather than emotion-specific. These results suggest that language-model decoder MLPs yield the most actionable ESNs, rather than the downstream synthesis modules. Practically, this means that monitoring and intervening at the language-model side feed-forward blocks in LALMs is a more effective strategy for controllable affect steering than targeting the synthesis MLPs directly. 
+
+5.6. Do Intervention Effects Generalize to Unseen Speakers? 
+
+Figure 10: Intervention effect on seen and unseen speakers. ∆
+
+Emotion match size changes (pp) of intervention (Qwen2.5-Omni-7B, CAS, c=50 , r=0 .5% , steering, α=1 .0) in comparison with the unintervened baseline are shown for seen speakers ( TEST - 
+
+> SEEN
+
+split) and unseen speakers ( TEST -UNSEEN split), with 95% confidence intervals. 
+
+Finally, we evaluate whether ESN-based control generalizes beyond speakers used during neuron identification. Figure 10 shows that the intervention effect transfers to unseen speakers, but the magnitude of transfer is emotion-dependent. For an-gry, gains remain strong in both seen and unseen conditions, indicating a relatively speaker-robust emotion signal. Surprise also maintains positive effects across splits, albeit at reduced magnitude. In contrast, sad exhibits a noticeable drop from seen to unseen speakers, suggesting partial speaker-specificity in the learned signal. Happy shows the weakest transfer, with modest gains on seen speakers and near-zero or slightly nega-tive effects on unseen speakers. A practical implication is that speaker-robust ESN control is feasible, but likely benefits from more diverse identification data. 
+
+# 6. Conclusion 
+
+We presented a systematic neuron-level investigation of emotion control in speech-generative LALMs under an emotional voice conversion setting. Our results suggest that compact emotion-sensitive neuron sets can be identified, are interventionally ac-tionable, and can be leveraged to steer emotional expressiveness at inference time without any weight updates. Crucially, we showed that reliable identification of ESNs requires success-filtered activation aggregation that respects the multi-objective nature of EVC. Contrastive-margin- and mean-deviation-based selectors consistently outperform frequency- and entropy-based heuristics, yielding stronger self–cross separation and more emotion-specific control. We further demonstrated a key trade-off between emotional expressiveness and content preservation: moderate interventions amplify target-emotion evidence, while excessive steering increases WER through semantic drift rather than a loss of intelligibility, as naturalness remains largely sta-ble. Localization analyses reveal that actionable emotion-control signals concentrate in intermediate-to-late decoder MLP layers on the language-model side, while analogous interventions in downstream speech synthesis modules are largely inert. This finding clarifies where emotion control is actually mediated in speech-generative LALMs and narrows the locus for future in-terpretability efforts. Together, these results establish a practical and mechanis-tically grounded pipeline for training-free emotion control in speech generation. Beyond emotional voice conversion, our framework opens the door to fine-grained, inference-time ma-nipulation of paralinguistic attributes in multimodal generative systems without re-training or task-specific fine-tuning. 
+
+# 7. Acknowledgments 
+
+We thank the National Science Foundation (NSF) for support under CAREER Award IIS-2533652. 
+
+# 8. Generative AI Use Disclosure 
+
+Generative AI tools were employed solely for language polishing of text written by the authors. These tools were not used to gen-erate scientific content, results, experimental designs, analyses, or conclusions. All authors are responsible for the full content of this paper and consent to its submission. 
+
+# 9. References 
+
+[1] T. M. Wani, T. S. Gunawan, S. A. A. Qadri, M. Kartiwi, and E. Ambikairajah, “A comprehensive review of speech emotion recognition systems,” IEEE access , vol. 9, pp. 47 795–47 814, 2021. [2] A. Défossez, L. Mazaré, M. Orsini, A. Royer, P. Pérez, H. Jégou, E. Grave, and N. Zeghidour, “Moshi: a speech-text foundation model for real-time dialogue,” 2024. [Online]. Available: https://arxiv.org/abs/2410.00037 [3] Y. Yao, T. Yu, A. Zhang, C. Wang, J. Cui, H. Zhu, T. Cai, H. Li, W. Zhao, Z. He, Q. Chen, H. Zhou, Z. Zou, H. Zhang, S. Hu, Z. Zheng, J. Zhou, J. Cai, X. Han, G. Zeng, D. Li, Z. Liu, and M. Sun, “Minicpm-v: A gpt-4v level mllm on your phone,” 2024. [Online]. Available: https://arxiv.org/abs/2408.01800 [4] J. Xu, Z. Guo, J. He, H. Hu, T. He, S. Bai, K. Chen, J. Wang, Y. Fan, K. Dang, B. Zhang, X. Wang, Y. Chu, and J. Lin, “Qwen2.5-omni technical report,” 2025. [Online]. Available: https://arxiv.org/abs/2503.20215 [5] KimiTeam, “Kimi-audio technical report,” 2025. [Online]. Available: https://arxiv.org/abs/2504.18425 [6] B. Wang, X. Zou, G. Lin, S. Sun, Z. Liu, W. Zhang, Z. Liu, A. Aw, and N. F. Chen, “AudioBench: A universal benchmark for audio large language models,” in Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) , L. Chiruzzo, A. Ritter, and L. Wang, Eds. Albuquerque, New Mexico: Association for Computational Linguistics, Apr. 2025, pp. 4297–4316. [Online]. Available: https://aclanthology.org/2025.naacl-long.218/ [7] C.-K. Yang, N. S. Ho, and H.-y. Lee, “Towards holistic evaluation of large audio-language models: A comprehensive survey,” in Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing , C. Christodoulopoulos, T. Chakraborty, C. Rose, and V. Peng, Eds. Suzhou, China: Association for Computational Linguistics, Nov. 2025, pp. 10 144–10 170. [Online]. Available: https://aclanthology.org/2025. emnlp-main.514/ [8] L. Huang, W. Yu, W. Ma, W. Zhong, Z. Feng, H. Wang, Q. Chen, W. Peng, X. Feng, B. Qin, and T. Liu, “A survey on hallucination in large language models: Principles, taxonomy, challenges, and open questions,” ACM Trans. Inf. Syst. , vol. 43, no. 2, Jan. 2025. [Online]. Available: https://doi.org/10.1145/3703155 [9] K. Zhou, B. Sisman, R. Liu, and H. Li, “Emotional voice conversion: Theory, databases and esd,” Speech Commun. ,vol. 137, no. C, p. 1–18, Feb. 2022. [Online]. Available: https://doi.org/10.1016/j.specom.2021.11.006 [10] A. Triantafyllopoulos, B. W. Schuller, G. ˙ Iymen, M. Sezgin, X. He, Z. Yang, P. Tzirakis, S. Liu, S. Mertes, E. André, R. Fu, and J. Tao, “An overview of affective speech synthesis and conversion in the deep learning era,” Proceedings of the IEEE , vol. 111, no. 10, pp. 1355–1381, 2023. [11] Z. Yang, X. Jing, A. Triantafyllopoulos, M. Song, I. Aslan, and B. W. Schuller, “An Overview & Analysis of Sequence-to-Sequence Emotional Voice Conversion,” in Interspeech 2022 , 2022, pp. 4915–4919. [12] R. Skerry-Ryan, E. Battenberg, Y. Xiao, Y. Wang, D. Stanton, J. Shor, R. Weiss, R. Clark, and R. A. Saurous, “Towards end-to-end prosody transfer for expressive speech synthesis with tacotron,” in international conference on machine learning . PMLR, 2018, pp. 4693–4702. [13] Y. Wang, D. Stanton, Y. Zhang, R.-S. Ryan, E. Battenberg, J. Shor, Y. Xiao, Y. Jia, F. Ren, and R. A. Saurous, “Style tokens: Unsuper-vised style modeling, control and transfer in end-to-end speech syn-thesis,” in International conference on machine learning . PMLR, 2018, pp. 5180–5189. [14] J. Lorenzo-Trueba, G. E. Henter, S. Takaki, J. Yamagishi, Y. Morino, and Y. Ochiai, “Investigating different representa-tions for modeling and controlling multiple emotions in dnn-based speech synthesis,” Speech Communication , vol. 99, pp. 135–143, 2018. [15] Y. Lei, S. Yang, and L. Xie, “Fine-grained emotion strength trans-fer, control and prediction for emotional speech synthesis,” in 2021 IEEE Spoken Language Technology Workshop (SLT) . IEEE, 2021, pp. 423–430. [16] A. M. Turner, L. Thiergart, G. Leech, D. Udell, J. J. Vazquez, U. Mini, and M. MacDiarmid, “Steering language models with activation engineering,” 2024. [Online]. Available: https://arxiv.org/abs/2308.10248 [17] A. Bau, Y. Belinkov, H. Sajjad, N. Durrani, F. Dalvi, and J. Glass, “Identifying and controlling important neurons in neural machine translation,” in International Conference on Learning Representations , 2019. [Online]. Available: https: //openreview.net/forum?id=H1z-PsR5KX [18] D. Bau, J.-Y. Zhu, H. Strobelt, A. Lapedriza, B. Zhou, and A. Torralba, “Understanding the role of individual units in a deep neural network,” Proceedings of the National Academy of Sciences , vol. 117, no. 48, p. 30071–30078, Sep. 2020. [Online]. Available: http://dx.doi.org/10.1073/pnas.1907375117 [19] F. Dalvi, N. Durrani, H. Sajjad, Y. Belinkov, A. Bau, and J. Glass, “What is one grain of sand in the desert? analyzing individual neurons in deep nlp models,” in Proceedings of the Thirty-Third AAAI Conference on Artificial Intelligence and Thirty-First Innovative Applications of Artificial Intelligence Conference and Ninth AAAI Symposium on Educational Advances in Artificial Intelligence , ser. AAAI’19/IAAI’19/EAAI’19. AAAI Press, 2019. [Online]. Available: https://doi.org/10.1609/aaai.v33i01.33016309 [20] X. Zhao, B. Schuller, and B. Sisman, “Discovering and causally validating emotion-sensitive neurons in large audio-language models,” 2026. [Online]. Available: https://arxiv.org/abs/2601. 03115 [21] P. Wu, Z. Ling, L. Liu, Y. Jiang, H. Wu, and L. Dai, “End-to-end emotional speech synthesis using style tokens and semi-supervised training,” in 2019 Asia-Pacific Signal and Information Processing Association Annual Summit and Conference (APSIPA ASC) . IEEE, 2019, pp. 623–627. [22] R. Liu, B. Sisman, G. Gao, and H. Li, “Expressive tts training with frame and style reconstruction loss,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 29, pp. 1806–1818, 2021. [23] Y. Lei, S. Yang, X. Wang, and L. Xie, “Msemotts: Multi-scale emotion transfer, prediction, and control for emotional speech syn-thesis,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 30, pp. 853–864, 2022. [24] G. Zhang, Y. Qin, W. Zhang, J. Wu, M. Li, Y. Gai, F. Jiang, and T. Lee, “iemotts: Toward robust cross-speaker emotion transfer and control for speech synthesis based on disentanglement between prosody and timbre,” IEEE/ACM Transactions on Audio, Speech, and Language Processing , vol. 31, pp. 1693–1705, 2023. [25] B. Schnell and P. N. Garner, “Improving emotional tts with an emotion intensity input from unsupervised extraction,” in 11th ISCA Speech Synthesis Workshop (SSW 11) , 2021, pp. 60–65. [26] D.-H. Cho, H.-S. Oh, S.-B. Kim, S.-H. Lee, and S.-W. Lee, “EmoSphere-TTS: Emotional Style and Intensity Modeling via Spherical Emotion Vector for Controllable Emotional Text-to-Speech,” in Interspeech 2024 , 2024, pp. 1810–1814. [27] T. Xie, S. Yang, C. Li, D. Yu, and L. Liu, “Emosteer-tts: Fine-grained and training-free emotion-controllable text-to-speech via activation steering,” 2025. [Online]. Available: https://arxiv.org/abs/2508.03543 [28] Y. Cao, Z. Liu, M. Chen, J. Ma, S. Wang, and J. Xiao, “Nonparallel emotional speech conversion using vae-gan,” in Interspeech 2020 ,2020, pp. 3406–3410. [29] X. He, J. Chen, G. Rizos, and B. W. Schuller, “An improved stargan for emotional voice conversion: Enhancing voice quality and data augmentation,” in Interspeech 2021 , 2021, pp. 821–825. [30] K. Zhou, B. Sisman, R. Liu, and H. Li, “Seen and unseen emotional style transfer for voice conversion with a new emotional speech dataset,” in ICASSP 2021 - 2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , 2021, pp. 920–924. [31] C. Fu, C. Liu, C. T. Ishi, and H. Ishiguro, “An improved cyclegan-based emotional voice conversion model by augmenting temporal dependency with a transformer,” Speech Commun. ,vol. 144, no. C, p. 110–121, Oct. 2022. [Online]. Available: https://doi.org/10.1016/j.specom.2022.09.002 [32] N. R. Prabhu, B. Lay, S. Welker, N. Lehmann-Willenbrock, and T. Gerkmann, “Emoconv-diff: Diffusion-based speech emotion conversion for non-parallel and in-the-wild data,” in ICASSP 2024 - 2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , 2024, pp. 11 651–11 655. [33] F. Kreuk, A. Polyak, J. Copet, E. Kharitonov, T. A. Nguyen, M. Rivière, W.-N. Hsu, A. Mohamed, E. Dupoux, and Y. Adi, “Textless speech emotion conversion using discrete & decomposed representations,” in Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , Y. Goldberg, Z. Kozareva, and Y. Zhang, Eds. Abu Dhabi, United Arab Emirates: Association for Computational Linguistics, Dec. 2022, pp. 11 200–11 214. [Online]. Available: https://aclanthology.org/2022.emnlp-main.769/ [34] Y. K. Singla, J. Shah, C. Chen, and R. R. Shah, “What do audio transformers hear? probing their representations for language delivery & structure,” in 2022 IEEE International Conference on Data Mining Workshops (ICDMW) . IEEE, 2022, pp. 910–925. [35] Z. Yu and S. Ananiadou, “Neuron-level knowledge attribution in large language models,” in Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , Y. Al-Onaizan, M. Bansal, and Y.-N. Chen, Eds. Miami, Florida, USA: Association for Computational Linguistics, Nov. 2024, pp. 3267–3280. [Online]. Available: https://aclanthology.org/2024.emnlp-main.191/ [36] N. Rimsky, N. Gabrieli, J. Schulz, M. Tong, E. Hubinger, and A. Turner, “Steering llama 2 via contrastive activation addition,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , L.-W. Ku, A. Martins, and V. Srikumar, Eds. Bangkok, Thailand: Association for Computational Linguistics, Aug. 2024, pp. 15 504–15 522. [Online]. Available: https://aclanthology.org/2024.acl-long.828/ [37] P. Q. Da Silva, H. Sethuraman, D. Rajagopal, H. Hajishirzi, and S. Kumar, “Steering off course: Reliability challenges in steering language models,” in Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , W. Che, J. Nabende, E. Shutova, and M. T. Pilehvar, Eds. Vienna, Austria: Association for Computational Linguistics, Jul. 2025, pp. 19 856–19 882. [Online]. Available: https://aclanthology.org/2025.acl-long.974/ [38] T.-Y. Wu, Y.-X. Lin, and T.-W. Weng, “And: audio network dissec-tion for interpreting deep acoustic models,” in Proceedings of the 41st International Conference on Machine Learning , ser. ICML’24. JMLR.org, 2024. [39] J. Fang, Z. Bi, R. Wang, H. Jiang, Y. Gao, K. Wang, A. Zhang, J. Shi, X. Wang, and T.-S. Chua, “Towards neuron attributions in multimodal large language models,” in Proceedings of the 38th International Conference on Neural Information Processing Sys-tems , ser. NIPS ’24. Red Hook, NY, USA: Curran Associates Inc., 2024. [40] J. Huo, Y. Yan, B. Hu, Y. Yue, and X. Hu, “MMNeuron: Discovering neuron-level domain-specific interpretation in multimodal large language model,” in Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , Y. Al-Onaizan, M. Bansal, and Y.-N. Chen, Eds. Miami, Florida, USA: Association for Computational Linguistics, Nov. 2024, pp. 6801–6816. [Online]. Available: https://aclanthology.org/2024.emnlp-main.387/ [41] C.-K. Yang, N. Ho, Y.-J. Lee, and H. yi Lee, “Audiolens: A closer look at auditory attribute perception of large audio-language models,” 2025. [Online]. Available: https: //arxiv.org/abs/2506.05140 [42] J. Lee, W. Lee, O.-W. Kwon, and H. Kim, “Do large language models have “emotion neurons”? investigating the existence and role,” in Findings of the Association for Computational Linguistics: ACL 2025 , W. Che, J. Nabende, E. Shutova, and M. T. Pilehvar, Eds. Vienna, Austria: Association for Computational Linguistics, Jul. 2025, pp. 15 617–15 639. [Online]. Available: https://aclanthology.org/2025.findings-acl.806/ [43] C. Wang, Y. Zhang, R. Yu, Y. Zheng, L. Gao, Z. Song, Z. Xu, G. Xia, H. Zhang, D. Zhao, and X. Chen, “Do llms "feel"? emotion circuits discovery and control,” 2025. [Online]. Available: https://arxiv.org/abs/2510.11328 [44] N. Shazeer, “Glu variants improve transformer,” 2020. [Online]. Available: https://arxiv.org/abs/2002.05202 [45] H. Cunningham, A. Ewart, L. Riggs, R. Huben, and L. Sharkey, “Sparse autoencoders find highly interpretable features in language models,” 2023. [Online]. Available: https://arxiv.org/abs/2309.08600 [46] W. Gurnee, T. Horsley, Z. C. Guo, T. R. Kheirkhah, Q. Sun, W. Hathaway, N. Nanda, and D. Bertsimas, “Universal neurons in GPT2 language models,” Transactions on Machine Learning Research , 2024. [Online]. Available: https://openreview.net/ forum?id=ZeI104QZ8I [47] E. Voita, J. Ferrando, and C. Nalmpantis, “Neurons in large language models: Dead, n-gram, positional,” in 
+
+Findings of the Association for Computational Linguistics: ACL 2024 , L.-W. Ku, A. Martins, and V. Srikumar, Eds. Bangkok, Thailand: Association for Computational Linguistics, Aug. 2024, pp. 1288–1301. [Online]. Available: https: //aclanthology.org/2024.findings-acl.75/ [48] T. Tang, W. Luo, H. Huang, D. Zhang, X. Wang, X. Zhao, F. Wei, and J.-R. Wen, “Language-specific neurons: The key to multilingual capabilities in large language models,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , L.-W. Ku, A. Martins, and V. Srikumar, Eds. Bangkok, Thailand: Association for Computational Linguistics, Aug. 2024, pp. 5701–5715. [Online]. Available: https://aclanthology.org/2024.acl-long.309/ [49] D. Namazifard and L. G. Poech, “Isolating culture neurons in multilingual large language models,” in Proceedings of the 14th International Joint Conference on Natural Language Processing and the 4th Conference of the Asia-Pacific Chapter of the Association for Computational Linguistics , K. Inui, S. Sakti, H. Wang, D. F. Wong, P. Bhattacharyya, B. Banerjee, A. Ekbal, T. Chakraborty, and D. P. Singh, Eds. Mumbai, India: The Asian Federation of Natural Language Processing and The Association for Computational Linguistics, Dec. 2025, pp. 768–785. [Online]. Available: https://aclanthology.org/2025.findings-ijcnlp.45/ [50] A. Bau, Y. Belinkov, H. Sajjad, N. Durrani, F. Dalvi, and J. Glass, “Identifying and controlling important neurons in neural machine translation,” in International Conference on Learning Representations , 2019. [Online]. Available: https: //openreview.net/forum?id=H1z-PsR5KX [51] O. Jorgensen, D. Cope, N. Schoots, and M. Shanahan, “Improving activation steering in language models with mean-centring,” in Responsible Language Models Workshop (ReLM) at AAAI-24 , Feb. 2024, responsible Language Models Workshop at AAAI-24, ReLM@AAAI-24 ; Conference date: 26-02-2024 Through 26-02-2024. [Online]. Available: https: //sites.google.com/vectorinstitute.ai/relm2024/home?authuser=0 [52] X. Zhao, R. Choenni, R. Saxena, and I. Titov, “Finding culture-sensitive neurons in vision-language models,” 2025. [Online]. Available: https://arxiv.org/abs/2510.24942 [53] A. Templeton, T. Conerly, J. Marcus, J. Lindsey, T. Bricken, B. Chen, A. Pearce, C. Citro, E. Ameisen, A. Jones, H. Cun-ningham, N. L. Turner, C. McDougall, M. MacDiarmid, C. D. Freeman, T. R. Sumers, E. Rees, J. Batson, A. Jermyn, S. Carter, C. Olah, and T. Henighan, “Scaling monosemanticity: Extracting interpretable features from claude 3 sonnet,” Transformer Circuits Thread , 2024. [Online]. Available: https://transformer-circuits. pub/2024/scaling-monosemanticity/index.html [54] Z. Ma, Z. Zheng, J. Ye, J. Li, Z. Gao, S. Zhang, and X. Chen, “emotion2vec: Self-supervised pre-training for speech emotion representation,” in Findings of the Association for Computational Linguistics: ACL 2024 , L.-W. Ku, A. Martins, and V. Srikumar, Eds. Bangkok, Thailand: Association for Computational Linguistics, Aug. 2024, pp. 15 747–15 760. [Online]. Available: https://aclanthology.org/2024.findings-acl.931/ [55] J. Xu, Z. Guo, H. Hu, Y. Chu, X. Wang, J. He, Y. Wang, X. Shi, T. He, X. Zhu, Y. Lv, Y. Wang, D. Guo, H. Wang, L. Ma, P. Zhang, X. Zhang, H. Hao, Z. Guo, B. Yang, B. Zhang, Z. Ma, X. Wei, S. Bai, K. Chen, X. Liu, P. Wang, M. Yang, D. Liu, X. Ren, B. Zheng, R. Men, F. Zhou, B. Yu, J. Yang, L. Yu, J. Zhou, and J. Lin, “Qwen3-omni technical report,” 2025. [Online]. Available: https://arxiv.org/abs/2509.17765 [56] T. Saeki, D. Xin, W. Nakata, T. Koriyama, S. Takamichi, and H. Saruwatari, “UTMOS: UTokyo-SaruLab System for VoiceMOS Challenge 2022,” in Interspeech 2022 , 2022, pp. 4521–4525.

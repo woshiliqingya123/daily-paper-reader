@@ -6,36 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-21
-- 运行时间：2026-03-21 19:25:10 UTC
+- 最新运行日期：2026-03-22
+- 运行时间：2026-03-22 19:23:52 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：3
+- 本次总论文数：2
+- 精读区：0
 - 速读区：2
 
 ### 今日简报（AI）
-今日聚焦语音大模型的情感对齐与口语化建模，深度解析多模态对话系统的演进。
-核心突破在于利用多任务
-- 详情：[/202603/21/README](/202603/21/README)
+今日聚焦大模型语音情感的神经元级精准控制，以及多模态学习中信息预算平衡的新范式。
+重点关注如何通过定位特定神经元实现语音情绪调节，以及从信息论视角出发、超越传统强制平衡的多模态融合策略。
+建议关注底层神经元干预与信息预算机制，这为提升多模态模型的可控性与交互深度提供了新思路。
+- 详情：[/202603/22/README](/202603/22/README)
 
 ### 精读区论文标签
-1. [Aligning Paralinguistic Understanding and Generation in Speech LLMs via Multi-Task Reinforcement Learning](/202603/21/2603.15981v1-aligning-paralinguistic-understanding-and-generation-in-speech-llms-via-multi-task-reinforcement-learning)  
-   标签：评分：9.0/10、query:msa
-   evidence：用于情感分类和响应生成的副语言感知语音大模型
-2. [Modeling and Benchmarking Spoken Dialogue Rewards with Modality and Colloquialness](/202603/21/2603.14889v1-modeling-and-benchmarking-spoken-dialogue-rewards-with-modality-and-colloquialness)  
-   标签：评分：8.0/10、query:msa
-   evidence：在多模态对话中融入了包括韵律和情感在内的副语言细微差别
-3. [Decision-Level Ordinal Modeling for Multimodal Essay Scoring with Large Language Models](/202603/21/2603.14891v1-decision-level-ordinal-modeling-for-multimodal-essay-scoring-with-large-language-models)  
-   标签：评分：8.0/10、query:msa
-   evidence：结合大语言模型和视觉输入的多模态文章评分
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Before and After ChatGPT: Revisiting AI-Based Dialogue Systems for Emotional Support](/202603/21/2603.13043v1-before-and-after-chatgpt-revisiting-ai-based-dialogue-systems-for-emotional-support)  
+1. [Neuron-Level Emotion Control in Speech-Generative Large Audio-Language Models](/202603/22/2603.17231v1-neuron-level-emotion-control-in-speech-generative-large-audio-language-models)  
    标签：评分：7.0/10、query:msa
-   evidence：回顾用于心理健康和情感支持的AI驱动对话系统
-2. [Detecting Basic Values in A Noisy Russian Social Media Text Data: A Multi-Stage Classification Framework](/202603/21/2603.18822v1-detecting-basic-values-in-a-noisy-russian-social-media-text-data-a-multi-stage-classification-framework)  
+   evidence：音频语言模型中的神经元级情感控制
+2. [Beyond Forced Modality Balance: Intrinsic Information Budgets for Multimodal Learning](/202603/22/2603.17347v1-beyond-forced-modality-balance-intrinsic-information-budgets-for-multimodal-learning)  
    标签：评分：7.0/10、query:msa
-   evidence：检测社交媒体文本数据中的人类价值观和观点
+   evidence：通过信息预算解决多模态学习中的模态不平衡问题
 
 
 <div class="dpr-home-promo-card">
