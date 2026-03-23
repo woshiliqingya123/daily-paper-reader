@@ -1,0 +1,1506 @@
+Title: Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned, Multi-Granularity Benchmark
+
+URL Source: https://arxiv.org/pdf/2603.17838v1
+
+Published Time: Thu, 19 Mar 2026 01:27:22 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned, Multi-Granularity Benchmark 
+
+Yao Wang 1, Xin Liu 2, Zhuochen Liu 1, Jiankang Chen 1, Adam Jatowt 3, Kyoungsook Kim 2, Noriko Kando 4, and Haitao Yu 5⋆ 
+
+> 1
+
+Graduate School of Comprehensive Human Sciences, University of Tsukuba, Tsukuba, Japan 
+
+oh.gyou.tkb_gf@u.tsukuba.ac.jp, s2426082@u.tsukuba.ac.jp, s2526100@u.tsukuba.ac.jp  
+
+> 2
+
+Intelligent Platforms Research Institute, National Institute of Advanced Industrial Science and Technology, Tokyo, Japan 
+
+xin.liu@aist.go.jp, ks.kim@aist.go.jp  
+
+> 3
+
+Digital Science Center, University of Innsbruck, Innsbruck, Austria adam.jatowt@uibk.ac.at  
+
+> 4
+
+National Institute of Informatics, Tokyo, Japan kando@nii.ac.jp  
+
+> 5
+
+Institute of Library, Information and Media Science, University of Tsukuba, Tsukuba, Japan yuhaitao@slis.tsukuba.ac.jp 
+
+Abstract. Existing human value datasets do not directly support value understanding in factual news: many are actor-agnostic, rely on isolated utterances or synthetic scenarios, and lack explicit event structure or value direction. We present NEVU (News Event-centric Value Understanding), a benchmark for actor-conditioned ,
+
+event-centric , and direction-aware human value recognition in factual news. NEVU evaluates whether models can identify value cues, attribute them to the correct actor, and determine value direction from grounded evidence. Built from 2,865 English news articles, NEVU organizes annotations at four semantic unit levels ( Subevent ,
+
+behavior-based composite event , story-based composite event , and Article ) and labels (unit, actor) pairs for fine-grained evaluation across local and composite contexts. The annotations are produced through an LLM-assisted pipeline with staged verification and targeted human auditing. Using a hierarchical value space with 
+
+54 fine-grained values and 20 coarse-grained categories, NEVU covers 45,793 unit–actor pairs and 168,061 directed value instances. We provide unified baselines for proprietary and open-source LLMs, and find that lightweight adaptation (LoRA) consistently improves open-source models, showing that although NEVU is designed primarily as a benchmark, it also supports supervised adaptation beyond prompting-only evaluation. Data availability is described in Appendix A. 
+
+Keywords: human value understanding · news-domain texts · evidence-grounded attribution · actor-conditioned inference · event-centric multi-granularity benchmark · large language models 
+
+1 Introduction A knife -wielding employee has                                                           
+
+> killed three officers and one
+> administrative worker at police
+> headquarters in the centre of the
+> French capital, Paris .The
+> attacker, who has not been
+> named, was shot dead by police .
+> Witnesses described scenes of
+> panic, with many …he was a
+> 45 -year -old IT specialist …
+> Police union leader Jean -Marc
+> Bailleul described it as a
+> criminal act …President
+> Emmanuel Macron ,Prime
+> Minister Edouard Philippe and
+> Interior Minister Christophe
+> Castaner have all visited the site
+> …
+
+Paris police attack: Four 
+
+killed by knife -wielding 
+
+employee 
+
+> Actors involved
+
+Human Value Understanding in News                        
+
+> Aknife -wielding employee
+> Police
+> President …
+> Events or Behaviors
+> Attack sequences
+> Law enforcement response
+> Government Actions
+> Public Reaction
+> Human Value Inferred
+> Have asafe country
+> Have astable society
+> Be responsible
+> Be just
+> •Article -to -event decomposition
+> •Actor attribution
+> •Implicit and explicit value cues
+> •Value reasoning within and across events
+> •Value direction ambiguity
+
+Key 
+
+Challenges 
+
+> Value Direction
+> Aligned
+> Contradictory
+
+Fig. 1: Human Value Understanding in News: Core Components and Chal-lenges. 
+
+Human values are commonly understood as normative principles that guide how individ-uals and societies judge actions and outcomes [1–4]. As large language models (LLMs) are increasingly used to read, summarize, and ex-plain news [8–12], they do not merely gener-ate fluent text, but also shape how informa-tion is interpreted. In this setting, factual ac-curacy alone is not sufficient. A system may correctly report what happened while still misrepresenting the value-laden aspects of the news, for example by assigning blame or credit to the wrong actors or framing events in ways that reflect model priors rather than source evidence. This creates a need to evalu-ate whether models can handle value-relevant aspects of news in an evidence-grounded and actor-sensitive way. News is a particularly challenging domain for human value understanding. Unlike short arguments, dialogues, elicited value statements, or synthetic moral scenarios, factual news reports describe real-world social processes involving multiple actors, actions, institutional constraints, and downstream consequences. Rather than recognizing explicitly stated opinions or normative judgments, models must infer values from evidence-grounded descriptions of behaviors, interactions, and outcomes. As illustrated in Figure 1, this requires identifying who is involved, what events and behaviors are described, which human values  
+
+> ⋆
+
+Corresponding author. 
+
+> arXiv:2603.17838v1 [cs.CL] 18 Mar 2026
+
+2 Y. Wang et al. 
+
+are implicated, and whether those values are expressed in an aligned or contradictory direction. These judgments are difficult because value cues may be explicit or implicit, distributed within or across events, and intertwined with actor attribution and narrative framing [5–7]. As a result, article-level labeling alone is often too coarse to reveal whether a model has missed relevant evidence, confused actors, or reversed value direction. What is needed is a benchmark that evaluates value understanding in factual news through explicit event and narrative structure, rather than as a single document-level judgment. Foundational                           
+
+> human
+> values
+> Model value
+> priors
+> Value alignment (other works)
+> Human behaviors &
+> interactions LLM Outputs
+> News units :Article / Events /
+> Narratives
+> Value Expression in
+> News Texts
+> Value Understanding
+> Alignment objectives (3H):
+> Helpful • Honest • Harmless
+> Describing human
+> behaviors & social
+> interactions
+> Enables value -
+> grounded generation
+> Goal:
+> •Value -grounded communication
+> •Knowledge mediation
+> •Blame / credit assignment
+> •Justification / delegitimization
+> •Stereotyping & Discrimination
+> •Moral framing
+> •Misleading value -based explanations
+> Re
+> val
+> Align model priors and outputs to normative goals
+> Consequences of
+> Misattributed Values
+> •Evidence -grounded
+> •Actor -conditioned value attribution
+> Real -world value formation Model -side value formation
+> News -domain value risks and grounding need
+> Grounding signal for 3H :reduce
+> value misattribution.
+> Support value -
+> grounded generation
+
+Fig. 2: Evidence-Grounded Value Understanding for News-Domain Texts. 
+
+These challenges are only partially ad-dressed by existing value-related research in NLP. One line of work studies human value recognition in arguments, dialogues, and other non-news text types [20, 28, 33, 34]. Although valuable, these resources typically focus on isolated utterances or short texts, are often actor-agnostic in explicit social at-tribution, and do not model value judg-ments over structured real-world events in factual news. Another line of work studies alignment and controllability, asking whether model outputs can be guided toward desired normative preferences or value expressions [14–19, 29, 30, 82, 89]. Figure 2 provides a schematic view of this landscape. In contrast to output-side alignment, we focus on the input-side problem of identifying which values are expressed in source news, by which actors, and in what direc-tion. However, no existing benchmark for factual news jointly covers event-centric decomposition , actor-conditioned attribution , multi-granularity analysis , and direction-aware value recognition. To fill this gap, we introduce NEVU (News Event-centric Value Understanding), a benchmark for fine-grained hu-man value understanding in factual news. NEVU is designed primarily for evaluation, while its structured annotations also support the study of learnability beyond prompting-only settings. Within NEVU, each article is organized into four semantic levels ( Subevent , behavior-based composite event (BCE) , story-based composite event (SCE) , and Article ), with directed human value annotations defined over (unit, actor) pairs. This hierarchy supports value understanding across multiple semantic scopes: Subevents localize value-relevant evidence, while BCEs and SCEs organize related subevents into relatively more complete behavior chains and story episodes. These composite units provide broader contextual grounding beyond isolated subevents, which is useful when value implications become clearer only from linked actions, responses, and consequences viewed together. Based on this structure, we formulate Human Value Recognition in news as an actor-conditioned, direction-aware, and multi-granularity benchmark task. We adopt the hierarchical value taxonomy of Kiesel et al. [20], using both Level-1 (54 fine-grained values) and Level-2 (20 coarse-grained categories); detailed definitions are provided in Appendix B. Problem formulation and dataset construction details are given in Sections 3 and 4. We summarize our main contributions as follows: 
+
+• We formalize Human Value Recognition in factual news as an evidence-grounded benchmark task over Article ,
+
+Subevent , BCE , and SCE units, enabling actor-conditioned and direction-aware evaluation across multiple semantic granularities. 
+
+• We present NEVU , the first benchmark for event-centric , actor-conditioned , and direction-aware human value understanding in factual news, comprising 2,865 articles, 25,753 subevents, 9,216 BCEs, 7,959 SCEs, 45,793 
+
+unit–actor pairs, and 168,061 directed value instances. 
+
+• We establish a systematic benchmark protocol and evaluate proprietary and open-source LLMs under a shared hierarchical value space (Level-1 54 / Level-2 20 ), enabling direct comparison of model performance on fine-grained and direction-aware news-domain value recognition. 
+
+• We further show that NEVU supports learnability beyond prompting-only evaluation: lightweight supervised adap-tation (LoRA) consistently improves open-source LLMs on fine-grained value and direction recognition, providing complementary evidence of the benchmark’s utility. 
+
+2 Related Work 
+
+2.1 Human Value Benchmarks Beyond Factual News 
+
+Human value research has a long tradition in psychology, sociology, and political communication, where values are commonly understood as enduring principles that shape how individuals and societies evaluate actions, choices, and  
+
+> 6
+
+https://www.tiktok.com/ , https://x.com/ Title Suppressed Due to Excessive Length 3
+
+Table 1: Comparison of human value datasets by data source, text type, and annotation properties.                                                                         
+
+> Dataset Year Data source Text type Actor Size Card. Relation Open
+> Kiesel22-Args [20] 2022 IBM-ArgQ-Rank-30kArgs [46] Argument ✗5.3k Multi Undir. Yes ValueNet [28] 2022 EmpatheticDialogues [47] Dialogue ✗21.4k Single Dir. Yes ValueEval [33] 2023 Touché23-ValueEval [21] Argument ✗9.3k Multi Undir. Yes ValueFULCRA [35] 2023 Red Teaming [48, 49] LLM answers ✗20k Multi Dir. No ValueBench [36] 2024 Psychometric inventories [50–68] Questionnaire item ✗2k Single Dir. Yes ValuePrism [34] 2024 Delphi scenarios [69] Situation vignette ✗31k Multi Dir. Yes VVALUES [45] 2025 TikTok/Twitter 6Video (+text) ✗5.1k Multi Dir. No
+> NEVU (ours) 2026 Uknow [38] + social news (Table 7) Multi-level event units ✓46.6k Multi Dir. Yes
+
+Note. Size is the dataset scale reported in the original paper; Card. indicates whether each instance is annotated with a single value label or multiple value labels; Relation indicates whether annotations distinguish value direction (Dir.: aligned vs. contradictory) or only mark value presence (Undir.); Open indicates whether the dataset is publicly released. For NEVU, Size counts total semantic units across its four levels (46.6k in total). 
+
+social life [1–4]. In NLP, these foundations have been operationalized through benchmark datasets that make value recognition measurable over text. Early work by [20] introduced a hierarchical value taxonomy and annotated argumen-tation data, establishing human value recognition as a supervised NLP task. Subsequent work extended value-related resources to dialogues and interactive text [27, 28], psychometric-style questionnaire items [36], synthetic moral or value scenarios [22–24], and broader value-oriented evaluation settings [34]. As summarized in Table 1, existing value benchmarks differ substantially in source domain, annotation unit, and label structure. Some treat value prediction as undirected relevance or presence tagging, without distinguishing whether a value is expressed in an aligned or contradictory direction [20, 33], while others include directional distinctions over dialogues, scenarios, or multimodal inputs [28, 34, 45]. These datasets provide important foundations for value-related NLP research, but they typically focus on isolated utterances, short texts, questionnaire items, or synthetic situations rather than factual news reports. Moreover, most do not explicitly support actor-conditioned value attribution over structured real-world events in factual news. Against this background, NEVU shifts the focus to factual news and jointly supports actor-conditioned attribution, direction-aware value labels, and multi-granularity event structure. 
+
+2.2 Event-Centric Structure as a Missing Dimension in Value Benchmarking 
+
+Event extraction, structured event representations, and related work on event relations have long supported news information extraction, summarization, and reasoning [71–73, 75–77]. A central motivation in this line of work is that news articles often interleave multiple actors, actions, and developments, making article-level analysis alone too coarse for localizable reasoning [41, 42, 72, 73]. Such structure is particularly useful in news, where the same article may contain parallel developments, temporally distributed actions, and multiple actor roles [43, 70]. This motivation is especially important for human value understanding, where value evidence often emerges across event progressions and actor interactions (Figure 1). Value-relevant evidence in news is often distributed across be-haviors, interactions, responsibility assignments, institutional responses, and downstream consequences, rather than concentrated in a single sentence or local span. As a result, fine-grained subevent decomposition is useful but not always sufficient: broader contextual units may be needed when value-relevant evidence is distributed across linked actions, responses, and consequences [71, 74, 75]. However, although prior event-centric work provides structured rep-resentations for news, it does not directly benchmark human values, actor-conditioned attribution, or directional value judgments. NEVU addresses this missing dimension by annotating directed human values over multi-granularity event units, including localized subevents and broader composite units that provide richer contextual grounding for value attribution. 
+
+2.3 Actor Attribution and Value Expression in News 
+
+Communication research has long shown that news shapes audience understanding through framing, attribution, and narrative organization [5–7]. In factual news, value cues are often indirect: they may be implied through descriptions of behaviors, institutional constraints, policy choices, responsibility assignments, and consequences rather than stated as explicit opinions or moral claims. News reports also frequently combine quoted speech, reported claims, and differing accounts from multiple actors, which makes interpretation sensitive to who is speaking, who is acting, and whose perspective is foregrounded. These properties make actor attribution central to value understanding in news. Models must often determine which actor expresses or instantiates a value-relevant position, whether a described action aligns with or contradicts a value, and which evidence in the report supports that judgment [83, 84]. Related NLP work has studied stance detection, bias analysis, reframing, and interpretive differences in news [85–88]. These directions highlight the importance of attribution and perspective, but they do not directly provide benchmark resources for human value understanding in 4 Y. Wang et al. 
+
+news. In particular, benchmarks that operationalize value understanding as actor-conditioned , direction-aware attri-bution over factual news remain limited. NEVU addresses this gap by binding directed value labels to (unit, actor) pairs under explicit event structure. 
+
+2.4 Output-Side Alignment vs. Input-Side Value Understanding 
+
+Value-related research on large language models has increasingly focused on normative alignment, controllability, and safety-oriented generation [13, 37, 78–81]. A closely related line of work studies whether model outputs can be guided toward desired normative preferences or value expressions [14–19, 29, 30, 82, 89]. This literature primarily addresses the output-side problem of steering model behavior toward preferred values, safety constraints, or interaction principles such as helpfulness, honesty, and harmlessness [89]. By contrast, NEVU targets the input-side problem of human value understanding: identifying which values are expressed in source news, by which actors, and in what direction, under grounded evidence and explicit event structure. Input-side human value recognition has been benchmarked on arguments, dialogues, and scenario-based texts [20, 28, 33, 34], but factual news introduces additional challenges, including multiple actors, event-structured context, and value cues distributed across related developments [25, 26]. NEVU therefore complements output-side alignment research by providing a benchmark for evidence-grounded, actor-conditioned, and direction-aware value recognition in factual news, as summarized in Figure 2. 
+
+3 Problem Formulation 
+
+We formulate human value understanding in news as an evidence-grounded prediction problem over event-structured semantic units. Unlike document-level value tagging, the goal is to identify which values are expressed, by which actor ,
+
+at which semantic granularity , and in what direction (aligned vs. contradictory ), while keeping predictions reviewable against localized evidence. Let g ∈ G denote a news article. For each article, we define a hierarchy of semantic units 
+
+U(g) = {u(g)art } ∪ E (g) ∪ B (g) ∪ N (g). (1) where u(g)art is the article-level unit, E(g) is the set of subevents, B(g) is the set of BCEs, and N (g) is the set of SCEs. We also define a set of major social actors A(g) for each article. Given a semantic unit u ∈ U (g) and a target actor a ∈ A (g), the task is to predict which human values are expressed with respect to the actor’s described behaviors, interactions, constraints, or outcomes in u. Let V denote the human value label space. For each instance (g, u, a ), the gold annotation is represented as two subsets 
+
+Y + 
+
+> g,u,a
+
+⊆ V, Y − 
+
+> g,u,a
+
+⊆ V. (2) where Y + 
+
+> g,u,a
+
+contains values expressed in an aligned direction and Y − 
+
+> g,u,a
+
+contains values expressed in a contradictory direction. The prediction target is thus a directed multi-label output over (unit, actor) pairs. In ECHV , we instantiate this formulation as the benchmark task of Human Value Recognition ; the dataset provides event-structured units, normalized actors, and directed value annotations to enable fine-grained attribution analysis and direction-aware evaluation. We next describe how the dataset is constructed. 
+
+4 Dataset Construction Stage -1: Base Corpus                                   
+
+> Process :
+> •Topic/Type Tagging
+> •Stratified Sampling (Type & Year)
+> Output :Candidate article set
+> Goal : Diverse news types and topics
+> Stage -3: Unified Filtering & Cleaning
+> Process :
+> •Category validation &(sensitivity &Human -centered narrative) filter
+> •Safety screening
+> •Deduplication &remove short/corrupt &format repair
+> Output :Final cleaned corpus (1755 +1110 =2865 )
+> Goal :Consistent validity and safety
+> Process :
+> •Identify Underrepresented Values
+> •Open -ended Keywords Generation
+> •Curate Diverse Source Domains
+> •Targeted News Crawling
+> •Output : Candidate articles set
+> Goal : Balance Value coverage
+> Stage -2: Value -Driven Supplementation
+
+Fig. 3: Phase-1 pipeline for corpus construction. 
+
+To instantiate the problem formulation in Section 3, we con-struct NEVU through a three-phase pipeline covering cor-pus collection, event-centric knowledge base construction, and actor-conditioned human value annotation. 
+
+4.1 Phase-1: Data Collection 
+
+We construct the news corpus via a three-stage pipeline (Fig. 3): (i) base corpus sampling, (ii) value-driven supple-mentation for coverage and balance, and (iii) unified fil-tering and cleaning for consistency and safety. We draw articles primarily from Uknow [38] and English Wikinews (2022–2025) via the MediaWiki Action API 7. Full procedu-ral details, including source-domain lists and filtering crite-ria, are provided in Appendix C. Title Suppressed Due to Excessive Length 51. At approximately 13 :00 local time on October 3, 2019 , a 45 -year -old                                                                                                                                                                                                                
+
+> IT specialist employed at the Paris police headquarters entered the
+> police headquarters building and went straight to his office where he
+> began attacking his colleagues with aknife .
+> 2. The 45 -year -old IT specialist stabbed three colleagues inside two
+> offices and two women on astairway .
+> 3. Three men and one woman were killed in the attack .
+> 4. Afifth person was critically injured in the attack and sent for surgery .
+> 5. An officer shot and killed the attacker inside the building's courtyard .
+> 6. Witnesses described scenes of panic, with many people fleeing the
+> building in tears .
+> 7. Authorities sealed off the area in the Île de la Cité .
+> 8. President Emmanuel Macron, Prime Minister Edouard Philippe, and
+> Interior Minister Christophe Castaner visited the attack site at the Paris
+> police headquarters .
+> 9. The Paris prosecutor launched amurder investigation into the attack .
+> 10. Police searched the attacker's home and took the attacker's wife into
+> custody, although she was not charged .
+> Aknife -wielding employee has killed
+> three officers and one administrative
+> worker at police headquarters in the
+> centre of the French capital, Paris .The
+> attacker, who has not been named, was
+> shot dead by police .Witnesses
+> described scenes of panic, with many
+> ……
+> Paris police attack: Four killed by
+> knife -wielding employee
+> IT specialist initiates attack
+> on colleagues with aknife
+> Attacker stabs three
+> colleagues and two women
+> Attacker causes deaths and
+> injuries
+> BCE -0: Attack Sequence
+> 1
+> 2
+> 3
+> Officer shoots and kills the
+> attacker
+> Authorities seal off the area
+> Paris prosecutor launches
+> murder investigation
+> Law Enforcement
+> Response
+> 5
+> 7
+> 9
+> Police search attacker's
+> home and detain his wife 10
+> SCE -1
+> October 3, 2019 (Thursday)
+> Subevents
+> BCE Construction
+
+Attack Sequences                                                          
+
+> Attack and Immediate
+> Consequences
+> Story narrative :A45 -year -old IT specialist
+> attacks colleagues at the Paris police
+> headquarters, resulting in four deaths and
+> one critical injury .An officer fatally shoots
+> the attacker .Witnesses flee in panic .
+> Related Subevents :1,2,3,4,5,6
+> Law Enforcement and
+> Government Response
+> Story narrative :Authorities seal off the area
+> and initiate amurder investigation .High -
+> ranking officials visit the site .Police search
+> the attacker's home and detain his wife .
+> Related Subevents :7,8,9,10
+> SCE -0BCE -1
+> BCE -0
+> SCE Construction
+> Major Social Actor Recognition
+> Attacker (knife -wielding IT specialist)
+> Law Enforcement and Authorities
+> Government and Political Leaders
+> Social Actors
+> 𝑥 (")
+> ℇ(")
+> Subevent Extraction ℬ(")
+> 𝒩 (")
+> 𝒜 (")
+> [𝑥 ("),ℇ(")]
+> [𝑥 ("),ℇ(")]
+
+Fig. 4: An illustrative example of the joint construction of the event-centric knowledge base. 
+
+4.2 Phase-2: Event Knowledge Base Construction 
+
+To support fine-grained human value understanding, we construct an event-centric knowledge base from the multi-source news corpus described in Phase-1. Within each article, we build a multi-level semantic hierarchy consisting of sentence-grounded subevents, two complementary types of composite event units (BCEs and SCEs), and a set of major social actors (Fig. 4). This hierarchy is designed to make value inference localizable through evidence-grounded subevents and more diagnosable through contextual aggregation across semantic scopes. Detailed schema definitions and construction rules are provided in Appendix D. 
+
+Subevents. To move beyond coarse article-level representations, we extract subevents as fine-grained local event units, following prior benchmark designs that operationalize events at sentence-level granularity for long-context and temporally complex event analysis [43]. Each subevent is associated with a short natural-language summary and sup-porting evidence sentences from the source article, enabling traceable value annotation. For subevent characterization, we use the WikiEvents Ontology [39] as a conceptual reference. 
+
+Composite events. While subevents provide localized evidence, value cues in news are often distributed across related actions, responses, and consequences. To capture such context beyond isolated subevents, we construct two complementary composite event units, following prior work on event composition, relational inference, and event-centric document modeling [31, 32, 40–42]. A BCE groups closely linked subevents into a localized behavior or response chain, supporting value attribution over procedural continuity and immediate outcomes. A SCE groups more broadly related subevents into a larger story segment, supporting value attribution over wider narrative development and downstream consequences. We distinguish these two views because value judgments in news may depend either on a tightly connected local process or on a broader narrative segment that integrates follow-up developments. In Fig. 4, for instance, BCEs organize linked attack and response subevents into local chains, whereas SCEs capture broader story segments such as the attack episode and the institutional response storyline. 
+
+Major social actors. For each article, we identify major social actors involved in the described processes, including individuals, institutions, governments, companies, and social groups. To reduce ambiguity from aliases, coreference, and varying mention specificity, we canonicalize actor mentions and, when appropriate, abstract them into role-based actors defined by their event participation. This actor layer supports consistent attribution of value judgments across units and levels.  
+
+> 7
+
+https://en.wikinews.org/w/api.php .6 Y. Wang et al. !(")   
+
+> ,#(")ℬ(")%(")&$%&
+> (")ℇ(")
+
+4-level semantic levels 
+
+Human Value Recognition                                      
+
+> Task :
+> For each actor involved in the [field :"subevent"], identify all the possible
+> human values they reflect .For each identified human value, determine
+> the responsible actor, and place the value under that actor’s
+> "aligned _hvs "or "contra_hvs "field accordingly …
+> [{“ actorA ”: {“ aligned _hvs ”: [“be responsible”], “ contra _hvs ”: [“….”]}}]
+> Input : [Article:], [subevent:], [Social actors:]
+> Output :[" subevents _human_values "]
+
+Fine -grained QA -Based Verification on Low -Confidence HV Labels 
+
+3-Way Voting 
+
+Mechanism 
+
+> Accepted
+> Pool
+
+Task :                                                    
+
+> Based on the article, does the "{actor}" in this subevent
+> ("{ subevent_id }") demonstrate the human value "{ hv_label }" (as
+> defined in the provided :[Human Value Description])?
+> Please answer the question field for each entry in the provided JSON
+> using "yes" or "no", and briefly justify your answer in 1–2sentences
+> based on evidence from the article …
+> Answer :Yes
+> Explanation : xxx
+> Answer : No
+> Explanation : xxx
+> Answer :Yes
+> Explanation : xxx
+> Single Vote
+> 2-way overlap
+> 3-way overlap
+> Accepted/Rejected HV labels
+> Low -confidence HV labels
+
+3-Way Voting Mechanism 
+
+3-Way Voting 
+
+Mechanism         
+
+> Rejected Pool
+> 3/3:No
+> 3/3:Yes
+> 3/3
+> <3/3:Yes|No
+> [{“ actorA ”: {aligned _hvs ”: [“Have successful”], “contra_hvs ”: [“…”]}}]
+> [{“ actorA ”: {“ aligned_hvs ”: [“Be humble”], “contra_hvs ”: [“…”]}}]
+> <3/3
+
+Human Verification  
+
+> Event correctness
+> Actor correctness
+> HV correctness
+> Low -confidence
+> Pool
+> Single Vote
+> 2-way overlap
+> Accepted/Rejected HV labels
+> Rejected HV lables
+
+2-Way Voting Mechanism 
+
+Cross -level Human Value Integration          
+
+> CE HVs =related subevent -level values
+> ⋃unique CE -level HVs
+> Article -level HVs =
+> related subevent -level values
+> ⋃CE -level HVs ⋃unique article -level HV
+> Aggregation Deduplication Consistency check
+> 2/2
+
+( )
+
+> <2/2
+> Subevent -level Values
+> BCE | SCE -level Values
+> Article -level Values
+
+Accepted Labels 
+
+> ?
+> ?
+> ?
+
+Fig. 5: Phase-3 human value annotation pipeline for NEVU. 
+
+4.3 Phase-3: Human Value Annotation Pipeline 
+
+As illustrated in Fig. 5, we adopt an LLM-assisted, staged annotation pipeline to construct actor-conditioned human value annotations. The pipeline is designed to mitigate single-model bias, enforce evidence grounding, and reduce human annotation cost through progressive verification. Values are annotated over (unit, actor) pairs across the Article, Subevent, BCE, and SCE levels, allowing comparison across local event units and broader composite contexts. Detailed annotation procedures and verification rules are provided in Appendix E. 
+
+Stage 1: LLM-based Candidate Identification We first use multiple LLMs to propose candidate directed value labels for each (u, a ) pair. To improve precision and reduce single-model bias, only candidates with strong cross-model agreement are retained, while uncertain cases are deferred to the next verification stage. 
+
+Stage 2: QA-based verification of low-confidence labels. Low-confidence candidates from Stage 1 are passed to a secondary verification stage. Rather than generating labels from scratch, this stage evaluates whether a candidate value-direction judgment is supported by the available evidence for the target actor and unit. Cases that remain unresolved after model verification are sent to human verification. Have a safe country   
+
+> Attacker (knife -wielding IT specialist)
+> Law Enforcement and Authorities
+> Government and Political Leaders
+> Have a stable society
+> Have good health
+> Be courageous
+> Be responsible
+> Be just
+> Contradictory to human values
+> Aligned with human values
+> Subevent -0
+> Subevent -1
+> SCE -1
+> BCE -1
+
+Major Social Actors Semantic levels                                                           
+
+> Article
+> News Content :Aknife -wielding employee has killed three
+> officers and one administrative worker at police
+> headquarters in the centre of the French capital, Paris .
+> The attacker, who has not been named, was shot dead
+> by police .Witnesses described scenes of panic, with
+> BCEs: 0
+> Attack Sequence :(related subevents :0,1
+> •IT specialist initiates attack on colleagu
+> •Attacker stabs three colleagues and two
+> •Attacker causes deaths and injuries .
+> 𝒜 ())
+> 𝓑 (𝒈 )
+> 𝓝 (𝒈 )
+> 𝝁 𝒂𝒓𝒕
+> (𝒈 )
+> ℇ(𝒈 )
+
+Human Value Attribution 
+
+Fig. 6: Illustrative examples of actor-conditioned human value annotations across article, subevent, BCE, and SCE levels. 
+
+Stage 3: Human verification. For low-confidence candidates from Stage 2, we conduct targeted human ver-ification to improve annotation reliability. This step fo-cuses on ambiguous cases rather than exhaustive manual review of all released value instances. 
+
+Stage 4: Cross-level value integration. Finally, we integrate verified labels across semantic levels from fine to coarse granularity. Composite-event units (BCEs and SCEs) aggregate supported value evidence from linked subevents, while also allowing additional labels that be-come clearer only when related subevents are viewed to-gether as a localized chain or a broader narrative seg-ment. We then normalize the resulting labels through aggregation, deduplication, and cross-level consistency checks to produce the final gold actor-conditioned directed value annotations. 
+
+Finalization breakdown of released labels. For transparency, we report how released gold value instances are finalized across the annotation pipeline. Of the 168,061 released value instances, 77,913 (46.36%) were retained in 
+
+Stage 1 via strong cross-model agreement during LLM-based candidate identification, 75,048 (44.66%) were finalized in Stage 2 via QA-based verification, and 15,100 (8.98%) were finalized in Stage 3 via targeted human verification. 
+
+Stage 4 performs cross-level integration and normalization after verification, and is therefore not treated as a separate Title Suppressed Due to Excessive Length 7
+
+Table 2: Split-wise scale and annotation statistics of actor-conditioned human value annotations. Align.% is 100 ×
+
+Align. /(Align. + Contra. ).                                                                                        
+
+> Subset Units Actors Value annotations Grp Split Art. Sub. BCE SCE Act. Avg. Inst. Align. Contra. Aligned ratio (u, a)
+> Total dev 286 2501 951 799 1120 3.993 16354 12707 3647 77.7 7049 Total test 574 5430 1872 1619 2317 4.233 34079 25599 8480 75.1 14875 Total train 2005 18395 6575 5582 7679 4.189 117628 90474 27154 76.9 50981 Sub dev 283 2476 944 792 1109 3.996 7907 6059 1848 76.6 2500 Sub test 568 5388 1855 1601 2295 4.236 15869 11920 3949 75.1 5000 Sub train 1991 18311 6536 5549 7632 4.191 62110 47457 14653 76.4 20000
+> Notes. Act.=unique actors; Avg.=mean actors per article; (u,a)=annotated unit–actor pairs; Inst.=directed value instances (Inst.=Align.+Contra.).
+
+label-finalization route in this summary. These statistics clarify that NEVU is constructed through a staged annotation and verification pipeline rather than a single-pass LLM labeling procedure. 
+
+4.4 Dataset Statistics and Visualizations 
+
+Table 2 reports split-wise scale and annotation statistics of NEVU, together with the sampled subset ( Sub ) used in downstream experiments. The full benchmark contains 2,005/286/574 articles in train/dev/test, which expand into 18,395/2,501/5,430 subevents, 6,575/951/1,872 BCEs, and 5,582/799/1,619 SCEs, respectively. NEVU is actor-centric: across the three splits, we annotate 7,679/1,120/2,317 unique abstract social actors, with an average of about 4.0–4.2 actors per article. At the annotation level, the benchmark contains 117,628/16,354/34,079 directed value instances in train/dev/test, defined over annotated unit–actor pairs. Across splits, aligned instances account for about three quarters of all annotations (75.1%–77.7%), while contradictory instances remain substantial, providing meaningful coverage for direction-aware evaluation. The Sub rows correspond to sampled subsets drawn from the fixed train/de-v/test partitions and are used only to reduce experimental cost in selected analyses and ablations, without altering the benchmark split protocol. Figure 7 summarizes level-wise annotation characteristics on the full dataset ( s = all ; train+dev+test). Subevents dominate the dataset scale, accounting for the largest number of units, annotated unit–actor pairs, and directed value instances, whereas BCEs and SCEs provide intermediate-scale composite structures between localized subevents and full articles. Article units contain the richest actor context, while subevents are much more localized and usually center on a single actor. At the same time, article-level unit–actor pairs carry the densest value annotations overall, and composite units (BCE/SCE) remain denser than subevents in directed value labels per pair. Together, these patterns suggest that subevents provide stronger locality and cleaner actor focus, whereas composite units more often concentrate multiple value-relevant actions and consequences within the same semantic structure. Aligned labels dominate across all levels, with BCE showing the highest aligned ratio. 
+
+4.5 Dataset Quality Assessment 
+
+We conduct a manual quality assessment of NEVU on a stratified sample across the four semantic granularities and report Soft/Hard scores. Overall, the results indicate strong reliability for actor abstraction and event construction, with N-weighted Actor Concept Validity, Actor Grounding Adequacy, and Human Value Correctness reaching 94.8/93.4, 92.1/90.3, and 84.6/83.2, respectively. Detailed evaluation settings, dimension definitions, and full results are provided in Appendix H. 
+
+5 Benchmark Task and Evaluation Protocol 
+
+Building on the problem formulation in Section 3, we instantiate Human Value Recognition in NEVU as a directed multi-label prediction task over annotated unit–actor pairs and evaluate it under a unified benchmark protocol. 
+
+5.1 Benchmark Instantiation 
+
+Evaluation in NEVU is performed over annotated unit–actor pairs (u, a ) derived from articles g, where the target unit belongs to one of four semantic levels: 
+
+ℓ(u) ∈ { article , subevent , BCE , SCE }. (3) 8 Y. Wang et al. Article Subevent BCE SCE 
+
+> 0
+> 10000
+> 20000
+> 30000
+> 40000
+> 50000
+> 60000
+> 70000
+> 80000
+> Count
+> 2.9k
+> 25.8k
+> 9.2k
+> 8.0k
+> 11.0k
+> 33.7k
+> 14.0k
+> 14.2k
+> 50.6k
+> 59.6k
+> 28.8k
+> 29.1k
+
+(a) Scale by semantic level 
+
+> Units
+> Annotated pairs
+> Value instances
+> Article
+> (n=2,865)
+> Subevent
+> (n=25,753)
+> BCE
+> (n=9,216)
+> SCE
+> (n=7,959)
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 22.5
+> Actors per unit
+> max=18
+> max=9
+> max=14
+> max=10
+
+(b) Actor density per unit  
+
+> IQR (Q25 Q75)
+> Median (Q50)
+> Mean
+> Whisker (Q75 Q95)
+> Article
+> (n=11,012)
+> Subevent
+> (n=33,742)
+> BCE
+> (n=13,968)
+> SCE
+> (n=14,183)
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> Labels per pair
+> max=25
+> max=8
+> max=9 max=9
+
+(c) Value label density per pair    
+
+> IQR (Q25 Q75)
+> Median (Q50)
+> Mean
+> Whisker (Q75 Q95)
+> Article Subevent BCE SCE
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Percentage (%)
+> 74.1%
+> 25.9%
+> 76.2%
+> 23.8%
+> 80.3%
+> 19.7%
+> 78.1%
+> 21.9%
+
+(d) Value direction composition  
+
+> Aligned Contradictory
+
+Level-wise Statistics of Actor-Conditioned Human Value Annotations 
+
+Fig. 7: Level-wise annotation statistics on the full dataset ( s = all ; train+dev+test): (a) numbers of units, annotated unit–actor pairs, and directed value instances; (b) actor density per unit; (c) directed value labels per unit–actor pair; (d) aligned vs. contradictory label ratios across semantic levels. For each instance, the model outputs two direction-specific sets of Level-1 value labels, corresponding to aligned ( +)and contradictory ( −) predictions: 
+
+bΦ(1) (u, a ) =   bΦ(1)+ (u, a ), bΦ(1) −(u, a ), bΦ(1) ±(u, a ) ⊆ V (1) . (4) 
+
+Input representation. For each unit–actor pair (u, a ), the model input consists of the unit text, grounded evidence, contextual information, the unit level, and the target actor: 
+
+I(u, a ) =  unit_text (u), evidence (u), context (u), unit_level = ℓ(u), actor = a. (5) At the article level, unit_text is the full article. At the subevent level, it is the subevent summary, with grounded sentences as evidence and neighboring sentences as context . For BCE and SCE, unit_text combines the composite description with linked subevent summaries, while evidence and context aggregate the corresponding grounded sentences and local context. 
+
+Label space and mapping. NEVU supports evaluation at both Level-1 (54 labels) and Level-2 (20 labels). Models predict only Level-1 labels, which are then deterministically mapped to Level-2 using a fixed function f : V(1) → V (2) 
+
+while preserving direction: bΦ(2) ±(u, a ) = { f (v) | v ∈ bΦ(1) ±(u, a ) }. (6) We report results at both levels under the same prediction process. 
+
+Long-context evaluation protocol (map–reduce) When unit_text exceeds the model context budget, we apply a map–reduce inference procedure [44]. Only unit_text is split into K fixed-length chunks, while evidence , context ,Title Suppressed Due to Excessive Length 9
+
+Table 3: Model groups used in the Human Value Recognition benchmark. G1 and G2 are evaluated in a prompting-only setting, while G3 applies LoRA fine-tuning to the same open-weight backbones. All groups use a shared prompt template and actor-centric JSON output schema.     
+
+> Group Models
+> G1: Proprietary API OpenAI gpt-5.2 [90], gpt-4.1 [91], gpt-o3 [92]; Claude Haiku [93]/Sonnet [94]/Opus 4.5 [95]; Gemini-2.5-Pro [96]; Deepseek-chat [97], Deepseek-reasoner [98] G2: Open-weight (w/o fine-tuning) Llama-3.1-8B-Instruct [99], Qwen3-8B [100], Ministral-3-8B-Instruct-2512 [101], Phi-3.5-mini-instruct [102] G3: Open-weight (fine-tuned) Llama-3.1-8B-Instruct + LoRA, Qwen3-8B + LoRA, Ministral-3-8B-Instruct-2512 + LoRA, Phi-3.5-mini-instruct + LoRA
+
+unit_level , and the target actor remain unchanged. Predictions are made for each chunk and merged by direction-specific union with de-duplication: 
+
+bΦ(1) ±(u, a ) = 
+
+> K
+
+[
+
+> k=1
+
+bΦ(1) ± 
+
+> k
+
+(u, a ). (7) 
+
+5.2 Evaluation Metrics 
+
+For evaluation, both gold and predicted outputs for each unit–actor pair (u, a ) are represented as sets of directed value labels, where each label is a pair (v, d ) with v ∈ V (1) and d ∈ { +, −} . We denote the gold set by Y (u, a ) and the predicted set by bY (u, a ), and compare them over all instances in the benchmark. 
+
+Micro-F1. We report Micro-F1 by aggregating true positives, false positives, and false negatives over all evaluated 
+
+(u, a ) instances: 
+
+Micro -P = TP TP + FP , Micro -R = TP TP + FN , Micro -F1 = 2 · Micro -P · Micro -RMicro -P + Micro -R . (8) 
+
+Macro-F1 (gold-supported). We also report Macro-F1 over the directed label space by averaging per-label F1 scores. To avoid distortion from labels absent in the evaluated split, we compute this metric in a gold-supported manner, averaging only over labels that appear at least once in the gold annotations. 
+
+Direction Reverse Rate (DRR). To quantify direction errors, we report Direction Reverse Rate (DRR), the rate at which a model predicts the correct value identity but assigns the opposite direction. For any (u, a ) where the same value appears with both directions in the gold annotation, that value is excluded from the DRR denominator because its direction is ambiguous. Lower DRR indicates fewer aligned/contradictory reversals. 
+
+6 Experiments 
+
+6.1 Experimental Settings 
+
+We benchmark a diverse set of representative LLMs on the Human Value Recognition task under a unified protocol. The evaluated models are grouped into three categories (Table 3) based on access mode and whether task-specific fine-tuning is applied. Performance is measured using Micro-F1, Macro-F1, and DRR, as defined in Sec. 5.2. 
+
+Unified prompting protocol. To ensure fair comparison across proprietary and open-weight models, all models are evaluated with a shared prompt template and actor-centric JSON output schema. Given a textual unit at one of the four semantic levels and a target actor, models predict directed Level-1 value labels. Level-2 labels are obtained deterministically by mapping the predicted Level-1 labels to the coarser taxonomy. 
+
+G1: Proprietary API models (prompted, no task-specific training). G1 consists of proprietary LLMs accessed via APIs. They are evaluated in a prompting-only setting and serve as high-performance reference systems under the shared protocol. 
+
+G2: Open-weight models (prompted, w/o fine-tuning). G2 includes open-weight instruction-tuned backbones evaluated in the same prompting-only setting. This group provides fully reproducible baselines for actor-conditioned value recognition without task-specific adaptation. 
+
+G3: Open-weight models with LoRA fine-tuning. To assess the effect of lightweight task adaptation, we fine-tune the same backbones as in G2 with LoRA on the training split and evaluate them under the same protocol. This group measures the gains from supervised adaptation while keeping the model family and output schema fixed. 10 Y. Wang et al. 
+
+Table 4: Human Value Recognition results on 54 fine-grained Level-1 human values. G1: proprietary API LLMs (prompting only); G2: open-weight LLMs (prompting only); G3: open-weight LLMs with LoRA fine-tuning. Best-in-group is underlined; overall best is underlined in bold.                                                                                                                                                                                                                                                                         
+
+> Group Model Micro-F1 Macro-F1 DRR ↓
+> Art. Sub. BCE SCE Overall Art. Sub. BCE SCE Overall Art. Sub. BCE SCE Overall
+> G1 Claude Haiku 4.5 43.05 41.02 38.38 39.69 40.87 28.87 33.13 28.18 32.93 30.11 3.44 1.72 2.41 2.43 2.74 Claude Sonnet 4.5 46.37 44.91 42.17 43.22 44.43 32.54 39.03 35.41 36.37 34.73 2.61 1.22 1.97 2.19 2.15 Claude Opus 4.5 47.76 46.68 44.47 45.68 46.37 34.86 41.00 37.07 37.33 37.25 2.82 1.00 2.00 1.92 2.16 Deepseek-chat 36.62 39.76 39.04 40.98 38.67 23.05 30.32 29.95 30.23 26.82 2.64 1.36 2.31 2.53 2.32 Deepseek-reasoner 43.47 43.45 43.87 45.23 43.94 31.76 36.81 34.06 37.73 34.92 1.65 1.40 1.42 1.16 1.47 OpenAI gpt-4.1 42.71 41.67 40.55 41.63 41.82 29.44 34.31 32.36 32.89 31.12 2.95 1.22 1.97 1.92 2.25 OpenAI gpt-5.2 42.48 44.97 44.38 45.31 43.96 28.77 34.52 34.09 35.33 32.00 2.10 1.22 1.80 1.85 1.83 OpenAI o3 37.98 42.62 41.48 42.60 40.56 27.77 33.69 32.59 32.77 31.22 1.09 1.18 1.09 1.03 1.09 Gemini 2.5 Pro 53.36 45.49 42.66 43.04 47.05 42.71 42.23 37.24 37.90 39.87 3.10 1.50 2.10 1.88 2.39 G2 Ministral-3-8B 23.67 26.00 26.27 27.31 25.49 14.18 20.21 17.99 19.61 17.17 0.04 0.03 0.03 0.03 0.04 Phi-3.5-mini 13.31 7.17 9.04 10.02 10.56 6.64 4.57 4.90 6.76 5.73 0.04 0.02 0.02 0.02 0.03 Qwen3-8B 18.83 13.67 14.88 14.88 16.06 9.69 8.65 9.11 10.48 9.35 3.59 1.14 1.83 2.05 2.52 Llama-3.1-8B 15.19 11.79 11.29 11.40 12.97 6.02 6.39 5.06 6.46 5.94 7.81 3.36 4.24 4.35 5.66 G3 Ministral-3-8B 57.35 50.04 49.58 52.52 53.71 42.75 42.07 36.66 39.85 41.73 0.04 0.01 0.01 0.01 0.02
+> Phi-3.5-mini 54.35 48.40 51.05 53.32 52.53 37.91 38.75 36.44 40.20 38.90 0.05 0.01 0.01 0.01 0.03 Qwen3-8B 56.77 50.86 53.15 53.41 54.44 41.21 41.07 42.72 43.42 42.42 0.03 0.01 0.01 0.01 0.02
+> Llama-3.1-8B 57.77 53.50 52.30 53.70 55.26 43.02 45.05 40.89 42.44 44.29 3.10 0.75 0.61 0.92 1.78
+
+6.2 Human Value Recognition Results and Discussion 
+
+Table 4 reports Level-1 results over the 54 fine-grained values across the four semantic levels and Overall. Appendix Table 9 provides the corresponding Level-2 view obtained by deterministic mapping from Level-1 predictions. 
+
+Overall performance and group comparison. On Level-1, Gemini 2.5 Pro is the strongest model in G1 ,achieving 47.05 Overall Micro-F1 and 39.87 Overall Macro-F1. However, the strongest G3 models outperform all prompting-only systems overall: Llama-3.1-8B+LoRA reaches 55.26 /44.29 (Micro/Macro), followed by Qwen3-8B+LoRA with 54.44 /42.42 . This shows that lightweight supervised adaptation substantially improves benchmark performance beyond prompting alone. 
+
+Effect of task adaptation: G2 → G3. Across all open-weight backbones, LoRA training yields large gains on Level-1. Overall Micro-F1 increases from 25.49 to 53.71 for Ministral-3-8B, from 16.06 to 54.44 for Qwen3-8B, from 10.56 to 52.53 for Phi-3.5-mini, and from 12.97 to 55.26 for Llama-3.1-8B. These gains indicate that NEVU provides a strong supervised learning signal, and that prompting-only performance substantially underestimates what open-weight backbones can achieve after lightweight adaptation. 
+
+Micro, Macro, and direction sensitivity. Across all groups, Macro-F1 is consistently lower than Micro-F1 under the 54-label taxonomy, indicating that models are more reliable on frequent values than on rarer ones. Task adaptation narrows this gap to some extent, as seen in the stronger Macro-F1 of G3 models relative to their prompting-only coun-terparts. DRR provides a complementary view by isolating direction reversals. Most G3 models achieve extremely low DRR on the composite levels, often around 0.01 , showing that fine-tuning strongly reduces aligned versus contradic-tory reversals. At the same time, the best F1 model does not always achieve the lowest DRR: Llama-3.1-8B+LoRA 
+
+has the highest Overall F1 but an Overall DRR of 1.78 , whereas OpenAI o3 achieves the lowest Overall DRR in 
+
+G1 at 1.09 without reaching the top F1 tier. 
+
+Robustness across semantic levels. The level-wise results show that performance patterns differ across local and composite units. Within G1 , Gemini 2.5 Pro is strongest at the article level ( 53.36 Micro-F1) and remains competitive on BCE and SCE. However, the strongest G3 models are more consistent across levels. For example, 
+
+Qwen3-8B+LoRA achieves 53.15 on BCE and 53.41 on SCE, both close to its article-level score, indicating relatively stable recognition under hierarchical event representations. 
+
+Level-2 results. The same ranking pattern largely holds at Level-2: Gemini 2.5 Pro remains the strongest model in G1 , while G3 achieves the best overall results. Because Level-2 is deterministically mapped from Level-1 outputs, the higher scores mainly reflect the reduction of fine-grained confusions under the coarser taxonomy. 
+
+6.3 Hierarchical Consistency Profiling Setup and motivation. To characterize cross-level behavior over the event hierarchy, we conduct hierarchical consistency profiling on an article-sampled test subset. We randomly sample 192 test articles and retain the complete Level-1 structure within each article, including subevents and their associated BCE and SCE units (Table 5). Table 6 Title Suppressed Due to Excessive Length 11 
+
+Table 5: Subset statistics (Level-1) for the test-sampled data used in our two diagnostic analyses: hierarchical consis-tency profiling (HCP) and controlled grouping test (CGT). 
+
+Set. Lvl. Units (u,a) Inst. Align. Contra. Aligned ratio 
+
+HCP Art. 192 3513 753 2634 879 75.0 HCP BCE 650 1991 955 1596 395 80.2 HCP SCE 569 1979 967 1585 394 80.1 HCP Sub. 1878 4152 2347 3156 996 76.0 CGT BCE 412 509 1078 854 224 79.2 CGT SCE 353 462 905 718 187 79.3 
+
+Table 6: Hierarchical Consistency Profiling on Level-1 (54 values). Left: task scores; Right: cross-level consistency scores. ∆Overall denotes the pp gap to the gold Overall consistency.                                                                                                                                                                                   
+
+> Task (%): Micro-F1 / Micro-P / Micro-R Consistency (%): mean-F1 / mean-P / mean-R Model Art. Sub. BCE SCE Overall Art. BCE SCE Overall ∆Overall (to Gold) F1 PRF1 PRF1 PRF1 PRF1 PRF1 PRF1 PRF1 PRF1 PR(pp) Gold –––––––––––––––86.5 80.7 96.5 51.5 61.2 48.5 56.2 89.1 46.4 63.0 76.8 61.3 0.0 Llama-3.1-8B 57.6 57.8 57.4 46.8 47.9 45.8 50.8 50.7 50.8 51.9 52.0 51.8 51.7 52.1 51.2 55.3 52.1 66.9 46.0 52.6 44.6 51.9 78.7 43.6 50.7 61.9 50.5 12.3 Ministral-3-8B 57.6 54.6 61.1 47.1 43.2 51.7 49.0 45.7 52.7 52.1 48.8 55.7 51.4 47.9 55.4 56.7 55.4 64.4 41.4 49.2 38.8 48.2 77.0 39.4 48.1 61.0 46.2 14.9 Phi-3.5-mini 53.3 49.2 58.2 46.3 42.1 51.4 49.7 45.6 54.8 52.0 47.3 57.8 50.0 45.7 55.1 55.9 52.3 67.3 49.1 55.4 47.0 55.2 80.9 46.4 53.2 63.7 52.5 9.8
+> Qwen3-8B 56.6 56.6 56.5 46.9 45.3 48.7 50.6 50.4 50.8 51.9 50.3 53.5 51.2 50.3 52.2 55.0 54.0 63.1 42.3 50.4 39.8 49.0 76.5 41.0 48.3 60.8 46.8 14.7
+
+reports both task performance and hierarchical consistency on this subset, allowing us to compare agreement with gold labels against consistency between higher-level predictions and the model’s own subevent-level predictions for the same article and actor. 
+
+Hierarchical consistency as set-overlap F1. For each higher-level instance (u, a ) with u ∈ { Art. , BCE , SCE }, let 
+
+H(u, a ) denote the model-predicted directed value set at level u. We define a reference set L∪(u, a ) as the union of the model’s directed predictions over the supporting subevents of u for the same actor. Consistency is computed as the set-overlap F1 between H(u, a ) and L∪(u, a ):
+
+Pcons (u, a ) = |H(u, a ) ∩ L∪(u, a )||H(u, a )| , Rcons (u, a ) = |H(u, a ) ∩ L∪(u, a )||L∪(u, a )| , (9) 
+
+Fcons (u, a ) = 2 · Pcons (u, a ) · Rcons (u, a )
+
+Pcons (u, a ) + Rcons (u, a ) . (10) 
+
+Results and analysis. The Gold results in Table 6 show a clear asymmetry across levels. At the Article level, consistency recall is higher than precision (96.5 vs. 80.7), whereas at the BCE and SCE levels, recall is lower than precision (48.5 vs. 61.2 for BCE; 46.4 vs. 89.1 for SCE). This pattern is partly shaped by the annotation procedure: after subevent-level human verification, some higher-level labels were further checked with LLM assistance, and article-level annotations were more likely to absorb value information from multiple supporting subevents. As a result, article-level labels tend to be more inclusive, while BCE and SCE labels remain more selective. Against this reference, the four models are relatively similar in task performance, with Overall Micro-F1 around 50–52%, but differ more clearly in hierarchical consistency. Phi-3.5-mini achieves the highest Overall consistency F1 (53.2%, ∆Overall = 9.8pp), followed by Llama-3.1-8B (50.7%, ∆Overall = 12.3pp), while Ministral-3-8B and 
+
+Qwen3-8B are lower (48.1% and 48.3%, with ∆Overall = 14.9pp and 14.7pp). This indicates that even when models achieve similar unit-level accuracy, they can differ in how well they retain value information when moving from localized subevents to broader contextual units. 
+
+6.4 Controlled Grouping Test (True vs. Random, fixed k)
+
+To test whether the proposed BCE and SCE units provide meaningful composite context rather than arbitrary collec-tions of subevents, we compare gold composite instances against matched random groupings. The core idea is simple: if the subevents grouped in a gold BCE/SCE form a more useful contextual unit for value understanding, then models should recognize human values more effectively from these True composites than from randomly assembled ones. Statistics of the evaluated Level-1 instances are summarized in Table 5 ( CGT rows). 
+
+Construction. For each gold BCE or SCE instance (u, a ), the True condition uses its original composite text. The 
+
+Random condition keeps the same actor a and the same group size k(u) = |P (g)(u)|, but replaces the original linked subevent set with a randomly sampled set R(g)
+
+> rand
+
+(u, a ) ⊆ E (g)(a) satisfying 
+
+|R (g)
+
+> rand
+
+(u, a )| = k(u), R(g)
+
+> rand
+
+(u, a )̸ = P(g)(u). (11) 12 Y. Wang et al. Llama-3.1-8B Qwen3-8B Ministral-3-8B Phi-3.5-mini           
+
+> -15
+> -10
+> -5
+> 0
+> 5
+> Δ Gain (pp)
+> -5.9
+> -5.0
+> -2.9
+> -6.7
+> -1.5
+> -0.4
+> 0.2
+> 0.5
+> Precision
+> Llama-3.1-8B Qwen3-8B Ministral-3-8B Phi-3.5-mini
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> Δ Gain (pp)
+> 13.3
+> 15.0
+> 15.0
+> 15.8
+> 14.4
+> 13.4
+> 16.0
+> 18.9
+> Recall
+> Llama-3.1-8B Qwen3-8B Ministral-3-8B Phi-3.5-mini
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> Δ Gain (pp)
+> 5.6
+> 6.5
+> 6.5
+> 4.7
+> 7.8
+> 7.6
+> 8.4
+> 9.7
+> F1 Score
+> SCE BCE Precision Recall F1 Score
+
+Fig. 8: Controlled Grouping Test (Level-1): Precision/Recall/F1 gains of True composites over Random composites (∆ = True − Random ) for SCE and BCE. The Random condition matches the same actor and the same group size 
+
+k by sampling and concatenating k actor-associated subevents. The sampled subevent summaries are concatenated to form a pseudo composite input. Both conditions are evaluated for the same (u, a ) pair against the same gold labels. This comparison tests whether the original BCE/SCE grouping provides a more useful contextual unit for value recognition than random aggregation under matched actor and size constraints. 
+
+Evaluation. Let M denote an evaluation metric (e.g., Micro-F1) over all evaluated BCE/SCE instances. We report 
+
+∆M = MTrue − M Random . (12) A positive ∆M indicates that the dataset-defined composite grouping is more helpful for value recognition than a size-matched random grouping. 
+
+Results and analysis. Fig. 8 reports the controlled grouping gains ∆M for Precision/Recall/F1 at the SCE and BCE levels. Across all models, True composites consistently outperform Random composites, with the gains mainly coming from recall. This suggests that the dataset-defined BCE/SCE units are meaningful rather than arbitrary: grouping related subevents into composite contextual units makes human value recognition easier than using random pseudo-composites. Notably, BCE shows stronger and cleaner gains than SCE. For BCE, recall improvements are substantial ( +13 .4 to 
+
++18 .9 pp) while precision is approximately preserved (from −1.5 to +0 .5 pp), yielding larger F1 gains ( +7 .6 to +9 .7
+
+pp). For SCE, recall gains remain strong ( +13 .3 to +15 .8 pp), but precision drops more noticeably ( −2.9 to −6.7 pp), producing moderate F1 gains ( +4 .7 to +6 .5 pp). This suggests that tighter composite grouping may provide more concentrated value-relevant context, whereas broader grouping can improve coverage but also introduce more loosely related associations. Overall, the uniformly positive ∆F1 across models supports that the dataset-provided composite units contribute useful value-relevant context beyond size-matched random grouping. 
+
+6.5 Case Study 
+
+Case Study 
+
+Case 0 (BCE): Father responsibility violation Task. Actor-conditioned human value prediction for Father at BCE level. 
+
+Unit (BCE). Teresa is forced to become the family’s peacemaker and a second mother because both parents are emotionally unavailable. She blames her father for not intervening in her mother’s alcoholism, and their relationship deteriorates. 
+
+Evidence (quotes). (i) “My dad wasn’t approachable, and my mom wasn’t emotionally available.” (ii) “I became the peacemaker ... But it was an impossible burden.” (iii) “My relationship with my father also suffered.” 
+
+Context (surrounding sentences). (i) “In the chaos of addiction, children often take on roles to survive.” (ii) “I felt like I had to solve everything on my own.” (iii) “I blamed him for allowing my mom to continue her behavior and for not doing anything for us.” 
+
+Gold. Contradictory: Be responsible Predictions. 
+
+• G1 (Gemini 2.5 Pro): Contradictory: Be responsible, Have the own family secured, Be loving, Be helpful Title Suppressed Due to Excessive Length 13 
+
+• G2 (Llama-3.1-8B): Aligned: Be helpful, Be honest, Be forgiving, Be loving, Be responsible, Have loyalty towards friends Contradictory: Be humble 
+
+• G3 (LoRA-tuned Llama 3.1-8B): Contradictory: Be responsible 
+
+Case 1 (Subevent): Hagia Sophia prayer scene Task. Actor-conditioned human value prediction for Religious Authorities and Muslim Worshippers at 
+
+subevent level. 
+
+Unit (Subevent). Worshippers arrived holding prayer rugs as verses from the Quran were read over loud-speakers. 
+
+Evidence (quote). (i) “However, it is a place where people from all religions can come and visit as a cultural heritage of all humanity.” 
+
+Context (surrounding sentences). (i) “Now this place [the Hagia Sophia] has returned to its original form, it became a mosque again,” (ii) “Hagia Sophia served as a church for 916 years ... and a mosque from 1453 to 1934 ...” 
+
+Gold. Aligned: Be holding religious faith Predictions. 
+
+• G1 (Gemini 2.5 Pro): Aligned: Have a sense of belonging, Be respecting traditions, Be holding religious faith 
+
+• G2 (Llama 3.1-8B): Aligned: Be holding religious faith, Be helpful, Be honest 
+
+• G3 (LoRA-tuned Llama 3.1-8B): Aligned: Be holding religious faith. 
+
+Analysis (Cross-model error patterns). The two cases expose two recurring failure modes when predicting actor-conditioned human values: ( i) role-prior bias that ignores negative context and flips the value direction, and ( ii ) value granularity confusion that over-expands into adjacent or generic values. 
+
+Case 0 (BCE: Father responsibility violation). Although the actor token Father is semantically associated with positive role expectations (e.g., protection, care, responsibility), the local narrative depicts an explicit responsibility breach : the father is emotionally unavailable and fails to intervene in the mother’s alcoholism, forcing the child to assume an “impossible burden” and damaging the relationship. This requires the model to ground the prediction in 
+
+contextualized behaviors rather than a dictionary-style role meaning. G1 correctly recognizes the contradictory direction for Be responsible , but shows semantic inflation by adding several adjacent family-related values ( Have the own family secured , Be loving , Be helpful ), suggesting insufficient granularity control and weak selectivity under a negative context. In contrast, G2 exhibits a stronger role-prior effect: it places 
+
+Be responsible and other prosocial values under the aligned direction, which indicates that the model defaults to a “good parent” template and underweights the evidence of neglect and non-intervention. After LoRA fine-tuning, G3 corrects both issues: it recovers the correct contradictory label and reduces irrelevant spillover, implying improved context sensitivity and better calibration of value selectivity at the BCE level. 
+
+Case 1 (Subevent: Hagia Sophia prayer scene). This case illustrates ValueGranularityConfusion : the gold label is the specific value Be holding religious faith , but models may drift toward nearby, broader values. G1 includes Have a sense of belonging and Be respecting traditions alongside the gold value, reflecting a tendency to conflate faith practice with community identity and cultural tradition. G2 similarly over-generalizes by adding generic moral traits (Be helpful , Be honest ) that are not directly observable in the subevent. G3 retains only the gold value, suggesting that fine-tuning helps the model stay at the intended semantic granularity and avoid adjacent-value over-association. 
+
+6.6 Genre-wise Robustness News-type (genre) categorization. We categorize each collected news article into an IPTC-style genre taxonomy following the IPTC NewsCodes genre definitions 8. Specifically, each article is assigned to one of the following genres: 
+
+Current , Feature , Background_Analysis , Opinion , Special_Report , Profile_Biography , Review , and Attribution_QA .The dataset is dominated by three genres ( Current , Background_Analysis , and Feature ), which account for 86.1% of articles and 84.9% of value instances. We therefore restrict the genre-wise analysis to these three most frequent genres. To ensure fair comparison across genres, we construct a genre-balanced test set by matching unit counts at each hierarchical level: 284 articles, 844 subevents, 428 BCEs, and 410 SCEs per genre. 
+
+Analysis. Figure 9 shows that Current news consistently yields the strongest performance across all four models. The largest gains appear at the Article level, reaching up to ∼7 points over Background_Analysis , which suggests that genre differences affect document-level value recognition most strongly.   
+
+> 8https://cv.iptc.org/newscodes/genre/ 14 Y. Wang et al.
+
+Fig. 9: Eval4 news-type comparison (Level-1): Heatmaps show micro-F1 (%) across hierarchical units and news types, while the right bars quantify genre sensitivity using Range (max–min) and Std over the three genres. The Article level is also the most genre-sensitive unit overall, with consistently larger cross-genre variation than the other units. This likely reflects differences in how the three genres present value-relevant information. Current news usually reports concrete events more directly, Background_Analysis tends to embed value cues in explanation and context, and Feature articles often include richer narrative detail that can make full-article judgment less focused. Once the input is reorganized into Subevent , BCE , or SCE units, genre effects become smaller because predictions rely less on full-document writing style and more on localized or grouped event context. This helps explain why finer-grained and composite units are relatively more stable across genres. 
+
+7 Limitations 
+
+NEVU has several limitations. First, due to limited annotation budget, our directed human value labels are produced via an LLM-assisted pipeline with targeted manual auditing, and thus may contain residual noise, especially when value cues are implicit, distributed, or direction-sensitive (Table 8). Second, value inference in news depends critically on actor abstraction and attribution; some instances still involve ambiguous actor definitions or weak grounding, which can propagate uncertainty to value judgments, particularly for short, locally scoped units. Third, the label distribution is long-tailed: as shown in Fig. 11, a subset of Level-1 values remains relatively sparse across units, which may limit robust evaluation and learning for rare value types. Beyond dataset construction, the current scope of NEVU is also limited. While NEVU supports fine-grained bench-marking of news-domain value recognition, our present analyses remain focused on the benchmark setting itself. We do not yet provide a comprehensive study of how value understanding benefits downstream news applications, such as value-aware generation, retrieval, framing analysis, or decision support, nor do we quantify its utility beyond the benchmark tasks. Finally, news is increasingly multimodal (images, videos, and graphics), whereas NEVU is currently text-only and does not model multimodal cues that may convey normative signals or affect attribution and interpre-tation. We view these limitations as important directions for future work, including expanding manual adjudication, strengthening actor canonicalization and grounding, improving coverage of long-tail values, developing downstream task suites, and extending NEVU to multimodal news settings. Title Suppressed Due to Excessive Length 15 
+
+Table 7: External source domains referenced by Wikinews pages in our collection (canonicalized domains).                          
+
+> Source domains bbc.com theguardian.com nytimes.com eff.org greenmatters.com lifehack.org grist.org psychologytoday.com frugalwoods.com bbc.co.uk lovepanky.com pickthebrain.com securityweek.com krebsonsecurity.com markmanson.net affordanything.com tinybuddha.com getrichslowly.org kasperskycontenthub.com brenebrown.com sustainability-times.com earth911.com mindful.org jamesclear.com konmari.com positivityblog.com cupofjo.com goodfinancialcents.com schneier.com thesimpledollar.com blog.konmari.com hbr.org
+
+8 Conclusion 
+
+We introduced NEVU , a benchmark dataset for evaluating actor-conditioned and direction-aware human value recog-nition in factual news. NEVU fills an important gap in prior value resources by grounding value prediction in a hierarchy of multi-level event units ( Article , Subevent , BCE , and SCE ) and by annotating directed values over (unit, actor) pairs. The resulting benchmark provides a fine-grained testbed for assessing whether LLMs can identify human values in news, distinguish aligned from contradictory expressions, and operate consistently across multiple semantic levels. Across experiments, we find that news-domain human value recognition remains challenging for both proprietary and open-source LLMs under a unified prompting setup. At the same time, NEVU exhibits clear trainability: lightweight supervised adaptation substantially improves open models on fine-grained value and direction recognition, in some cases approaching or surpassing proprietary baselines. Our additional analyses further show that multi-level event structure is useful not only for localized evaluation, but also for analyzing how value signals are preserved, grouped, and affected across semantic scopes, as reflected in cross-level consistency, controlled grouping, and robustness under genre variation. Manual quality assessment further indicates that the benchmark provides reliable actor abstraction and evidence-grounded event structuring, while value correctness remains the most difficult dimension under strict criteria. Overall, NEVU establishes a new benchmark setting for fine-grained human value evaluation in factual news and provides a foundation for future work on stronger actor grounding, more reliable direction inference, and broader value-aware analysis of news-domain texts. 
+
+Acknowledgements 
+
+This work was supported by JST BOOST (Grant Number: JPMJBS2414) and partially supported by JSPS Grant-in-Aid for Scientific Research (Grant Number: 25K03231) and ROIS NII Open Collaborative Research 2025 (Grant Number: 252S4-23623). 
+
+A Data Availability 
+
+A partial public release of the NEVU dataset is available on HuggingFace: https://huggingface.co/datasets/ WangYao-GoGoGo/NEVU . To preserve the integrity of the NTCIR-19 FEHU shared-task evaluation, the reserved evalu-ation portion is excluded from the current public release. The full dataset will be released after the completion of the NTCIR-19 shared task in September 2026. 
+
+B Human Value Taxonomy 
+
+Figure 10 shows the full hierarchy of the adopted human value taxonomy from [20]. It includes the 54 fine-grained Level-1 values, their grouping into 20 Level-2 categories, the four Level-3 motivational domains, and the two higher-level dimensions: Level-4a (personal / social focus) and Level-4b (growth / self-protection with respect to anxiety regulation). 
+
+C Detailed Data Collection Procedure and Source Composition 
+
+To construct a news corpus that covers diverse news types , maintains temporal diversity , and yields a more balanced distribution of human values , we adopted a three-stage collection strategy: (i) building a diverse base corpus from an existing dataset, (ii) value-driven supplementation and crawling to extend coverage, and (iii) unified filtering and cleaning to ensure consistent validity and safety. Figure 3 summarizes this Phase-1 pipeline. 16 Y. Wang et al. Achievement            
+
+> Be ambitious
+> Be capable
+> Be courageous
+> Be intellectual
+> Have success
+> Benevolence: caring
+> Be forgiving
+> Be helpful
+> Be honest
+> Be loving
+> Have the own family secured
+> Benevolence: dependability Be responsible
+> Have loyalty towards friends
+> Conformity: interpersonal Be honoring elders
+> Be polite
+> Conformity: rules
+> Be behaving properly
+> Be compliant
+> Be self-disciplined
+> Face Have a good reputation
+> Have social recognition
+> Hedonism Have pleasure
+> Humility Be humble
+> Have life accepted as is
+> Power: dominance Have influence
+> Have the right to command
+> Power: resources Have wealth
+> Security: personal
+> Be neat and tidy
+> Have a comfortable life
+> Have a sense of belonging
+> Have good health
+> Have no debts
+> Security: societal Have a safe country
+> Have a stable society
+> Self-direction: action
+> Be choosing own goals
+> Be independent
+> Have freedom of action
+> Have privacy
+> Self-direction: thought
+> Be creative
+> Be curious
+> Have freedom of thought
+> Stimulation
+> Be daring
+> Have a varied life
+> Have an exciting life
+> Tradition Be holding religious faith
+> Be respecting traditions
+> Universalism: concern
+> Be just
+> Have a world at peace
+> Have equality
+> Universalism: nature
+> Be protecting the environment
+> Have a world of beauty
+> Have harmony with nature
+> Universalism: objectivity Be logical
+> Have an objective view
+> Universalism: tolerance Be broadminded
+> Have the wisdom to accept others
+> Conservation
+> Openness to change
+> Self-enhancement
+> Self-transcendence
+> Personal focus
+> Social focus
+> Growth, Anxiety-free
+> Self-protection, Anxiety avoidance
+
+Level-4b 
+
+(2) 
+
+Level-4a 
+
+(2) 
+
+Level-3 
+
+(4) 
+
+Level-2 
+
+(20) 
+
+Level-1 
+
+(54) 
+
+Fig. 10: Full hierarchy of the human value taxonomy adopted in this work, reproduced from [20]. The taxonomy consists of 54 Level-1 values grouped into 20 Level-2 categories, aligned with four Level-3 motivational domains, and characterized by two orthogonal Level-4 dimensions: focus (Level-4a: personal / social) and anxiety regulation (Level-4b: growth/anxiety-free / self-protection/anxiety-avoidance). 
+
+Primary sources. We collected English news articles from two primary sources: (1) the publicly available Uknow dataset [38], and (2) English Wikinews stories (2022–2025) accessed via the MediaWiki Action API 9. For Wikinews items, we additionally record the canonicalized domains of external links cited on each Wikinews page as provenance signals. Table 7 lists the observed external source domains (and domains used for supplementary crawling when applicable). 
+
+Stage 1: Base corpus construction from Uknow. We first built a base corpus from Uknow to ensure broad coverage of news types and topics. Specifically, we used a Transformer-based classifier provided by Knowledgator 10 
+
+to assign topic and news-type labels to each article, and then performed coarse stratified sampling by news type and publication year, yielding a candidate set of articles. 
+
+Stage 2: Value-driven supplementation. After obtaining the base candidate set, we conducted preliminary LLM-based value identification to estimate the distribution of human value labels. We then identified underrepresented value types (e.g., values with fewer than 100 instances) and used OpenAI models to generate semantically related retrieval keywords for targeted supplementation (e.g., for Be protecting the environment , keywords include environment pollution 
+
+and land desertification ). In parallel, we curated diverse news-source domains (Table 7) to broaden genre coverage, particularly soft news (human-interest/lifestyle), which is often helpful for collecting long-tail value expressions. Guided by the value-driven keywords and curated domains, we further crawled recent English Wikinews stories from 2022– 2025 via the MediaWiki Action API to enrich temporal diversity and mitigate year-wise concentration, yielding 1,110 additional articles. 
+
+Stage 3: Unified filtering and cleaning. Regardless of whether candidate articles originated from Uknow (Stage 1) or the Wikinews crawl (Stage 2), we applied a unified filtering and cleaning pipeline , implemented via a single-pass GPT-4-nano evaluation , to ensure consistent standards of validity, narrative suitability, and safety across all sources. A single prompt jointly assessed multiple criteria for each article, and the resulting signals were used for filtering: (1) 
+
+Category validity and sensitivity assessment (excluding highly sensitive narratives where value interpretation may vary substantially across perspectives); (2) Human-centered narrative suitability (retaining articles that foreground human actions, social interactions, or moral framing); (3) Safety and discrimination screening ; and 
+
+9 https://en.wikinews.org/w/api.php .
+
+10 https://docs.knowledgator.com/docs .Title Suppressed Due to Excessive Length 17 Be responsible    
+
+> Be just
+> Be helpful
+> Have a stable society
+> Have good health
+> Be honest
+> Be capable
+> Have a safe country
+> Have a sense of belonging
+> Be creative
+> Have success
+> Have equality
+> Have freedom of action
+> Be protecting the environment
+> Be logical
+> Be compliant
+> Have a comfortable life
+> Be broadminded
+> Have an objective view
+> Be courageous
+> Be respecting traditions
+> Have influence
+> Be curious
+> Be ambitious
+> Have social recognition
+> Be intellectual
+> Be loving
+> Be choosing own goals
+> Have privacy
+> Be holding religious faith
+> Have wealth
+> Have the own family secured
+> Be independent
+> Have a world at peace
+> Have pleasure
+> Have freedom of thought
+> Be self-disciplined
+> Have a good reputation
+> Be polite
+> Have loyalty towards friends
+> Have an exciting life
+> Be daring
+> Be behaving properly
+> Have a varied life
+> Have a world of beauty
+> Have the wisdom to accept others
+> Have harmony with nature
+> Have the right to command
+> Be humble
+> Be forgiving
+> Have life accepted as is
+> Be neat and tidy
+> Have no debts
+> Be honoring elders
+> Level-1 Human Value (54 labels)
+> 0
+> 2000
+> 4000
+> 6000
+> 8000
+> 10000
+> Count
+> 6255
+> 3979
+> 2860
+> 3351
+> 2003
+> 1692
+> 1391
+> 1753
+> 1594
+> 1082
+> 1251
+> 1332
+> 1241
+> 998
+> 1055
+> 1194
+> 1247
+> 1197
+> 926
+> 981
+> 883
+> 927
+> 696
+> 731
+> 940
+> 627
+> 553
+> 669
+> 472
+> 417
+> 586
+> 541
+> 470
+> 658
+> 398
+> 466
+> 299
+> 355
+> 267
+> 267
+> 215
+> 217
+> 224
+> 218
+> 207
+> 201
+> 143
+> 135
+> 115
+> 109
+> 90
+> 31
+> 35
+> 34
+> 4917
+> 2648
+> 1996
+> 1985
+> 919
+> 933
+> 736
+> 767
+> 966
+> 892
+> 708
+> 784
+> 532
+> 657
+> 491
+> 338
+> 474
+> 687
+> 415
+> 531
+> 491
+> 464
+> 456
+> 487
+> 462
+> 354
+> 397
+> 317
+> 304
+> 270
+> 225
+> 228
+> 250
+> 309
+> 176
+> 201
+> 136
+> 138
+> 83
+> 98
+> 101
+> 99
+> 67
+> 91
+> 84
+> 102
+> 85
+> 35
+> 46
+> 48
+> 49
+> 17
+> 13
+> 13
+> 5351
+> 2460
+> 2050
+> 1718
+> 817
+> 993
+> 786
+> 718
+> 855
+> 883
+> 632
+> 673
+> 573
+> 634
+> 544
+> 472
+> 447
+> 586
+> 429
+> 560
+> 460
+> 425
+> 465
+> 484
+> 403
+> 381
+> 392
+> 326
+> 278
+> 263
+> 271
+> 233
+> 252
+> 214
+> 196
+> 203
+> 166
+> 132
+> 102
+> 115
+> 95
+> 115
+> 95
+> 96
+> 57
+> 66
+> 74
+> 49
+> 46
+> 40
+> 42
+> 21
+> 9
+> 17
+> 9892
+> 4698
+> 4105
+> 3463
+> 2470
+> 2161
+> 1722
+> 1707
+> 1595
+> 1440
+> 1427
+> 1422
+> 1349
+> 1346
+> 1248
+> 1241
+> 1230
+> 1116
+> 1037
+> 911
+> 908
+> 887
+> 878
+> 870
+> 866
+> 855
+> 718
+> 711
+> 656
+> 615
+> 525
+> 509
+> 505
+> 499
+> 477
+> 431
+> 390
+> 316
+> 294
+> 243
+> 223
+> 218
+> 217
+> 204
+> 193
+> 178
+> 136
+> 118
+> 116
+> 102
+> 98
+> 43
+> 35
+> 33
+> Article SCE BCE Subevent
+
+Fig. 11: Frequency distribution of the 54 Level-1 human values across Article, Subevent, BCE, and SCE. For each value label, bars compare its count at the four semantic levels; labels are ordered by overall frequency. (4) Cleaning and normalization (deduplication, removal of corrupted/overly short texts, and encoding/format repair). In total, our corpus contains 2,865 articles (1,755 from Uknow and 1,110 from Wikinews 2022–2025), which serves as the foundation for our event-centric human value understanding dataset. 
+
+D Detailed Schema and Construction Rules for the Event Knowledge Base 
+
+For reproducibility, we provide a detailed description of the event knowledge base schema and construction rules used in Phase-2. To make the formal definitions easier to interpret, we explain them together with the running example shown in Fig. 4. For each article, we assign a GUID g ∈ G and denote the full article text, together with metadata such as title, time, and source, as x(g). We further segment x(g) into an ordered sentence sequence S(g) =  s(g)
+
+i
+
+Ng
+
+i=1 , where i is a 
+
+sentence_id . In Fig. 4, the left panel shows the source article x(g) for the Paris police headquarters attack case. This article–sentence indexing scheme serves as the base layer of traceability for all subsequent units. Starting from the article-level document x(g), we extract a set of fine-grained subevents, E(g) = {e(g)
+
+p }ng
+
+p=1 , where p
+
+is a local subevent_id . Each subevent stores a short natural-language summary and is explicitly grounded to a set of supporting sentence_ids in the source article. As illustrated in the central panel of Fig. 4, the Paris attack report is decomposed into local event units such as the attacker entering the building, attacking colleagues, stabbing victims, people being killed or critically injured, police shooting the attacker, authorities sealing off the area, officials visiting the scene, prosecutors launching an investigation, and police searching the attacker’s home. To support consistent characterization of subevents, we use the WikiEvents Ontology [39] as a conceptual reference and perform open-type event extraction with trigger-like cues as anchors for identifying coherent subevent boundaries and descriptions. These subevents function as the primary evidence-grounded local units in the benchmark, making later value inference more localizable. Based on these grounded subevents, we further construct a set of behavior-based composite events, B(g) = {b(g)
+
+q }Bg
+
+q=1 ,where q is a local behavior_event_id . Each BCE groups a set of closely related subevents into a relatively more com-plete behavior or response chain. Operationally, a BCE stores an ordered list of behavior items, and each item may reference the originating subevent_id for traceability. On the right side of Fig. 4, BCE-0 groups the attack sequence, including initiating the attack, stabbing colleagues, and causing deaths and injuries, whereas BCE-1 groups the re-sponse sequence, including shooting the attacker, sealing off the area, launching the investigation, and searching the attacker’s home. Compared with isolated subevents, BCEs provide a broader contextual unit when value implications become clearer from linked actions and immediate outcomes viewed together. At a broader contextual scope, we also construct a set of story-based composite events, N (g) = {c(g)
+
+r }Mg
+
+r=1 , where r
+
+is a local story_event_id . Each SCE groups a broader set of related subevents into a relatively more complete story episode, optionally accompanied by a short title and narrative description. Operationally, each SCE stores a set of related subevent_ids under the same GUID, providing explicit links from the story-level unit back to subevents and, transitively, to sentence evidence. In the lower-left panel of Fig. 4, SCE-0 summarizes the attack and its immediate consequences and links to subevents 1–6, while SCE-1 summarizes the law-enforcement and governmental response and links to subevents 7–10. Compared with isolated subevents, SCEs provide a broader contextual unit for interpreting value-relevant actions, responses, and consequences within the same story segment. In parallel, we identify a set of major social actors, A(g) = {a(g)
+
+k }Kg
+
+k=1 , where k is a local actor index under the same GUID. To reduce ambiguity from aliases, coreference, and varying mention specificity, we canonicalize actor mentions 18 Y. Wang et al. 
+
+and, when appropriate, abstract them into role-based actors defined by their event participation, such as initiators and recipients/targets. For traceability, we additionally store alignments from actor mentions to sentence-level mentions in 
+
+S(g). As shown in the upper-right panel of Fig. 4, the running example normalizes surface mentions into stable actor entities such as the attacker, law enforcement and authorities, and government and political leaders. This actor layer is critical for later human value annotation, because the benchmark evaluates actor-conditioned value understanding over grounded (u, a ) pairs rather than assigning values to event units in isolation. Overall, a central design principle of the event knowledge base is explicit cross-level linking across units derived from the same article. Subevents are directly grounded to sentence_ids ; BCEs reference the subevent_ids underlying their grouped subevents; SCEs store related subevent_ids as the basis of each story segment; and actor mentions are aligned back to sentence-level expressions. This traceability design supports two benchmark goals. First, it makes value inference more interpretable by allowing higher-level predictions to be traced back to concrete sentence-grounded evidence. Second, it supports analysis across semantic granularities by enabling comparisons of article-, subevent-, BCE-, and SCE-level value judgments under shared actor and evidence structures. 
+
+E Detailed Procedure for Human Value Annotation 
+
+Building on the event knowledge base constructed in Phase-2, we perform actor-conditioned human value annotation over a unified set of semantic units. For each article g ∈ G , we define 
+
+U(g) = {u(g)art } ∪ E (g) ∪ B (g) ∪ N (g). (13) where u(g)art denotes the article-level unit corresponding to the full text x(g), E(g) is the subevent set, B(g) is the behavior-based composite event (BCE) set, and N (g) is the story-based composite event (SCE) set. Human values are then annotated over (unit, actor) pairs (u, a ), where u ∈ U (g) and a ∈ A (g).Figures 4 and 6 together illustrate this process with a running example. Figure 4 shows how a source article is transformed into linked semantic units and normalized actors, while Fig. 6 shows how value judgments are subsequently assigned to selected (unit, actor) pairs across the Article, Subevent, BCE, and SCE levels. For example, the same actor may be evaluated in different semantic contexts: a local subevent may express one value cue, whereas a BCE or SCE may reveal a broader pattern of responsibility, justice, or social stability. This is why the verification procedure operates on grounded (unit, actor, value, direction) candidates rather than on article-level labels alone. 
+
+E.1 Stage 1: LLM-based Human Value Identification with Voting 
+
+To reduce systematic bias from any single model, we first perform candidate value identification using a heteroge-neous set of LLMs Mid = {GPT-4o , Gemini-2.5-Pro , DeepSeek-Reasoner } [96, 98, 103]. At this stage, each model independently proposes candidate directed value labels for each (u, a ) pair. In the running example, these candidates may be generated for units at different semantic levels, such as a subevent describing the attacker stabbing colleagues, a BCE representing the broader attack sequence, an SCE summarizing the institutional response, or the full article-level unit. As illustrated in Fig. 6, the same actor can be associated with different value judgments depending on the semantic unit under consideration. For instance, the attacker may be linked to contradictory values such as Have a safe country , Have a stable society , or Have good health , while institutional actors may be linked to aligned values such as Be responsible , Be courageous , or Be just .We aggregate the model outputs using 3-way voting. A directed value label is retained as a high-confidence candidate only when all three models agree on the same (v, d ) prediction. All remaining cases are treated as low-confidence labels and forwarded to the subsequent QA-based verification stage. 
+
+E.2 Stage 2: QA-based Verification of Low-confidence Labels 
+
+For low-confidence candidates from Stage 1, we perform a second verification step using a separate QA-oriented model pool Mqa = {GPT-5 , Gemini-2.5-Flash , Claude-Sonnet-4 } [94, 96, 104]. Rather than re-predicting labels from scratch, this stage verifies each candidate (u, a, v, d ) through a QA-style procedure inspired by CLAVE [29], with an emphasis on evidence grounding and robustness. For each candidate, we construct a prompt conditioned on the source article x(g), the target unit u together with its supporting evidence context, the target actor a, and the definition of value v. Each model then gives a binary decision (Yes /No ) on whether direction d of value v is supported by the evidence for actor a in unit u.The example in Figs. 4 and 6 also illustrates why this second stage is necessary. Stage 1 is designed to identify candidate human value instances in a relatively open-ended manner, so as to maximize coverage of plausible value cues for each (unit, actor) pair. By contrast, Stage 2 no longer asks the model to generate labels from scratch; instead, it performs fine-grained QA-style verification for each identified candidate (u, a, v, d ).More specifically, for each candidate value instance, we provide the model with richer verification context, including the source article x(g), the target unit u together with its supporting evidence context, the target actor a, and the Title Suppressed Due to Excessive Length 19 
+
+Table 8: Manual quality evaluation results (Soft/Hard, %) with N-weighted overall scores.                                                    
+
+> Dimension Subevent BCE SCE Article Overall
+> Subevent Evidence Support 91.5/91.0 ––––Aggregation Justification –95.7/91.4 95.7/91.4 ––Evidence Inheritance –92.1/84.3 96.4/92.9 ––Narrative Coherence ––95.7/91.4 ––Local Adjacency Coherence –93.6/87.1 –––Actor Concept Validity 92.5/90.0 97.1/97.1 90.7/88.6 98.9/97.8 94.8/93.4
+> Actor Grounding Adequacy 85.5/82.0 99.3/98.6 89.3/87.1 94.4/93.3 92.1/90.3
+> Human Value Correctness 82.0/81.0 88.6/88.6 82.1/78.6 85.6/84.4 84.6/83.2 Sample size N100 70 70 45 285
+
+definition of value v. This design allows the model to make a more precise judgment about whether the proposed value label and its direction are genuinely supported by the event evidence, rather than merely being plausible at a coarse semantic level. We aggregate the verification results by 3-way voting: candidates with three Yes votes are accepted, candidates with three No votes are rejected, and mixed cases are sent to Stage 3 for human verification. 
+
+E.3 Stage 3: Human Verification 
+
+For candidates that remain unresolved after Stage 2, we conduct targeted human verification. Annotators use a dedicated interface (Fig. 12) that presents the target instance together with structured cross-level context, including related Article/Subevent/BCE/SCE units and traceability signals such as sentence-level evidence and composite-event membership links. The verification procedure follows the staged design shown in Fig. 4, while Fig. 6 illustrates example gold human-value labels from the running event example, showing how values are represented across different semantic levels. Within this interface, annotators inspect the target instance in relation to its surrounding semantic structure rather than as an isolated label decision. They check (i) whether the actor attribution is correct, (ii) whether the assigned value label is appropriate, and (iii) whether the aligned/contradictory direction is supported by the described behaviors and outcomes. Among the low-confidence instances passed to human verification, only those receiving unanimous acceptance from annotators are retained in the final benchmark annotations. 
+
+F Additional Dataset Statistics and Label Distribution 
+
+Figure 11 visualizes the frequency distribution of the 54 Level-1 human values across the four semantic granularities. Several values occur markedly more often than others, indicating that news discourse tends to foreground particular normative themes. For example, Be responsible is consistently among the most frequent labels, suggesting that news narratives often frame actions, policies, and decisions in terms of responsibility and accountability. Values such as Be just and Be helpful are also highly frequent, which is broadly consistent with the journalistic emphasis on fairness, social obligation, and harm–benefit consequences. At the same time, less frequent values remain represented across all levels, supporting evaluation beyond only the most salient and commonly expressed value dimensions. 
+
+G Human Annotation Interface 
+
+This section presents our web-based manual annotation interface with a BCE human-value labeling example (Fig. 12). The interface consists of three components: (a) a human-value labeling page implemented in Label Studio 11 for actor-conditioned Yes/No/Unknown judgments with selected reasons; (b) a custom-developed data-detail view that links each BCE to its supporting subevents and article-level evidence for traceable review; and (c) a custom-developed searchable human-value reference page that provides value definitions and hierarchy information to support consistent label interpretation across annotators. 
+
+H Manual Quality Evaluation 
+
+We evaluate NEVU from multiple dimensions covering both the reliability of event-centric units and the faithfulness of actor-conditioned human value annotations. The evaluation is conducted on a stratified sample across four granularities:     
+
+> 11 https://labelstud.io/ 20 Y. Wang et al.
+> (a) Annotation page. (b) Data detail page. (c) Human-value overview.
+
+Fig. 12: Screenshots of our manual annotation interface for a BCE human-value labeling example. 
+
+Article (N =45 ), Subevent (N =100 ), BCE (N =70 ), and SCE (N =70 ). For each instance, annotators inspect the target unit, the associated abstract social actor, and an evidence package grounded in the source article (e.g., linked sentences and supporting spans). 
+
+Dimensions. We assess the sample from the following dimensions: 
+
+• Actor Concept Validity. Whether the abstract actor is coherent and identifiable in the article context (allowing synonymous mentions), and is suitable as a stable target for attribution. 
+
+• Actor Grounding Adequacy. Whether the provided unit contains sufficient actor-attributable evidence to support attribution (participation/being affected/taking action/expressing stance), rather than relying on name appearance. 
+
+• Human Value Correctness. Whether the evidence in the unit supports the assigned value direction (aligned / contradictory) for the actor–unit pair. 
+
+• Subevent Evidence Support. (Subevent only ) Whether the subevent’s core fact is explicitly supported by the source article beyond background cues. 
+
+• Composite Evidence Support. (BCE/SCE only ) Whether the composite unit is sufficiently supported by its linked subevents and their source grounding. 
+
+• Aggregation Justification. (BCE/SCE only ) Whether the grouped subevents form a reasonable composite context without mixing clearly unrelated content or introducing unsupported relations. 
+
+• Local Chain Coherence. (BCE only ) Whether the grouped subevents form a coherent local behavior or response chain under the provided order. 
+
+• Narrative Coherence. (SCE only ) Whether the grouped subevents form a coherent story segment with inter-pretable progression across related developments. 
+
+Annotators and rating scheme. We provide detailed definitions and auditing instructions for all quality dimensions to five annotators (one PhD student and four Master’s students). Each dimension is rated using a three-way scheme with dimension-specific labels (e.g., Yes / Cannot judge / No , Strong / Mixed / Weak , Consistent / Partial / Inconsistent ,
+
+High / Medium / Low ). For reporting, the three-way ratings are mapped to percentage scores to enable aggregation and cross-level comparison. 
+
+Results. Detailed results are shown in Table 8. The N -weighted overall scores indicate strong dataset reliability, with Actor Concept Validity at 94.8/93.4 (Soft/Hard), Actor Grounding Adequacy at 92.1/90.3, and Human Value Correctness at 84.6/83.2. At the level-wise breakdown, the largest drop appears in actor grounding for subevents (85.5/82.0), consistent with shorter units providing fewer referential and attribution cues. For composite units, BCE and SCE maintain high aggregation-related scores, suggesting that their grouped event context is generally well supported by linked subevents and rarely introduces unsupported content. Human Value Correctness is highest for BCE (88.6/88.6), exceeding subevents (82.0/81.0) and SCEs (82.1/78.6). One plausible explanation is that BCEs often provide a more concentrated composite context over closely related actions and outcomes, whereas SCEs tend to Title Suppressed Due to Excessive Length 21                                                                                                                                                                                                                                                                          
+
+> Group Model Micro-F1 Macro-F1 DRR ↓
+> Art. Sub. BCE SCE Overall Art. Sub. BCE SCE Overall Art. Sub. BCE SCE Overall
+> G1 Claude Haiku 4.5 51.18 50.30 46.76 48.62 49.42 38.18 43.01 36.36 40.82 39.71 4.39 2.10 3.28 3.09 3.46 Claude Sonnet 4.5 53.87 53.48 50.85 51.49 52.56 40.71 47.22 40.28 42.20 42.73 3.24 1.63 2.98 3.05 2.84 Claude Opus 4.5 55.77 55.53 53.20 54.52 54.86 45.31 50.13 43.34 44.85 46.35 2.88 1.47 2.68 2.63 2.52 Deepseek-chat 44.27 48.46 47.74 50.22 47.15 31.57 39.41 35.83 37.90 35.61 3.15 1.98 3.06 3.16 2.91 Deepseek-reasoner 50.45 50.81 51.21 52.41 51.12 40.25 43.55 39.84 44.37 42.26 2.08 1.94 2.19 1.83 2.02 OpenAI gpt-4.1 51.90 51.42 49.60 51.37 51.18 39.18 43.45 39.60 42.12 40.79 3.42 1.59 2.75 2.59 2.76 OpenAI gpt-5.2 50.11 51.99 51.50 52.53 51.31 39.23 44.32 41.19 41.62 41.33 2.73 1.59 2.38 2.51 2.39 OpenAI o3 45.22 50.00 48.79 50.16 47.99 35.76 42.45 38.44 41.16 39.25 1.43 1.51 1.96 1.71 1.61 Gemini 2.5 Pro 61.26 54.07 51.71 51.49 55.41 51.11 50.16 43.72 45.46 48.55 4.64 2.18 3.36 2.90 3.55 G2 Ministral-3-8B 30.56 34.78 33.64 35.11 33.12 19.72 27.96 24.67 24.43 23.83 0.06 0.05 0.06 0.05 0.05 Phi-3.5-mini 22.52 15.09 17.50 18.86 19.19 12.63 9.24 9.94 12.18 11.34 0.06 0.04 0.04 0.04 0.05 Qwen3-8B 27.84 23.61 24.91 25.22 25.79 14.75 14.57 14.53 16.51 15.27 5.19 1.47 2.57 2.48 3.39 Llama-3.1-8B 25.10 19.43 20.15 20.60 22.11 11.97 10.38 9.38 11.48 11.34 12.57 5.11 5.77 6.02 8.43 G3 Llama-3.1-8B 64.66 60.74 59.20 60.84 62.13 52.32 53.23 53.33 51.24 53.10 4.20 0.83 1.13 1.37 2.35 Qwen3-8B 63.72 59.04 60.23 60.80 61.61 52.04 51.36 50.96 52.11 52.45 0.05 0.01 0.01 0.01 0.03
+> Ministral-3-8B 63.89 57.83 56.82 59.58 60.55 52.87 51.12 45.82 50.45 51.33 0.05 0.01 0.02 0.01 0.03
+> Phi-3.5-mini 61.58 56.21 58.28 60.38 59.73 48.64 50.40 47.59 49.31 50.13 0.07 0.01 0.02 0.02 0.04
+
+Table 9: Human Value Recognition results on 20 coarse-grained Level-2 human values. G1: proprietary API LLMs; G2: open-weight LLMs (prompting only); G3: open-weight LLMs with LoRA fine-tuning. Best-in-group is underlined; overall best is underlined in bold. involve broader story segments whose value implications may be more diffuse and context-dependent. Overall, these findings support the reliability of NEVU’s actor abstractions and composite event structuring, while also confirming that strict value attribution remains the most challenging aspect of the dataset. 
+
+I Level-2 Human Value Recognition Results 
+
+Table 9 reports the Level-2 results (20 coarse-grained values) across semantic levels (Article/Subevent/BCE/SCE) and Overall. Level-2 labels are deterministically mapped from Level-1 outputs, therefore the table mainly serves as a 
+
+coarse-grained view of the same predictions. 
+
+Overall comparison. At Level-2, Gemini 2.5 Pro remains the strongest proprietary baseline in G1 with 55.41 
+
+Overall Micro-F1 and 48.55 Overall Macro-F1. The best results are achieved by G3 LoRA-adapted models, where 
+
+Llama-3.1-8B+LoRA reaches 62.13 /53.10 (Micro/Macro) Overall, followed closely by Qwen3-8B+LoRA (61.61 /52.45 ). 
+
+Granularity robustness and direction errors. Across groups, Level-2 performance is generally more stable across BCE/SCE than Level-1, reflecting fewer near-miss confusions after coarse mapping. For direction errors, several 
+
+G3 models achieve very low DRR on composite units (often around 0.01 on Sub/BCE/SCE), while Llama-3.1-8B+LoRA keeps a higher Overall DRR ( 2.35 ) despite the best F1, indicating that direction reversal remains a non-trivial error mode even under the coarse taxonomy. 
+
+J Dataset Construction Cost 
+
+Annotator recruitment. To support the human verification stage, we recruited 32 student annotators, including 13 undergraduate, 12 master’s, and 7 doctoral students, spanning five national backgrounds. The verification campaign lasted approximately 2.5 months. 
+
+Human effort and cost. The human verification stage involved a multi-annotator auditing campaign over approx-imately 2.5 months, with contributions from both paid annotators and volunteers. In total, this targeted verification effort amounted to 455 person-hours. Because human review was reserved for cases not confidently resolved by the earlier automatic stages, this figure reflects focused auditing effort rather than exhaustive manual annotation of all released value instances. The paid human verification cost was approximately $2.5k USD. 
+
+API cost. LLM API usage for event construction, label proposal, and QA-style verification cost approximately $3.2k USD, covering OpenAI, Gemini, DeepSeek, and Claude. 
+
+Overall cost. The combined cost of paid human verification and LLM API usage was approximately $5.6k USD. Bibliography 
+
+[1] Schwartz, S., Cieciuch, J., Vecchione, M., Davidov, E., Fischer, R., Beierlein, C., Ramos, A., Verkasalo, M., Lön-nqvist, J., Demirutku, K., et al. Refining the theory of basic individual values. Journal Of Personality And Social Psychology . 103 , 663 (2012) [2] Rokeach, M. The nature of human values. (Free press,1973) [3] Brown, D. & Crace, R. Life values inventory: Facilitator’s guide. Williamsburg, VA . (2002) [4] Haerpfer, C., Inglehart, R., Moreno, A., Welzel, C., Kizilova, K., Diez-Medrano, J., Lagos, M., Norris, P., Ponarin, E., Puranen, B., et al. World Values Survey: Round Seven—Country-Pooled Datafile. Madrid, Spain & Vienna, Austria: JD Systems Institute & WVSA Secretariat , 7 pp., 2021 (2020). [5] Entman, R. M. Framing: Toward clarification of a fractured paradigm. Journal of Communication 43 (4), 51–58 (1993). [6] de Vreese, C. H. News framing: Theory and typology. Information Design Journal + Document Design , 13 (1), 51–62 (2005). [7] Semetko, H. A. & Valkenburg, P. M. Framing European politics: A content analysis of press and television news. 
+
+Journal of Communication , 50 (2), 93–109 (2000). [8] Hu, B., Sheng, Q., Cao, J., Shi, Y., Li, Y., Wang, D. & Qi, P. Bad actor, good advisor: Exploring the role of large language models in fake news detection. Proceedings Of The AAAI Conference On Artificial Intelligence . 38 ,22105-22113 (2024) [9] Pratelli, M., Bianchi, J., Pinelli, F. & Petrocchi, M. Evaluation of Reliability Criteria for News Publishers with Large Language Models. Proceedings Of The 17th ACM Web Science Conference 2025 . pp. 179-188 (2025) [10] Zhang, H., Yu, P. & Zhang, J. A systematic survey of text summarization: From statistical methods to large language models. ACM Computing Surveys . 57 , 1-41 (2025) [11] Yang, K. & Menczer, F. Accuracy and political bias of news source credibility ratings by large language models. 
+
+Proceedings Of The 17th ACM Web Science Conference 2025 . pp. 127-137 (2025) [12] Cao, Y., Li, S., Liu, Y., Yan, Z., Dai, Y., Yu, P. & Sun, L. A survey of ai-generated content (aigc). ACM Computing Surveys . 57 , 1-38 (2025) [13] Yao, J., Yi, X., Wang, X., Wang, J. & Xie, X. From Instructions to Intrinsic Human Values–A Survey of Alignment Goals for Big Models. ArXiv Preprint ArXiv:2308.12014 . (2023) [14] Rezapour, R., Jeoung, S., You, Z. & Diesner, J. Tales of Morality: Comparing Human-and LLM-Generated Moral Stories from Visual Cues. Findings Of The Association For Computational Linguistics: EMNLP 2025 . pp. 18915-18933 (2025) [15] Yang, Z., Jian, P., Li, C., Wang, C., Zhang, X. & Lu, W. Constructing Your Model’s Value Distinction: Towards LLM Alignment with Anchor Words Tuning. Findings Of The Association For Computational Linguistics: EMNLP 2025 . pp. 5932-5948 (2025) [16] Su, Y., Zhang, J., Yang, S., Wang, X., Hu, L. & Wang, D. Understanding how value neurons shape the generation of specified values in llms. ArXiv Preprint ArXiv:2505.17712 . (2025) [17] Bai, Y., Kadavath, S., Kundu, S., Askell, A., Kernion, J., Jones, A., Chen, A., Goldie, A., Mirhoseini, A., McK-innon, C., et al. Constitutional ai: Harmlessness from ai feedback. ArXiv Preprint ArXiv:2212.08073 . (2022) [18] Ji, J., Liu, M., Dai, J., Pan, X., Zhang, C., Bian, C., Chen, B., Sun, R., Wang, Y. & Yang, Y. Beavertails: Towards improved safety alignment of llm via a human-preference dataset. Advances In Neural Information Processing Systems . 36 pp. 24678-24704 (2023) [19] Guo, H., Yao, J., Zhou, X., Yi, X. & Xie, X. Counterfactual Reasoning for Steerable Pluralistic Value Alignment of Large Language Models. ArXiv Preprint ArXiv:2510.18526 . (2025) [20] Kiesel, J., Alshomary, M., Handke, N., Cai, X., Wachsmuth, H. & Stein, B. Identifying the human values behind arguments. Proceedings Of The 60th Annual Meeting Of The Association For Computational Linguistics (Volume 1: Long Papers) . pp. 4459-4471 (2022) [21] Mirzakhmedova, N., Kiesel, J., Alshomary, M., Heinrich, M., Handke, N., Cai, X., Barriere, V., Dastgheib, D., Ghahroodi, O., SadraeiJavaheri, M., et al. The touché23-valueeval dataset for identifying human values behind arguments. Proceedings Of The 2024 Joint International Conference On Computational Linguistics, Language Resources And Evaluation (LREC-COLING 2024) . pp. 16121-16134 (2024) [22] Chen, Z., Sun, J., Li, C., Nguyen, T., Yao, J., Yi, X., Xie, X., Tan, C. & Xie, L. MoVa: Towards generalizable classification of human morals and values. Proceedings Of The 2025 Conference On Empirical Methods In Natural Language Processing . pp. 33204-33248 (2025) [23] Marcuzzo, M., Zangari, A., Albarelli, A., Camacho-Collados, J. & Pilehvar, M. MORABLES: A Benchmark for Assessing Abstract Moral Reasoning in LLMs with Fables. Proceedings Of The 2025 Conference On Empirical Methods In Natural Language Processing . pp. 27715-27739 (2025) [24] Lourie, N., Bras, R. & Choi, Y. Scruples: A Corpus of Community Ethical Judgments on 32,000 Real-Life Anec-dotes. (2021), https://arxiv.org/abs/2008.09094 Title Suppressed Due to Excessive Length 23 
+
+[25] Zhang, X., Wu, W., Beauchamp, N. & Wang, L. MOKA: Moral knowledge augmentation for moral event extrac-tion. Proceedings Of The 2024 Conference Of The North American Chapter Of The Association For Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) . pp. 4481-4502 (2024) [26] Becker, M., Sommer, M., Tapken, L., Teh, Y. & Brocai, B. The Moralization Corpus: Frame-Based Annotation and Analysis of Moralizing Speech Acts across Diverse Text Genres. ArXiv Preprint ArXiv:2512.15248 . (2025) [27] Shen, H., Knearem, T., Ghosh, R., Yang, Y., Clark, N., Mitra, T. & Huang, Y. Valuecompass: A framework for measuring contextual value alignment between human and llms. Proceedings Of The 9th Widening NLP Workshop .pp. 75-86 (2025) [28] Qiu, L., Zhao, Y., Li, J., Lu, P., Peng, B., Gao, J. & Zhu, S. Valuenet: A new dataset for human value driven dialogue system. Proceedings Of The AAAI Conference On Artificial Intelligence . 36 , 11183-11191 (2022) [29] Yao, J., Yi, X. & Xie, X. Clave: An adaptive framework for evaluating values of llm generated responses. Advances In Neural Information Processing Systems . 37 pp. 58868-58900 (2024) [30] Trager, J., Vargas, F., Alves, D., Guida, M., Ngueajio, M., Agrawal, A., Daryani, Y., Karimi-Malekabadi, F. & Arco, F. MFTCXplain: A Multilingual Benchmark Dataset for Evaluating the Moral Reasoning of LLMs through Multi-hop Hate Speech Explanation. Findings Of The Association For Computational Linguistics: EMNLP 2025 .pp. 15709-15740 (2025) [31] Bosselut, A., Rashkin, H., Sap, M., Malaviya, C., Celikyilmaz, A. & Choi, Y. COMET: Commonsense transformers for automatic knowledge graph construction. ACL . (2019) [32] Hwang, J., Bhagavatula, C., Le Bras, R., Da, J., Sakaguchi, K., Bosselut, A. & Choi, Y. COMET-ATOMIC 2020: On symbolic and neural commonsense knowledge graphs. AAAI . (2021) [33] Kiesel, J., Alshomary, M., Mirzakhmedova, N., Heinrich, M., Handke, N., Wachsmuth, H. & Stein, B. Semeval-2023 task 4: Valueeval: Identification of human values behind arguments. Proceedings Of The 17th International Workshop On Semantic Evaluation (SemEval-2023) . pp. 2287-2303 (2023) [34] Sorensen, T., Jiang, L., Hwang, J., Levine, S., Pyatkin, V., West, P., Dziri, N., Lu, X., Rao, K., Bhagavatula, C., et al. Value kaleidoscope: Engaging ai with pluralistic human values, rights, and duties. Proceedings Of The AAAI Conference On Artificial Intelligence . 38 , 19937-19947 (2024) [35] Yao, J., Yi, X., Gong, Y., Wang, X. & Xie, X. Value FULCRA: Mapping Large Language Models to the Multidi-mensional Spectrum of Basic Human Value. Proceedings Of The 2024 Conference Of The North American Chapter Of The Association For Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) . pp. 8754-8777 (2024) [36] Ren, Y., Ye, H., Fang, H., Zhang, X. & Song, G. ValueBench: Towards Comprehensively Evaluating Value Orienta-tions and Understanding of Large Language Models. Proceedings Of The 62nd Annual Meeting Of The Association For Computational Linguistics (Volume 1: Long Papers) . pp. 2015-2040 (2024) [37] Norhashim, H. & Hahn, J. Measuring Human-AI Value Alignment in Large Language Models. Proceedings Of The AAAI/ACM Conference On AI, Ethics, And Society . 7 pp. 1063-1073 (2024) [38] Gong, B., Tan, S., Feng, Y., Xie, X., Li, Y., Chen, C., Zheng, K., Shen, Y. & Zhao, D. UKnow: A Unified Knowledge Protocol with Multimodal Knowledge Graph Datasets for Reasoning and Vision-Language Pre-Training. Advances In Neural Information Processing Systems . 37 pp. 9612-9633 (2024) [39] Li, S., Ji, H. & Han, J. Document-Level Event Argument Extraction by Conditional Generation. Proceedings Of The 2021 Conference Of The North American Chapter Of The Association For Computational Linguistics: Human Language Technologies . pp. 894-908 (2021) [40] Chakravarthy, S., Krishnaprasad, V., Anwar, E. & Kim, S. Composite events for active databases: Semantics, contexts and detection. VLDB . 94 pp. 606-617 (1994) [41] Keith Norambuena, B., Mitra, T. & North, C. A survey on event-based news narrative extraction. ACM Computing Surveys . 55 , 1-39 (2023) [42] Li, M., Li, S., Wang, Z., Huang, L., Cho, K., Ji, H., Han, J. & Voss, C. The Future is not One-dimensional: Complex Event Schema Induction by Graph Modeling for Event Prediction. Proceedings Of The 2021 Conference On Empirical Methods In Natural Language Processing . pp. 5203-5215 (2021) [43] Zhang, Z., Cao, Y., Ye, C., Ma, Y., Liao, L. & Chua, T. Analyzing Temporal Complex Events with Large Language Models? A Benchmark towards Temporal, Long Context Understanding. Proceedings Of The 62nd Annual Meeting Of The Association For Computational Linguistics (Volume 1: Long Papers) . pp. 1588-1606 (2024) [44] Zhou, Z., Li, C., Chen, X., Wang, S., Chao, Y., Li, Z., Wang, H., Shi, Q., Tan, Z., Han, X., et al. LLM ×MapReduce: Simplified long-sequence processing using large language models. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 27664–27678, 2025. [45] Wang, Y., Tao, Z., Chang, H., Huang, N., Jin, L. & Luo, X. Multimodal understanding of human values in videos: A benchmark dataset and PLM-based method. Neurocomput. . 638 (2025,7) [46] Gretz, S., Friedman, R., Cohen-Karlik, E., Toledo, A., Lahav, D., Aharonov, R. & Slonim, N. A Large-scale Dataset for Argument Quality Ranking: Construction and Analysis. (2019) [47] Rashkin, H., Smith, E., Li, M. & Boureau, Y. Towards Empathetic Open-domain Conversation Models: A New Benchmark and Dataset. Proceedings Of The 57th Annual Meeting Of The Association For Computational Lin-guistics . pp. 5370-5381 (2019,7) 24 Y. Wang et al. 
+
+[48] Perez, E., Huang, S., Song, F., Cai, T., Ring, R., Aslanides, J., Glaese, A., McAleese, N. & Irving, G. Red Teaming Language Models with Language Models. Proceedings Of The 2022 Conference On Empirical Methods In Natural Language Processing . pp. 3419-3448 (2022,12) [49] Bai, Y., Jones, A., Ndousse, K., Askell, A., Chen, A., DasSarma, N., Drain, D., Fort, S., Ganguli, D., Henighan, T., Joseph, N., Kadavath, S., Kernion, J., Conerly, T., El-Showk, S., Elhage, N., Hatfield-Dodds, Z., Hernandez, D., Hume, T., Johnston, S., Kravec, S., Lovitt, L., Nanda, N., Olsson, C., Amodei, D., Brown, T., Clark, J., McCandlish, S., Olah, C., Mann, B. & Kaplan, J. Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback. (2022) [50] Fraser, K., Kiritchenko, S. & Balkir, E. Does Moral Code have a Moral Code? Probing Delphi’s Moral Philosophy. 
+
+Proceedings Of The 2nd Workshop On Trustworthy Natural Language Processing (TrustNLP 2022) . pp. 26-42 (2022,7), https://aclanthology.org/2022.trustnlp-1.3/ [51] Karra, S., Nguyen, S. & Tulabandhula, T. Estimating the personality of white-box language models. ArXiv Preprint ArXiv:2204.12000 . (2022) [52] Caron, G. & Srivastava, S. Identifying and manipulating the personality traits of language models. ArXiv Preprint ArXiv:2212.10276 . (2022) [53] Li, X., Li, Y., Joty, S., Liu, L., Huang, F., Qiu, L. & Bing, L. Does Gpt-3 demonstrate psychopathy. Evaluating Large Language Models From A Psychological Perspective . (2023) [54] Miotto, M., Rossberg, N. & Kleinberg, B. Who is GPT-3? An exploration of personality, values and demographics. 
+
+Proceedings Of The Fifth Workshop On Natural Language Processing And Computational Social Science (NLP+ CSS) . pp. 218-227 (2022) [55] Rao, H., Leung, C. & Miao, C. Can ChatGPT Assess Human Personalities? A General Evaluation Frame-work. Findings Of The Association For Computational Linguistics: EMNLP 2023 . pp. 1184-1194 (2023,12), https://aclanthology.org/2023.findings-emnlp.84/ [56] Jiang, G., Xu, M., Zhu, S., Han, W., Zhang, C. & Zhu, Y. Evaluating and inducing personality in pre-trained language models. Advances In Neural Information Processing Systems . 36 pp. 10622-10643 (2023) [57] Song, X., Gupta, A., Mohebbizadeh, K., Hu, S. & Singh, A. Have large language models developed a personality?: Applicability of self-assessment tests in measuring personality in llms. ArXiv Preprint ArXiv:2305.14693 .[58] Zhang, Z., Bai, F., Gao, J. & Yang, Y. Measuring value understanding in language models through discriminator-critique gap. (2023) [59] Zhang, Z., Liu, N., Qi, S., Zhang, C., Rong, Z., Yang, Y. & Cui, S. Heterogeneous value evaluation for large language models. ArXiv Preprint ArXiv:2305.17147 . (2023) [60] Pan, K. & Zeng, Y. Do llms possess a personality? making the mbti test an amazing evaluation for large language models. ArXiv Preprint ArXiv:2307.16180 . (2023) [61] Serapio-García, G., Safdari, M., Crepy, C., Sun, L., Fitz, S., Romero, P., Abdulhai, M., Faust, A. & Matarić, M. Personality Traits in Large Language Models. (2025), https://arxiv.org/abs/2307.00184 [62] Ganesan, A., Lal, Y., Nilsson, A. & Schwartz, H. Systematic evaluation of GPT-3 for zero-shot personality estimation. Proceedings of the 13th Workshop on Computational Approaches to Subjectivity, Sentiment, & Social Media Analysis , pp. 390–400, 2023. [63] Huang, J., Jiao, W., Lam, M., Li, E., Wang, W. & Lyu, M. On the Reliability of Psychological Scales on Large Language Models. Proceedings Of The 2024 Conference On Empirical Methods In Natural Language Processing .pp. 6152-6173 (2024,11), https://aclanthology.org/2024.emnlp-main.354/ [64] Abdulhai, M., Serapio-Garcia, G., Crepy, C., Valter, D., Canny, J. & Jaques, N. Moral foundations of large language models. Proceedings Of The 2024 Conference On Empirical Methods In Natural Language Processing . pp. 17737-17752 (2024) [65] Simmons, G. Moral mimicry: Large language models produce moral rationalizations tailored to political identity. 
+
+Proceedings Of The 61st Annual Meeting Of The Association For Computational Linguistics (Volume 4: Student Research Workshop) . pp. 282-297 (2023) [66] Scherrer, N., Shi, C., Feder, A. & Blei, D. Evaluating the moral beliefs encoded in llms. Advances In Neural Information Processing Systems . 36 pp. 51778-51809 (2023) [67] Bodroza, B., Dinic, B. & Bojic, L. Personality testing of GPT-3: limited temporal reliability, but highlighted social desirability of GPT-3’s personality instruments results. ArXiv E-prints . pp. arXiv-2306 (2023) [68] La Cava, L. & Tagarelli, A. Open models, closed minds? on agents capabilities in mimicking human personalities through open large language models. Proceedings Of The AAAI Conference On Artificial Intelligence . 39 , 1355-1363 (2025) [69] Jiang, L., Hwang, J., Bhagavatula, C., Bras, R., Liang, J., Dodge, J., Sakaguchi, K., Forbes, M., Borchardt, J., Gabriel, S., et al. Can machines learn morality? the delphi experiment. ArXiv Preprint ArXiv:2110.07574 . (2021) [70] Ayyubi, H., Thomas, C., Chum, L., Lokesh, R., Chen, L., Niu, Y., Lin, X., Feng, X., Koo, J., Ray, S., et al. Beyond Grounding: Extracting Fine-Grained Event Hierarchies Across Modalities. Proceedings Of The AAAI Conference On Artificial Intelligence . 38 , 17664-17672 (2024) [71] Huang, K., Hsu, I., Parekh, T., Xie, Z., Zhang, Z., Natarajan, P., Chang, K., Peng, N. & Ji, H. TextEE: Benchmark, reevaluation, reflections, and future challenges in event extraction. Findings Of The Association For Computational Linguistics: ACL 2024 . pp. 12804-12825 (2024) Title Suppressed Due to Excessive Length 25 
+
+[72] Chen, X. & Li, Q. Event modeling and mining: a long journey toward explainable events: X. Chen, Q. Li. The VLDB Journal . 29 , 459-482 (2020) [73] Liu, W., Zeng, D., Zhou, L., Chen, W., Zhang, M., Liu, D., He, X. & Li, H. Utilizing Contextual Clues and Role Correlations for Enhancing Document-level Event Argument Extraction. IEEE Transactions On Audio, Speech And Language Processing . (2025) [74] Chen, M., Cao, Y., Zhang, Y. & Liu, Z. CHEER: Centrality-aware high-order event reasoning network for document-level event causality identification. Proceedings Of The 61st Annual Meeting Of The Association For Computational Linguistics (Volume 1: Long Papers) . pp. 10804-10816 (2023) [75] Zheng, H., Wang, S. & Huang, L. A comprehensive survey on document-level information extraction. Proceedings Of The Workshop On The Future Of Event Detection (FuturED) . pp. 58-72 (2024) [76] Guan, S., Cheng, X., Bai, L., Zhang, F., Li, Z., Zeng, Y., Jin, X. & Guo, J. What is event knowledge graph: A survey. IEEE Transactions On Knowledge And Data Engineering . 35 , 7569-7589 (2022) [77] Jin, X., Li, M. & Ji, H. Event schema induction with double graph autoencoders. Proceedings Of The 2022 Conference Of The North American Chapter Of The Association For Computational Linguistics: Human Language Technologies . pp. 2013-2025 (2022) [78] Moore, J., Deshpande, T. & Yang, D. Are Large Language Models Consistent over Value-laden Ques-tions?. Findings Of The Association For Computational Linguistics: EMNLP 2024 . pp. 15185-15221 (2024,11), https://aclanthology.org/2024.findings-emnlp.891/ [79] Ozeki, K., Ando, R., Morishita, T., Abe, H., Mineshima, K. & Okada, M. Normative Reasoning in Large Language Models: A Comparative Benchmark from Logical and Modal Perspectives. Proceedings Of The 8th BlackboxNLP Workshop: Analyzing And Interpreting Neural Networks For NLP . pp. 276-294 (2025,11), https://aclanthology.org/2025.blackboxnlp-1.17/ [80] Sachdeva, P. & Nuenen, T. Normative evaluation of large language models with everyday moral dilemmas. Pro-ceedings Of The 2025 ACM Conference On Fairness, Accountability, And Transparency . pp. 690-709 (2025) [81] Wang, Y., Zhong, W., Li, L., Mi, F., Zeng, X., Huang, W., Shang, L., Jiang, X. & Liu, Q. Aligning large language models with human: A survey. ArXiv Preprint ArXiv:2307.12966 . (2023) [82] Chakraborty, M., Wang, L. & Jurgens, D. Structured moral reasoning in language models: A value-grounded evaluation framework. Proceedings Of The 2025 Conference On Empirical Methods In Natural Language Processing .pp. 30283-30311 (2025) [83] Zhang, Y. & Liu, Y. DirectQuote: A dataset for direct quotation extraction and attribution in news articles. 
+
+Proceedings Of The Thirteenth Language Resources And Evaluation Conference . pp. 6959-6966 (2022) [84] Glockner, M., Jiang, X., Ribeiro, L., Gurevych, I. & Dreyer, M. Neoqa: Evidence-based question answering with generated news events. Findings Of The Association For Computational Linguistics: ACL 2025 . pp. 11842-11926 (2025) [85] Zhang, B., Dai, G., Niu, F., Yin, N., Fan, X., Wang, S., Cao, X. & Huang, H. A survey of stance detection on social media: New directions and perspectives. ArXiv Preprint ArXiv:2409.15690 . (2024) [86] Nguyen, D. & Hekman, E. The news framing of artificial intelligence: a critical exploration of how media discourses make sense of automation. AI & Society 39 , 437–451 (2024). [87] Knutson, B., Hsu, T., Ko, M. & Tsai, J. News source bias and sentiment on social media. PloS One . 19 , e0305148 (2024) [88] Kmainasi, M., Shahroor, A., Hasanain, M., Laskar, S., Hassan, N. & Alam, F. LlamaLens: Specialized multilingual llm for analyzing news and social media content. Findings Of The Association For Computational Linguistics: NAACL 2025 . pp. 5627-5649 (2025) [89] Askell, A., Bai, Y., Chen, A., Drain, D., Ganguli, D., Henighan, T., Jones, A., Joseph, N., Mann, B., DasSarma, N., et al. A general language assistant as a laboratory for alignment. ArXiv Preprint ArXiv:2112.00861 . (2021) [90] OpenAI. GPT-5.2 Model. 2025. https://developers.openai.com/api/docs/models/gpt-5.2 . Accessed: 2026-03-08. [91] OpenAI, Josh Achiam, et al. GPT-4 Technical Report. 2024. https://arxiv.org/abs/2303.08774 .[92] OpenAI Introducing OpenAI o3 and o4-mini. (2025), https://openai.com/index/introducing-o3-and-o4-mini/, Accessed: 2026-03-08 [93] Anthropic Claude Haiku 4.5 System Card. (2025), https://www.anthropic.com/claude-haiku-4-5-system-card, Accessed: 2026-03-08 [94] Anthropic Claude Sonnet 4.5 System Card. (2025), https://www.anthropic.com/claude-sonnet-4-5-system-card, Accessed: 2026-03-08 [95] Anthropic Claude Opus 4.5 System Card. (2025), https://www.anthropic.com/claude-opus-4-5-system-card, Ac-cessed: 2026-03-08 [96] Comanici, G., Bieber, E., et al. Gemini 2.5: Pushing the Frontier with Advanced Reasoning, Multimodal-ity, Long Context, and Next Generation Agentic Capabilities. ArXiv Preprint ArXiv:2507.06261 . (2025), https://arxiv.org/abs/2507.06261 [97] DeepSeek-AI. DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models. arXiv preprint arXiv:2512.02556 , 2025. https://arxiv.org/abs/2512.02556 .26 Y. Wang et al. 
+
+[98] DeepSeek. Reasoning Model (deepseek-reasoner). (2026), https://api-docs.deepseek.com/guides/ reasoning_model , Accessed: 2026-03-08. [99] Weerawardhena, S., Kassianik, P., et al. Llama-3.1-FoundationAI-SecurityLLM-8B-Instruct Technical Report. (2025), https://arxiv.org/abs/2508.01059 [100] Yang, A., Li, A., et al. Qwen3 Technical Report. (2025), https://arxiv.org/abs/2505.09388 [101] Liu, A., Khandelwal, K., et al. Ministral 3. (2026), https://arxiv.org/abs/2601.08584 [102] Abdin, M., Aneja, J., et al. Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone. (2024), https://arxiv.org/abs/2404.14219 [103] OpenAI GPT-4o System Card. (2024), https://openai.com/index/gpt-4o-system-card/, Accessed: 2026-03-08 [104] OpenAI GPT-5 System Card. (2025), https://openai.com/index/gpt-5-system-card/, Accessed: 2026-03-08

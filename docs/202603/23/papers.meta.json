@@ -1,0 +1,93 @@
+{
+  "label": "2026-03-23",
+  "date": "2026-03-23",
+  "generated_at": "2026-03-23T20:15:54",
+  "count": 6,
+  "papers": [
+    {
+      "paper_id": "202603/23/2603.19718v1-balm-a-model-agnostic-framework-for-balanced-multimodal-learning-under-imbalanced-missing-rates",
+      "section": "deep",
+      "title_en": "BALM: A Model-Agnostic Framework for Balanced Multimodal Learning under Imbalanced Missing Rates",
+      "authors": "Phuong-Anh Nguyen, Tien Anh Pham, Duc-Trong Le, Cam-Van Thi Nguyen",
+      "date": "2026-03-20",
+      "pdf": "https://arxiv.org/pdf/2603.19718v1",
+      "score": "8.0",
+      "evidence": "针对缺失模态的平衡多模态学习框架",
+      "tldr": "本研究针对多模态学习中各模态缺失率不均衡（IMR）导致的优化失衡问题，提出了模型无关的插件式框架BALM。该框架包含特征校准模块（FCM）以统一异构缺失模式下的表示基础，以及梯度重平衡模块（GRM）从分布和空间维度调节梯度动态。实验证明，BALM能显著提升多模态情感识别模型在复杂缺失场景下的鲁棒性与性能。",
+      "tags": "query:msa",
+      "abstract_en": "Learning from multiple modalities often suffers from imbalance, where information-rich modalities dominate optimization while weaker or partially missing modalities contribute less. This imbalance becomes severe in realistic settings with imbalanced missing rates (IMR), where each modality is absent with different probabilities, distorting representation learning and gradient dynamics. We revisit this issue from a training-process perspective and propose BALM, a model-agnostic plug-in framework to achieve balanced multimodal learning under IMR. The framework comprises two complementary modules: the Feature Calibration Module (FCM), which recalibrates unimodal features using global context to establish a shared representation basis across heterogeneous missing patterns; the Gradient Rebalancing Module (GRM), which balances learning dynamics across modalities by modulating gradient magnitudes and directions from both distributional and spatial perspectives. BALM can be seamlessly integrated into diverse backbones, including multimodal emotion recognition (MER) models, without altering their architectures. Experimental results across multiple MER benchmarks confirm that BALM consistently enhances robustness and improves performance under diverse missing and imbalance settings. Code available at: https://github.com/np4s/BALM_CVPR2026.git",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/23/2603.19904v1-beyond-words-measuring-user-experience-through-speech-analysis-in-voice-user-interfaces",
+      "section": "deep",
+      "title_en": "Beyond Words: Measuring User Experience through Speech Analysis in Voice User Interfaces",
+      "authors": "Yong Ma, Xuesong Zhang, Xuedong Zhang, Natalia Bartłomiejczyk, Seungwoo Je, Adrian Holzer, Morten Fjeld, Andreas Butz",
+      "date": "2026-03-20",
+      "pdf": "https://arxiv.org/pdf/2603.19904v1",
+      "score": "8.0",
+      "evidence": "通过语音分析衡量用户情感与体验",
+      "tldr": "本研究探讨了利用语音分析衡量语音用户界面（VUI）体验的新方法。传统评估依赖问卷，而本研究通过49名参与者的实验，分析了不同语音助手人格下的语音特征（如时间、频谱和语言标记）。研究发现语音特征与用户满意度显著相关，且机器学习模型能有效分类UX水平。这证明了语音可作为实时、隐式衡量UX的有效信号，为开发能动态响应用户情感的自适应语音助手奠定了基础。",
+      "tags": "query:msa",
+      "abstract_en": "Voice assistants (VAs) are typically evaluated through task performance metrics and self-report questionnaires, but people's voices themselves carry rich paralinguistic cues that reveal affect, effort, and interaction breakdowns. We present a within-subjects study (N=49) that systematically compared three VA personas across three usage scenarios to investigate whether speech-derived audio features can serve as a proxy for user experience (UX). Participants' speech was analyzed for temporal, spectral, and linguistic markers, alongside standardized UX measures, brief mood and stress ratings, and a post-study questionnaire. We found correlations between specific speech features and self-reported satisfaction and experience. Furthermore, a machine learning model trained on speech features achieved promising accuracy in classifying UX levels, indicating that this might be a reasonable alternative to self-report instruments. Our findings establish speech as a viable, real-time signal for implicitly measuring UX and point toward adaptive VUIs that respond dynamically to emotional and usability-related vocal cues.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/23/2603.19994v1-evaluating-test-time-adaptation-for-facial-expression-recognition-under-natural-cross-dataset-distribution-shifts",
+      "section": "deep",
+      "title_en": "Evaluating Test-Time Adaptation For Facial Expression Recognition Under Natural Cross-Dataset Distribution Shifts",
+      "authors": "John Turnbull, Shivam Grover, Amin Jalali, Ali Etemad",
+      "date": "2026-03-20",
+      "pdf": "https://arxiv.org/pdf/2603.19994v1",
+      "score": "8.0",
+      "evidence": "真实世界偏移下的面部表情识别",
+      "tldr": "本研究针对面部表情识别（FER）在现实部署中面临的自然分布偏移问题，首次系统评估了测试时自适应（TTA）方法的有效性。通过在多个主流FER数据集上进行跨数据集实验，研究探讨了不同TTA策略（如熵最小化、原型调整和特征对齐）在应对由采集协议、标注标准和人口统计差异引起的真实偏移时的表现。结果表明，TTA能显著提升模型性能，并揭示了方法选择与分布距离及偏移性质之间的关系。",
+      "tags": "query:msa",
+      "abstract_en": "Deep learning models often struggle under natural distribution shifts, a common challenge in real-world deployments. Test-Time Adaptation (TTA) addresses this by adapting models during inference without labeled source data. We present the first evaluation of TTA methods for FER under natural domain shifts, performing cross-dataset experiments with widely used FER datasets. This moves beyond synthetic corruptions to examine real-world shifts caused by differing collection protocols, annotation standards, and demographics. Results show TTA can boost FER performance under natural shifts by up to 11.34\\%. Entropy minimization methods such as TENT and SAR perform best when the target distribution is clean. In contrast, prototype adjustment methods like T3A excel under larger distributional distance scenarios. Finally, feature alignment methods such as SHOT deliver the largest gains when the target distribution is noisier than our source. Our cross-dataset analysis shows that TTA effectiveness is governed by the distributional distance and the severity of the natural shift across domains.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/23/2603.19831v1-gesture2speech-how-far-can-hand-movements-shape-expressive-speech",
+      "section": "quick",
+      "title_en": "Gesture2Speech: How Far Can Hand Movements Shape Expressive Speech?",
+      "authors": "Lokesh Kumar, Nirmesh Shah, Ashishkumar P. Gudmalwar, Pankaj Wasnik",
+      "date": "2026-03-20",
+      "pdf": "https://arxiv.org/pdf/2603.19831v1",
+      "score": "7.0",
+      "evidence": "利用手势生成表达性语音的多模态TTS框架",
+      "tldr": "本研究提出Gesture2Speech框架，利用手势动作增强语音合成的表现力。针对现有TTS系统忽视手势对韵律影响的问题，该框架采用多模态专家混合（MoE）架构融合语言与手势特征，并结合LLM解码器实现同步韵律调节。实验证明，该方法在语音自然度与同步性上均优于基准，是首个利用手势控制神经语音合成韵律的研究。",
+      "tags": "query:msa",
+      "abstract_en": "Human communication seamlessly integrates speech and bodily motion, where hand gestures naturally complement vocal prosody to express intent, emotion, and emphasis. While recent text-to-speech (TTS) systems have begun incorporating multimodal cues such as facial expressions or lip movements, the role of hand gestures in shaping prosody remains largely underexplored. We propose a novel multimodal TTS framework, Gesture2Speech, that leverages visual gesture cues to modulate prosody in synthesized speech. Motivated by the observation that confident and expressive speakers coordinate gestures with vocal prosody, we introduce a multimodal Mixture-of-Experts (MoE) architecture that dynamically fuses linguistic content and gesture features within a dedicated style extraction module. The fused representation conditions an LLM-based speech decoder, enabling prosodic modulation that is temporally aligned with hand movements. We further design a gesture-speech alignment loss that explicitly models their temporal correspondence to ensure fine-grained synchrony between gestures and prosodic contours. Evaluations on the PATS dataset show that Gesture2Speech outperforms state-of-the-art baselines in both speech naturalness and gesture-speech synchrony. To the best of our knowledge, this is the first work to utilize hand gesture cues for prosody control in neural speech synthesis. Demo samples are available at https://research.sri-media-analysis.com/aaai26-beeu-gesture2speech/",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/23/2603.16259v1-hyperbolic-multimodal-generative-representation-learning-for-generalized-zero-shot-multimodal-information-extraction",
+      "section": "quick",
+      "title_en": "Hyperbolic Multimodal Generative Representation Learning for Generalized Zero-Shot Multimodal Information Extraction",
+      "authors": "Baohang Zhou, Kehui Song, Rize Jin, Yu Zhao, Xuhui Sui, Xinying Qian, Xingyue Guo, Ying Zhang",
+      "date": "2026-03-17",
+      "pdf": "https://arxiv.org/pdf/2603.16259v1",
+      "score": "6.0",
+      "evidence": "从网页文本和图像中进行多模态信息抽取",
+      "tldr": "本文针对广义零样本多模态信息抽取（GZS-MIE）挑战，提出双曲多模态生成表示学习框架（HMGRL）。该框架利用双曲空间重构变分信息瓶颈和自编码器，以捕捉样本与原型间的层级语义关联。通过生成不可见样本并引入语义相似度分布对齐损失，HMGRL 解决了现有方法在欧氏空间建模受限及分布不一致的问题，显著提升了模型在处理未知类别时的泛化性能。",
+      "tags": "query:msa",
+      "abstract_en": "Multimodal information extraction (MIE) constitutes a set of essential tasks aimed at extracting structural information from Web texts with integrating images, to facilitate the structural construction of Web-based semantic knowledge. To address the expanding category set including newly emerging entity types or relations on websites, prior research proposed the zero-shot MIE (ZS-MIE) task which aims to extract unseen structural knowledge with textual and visual modalities. However, the ZS-MIE models are limited to recognizing the samples that fall within the unseen category set, and they struggle to deal with real-world scenarios that encompass both seen and unseen categories. The shortcomings of existing methods can be ascribed to two main aspects. On one hand, these methods construct representations of samples and categories within Euclidean space, failing to capture the hierarchical semantic relationships between the two modalities within a sample and their corresponding category prototypes. On the other hand, there is a notable gap in the distribution of semantic similarity between seen and unseen category sets, which impacts the generative capability of the ZS-MIE models. To overcome the disadvantages, we delve into the generalized zero-shot MIE (GZS-MIE) task and propose the hyperbolic multimodal generative representation learning framework (HMGRL). The variational information bottleneck and autoencoder networks are reconstructed with hyperbolic space for modeling the multi-level hierarchical semantic correlations among samples and prototypes. Furthermore, the proposed model is trained with the unseen samples generated by the decoder, and we introduce the semantic similarity distribution alignment loss to enhance the model's generalization performance. Experimental evaluations on two benchmark datasets underscore the superiority of HMGRL compared to existing baseline methods.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/23/2603.17838v1-event-centric-human-value-understanding-in-news-domain-texts-an-actor-conditioned-multi-granularity-benchmark",
+      "section": "quick",
+      "title_en": "Event-Centric Human Value Understanding in News-Domain Texts: An Actor-Conditioned, Multi-Granularity Benchmark",
+      "authors": "Yao Wang, Xin Liu, Zhuochen Liu, Jiankang Chen, Adam Jatowt, Kyoungsook Kim, Noriko Kando, Haitao Yu",
+      "date": "2026-03-18",
+      "pdf": "https://arxiv.org/pdf/2603.17838v1",
+      "score": "6.0",
+      "evidence": "新闻文本中的人类价值观识别",
+      "tldr": "针对现有数据集在新闻领域缺乏特定参与者、事件结构和价值导向理解的问题，本文提出了NEVU基准。NEVU包含2,865篇新闻，涵盖从子事件到整篇报道的四个语义层级，通过LLM辅助及人工审核构建，包含54种细粒度价值。该基准旨在评估模型识别特定参与者在特定事件中价值倾向的能力，实验证明轻量化微调能显著提升模型表现。",
+      "tags": "query:msa",
+      "abstract_en": "Existing human value datasets do not directly support value understanding in factual news: many are actor-agnostic, rely on isolated utterances or synthetic scenarios, and lack explicit event structure or value direction. We present \\textbf{NEVU} (\\textbf{N}ews \\textbf{E}vent-centric \\textbf{V}alue \\textbf{U}nderstanding), a benchmark for \\emph{actor-conditioned}, \\emph{event-centric}, and \\emph{direction-aware} human value recognition in factual news. NEVU evaluates whether models can identify value cues, attribute them to the correct actor, and determine value direction from grounded evidence. Built from 2{,}865 English news articles, NEVU organizes annotations at four semantic unit levels (\\textbf{Subevent}, \\textbf{behavior-based composite event}, \\textbf{story-based composite event}, and \\textbf{Article}) and labels \\mbox{(unit, actor)} pairs for fine-grained evaluation across local and composite contexts. The annotations are produced through an LLM-assisted pipeline with staged verification and targeted human auditing. Using a hierarchical value space with \\textbf{54} fine-grained values and \\textbf{20} coarse-grained categories, NEVU covers 45{,}793 unit--actor pairs and 168{,}061 directed value instances. We provide unified baselines for proprietary and open-source LLMs, and find that lightweight adaptation (LoRA) consistently improves open-source models, showing that although NEVU is designed primarily as a benchmark, it also supports supervised adaptation beyond prompting-only evaluation. Data availability is described in Appendix~\\ref{app:data_code_availability}.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
