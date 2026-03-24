@@ -1,0 +1,769 @@
+Title: More Than Sum of Its Parts: Deciphering Intent Shifts in Multimodal Hate Speech Detection
+
+URL Source: https://arxiv.org/pdf/2603.21298v1
+
+Published Time: Tue, 24 Mar 2026 01:43:47 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+## More Than Sum of Its Parts: Deciphering Intent Shifts in Multimodal Hate Speech Detection 
+
+> Content warning: This article contains examples of hateful content.
+
+Runze Sun, Yu Zheng *, Zexuan Xiong, Zhongjin Qu, Lei Chen, Jiwen Lu, Jie Zhou 
+
+Department of Automation, Tsinghua University 
+
+Abstract 
+
+Combating hate speech on social media is criti-cal for securing cyberspace, yet relies heavily on the efficacy of automated detection systems. As content formats evolve, hate speech is tran-sitioning from solely plain text to complex mul-timodal expressions, making implicit attacks harder to spot. Current systems, however, often falter on these subtle cases, as they struggle with multimodal content where the emergent meaning transcends the aggregation of individ-ual modalities. To bridge this gap, we move beyond binary classification to characterize se-mantic intent shifts where modalities interact to construct implicit hate from benign cues or neutralize toxicity through semantic inversion. Guided by this fine-grained formulation, we curate the Hate via Vision-Language Inter-play (H-VLI) benchmark where the true intent hinges on the intricate interplay of modalities rather than overt visual or textual slurs. To effectively decipher these complex cues, we further propose the Asymmetric Reasoning via 
+
+Courtroom Agent DE bate (ARCADE) frame-work. By simulating a judicial process where agents actively argue for accusation and de-fense, ARCADE forces the model to scruti-nize deep semantic cues before reaching a ver-dict. Extensive experiments demonstrate that ARCADE significantly outperforms state-of-the-art baselines on H-VLI, particularly for challenging implicit cases, while maintaining competitive performance on established bench-marks. Our code and data are available at: 
+
+https://github.com/Sayur1n/H-VLI 
+
+1 Introduction 
+
+Hate speech, defined as attacks targeting individ-uals or groups based on protected characteristics (e.g., race, gender, religion), poses a severe threat to the safety of online communities (Gagliardone et al., 2015; Matsuda, 2018; Kiela et al., 2020;              
+
+> *Project leader Text: Getting some serious from this unabomber vibes person.
+> (a) Metaphoric religious hate Text: They look strong, sure, but
+> born to lose me in the race .(b) Pun-based racial hate
+
+Figure 1: Examples of implicit multimodal hate speech. 
+
+Cortese, 2005; Tsesis, 2002). Given the sheer vol-ume and contagion of social media content, there is an urgent need for automated detection systems to safeguard both online and offline communities. Driven by advances in Natural Language Pro-cessing, unimodal hate speech detection has made considerable progress. Existing approaches now excel at identifying both explicit (Schmidt and Wiegand, 2017; Caselli et al., 2020; Davidson et al., 2017; Waseem and Hovy, 2016) and im-plicit (Ghosh et al., 2023; Ahn et al., 2024; Ja-fari et al., 2024; Zeng et al., 2025) hate speech within the text modality. However, as online con-tent evolves into multimodal formats like memes and image–text pairs, hate speech has increasingly emerged from cross-modal interactions, shifting the battlefield toward Multimodal Hate Speech De-tection (MMHSD) (Gomez et al., 2020; Kiela et al., 2020; Wang et al., 2025; Kapil and Ekbal, 2025). Unlike explicit hate speech characterized by ag-gressive slurs or violent imagery, modern hate speech increasingly relies on implicit expressions. In these cases, the textual and visual modalities may appear benign individually, yet they mutually construct a hateful intent through complex seman-tic interactions, such as irony, metaphor, or cultural allusion. Detecting such implicit multimodal hate speech is challenging as hatefulness is not inherent in isolated modalities nor their simple summation, but emerges from the specific semantic interplay in between. Consider the examples in Figure 1a. The standalone text or image of a person are not ex-plicitly offensive. However, the hatefulness arises 
+
+> arXiv:2603.21298v1 [cs.CL] 22 Mar 2026
+
+from a hostile metaphor that draws on Islamopho-bic stereotypes, implicitly framing the target as a terrorist. Similarly, Figure 1b uses a pun on the word “race”. The racial hostility is only decipher-able when the textual pun is grounded in the visual context of a specific demographic group. Other-wise, it appears to be mere competitive banter. Cor-rectly deciphering these instances requires a model to move beyond the superficial fusion of parts to capture the true emergent intent. Rather, it must perform deep reasoning to capture the subtle intent shifts: how a modality amplifies, contradicts, or recontextualizes the other. However, existing research often falls short of ad-dressing these complexities. First, on the data side, current benchmarks typically treat multimodal hate speech as binary classification or rely on coarse-grained categories, which lack a systematic taxon-omy to characterize the diverse semantic interac-tions between modalities. This leads to models that overfit to surface-level cues rather than learning the underlying reasoning logic. Second, on the method side, standard multimodal models generally em-ploy direct fusion mechanisms that are insufficient for capturing subtle, high-level semantic conflicts. They often struggle with the “ambiguity trap”, lead-ing to misinterpretations of benign context (e.g., satire) or failures to spot subtle attacks. To bridge these gaps, we introduce a fine-grained Stratified Multimodal Interaction (SMI) 
+
+paradigm tailored for hate speech analysis. Un-like previous binary labels, SMI serves as a fine-grained taxonomy that characterizes intent shifts, demonstrating how visual and textual elements may reinforce explicit hate, neutralize toxicity, or mu-tually construct implicit attacks through semantic interactions. Guided by this taxonomy, we curate 
+
+Hate via Vision-Language Interplay (H-VLI) , a high-quality benchmark constructed via a hybrid pipeline of consensus filtering, generative injection and human-in-the-loop annotation, ensuring a high density of challenging implicit samples. To effec-tively interpret such ambiguity, drawing inspiration from the adversarial nature of adjudication, we pro-pose the Asymmetric Reasoning via Courtroom 
+
+Agent DE bate (ARCADE) framework. Departing from standard symmetric debates, ARCADE sim-ulates a judicial process with specialized agents, where a Prosecutor operates under a presumption of guilt and a Defender under a presumption of innocence. This adversarial dialectic forces the model to explicitly scrutinize deep semantic inter-play and cultural contexts before a Judge renders the final verdict, thereby enhancing both detection accuracy and interpretability. 
+
+2 Related Work 
+
+Hate Speech Detection: Hate speech detection aims to identify malicious content targeting spe-cific social groups (Schmidt and Wiegand, 2017; Davidson et al., 2017). While early unimodal stud-ies focus on explicit surface linguistic cues (Nobata et al., 2016; Davidson et al., 2017; Caselli et al., 2020), recent works address implicit hate through contextual and semantic reasoning (Ghosh et al., 2023; Ahn et al., 2024; Wei et al., 2025; Zeng et al., 2025). However, these text-only methods remain insufficient for the increasingly multimodal nature of online content. To address this, Multimodal Hate Speech Detection (MMHSD) approaches typically integrate representations via feature fusion, cross-modal attention, or contrastive learning (Gomez et al., 2020; Dwivedy and Roy, 2023; Saddozai et al., 2025; Kapil and Ekbal, 2025). Although ef-fective for explicit cases, these models often strug-gle when hateful meaning is conveyed indirectly through shared socio-cultural knowledge. More recently, methods based on Multimodal Large Lan-guage Models (MLLMs) have explored prompt-based or few-shot paradigms (Wang et al., 2025; Rizwan et al., 2025), yet they generally lack mech-anisms to explicitly guide reasoning or systemati-cally elicit the necessary socio-cultural context for complex implicit scenarios. 
+
+Multimodal Hate Speech Detection Bench-marks: Existing MMHSD datasets are gener-ally categorized into text–image pair formats like MMHS150K (Gomez et al., 2020), and meme-style datasets where pieces of text are embedded within images (Kiela et al., 2020; Fersini et al., 2022a). While largely advancing the field, they feature rela-tively explicit cross-modal cues and utilize coarse-grained labeling schemes. Consequently, existing benchmarks largely focus on explicit hate, with lim-ited coverage of context-dependent neutralization and implicitly constructed hate arising from sub-tle metaphors and stereotypes—limiting progress toward robust real-world detection. 
+
+Multi-Agent Debate: Multi-agent debate (MAD) is designed to enhance the reasoning capabilities of large language models by assigning agents with distinct roles to conduct structured, multi-turn argu-mentation (Liang et al., 2024). This paradigm has been successfully applied to tasks such as misinfor-x
+
+> Existing Benchmarks
+> (e.g. MMHS150K)
+> Consensus Filtering
+
+Real-world Path (For Easy & Normal) Expert Annotation 
+
+> Interaction-based Difficulty Stratifcation
+
+Our Final Dataset 
+
+Phase Ⅲ: Final Verified Dataset Phase Ⅱ: The SMI Annotation Paradigm & Diffculty Stratification Phase Ⅰ: Hybrid Data Acauisition Strategy               
+
+> Candidates
+> benign, explicite hate and contextual neutralization
+> SMI Annotation Paradigm
+> Normal (Contextual Neutralization ): 1, 0 → 0; 0, 1 → 0
+> Easy (Explicit Consistency): 0, 0 → 0; 1, 0 → 1; 0, 1 → 1; 1, 1 → 1
+> Hard (Implicit Emergence/Inversion): 0, 0 → 1; 1, 1 → 0
+> Human Annotators
+> Annotation Platform
+
+Hard Samples 
+
+> Impliclt Emergence/Inversion
+
+Normal Samples 
+
+> Contextual reasoning needed
+
+Easy Samples   
+
+> Surface-level Cues
+> I can't stand these <insult>.
+> FHM
+> Image Source
+> Google Search
+> Image Source
+> MMHS150K
+> Image Source
+> Text-specific prompts
+> Text Generation
+> Supplementary
+> Candidates
+> Generative Injection Path
+> Raw Candidates Pool
+> Unimodal Auto Annotators
+> Human Annotators
+> (Combined)
+> Unimodal Path 2
+> Image Input Qwen-plus
+> (Text)
+> Text Input
+> Qwen3-VL-plus
+> (Image)
+> Consensus Filtering
+
++
+
+> Intent Alignment
+> Filtering
+> contextual neutralization and implicit hate
+
+Figure 2: The construction pipeline of our H-VLI dataset. This process employs a hybrid strategy that combines consensus filtering of real-world samples with a generative injection path to ensure diversity. It utilizes the SMI paradigm to systematically categorize samples into eight distinct interaction patterns, which are further stratified into three difficulty levels (Easy, Normal, and Hard) based on the semantic interplay between modalities. 
+
+mation detection and factual verification, yielding more robust decisions than single-agent prompt-ing (Han et al., 2025; Ma et al., 2025). Besides, Park et al. (2024), Kumar et al. (2025) and Jin et al. (2025) employ an asymmetric debate architecture to enhance decision robustness. However, these text-centric methods are not designed to model the complex semantic interplay between vision and language, potentially missing the subtle, non-linear cues essential for deciphering implicit content. 
+
+3 Our Dataset H-VLI 
+
+To advance the detection of implicit multimodal content (where hateful intent is implicitly con-structed from benign signals or semantically neu-tralized by context), it is essential to move beyond binary labels and decipher the specific semantic interactions between modalities. However, existing benchmarks typically rely on coarse-grained cate-gories and often suffer from substantial label noise, as reflected by low inter-annotator agreement (e.g., MMHS150K in Table 2). To bridge this gap, we first formulate the problem through a fine-grained lens, introduce the Stratified Multimodal Interac-tion (SMI) paradigm, and finally construct H-VLI ,a high-quality benchmark systematically populated based on these interaction patterns. 
+
+3.1 Problem Formulation 
+
+Many existing MMHSD studies formulate the task simply as a binary classification problem (Gomez            
+
+> Difficulty Pattern (yT ext , y Image →yCombined )Interaction Mechanism
+> Easy 000, 011, 101, 111 Semantic Consistency Normal 100, 010 Contextual Neutralization Hard 001, 110 Implicit Emergence / Inversion
+
+Table 1: Difficulty Stratification of Multimodal Interac-tion Patterns (0: NotHate, 1: Hate). 
+
+et al., 2020; Kiela et al., 2020). Given a text–image pair (Ti, I i), the goal is to predict a label ˆyi ∈{0, 1} by maximizing: 
+
+ˆyi = arg max 
+
+y∈{ 0,1} p(y | Ti, I i), (1) However, merely distinguishing whether content is hateful is insufficient. This binary formulation fails to identify specific target groups and lacks natural language explanations, making it difficult to articulate the underlying reasoning, especially for implicit cases. To address this, we formulate MMHSD as a six-class classification task with explanatory supervi-sion. Our goal is to learn a model F that predicts a hate speech category ˆyi ∈ Y together with a natu-ral language explanation ei (the category set Y is defined in Appendix A.): 
+
+(ˆ yi, e i) = arg max 
+
+y∈Y , e p(y, e | Ti, I i). (2) This formulation requires the model to jointly an-alyze textual and visual information to determine the specific hate speech category. 000                                                 
+
+> (35.9%)
+> 011
+> (3.5%)
+> 101
+> (12.0%)
+> 111
+> (11.1%)
+> 010
+> (12.5%)
+> 100
+> (11.1%)
+> 001
+> (9.2%)
+> 110
+> (4.7%)
+> Easy
+> (62.5%)
+> Normal
+> (23.6%)
+> Hard
+> (13.8%)
+> Dataset
+> Distribution Dataset Source # Samples # Cls SMI Diff. Agreem. ( κ)
+> MMHS150K (Gomez et al., 2020) Img+Txt 149,823 6✗✗0.15 †
+> FHM (Kiela et al., 2020) Meme 10,000 2✗✗0.68 ∗
+> MultiOFF (Suryawanshi et al., 2020) Meme 743 2✗✗0.4 – 0.5 †
+> Harm-C (Pramanick et al., 2021a) Meme 3,544 3/4 ✗✗0.68 / 0.78 ∗
+> MAMI (Fersini et al., 2022b) Meme 11,000 2/5 ✗✗0.58 / 0.34 †
+> H-VLI (Raw) Img+Txt 8,438 6✓✓0.59 †
+> H-VLI (Final) 5,569 0.94 †
+> Note: †Fleiss’ κ;∗Cohen’s κ. SMI: Stratified Multimodal Interaction paradigm. Diff: Difficulty Grading.
+
+Table 2: Comparison of our dataset (H-VLI) with existing multimodal hate speech datasets. H-VLI (Raw) represents data before consistency filtering. 
+
+3.2 Annotation and Difficulty Stratification 
+
+To capture the complexity of multimodal hate, par-ticularly when modalities conflict, we introduce the Stratified Multimodal Interaction (SMI) paradigm. For each sample, we annotate a five-tuple , explic-itly labeling unimodal sentiments alongside the final multimodal annotation: 
+
+Ai = ( ytext  
+
+> i
+
+, e text  
+
+> i
+
+, y image  
+
+> i
+
+, e image  
+
+> i
+
+, y combined  
+
+> i
+
+) (3) where ytext/image  
+
+> i
+
+,etext/image  
+
+> i
+
+denote the unimodal la-bels and explanations respectively. ycombined  
+
+> i
+
+repre-sents the final multimodal ground-truth label. 
+
+Taxonomy of Multimodal Interaction: Un-der the SMI paradigm, the interplay between unimodal signals ( ytext , y image ) and the combined outcome ( ycombined ) yields eight distinct inter-action patterns (i.e., all 23 combinations of 
+
+(ytext , y image , y combined ) ∈ { 0, 1}3). Based on the reasoning complexity required to resolve these in-teractions, we categorize them into three difficulty levels, as summarized in Table 1: • Easy (Explicit Consistency): The final ver-dict aligns with explicit unimodal polarity (e.g., 
+
+ycombined = ytext ∨yimage ). Hate is explicitly present in at least one modality or absent in both, requiring no complex cross-modal reasoning. • Normal (Contextual Correction): A unimodal toxic signal is neutralized by the other modality (e.g., counter-speech), requiring the model to perform semantic correction. • Hard (Implicit Interactions): The most chal-lenging scenario where hatefulness emerges from the intersection of benign modalities (Emer-gence), or toxic elements are recontextualized into benign satire (Inversion). 
+
+3.3 Dataset Construction 
+
+To populate the SMI paradigm and address the challenge of obtaining diverse implicit multimodal samples in real-world distributions, we employ a hybrid pipeline (Figure 2) that combines rigorous filtering of existing benchmarks with targeted syn-thetic generation. 
+
+Sourcing Real-world Samples: We leverage MMHS150K (Gomez et al., 2020) as a founda-tion for Easy and Normal samples. To mitigate crowd-sourcing noise, we strictly filter for sam-ples with unanimous inter-annotator agreement and yield 5,232 high-quality candidates, which effec-tively represent benign, explicit hate and contextual neutralization patterns. 
+
+Generative Data Injection: To populate the Nor-mal and Hard subsets, we employ a generative in-jection strategy. Using Qwen3-VL-Plus (Bai et al., 2025) and Gemini-2.5-Pro (Team et al., 2023), we craft synthetic captions that induce specific seman-tic interactions, leveraging strategies such as con-textual inversion and victim-perspective narration to simulate real-world ambiguity (see Appendix B for detailed strategies). This yields 7,506 candi-dates covering complex reasoning scenarios often missing in organic data. 
+
+Human-in-the-loop Annotation: To ensure label reliability, we implement a model-assisted expert review process. To facilitate this, we developed a specialized annotation interface tailored to the SMI paradigm (displayed as “Annotation Platform” in Figure 2). To reduce cognitive load and en-force structured reasoning, the platform visualizes unimodal priors ( ytext , e text , y image , e image ) pre-generated by Qwen-Plus (Bai et al., 2023a) and Qwen3-VL-Plus (Bai et al., 2025). This provides annotators with initial rationales alongside the mul-timodal input. Experts with psychology or socio-logical backgrounds then review these cues on the platform to determine the final multimodal label (y). Please refer to Appendix F for more in-depth interface visualization and workflow details. The resulting dataset undergoes a strict post-annotation filtering process to guarantee quality, specifically Multimodal Input       
+
+> Rapid Scan
+> for Explicit
+> Hate Cues
+> Prosecutor Agent
+> Defender
+> Agent
+> Track Ⅰ: Fast-Track Trial For Explicit Hate
+> Indictment History
+> Explicit Hate?
+> Summary Dismissal Expanded
+> Investigation
+> for Implicit
+> Hate Cues
+> Prosecutor
+> Agent
+> Implicit Hate?
+> History
+> Judge Agent
+> K-Round
+> Adversarial Debate
+> Track Ⅱ: Deep-Dive Trial For Implicit Hate
+> Yes No Yes No
+> Render a Final Verdict
+> Final Verdict
+> Prediction Explanation
+> Rebuttal
+
+Figure 3: The architecture of the ARCADE framework. The model simulates an asymmetric courtroom debate involving Prosecutor and Defender agents. It features a Gated Dual-Track mechanism that routes samples to either a Fast-Track for explicit hate or a Deep-Dive trial for implicit reasoning, allowing the Judge agent to synthesize the debate history and render a final verdict. 
+
+including an Intent Alignment check to ensure hu-man consensus matches the generative semantic objective (see Appendix C for details). The final dataset contains 5,569 validated sam-ples. As shown in Table 2, H-VLI achieves a signifi-cantly higher inter-annotator agreement ( κ = 0 .94 )compared to existing benchmarks. The detailed statistical breakdown of the dataset is presented alongside. 
+
+4 Methodology 
+
+We propose the Asymmetric Reasoning via 
+
+Courtroom Agent DE bate ( ARCADE ) frame-work to enhance multimodal hate speech detection through adversarial dialectics. As illustrated in Figure 3, ARCADE simulates a judicial process with three specialized agents (Prosecutor, Defender, and Judge) to address the reasoning challenges in deciphering multimodal intent shifts. 
+
+4.1 Asymmetric Agent Design 
+
+Unlike symmetric frameworks where agents share generic personas, ARCADE establishes distinct cognitive priors to simulate an adversarial trial. 
+
+The Prosecutor (Risk Discovery): Adopting a “presumption of guilt”, the Prosecutor agent ( Apros )maintains high sensitivity to potential risks. It ac-tively hypothesizes malice and explicitly maps vi-sual symbols to textual metaphors to uncover latent hate, rather than performing neutral classification. 
+
+The Defender (Contextual Safety): The De-fender agent ( Adef ) operates under a “presumption of innocence”. It serves as a dynamic safety align-ment which scrutinizes evidence for benign motiva-tions (e.g., satire, self-deprecation, or educational documentation) and aims to invalidate the Prosecu-tor’s claims through logical contextualization. 
+
+The Judge (Final Arbiter): The Judge ( Ajudge )evaluates the validity of the debate history H
+
+against the raw input to render the final verdict 
+
+ˆy and explanation e, without participating in argu-ment generation. 
+
+4.2 Gated Dual-Track Litigation Process 
+
+Given a multimodal sample Si = ( Ti, I i), the Pros-ecutor performs a rapid scan for explicit hate sym-bols. A gating function Φ( Si) determines the pro-cedural path: 
+
+Φ( Si) = 
+
+(
+
+1, if Apros detects explicit hate cues 
+
+0, otherwise (4) Based on Φ( Si), the sample is routed to either a Fast-Track or a Deep-Dive trial as follows: 
+
+Track I: Fast-Track Trial (Explicit Hate): 
+
+When Φ( Si) = 1 , the primary challenge is con-text verification (e.g., distinguishing hate from quotations). The trial is streamlined into a sin-gle turn: The Prosecutor submits an indictment 
+
+Eexp , and the Defender immediately provides a contextual rebuttal. The history is recorded as 
+
+HI = {Eexp , Rebuttal (Si, E exp )}.
+
+Track II: Deep-Dive Trial (Implicit Reasoning): 
+
+When Φ( Si) = 0 , the sample lacks overt hate symbols but requires rigorous socio-cultural rea-soning. The Prosecutor first conducts an expanded investigation. If no evidence is found, the process terminates via Summary Dismissal . Conversely, if potential implicit cues are identified, ARCADE initiates an Adversarial Debate . Let uk denote the utterance at turn k (with upros  
+
+> 0
+
+= udef  
+
+> 0
+
+= ∅). The state transition proceeds as: 
+
+upros k = Apros (Si, u pros k−1 , u def k−1) (5) 
+
+udef k = Adef (Si, u pros k , u def k−1) (6) This iterative process forces agents to deepen their reasoning, exposing logical links between neutral images and biased texts. The resulting history is recorded as HII = {upros  
+
+> 1
+
+, u def  
+
+> 1
+
+, . . . , u def K }.
+
+Algorithm 1: A RCADE Inference Process                                                          
+
+> Input: Multimodal Sample S, Max Turns K
+> Output: Prediction y, Explanation e
+> Initialize: Agents Apros , A def , A judge
+> g←Φ( S)via Eq. (4)
+> if g= 1 then Track I: Fast-Track
+> Eexp ←INDICT (Apros , S )
+> ureb ←REBUT (Adef , S, E exp )
+> H ← { Eexp , u reb }
+> else Track II: Deep-Dive
+> upros
+> 1←DETECT IMPLICIT (Apros , S )
+> if upros
+> 1=∅then
+> // Summary Dismissal
+> return (Non-Hate, “No implicit risks” )
+> end if
+> H ← { upros
+> 1}
+> udef
+> 1←Adef (S, u pros
+> 1,∅)via Eq. (6)
+> H ← H ∪ { udef
+> 1}
+> for k= 2 to Kdo
+> upros k←Apros (S, u pros k−1, u def k−1)via Eq. (5)
+> udef k←Adef (S, u pros k, u def k−1)via Eq. (6)
+> H ← H ∪ { upros k, u def k}
+> end for end if
+> (ˆ y, e )←Ajudge (S, H)via Eq. (7)
+> return (y, e )
+
+Verdict: Finally, the Judge aggregates the debate history H to get the prediction. By conditioning on the adversarial exchange, the Judge distinguishes between genuine hateful intent and benign usage: 
+
+(ˆ yi, e i) = arg max 
+
+> y∈Y,e
+
+p(y, e | Si, H) (7) The complete procedure including the summary dismissal logic is outlined in Algorithm 1. 
+
+5 Experiment 
+
+In this section, we evaluate existing methods and our proposed ARCADE on our constructed H-VLI dataset and FHM (Kiela et al., 2020) dataset. 
+
+5.1 Tasks and Evaluation Metrics 
+
+To comprehensively assess the compared models, we formulate the evaluation as two distinct tasks: 
+
+Task 1: Fine-grained Hate Categorization: 
+
+Moving beyond simple binary detection, this task challenges models to discern specific hate types (e.g., racist, sexist) alongside non-hateful con-tent. We report Accuracy for difficulty subsets (Easy, Normal, Hard) and Accuracy , Macro-F1 ,and Weighted-F1 for the overall dataset. 
+
+Task 2: Binary Hate Detection: Following pre-vious works (Gomez et al., 2020; Kapil and Ekbal, 2025), we aggregate the five subtypes into a sin-gle “hateful” class against “non-hateful” to evalu-ate fundamental detection capabilities. We report 
+
+Accuracy across difficulty subsets, with Accuracy ,
+
+Recall , and F1-score as overall metrics. 
+
+5.2 Datasets and Configurations Our Dataset (H-VLI): To ensure rigorous eval-uation, we constructed a test set of 1,178 samples (≈20% of data) using a strict disjoint split based on image sources and semantic topics. This pre-vents information leakage and ensures the test set contains truly unseen samples. 
+
+FHM Dataset: To assess the generalization ca-pability, we utilized the Facebook Hateful Memes 
+
+(FHM) dataset (Kiela et al., 2020) which contains 10,000 multimodal memes designed to facilitate the detection of hateful content. Following prior protocols (Rizwan et al., 2025; Wang et al., 2025), we evaluate on the 500-sample dev split (as the test set labels are withheld). Since FHM only provides binary labels, it is used exclusively for Task 2. 
+
+Implementation Details: We fine-tuned all su-pervised baselines on our dataset splits on a single NVIDIA RTX 4090 GPU. MLLMs were evaluated via official APIs, where “Baseline” refers to zero-shot single-turn prompting. For ARCADE, we em-ploy Qwen3-VL-Plus as the fixed Auxiliary Model to evaluate different Judge backbones, setting rea-soning rounds to K = 3 for H-VLI and K = 2 
+
+for FHM. Unless otherwise specified, all reported results are obtained from a single experimental run. See Appendix D for further details. Model Training Task 1: Fine-grained Hate Categorization Task 2: Binary Hate Detection                                                                                                                                                                                                                                                                                                                                           
+
+> Easy Normal Hard Overall Easy Normal Hard Overall Acc Acc Acc Acc Mac-F1 W-F1 Acc Acc Acc Acc Recall F1 BERT (Devlin et al., 2019) ✓65.83 72.66 29.59 62.31 57.40 63.03 73.33 85.47 39.64 71.48 68.83 65.43 ViT-b-16 (Dosovitskiy, 2021) ✓41.94 68.86 37.28 47.88 14.52 43.32 48.89 61.94 55.62 53.06 40.69 40.47 BERT+ViT ✓68.33 77.51 33.73 65.62 61.25 66.19 75.83 84.78 38.46 72.67 71.00 67.08 MMBT (Kiela et al., 2019) ✓68.61 80.28 33.14 66.38 62.17 66.99 74.44 88.58 36.69 72.50 68.18 66.04 Momenta (Pramanick et al., 2021b) ✓60.69 76.47 30.18 60.19 51.86 60.35 70.42 76.47 33.14 66.55 65.37 60.52 PromptHate (Cao et al., 2022) ✓68.33 73.36 36.69 65.03 60.55 65.47 76.67 69.20 37.87 69.27 71.86 64.72 Qwen-VL-Plus (Bai et al., 2023b) ✗85.97 10.03 44.24 61.41 59.75 63.16 96.94 23.34 14.55 67.32 80.35 65.77 Qwen-VL-Plus w/ Ours ✗83.50 61.46 28.48 70.29 63.89 70.23 83.66 73.17 29.88 73.52 61.01 64.19 Qwen-VL-Max (Bai et al., 2023b) ✗89.44 9.34 55.15 64.91 66.60 65.31 95.00 17.77 45.45 69.11 90.83 69.68 Qwen-VL-Max w/ Ours ✗86.85 65.97 39.39 75.00 70.27 75.42 89.69 68.64 38.79 77.35 77.46 72.76 GPT-4.1-mini (Achiam et al., 2023) ✗91.11 28.72 66.27 72.24 72.26 72.92 91.67 50.52 63.91 77.59 84.85 74.81 GPT-4.1-mini w/ Ours ✗84.98 82.99 58.18 80.72 74.80 80.41 91.52 78.47 66.06 84.73 83.37 80.98 GPT-4o (Achiam et al., 2023) ✗91.94 36.33 64.50 74.36 73.19 74.94 94.72 39.45 61.54 76.40 94.37 75.83 GPT-4o w/ Ours ✗87.76 73.26 75.76 82.51 79.53 82.93 89.57 77.08 78.79 84.98 86.43 81.78 Qwen3-VL-Plus (Bai et al., 2025) ✗92.22 34.26 40.00 70.61 69.42 71.16 94.29 47.04 31.52 73.85 80.92 70.69 Qwen3-VL-Plus w/ Ours ✗87.48 77.43 51.52 79.95 75.04 79.95 92.76 67.83 51.52 80.84 82.89 77.14 Gemini-2.5-Flash (Team et al., 2023) ✗90.28 55.02 69.23 78.61 75.33 79.26 93.19 53.29 69.23 79.97 92.42 78.35 Gemini-2.5-Flash w/ Ours ✗83.17 74.31 74.55 79.78 75.19 80.24 85.95 77.78 75.15 82.42 87.31 79.48 GPT-5-mini (OpenAI, 2025b) ✗91.25 29.76 49.11 70.12 68.62 70.89 94.86 31.83 12.43 67.57 77.92 65.34 GPT-5-mini w/ Ours ✗91.66 70.83 63.64 82.59 80.22 83.08 94.44 72.57 61.82 84.47 94.75 82.63 Gemini-2.5-Pro (Team et al., 2023) ✗88.75 52.94 74.56 77.93 77.32 78.55 91.11 61.25 78.11 81.92 93.07 80.15 Gemini-2.5-Pro w/ Ours ✗83.03 73.26 78.79 80.03 76.03 80.49 87.48 73.96 79.39 83.02 86.21 79.84 GPT-5 (OpenAI, 2025a) ✗91.51 55.56 69.23 80.48 74.94 81.39 93.59 50.67 24.79 74.32 68.25 64.56 GPT-5 w/ Ours ✗90.88 88.64 65.54 86.92 81.73 86.99 92.58 87.23 69.13 88.06 85.96 84.20
+
+Table 3: Results on our H-VLI dataset. Bold indicates the best, underline indicates the second best. (Gray rows indicate trained models; bold/underline highlighting only applies to training-free models. Rows highlighted in color indicate models enhanced with our framework.) 
+
+5.3 Main Results 
+
+Table 3 comprehensively compares the tradi-tional supervised models and various Multimodal Large Language Models (MLLMs) equipped with our proposed framework. The results demon-strate the effectiveness of our method across both fine-grained categorization and binary detection tasks. Notably, ARCADE helps mitigate the over-sensitivity issue common in standard MLLMs, where models refuse to analyze sensitive content due to safety triggers (see Appendix D.4). 
+
+Supervised vs. Baseline MLLMs: Traditional supervised models struggle with complex reason-ing. While MMBT performs decently on Normal samples (80.28%) in Task 1, its performance col-lapses on the Hard subset (33.14%). This high-lights a lack of sociocultural knowledge and deep multimodal understanding. In contrast, benefit-ing from large-scale pre-training, modern MLLMs like GPT-5 and Gemini-2.5-Pro show superior zero-shot single-turn prompting baselines. 
+
+Effectiveness of Our Framework: Integrat-ing our ARCADE yields consistent improvements across almost all backbones by bridging the rea-soning gap. For GPT-5-mini, our method boosts Macro-F1 by over 11% compared to the base model. Similarly, on the binary Task 2, ARCADE pushes GPT-5-mini to 84.47% Accuracy, demon-strating that our dual-track mechanism effectively unlocks the latent potential of smaller models. 
+
+Robustness on Normal and Hard Samples: The key advantage of our framework is most pro-nounced in complex scenarios. As shown in Ta-ble 3, standard MLLMs often fail on complex cases involving implicit hate and semantic inversion. For example, Qwen-VL-Plus scores only 14.55% on the Hard subset (Task 2). Our method doubles this performance to 29.88%. Similarly, we boost GPT-4o’s accuracy on Hard samples from 61.54% to 78.79%. This indicates that the “Prosecutor-Defender” debate successfully elicits the deep rea-soning chains necessary to disentangle nuanced hateful content. For a concrete demonstration of these reasoning dynamics, we provide a detailed qualitative analysis in Appendix E. 
+
+5.4 Generalization on Public Benchmarks 
+
+To evaluate the generalization capability of AR-CADE, we compare its performance on the FHM dataset against state-of-the-art methods (Table 4). Notably, recent RAG-based approaches (Wang et al., 2025) achieve the upper bound (78.60% Ac-curacy) by retrieving external socio-cultural knowl-edge and few-shot exemplars. In contrast, AR-CADE operates without knowledge base or exter-nal retrieval yet delivers competitive performance solely through internal reasoning, enabling GPT-4o to reach 75.31% Accuracy and 76.80% F1. Model Training Acc Recall F1                                                                                                     
+
+> Text BERT (Devlin et al., 2019) ✓57.12 --Image Region (Kiela et al., 2020) ✓52.34 --CLIP-BERT (Pramanick et al., 2021b) ✓58.28 --DisMultiHate (Pramanick et al., 2021a) ✓62.42 --ViLBERT CC (Sharma et al., 2018) ✓64.70 --MMBT-Region (Kiela et al., 2019) ✓65.06 --PromptHate (Cao et al., 2022) ✓67.82 --BLIP (Li et al., 2022) ✓69.20 --ALBEF (Li et al., 2021) ✓70.58 --Pro-CapPromptHate (Cao et al., 2023) ✓72.28 --LLaVA (Vicuna 13B) (Mei et al., 2024) ✓77.30 --IDEFICS 9B (Laurençon et al., 2023) ✗49.80 --LLAVA-1.5 7B (Liu et al., 2024) ✗60.00 --INSTRUCTBLIP VICUNA 7B (Dai et al., 2023) ✗53.06 --Spark-VL (Wang et al., 2025) ✗73.20 †--Qwen-VL-Max (Wang et al., 2025) ✗72.80 †--GPT-4 (Wang et al., 2025) ✗78.60 †--Qwen-VL-Max (Bai et al., 2023b) ✗70.39 64.88 68.71 Qwen-VL-Max w/ Ours ✗73.70 77.50 74.70 Qwen3-VL-Plus (Bai et al., 2025) ✗69.77 54.96 64.56 Qwen3-VL-Plus w/ Ours ✗73.49 83.40 75.99 GPT-4o (OpenAI, 2024) ✗73.80 77.60 74.76 GPT-4o w/ Ours ✗75.31 81.40 76.80 GPT-5-mini (OpenAI, 2025b) ✗73.00 58.00 68.53 GPT-5-mini w/ Ours ✗74.69 83.47 76.81
+
+Table 4: Results on the FHM Dataset for Binary Hate Detection. Bold and underline indicate the best and the second best results. Gray rows indicate training-based models. Rows highlighted in blue indicate models enhanced with our framework. Models marked with †
+
+utilize additional knowledge via Retrieval-Augmented Generation (RAG) in a few-shot setting. 
+
+Furthermore, ARCADE effectively bridges the capability gap for smaller models. For example, Qwen-VL-Max enhanced by ARCADE (73.70%) rivals the performance of the much stronger GPT-4o baseline (73.80%). Note that ARCADE main-tains a balanced trade-off between precision and recall across all backbones, exemplified by GPT-5-mini, which achieves the highest Recall (83.47%) and F1-score (76.81%), confirming robust general-ization beyond dataset artifacts. 
+
+5.5 Ablation Study 
+
+Table 5 summarizes the ablation study. Unless otherwise specified, we standardize Qwen3-VL-Plus for both Auxiliary (Prosecutor/Defender) and Judge roles to isolate component effectiveness. 
+
+Impact of Rounds in Track II ( K): We first in-vestigated the impact of the number of reasoning rounds ( K) in Track II (Deep-Dive Trial). Results indicate that performance improves with K up to a saturation point ( K = 3 for H-VLI, K = 2 for FHM) and deviation from this optimum degrades results. This indicates that a balanced number of rounds is crucial: insufficient rounds lead to inad-equate discussion, while excessive iterations risk introducing noise or over-interpretation. 
+
+Effectiveness of Dual-Track Mechanism: Re-moving the initial gate mechanism and the Fast-Track (forcing deep debates on all samples, denoted 
+
+Method On H-VLI On FHM Acc Mac-F1 Acc F1 
+
+Baseline 70.61 69.42 69.77 64.56 Multiround † 74.47 71.43 72.23 74.47 Ours ( K = 1 ) 78.03 73.80 73.28 73.98 Ours ( K = 2 ) 77.71 73.07 - -Ours ( K = 3 ) - - 71.93 74.67 Ours ( K = 4 ) 77.80 73.93 - -Qwen → Qwen 62.00 54.15 - -Qwen → Qwen3 73.81 67.40 - -Qwen3 → Qwen 70.29 63.89 - -Ours (Proposed) ‡ 79.95 75.04 73.49 75.99 
+
+Table 5: Results of ablation studies. Bold indicates the best, underlined indicates the second best. Note that for our default settings: †Multiround uses K = 3 for Our Dataset and K = 2 for FHM. ‡Ours uses K = 3 for Our Dataset and K = 2 for FHM. The notation ‘Model A → Model B’ signifies using Model A as the Auxiliary (Prosecutor/Defender) and Model B as the Judge. 
+
+as “Multiround”) drops accuracy from 79.95% to 74.47% on H-VLI and from 73.49% to 72.23% on FHM. This confirms that the Gatekeeper effec-tively prevents over-interpretation of explicit sam-ples. Notably, even “Multiround” still outperforms the single-turn prompting Baseline, validating the debate format’s intrinsic utility. 
+
+Auxiliary vs. Judge Roles: We examined the impact of model capabilities on the Auxiliary and Judge roles using Qwen-VL-Plus (Qwen, Weak) and Qwen3-VL-Plus (Qwen3, Strong) on H-VLI. Apart from the best performance achieved by the all strong setup (79.95% Accuracy), Weak Aux →
+
+Strong Judge significantly outperforms the reverse configuration (73.81% vs. 70.29%). This indicates the Judge is the bottleneck : a capable arbiter is critical to synthesize evidence, whereas a weak Judge fails to render correct verdicts even when presented with high-quality arguments. 
+
+6 Conclusion 
+
+This paper tackles the detection of multimodal hate speech, positing that the hateful or non-hateful intent emerges from cross-modal interplay rather than simple summation. Moving beyond binary classification, we established the Stratified Multi-modal Interaction (SMI) paradigm and the H-VLI benchmark to systematically decipher the intent shifts between modalities, ranging from contextual neutralization to implicit emergence. To reason through such ambiguity, we proposed ARCADE, which leverages a dual-track asymmetric court-room debate to scrutinize deep semantic cues. Our approach demonstrates superior performances and interpretability compared to existing methods. We hope this work paves the way for more interpretable and reasoning-driven content moderation systems. 
+
+7 Limitations 
+
+Despite the advancements presented, we acknowl-edge several limitations in our work. First, despite enriching data density, synthetic samples in our benchmark may not fully capture the chaotic linguistic noise of organic social me-dia. Second, the multi-agent debate prioritizes rea-soning depth over real-time efficiency, involving higher computational costs that future model distil-lation could mitigate. Third, a performance trade-off exists: while our framework significantly boosts detection on normal and hard samples, it may yield a marginal regression on easy ones, though this effect diminishes with stronger backbones. Finally, our current framework is English-centric; extend-ing it to multilingual and diverse cultural contexts remains a vital direction for future research. 
+
+8 Ethical Considerations 
+
+Note: Any hateful content examples cited or gen-erated within this paper are strictly for analytical purposes and do not represent the authors’ personal views. 
+
+Motivation and Risk Balance. We aim to com-prehensively advance the field of multimodal hate speech detection by establishing a robust frame-work (ARCADE) and a challenging benchmark (H-VLI). Existing datasets are increasingly saturated, often lacking the high-difficulty samples necessary to pressure-test modern MLLMs. Consequently, we employed “Generative Injection” to construct complex cases that effectively simulate the nuanced reasoning required in real-world moderation. We acknowledge the dual-use risks inherent in synthe-sizing hateful content. However, the vulnerability of current safety systems to these sophisticated at-tacks is an objective reality. Our work exposes these blind spots to facilitate the development of more resilient defenses, rather than to exacerbate the threat. 
+
+Safety Protocols. To mitigate potential harms, we strictly enforce the following protocols: (1) The dataset and generation prompts will be acces-sible solely to credentialed academic researchers under a restrictive license, strictly prohibiting re-distribution. (2) A rigorous human-in-the-loop re-view process was implemented to filter out content that is illegal or violates fundamental safety guide-lines beyond the scope of research purposes. (3) All data were collected from publicly accessible sources, and no additional personal information be-yond what was originally visible was gathered or inferred. 
+
+Licensing and Terms of Use. All source data used in this work are obtained from publicly accessi-ble resources and are processed strictly in accor-dance with their original licenses, platform terms of service, and intended research purposes. The constructed dataset (H-VLI) is explicitly intended for non-deployment, research-only use and will be released under a restrictive license that prohibits redistribution and commercial use, consistent with the original access conditions. 
+
+References          
+
+> Josh Achiam, Steven Adler, Sandhini Agarwal, Lama Ahmad, Ilge Akkaya, Florencia Leoni Aleman, Diogo Almeida, Janko Altenschmidt, Sam Altman, Shyamal Anadkat, and 1 others. 2023. Gpt-4 techni-cal report. arXiv preprint arXiv:2303.08774 .Hyeseon Ahn and 1 others. 2024. SharedCon: Implicit hate speech detection using shared semantics. In
+> Findings of ACL , pages 10444–10455. Jinze Bai, Shuai Bai, Yunfei Chu, Zeyu Cui, Kai Dang, Xiaodong Deng, Yang Fan, Wenbin Ge, Yu Han, Fei Huang, Binyuan Hui, Luo Ji, Mei Li, Junyang Lin, Runji Lin, Dayiheng Liu, Gao Liu, Chengqiang Lu, Keming Lu, and 29 others. 2023a. Qwen technical report. arXiv preprint arXiv:2309.16609 .Jinze Bai, Shuai Bai, Shusheng Yang, Shijie Wang, Sinan Tan, Peng Wang, Junyang Lin, Chang Zhou, and Jingren Zhou. 2023b. Qwen-vl: A versatile vision-language model for understanding, localiza-tion, text reading, and beyond. arXiv preprint arXiv:2308.12966 .Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, Wenbin Ge, Zhi-fang Guo, Qidong Huang, Jie Huang, Fei Huang, Binyuan Hui, Shutong Jiang, Zhaohai Li, Mingsheng Li, and 45 others. 2025. Qwen3-vl technical report.
+> arXiv preprint arXiv:2511.21631 .Rui Cao, Ming Shan Hee, Adriel Kuek, Wen-Haw Chong, Roy Ka-Wei Lee, and Jing Jiang. 2023. Pro-cap: Leveraging a frozen vision-language model for hateful meme detection. In ACM MM , pages 5244– 5252.
+
+Rui Cao, Roy Ka-Wei Lee, Wen-Haw Chong, and Jing Jiang. 2022. Prompting for multimodal hateful meme classification. In Proceedings of the 2022 Confer-ence on Empirical Methods in Natural Language Processing , pages 321–332, Abu Dhabi, United Arab Emirates. Association for Computational Linguistics. Tommaso Caselli and 1 others. 2020. I feel offended, don’t be abusive! implicit/explicit messages in of-fensive and abusive language. In LREC , pages 6193– 6202. Anthony Cortese. 2005. Opposing hate speech .Bloomsbury Publishing. Wenliang Dai, Junnan Li, Dongxu Li, Anthony Tiong, Junqi Zhao, Weisheng Wang, Boyang Li, Pascale N Fung, and Steven Hoi. 2023. Instructblip: Towards general-purpose vision-language models with instruc-tion tuning. NeurIPS , 36:49250–49267. Thomas Davidson, Dana Warmsley, Michael Macy, and Ingmar Weber. 2017. Automated hate speech detec-tion and the problem of offensive language. In AAAI ,pages 512–515. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language under-standing. In NAACL-HLT .Alexey Dosovitskiy. 2021. An image is worth 16x16 words: Transformers for image recognition at scale. In ICLR .Vishwajeet Dwivedy and Pradeep Kumar Roy. 2023. Deep feature fusion for hate speech detection: atransfer learning approach. Multimedia Tools Appl. ,82(23). Elisabetta Fersini, Francesca Gasparini, Giulia Rizzi, Aurora Saibene, Berta Chulvi, Paolo Rosso, Alyssa Lees, and Jeffrey Sorensen. 2022a. Semeval-2022 task 5: Multimedia automatic misogyny identifica-tion. In Proceedings of the 16th International Work-shop on Semantic Evaluation (SemEval-2022) , pages 533–549. Elisabetta Fersini, Francesca Gasparini, Giulia Rizzi, Aurora Saibene, Berta Chulvi, Paolo Rosso, Alyssa Lees, and Jeffrey Sorensen. 2022b. SemEval-2022 task 5: Multimedia automatic misogyny identifi-cation. In Proceedings of the 16th International Workshop on Semantic Evaluation (SemEval-2022) ,pages 533–549, Seattle, United States. Association for Computational Linguistics. Iginio Gagliardone, Danit Gal, Thiago Alves, and Gabriela Martinez. 2015. Countering online hate speech . UNESCO Publishing. Sreyan Ghosh, Manan Suri, Purva Chiniya, Utkarsh Tyagi, Sonal Kumar, and Dinesh Manocha. 2023. Cosyn: Detecting implicit hate speech in online con-versations using a context synergized hyperbolic net-work. In EMNLP , pages 6159–6173. Raul Gomez and 1 others. 2020. Exploring hate speech detection in multimodal publications. In WACV ,pages 1470–1478. Chen Han, Wenzhen Zheng, and Xijin Tang. 2025. Debate-to-detect: Reformulating misinformation de-tection as a real-world debate with large language models. In EMNLP , pages 15125–15140. Nazanin Jafari and 1 others. 2024. Target span detection for implicit harmful content. In SIGIR , pages 117– 122. Weiqiang Jin, Dafu Su, Tao Tao, Xiujun Wang, Ningwei Wang, and Biao Zhao. 2025. Courtroom-fnd: a multi-role fake news detection method based on argument switching-based courtroom debate. Journal of King Saud University Computer and Information Sciences ,37(3):33. Zhenchao Jin. 2022. Imagedl: Search and download images from specific websites. https://github. com/CharlesPikachu/imagedl/ .Prashant Kapil and Asif Ekbal. 2025. A transformer based multi task learning approach to multimodal hate speech detection. Nat. Lang. Process. J. , 11. Douwe Kiela, Suvrat Bhooshan, Hamed Firooz, Ethan Perez, and Davide Testuggine. 2019. Supervised multimodal bitransformers for classifying images and text. arXiv preprint arXiv:1909.02950 .Douwe Kiela and 1 others. 2020. The hateful memes challenge: Detecting hate speech in multimodal memes. NeurIPS , 33. Sandeep Kumar, Abhijit A Nargund, and Vivek Sridhar. 2025. CourtEval: A courtroom-based multi-agent evaluation framework. In Findings of ACL , pages 25875–25887. Hugo Laurençon, Lucile Saulnier, Léo Tronchon, Stas Bekman, Amanpreet Singh, Anton Lozhkov, Thomas Wang, Siddharth Karamcheti, Alexander Rush, Douwe Kiela, and 1 others. 2023. Obelics: An open web-scale filtered dataset of interleaved image-text documents. NeurIPS , 36:71683–71702. Junnan Li, Dongxu Li, Caiming Xiong, and Steven Hoi. 2022. Blip: Bootstrapping language-image pre-training for unified vision-language understanding and generation. In ICML , pages 12888–12900. Junnan Li, Ramprasaath Selvaraju, Akhilesh Gotmare, Shafiq Joty, Caiming Xiong, and Steven Chu Hong Hoi. 2021. Align before fuse: Vision and language representation learning with momentum distillation. 
+
+NeurIPS , 34:9694–9705. Tian Liang, Zhiwei He, Wenxiang Jiao, Xing Wang, Yan Wang, Rui Wang, Yujiu Yang, Shuming Shi, and Zhaopeng Tu. 2024. Encouraging divergent thinking in large language models through multi-agent debate. In EMNLP , pages 17889–17904. Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. 2024. Improved baselines with visual instruc-tion tuning. In CVPR , pages 26296–26306. Xiaochen Ma, Guozheng Rao, Lina Xu, Xin Wang, Zaiming Fan, and Zhe Zhang. 2025. Guided and knowledgeable multi-agent debate for fact verifica-tion. Expert Systems with Applications , page 130103. Mari J Matsuda. 2018. Words that wound: Critical race theory, assaultive speech, and the first amendment .Routledge. Jingbiao Mei, Jinghong Chen, Weizhe Lin, Bill Byrne, and Marcus Tomalin. 2024. Improving hateful meme detection through retrieval-guided contrastive learn-ing. In ACL , pages 5333–5347. Chikashi Nobata, Joel Tetreault, Achint Thomas, Yashar Mehdad, and Yi Chang. 2016. Abusive language detection in online user content. In WWW , pages 145–153. OpenAI. 2024. Gpt-4o system card. https://openai. com/research/gpt-4o-system-card .OpenAI. 2025a. Gpt-5. https://platform.openai. com/docs/models/gpt-5 . Accessed: 2026-01-04. OpenAI. 2025b. Gpt-5-mini. https://platform. openai.com/docs/models/gpt-5-mini . Ac-cessed: 2026-01-04. Someen Park, Jaehoon Kim, Seungwan Jin, Sohyun Park, and Kyungsik Han. 2024. PREDICT: Multi-agent-based debate simulation for generalized hate speech detection. In EMNLP , pages 20963–20987. Shraman Pramanick, Dimitar Dimitrov, Rituparna Mukherjee, Shivam Sharma, Md Shad Akhtar, Preslav Nakov, and Tanmoy Chakraborty. 2021a. Detecting harmful memes and their targets. arXiv preprint arXiv:2110.00413 .Shraman Pramanick, Shivam Sharma, Dimitar Dim-itrov, Md Shad Akhtar, Preslav Nakov, and Tanmoy Chakraborty. 2021b. Momenta: A multimodal frame-work for detecting harmful memes and their targets. In Findings of EMNLP , pages 4439–4455. Naquee Rizwan and 1 others. 2025. Exploring the limits of zero shot vision language models for hate meme detection. In ICWSM , volume 19. Furqan Khan Saddozai, Sahar K Badri, Daniyal Alghaz-zawi, Asad Khattak, and Muhammad Zubair Asghar. 2025. Multimodal hate speech detection: a novel deep learning framework for multilingual text and images. PeerJ Computer Science , 11:e2801. Anna Schmidt and Michael Wiegand. 2017. A survey on hate speech detection using natural language pro-cessing. In Proceedings of the Fifth International Workshop on Natural Language Processing for So-cial Media , pages 1–10. Piyush Sharma, Nan Ding, Sebastian Goodman, and Radu Soricut. 2018. Conceptual captions: A cleaned, hypernymed, image alt-text dataset for automatic im-age captioning. In ACL , pages 2556–2565. Shardul Suryawanshi, Bharathi Raja Chakravarthi, Mi-hael Arcan, and Paul Buitelaar. 2020. Multimodal meme dataset (multioff) for identifying offensive con-tent in image and text. In Proceedings of the Second Workshop on Trolling, Aggression and Cyberbullying (TRAC-2020) . Association for Computational Lin-guistics. Gemini Team, Rohan Anil, Sebastian Borgeaud, Jean-Baptiste Alayrac, Jiahui Yu, Radu Soricut, Johan Schalkwyk, Andrew M Dai, Anja Hauth, Katie Mil-lican, and 1 others. 2023. Gemini: a family of highly capable multimodal models. arXiv preprint arXiv:2312.11805 .Alexander Tsesis. 2002. Destructive messages: How hate speech paves the way for harmful social move-ments , volume 27. NYU Press. Xiuxian Wang and 1 others. 2025. Few-shot in-context learning for implicit semantic multimodal content detection and interpretation. IEEE TCSVT .Zeerak Waseem and Dirk Hovy. 2016. Hateful symbols or hateful people? predictive features for hate speech detection on twitter. In NAACL SRW .Lu Wei and 1 others. 2025. Cracking the code: Enhanc-ing implicit hate speech detection through coding classification. In TrustNLP .Jingjie Zeng, Liang Yang, Zekun Wang, Yuanyuan Sun, and Hongfei Lin. 2025. Sheep’s skin, wolf’s deeds: Are LLMs ready for metaphorical implicit hate speech? In ACL , pages 16657–16677. Appendix Overview 
+
+This supplementary material provides extended technical details, implementation specifics, and qualitative analyses to support the main manuscript. The contents are organized as follows: • Data Construction (§A – §C): Detailed cate-gory definitions, generative injection strategies for different difficulty levels, prompt templates for data synthesis, and the multi-stage human-expert filtering pipeline. • Experimental Setup (§D.1 – §D.3): Compre-hensive list of evaluated MLLM backbones, hyperparameter configurations, and the full prompt templates for our multi-agent frame-work (ARCADE). • Extended Analysis (§D.4 – §E): Quantita-tive analysis of MLLM over-refusal behavior and qualitative case studies (including failure modes) to provide deeper insights into model reasoning. • Human Annotation (§F): Details regarding the custom annotation platform, annotator re-cruitment, and ethical considerations. 
+
+A Hate Categorization 
+
+As shown in Table 6, we adopt the hate category definitions proposed by Gomez et al. (2020). 
+
+Label Hate Category 
+
+0 NotHate 1 Racist 2 Sexist 3 Homophobic 4 Religious Hate 5 OtherHate (e.g., disability, age) 
+
+> Table 6: Hate category definitions
+
+B Generative Injection Details 
+
+B.1 Strategies 
+
+The purpose of generating synthetic samples is to compensate for the intrinsic limitations of the samples drawn from the MMHS150K dataset. MMHS150K is collected from Twitter using a tex-tual hate keyword–based retrieval strategy. While effective for harvesting explicit hate content, this collection paradigm introduces several critical bi-ases. First, almost all samples in the dataset contain surface-level hate keywords in the text modality. As a result, the dataset severely under-represents samples whose textual content appears non-hateful on the surface (i.e., ytext  
+
+> i
+
+= 0). Second, sam-ples of Normal and Hard difficulty levels are ex-tremely scarce, leading to insufficient coverage of medium- and high-difficulty cases, especially im-plicit hate samples. Third, the annotation quality of MMHS150K is moderate, with relatively low inter-annotator agreement, as shown in Table 2. To address these issues, we collect real-world images and adopt targeted generative strategies to construct diverse multimodal samples. Specifically, we leverage Multimodal Large Language Models (MLLMs) to generate image-aligned augmented texts, thereby forming samples of different hate types and difficulty levels. 
+
+Image Sources. Our image pool is constructed from three sources. (1) From MMHS150K, we apply Qwen3-VL-plus to perform image-only an-notations and select 1,500 benign images and 1,232 harmful images. (2) From the FHM dataset, we sample 500 benign and 500 harmful images. (3) Us-ing keywords related to various protected groups, we collect 6,875 culturally charged but visually neutral images by querying Google Images through a image downloading tool (Jin, 2022). 
+
+Construction Strategies. Easy Samples. For Easy samples, which do not involve semantic inversion across modalities, we design simple prompts that instruct the MLLM to generate either benign descriptions, neutral opin-ions, or explicitly hateful statements conditioned on the image, such that the combined multimodal semantics meet the target label. To avoid trigger-ing the built-in safety mechanisms of MLLMs, we require the model to replace the attacked entity with a placeholder token <insult> when gener-ating hateful text, and to additionally output the corresponding target group ( target_group ). We then use a manually curated hate lexicon and ran-domly sample a hate expression associated with 
+
+target_group to replace the placeholder, produc-ing the final hateful text. 
+
+Semantic Reversal Samples. For samples in-volving semantic reversal across modalities (i.e., types 010, 100, and 110), we analyze common linguistic and pragmatic patterns and summa-rize four representative construction methods: (i) opposition-based , (ii) contextual inversion , (iii) meta-commentary (e.g., educational or critical quotation), and (iv) victim-perspective narration .For each category, we design dedicated prompts to guide the MLLM to generate samples where one modality contains hateful content in isolation, but the combined multimodal semantics are non-hateful. For texts that include hateful expressions, we employ the same placeholder-based strategy de-scribed above to ensure controllability and safety during generation. 
+
+Implicit Multimodal Hate Samples (001). For implicit multimodal hate samples of type 001, we collect stereotype-based and metaphor-based texts targeting different protected groups. These texts are then paraphrased by Gemini-2.5-Pro (Team et al., 2023) under a meaning-preserving constraint, pro-ducing an augmented set of surface-benign trigger texts . Finally, these texts are randomly paired with images associated with the corresponding protected groups, yielding the desired 001-type samples. Overall, the proposed generative injection strate-gies substantially enrich the coverage of benign-text samples, medium- and high-difficulty cases, and implicit multimodal hate samples, thereby miti-gating the biases inherent in keyword-based dataset construction. 
+
+B.2 Prompts 
+
+Here is an example prompt used to generate texts for 010-type samples in a contextual inversion 
+
+method (Figure 4). 
+
+B.3 Representative Samples 
+
+To demonstrate the diversity and complexity of the H-VLI benchmark, we present representative sam-ples across different SMI types in Figure 5. These examples highlight the necessity of fine-grained multimodal reasoning. 
+
+C Filtering Strategies 
+
+To ensure the reliability of our benchmark and mit-igate the noise inherent in both crowd-sourced an-notations and model-generated content, we imple-ment a rigorous multi-stage filtering pipeline. 
+
+Filtering on Real-world Samples The original MMHS150K (Gomez et al., 2020) dataset contains a significant amount of noise due to subjective crowd-sourcing. To extract a high-quality subset, we apply a strict Consensus Filtering strategy. We                               
+
+> Prompt Template for 010-type samples
+> You are generating synthetic multimodal samples where the image is HATEFUL (labels 1–5) but the text is NOT hateful. First observe the image carefully and determine the hate type. [Hate category definitions] [TARGET_OPTIONS]
+> Requirements:
+> 1. The tweet text must NOT contain any hate speech. It should give aharmless or alternative explanation for the hateful image content, showing acontext where the image is not actually promoting hate. 2. The text should make sense relative to the hateful elements implied by the image. 3. Choose text_label = 0. 4. target_group is the target of hate in the image chosen from TARGET_OPTIONS. 5. final_label = 0, since the combination is NOT hateful. 6. The generated tweet_text must resemble a natural social-media post... [Output JSON instructions]
+
+Figure 4: The prompt template used for generating con-textual inversion samples. 
+
+retain only those samples where all three original annotators reached a unanimous agreement (i.e., perfect consensus) on the hate speech label. This process effectively removes ambiguous or contro-versial samples, providing a solid foundation of clear-cut real-world cases. 
+
+Filtering on Annotated Samples To ensure the reliability of our benchmark, we employ a compre-hensive three-step filtering mechanism applied to the entire pool of annotated candidates :• Step 1: Quality Control and Expert Adju-dication. We first exclude samples flagged by annotators as “Low Quality” (e.g., blurred im-ages, nonsensical text). For samples marked as “Not Sure” (indicating ambiguity), rather than immediate exclusion, they undergo a sec-ondary review by another expert. The expert’s adjudication replaces the uncertain label, al-lowing the sample to re-enter the filtering pipeline for valid assessment. • Step 2: Consensus Filtering. We evaluate the consistency among the three annotators and categorize samples into three levels: (1) 
+
+Perfect : All three annotators agree on the ex-Text: All it takes is a slight chro-mosomal shift to make us human instead of just another animal .              
+
+> Type 001 (Implicit Hate) Label: Sexist
+> Text: Me at black people who let their white and non black friends say nigga <url>
+> Type 110 (Implicit Inversion) Label: NotHate
+> Text: Oh, look, another piece of media relying on tired, classist stereotypes. It’s profoundly uno-riginal. Can we please move past this lazy attempt at social commen-tary? #BoringTropes
+> Type 010 (Contextual Neut.) Label: NotHate
+> Text: It’s just one big, ugly dyke
+> holding everything back.
+> Type 100 (Contextual Neut.) Label: NotHate
+
+Figure 5: Showcase of representative samples from the H-VLI dataset. Type 001 represents implicit hate where benign components construct malice. Type 110 
+
+shows benign intent despite toxic modalities. Type 010/100 demonstrate contextual neutralization where text or image corrects the other’s toxicity. 
+
+act fine-grained label (0–5); (2) Strong : All annotators agree that the content is hateful (labels 1–5), achieving unanimous binary con-sensus despite disagreement on the specific hate category; (3) Weak : Cases where annota-tors disagree, but a clear majority vote (e.g., 2 vs. 1) can still determine the final label. We retain samples from these three categories to ensure label validity while maximizing data diversity, discarding only those where no ma-jority consensus can be reached. • Step 3: Intent Alignment. To ensure that the content faithfully reflects the intended seman-tic construction, we perform an Intent Align-ment check. We compare the majority vote of human annotators with the original generative target (Machine Label) or source metadata. Only samples where the human consensus strictly matches the intended semantic target are retained. This step effectively eliminates cases involving generation failure, hallucina-tion, or label misalignment. Through this rigorous pipeline, we ensure that the final dataset consists of high-quality, human-verified samples with clear semantic intent. Con-sequently, the Inter-Annotator Agreement (Fleiss’ 
+
+κ) of our dataset significantly improved from 0.59 (Raw) to 0.94 (Final), as detailed in Table 2. 
+
+D Experiment Details 
+
+D.1 Evaluated Multimodal Large Language Models 
+
+We evaluate our framework using a set of represen-tative state-of-the-art multimodal large language models (MLLMs) drawn from three widely used model families: Qwen, GPT, and Gemini. The se-lected models span different capability tiers and design choices, enabling a comprehensive assess-ment of our method across heterogeneous MLLM backbones. 
+
+Qwen Models (Bai et al., 2023b, 2025). From the Qwen family, we use Qwen-VL-Plus , Qwen-VL-Max , and Qwen3-VL-Plus . These models combine vision encoders with large language models and are designed for general-purpose vision–language understanding and reasoning. They serve as strong open or semi-open MLLM baselines and allow us to evaluate the effectiveness of our framework on advanced non-proprietary backbones. 
+
+GPT Models (OpenAI, 2024) From the GPT fam-ily, we evaluate GPT-4.1-mini , GPT-4o , GPT-5-mini , and GPT-5 . These models represent different scales and capability levels within OpenAI’s multi-modal model lineup and exhibit strong generaliza-tion and reasoning abilities across vision–language tasks. 
+
+Gemini Models (Team et al., 2023). From the Gemini family, we include Gemini-2.5-Flash and 
+
+Gemini-2.5-Pro , which differ in model capacity and inference efficiency. Their inclusion enables eval-uation of our framework across both lightweight and high-capacity proprietary MLLMs. 
+
+Evaluation Setting. All MLLMs are accessed via their official APIs and evaluated in a training-free, zero-shot setting. For each backbone, we report results for both the original model behav-ior ( Baseline ) and the enhanced reasoning enabled by our framework (ARCADE), without any addi-tional fine-tuning. This ensures a fair comparison and isolates the performance gains introduced by structured multi-agent reasoning. 
+
+D.2 Implementation Details Hyperparameter Configuration. We carefully calibrated the sampling temperature for each agent to align with their functional roles. The Gate-keeper is set to a temperature of 0 to ensure deter-ministic and consistent detection of explicit surface-level cues. For the auxiliary agents ( Prosecutor 
+
+and Defender ), we utilize a higher temperature of 
+
+0.8. This promotes generation diversity, encour-aging the agents to explore a broader range of im-plicit interpretations and creative rebuttals rather than converging on generic arguments. Conversely, the Judge agent operates at a low temperature of 
+
+0.1 to prioritize stability and precision, ensuring the final verdict is strictly grounded in the debate history with minimal randomness. 
+
+Error Recovery. To ensure evaluation accuracy, we re-evaluated samples that triggered non-safety-related failures, such as JSON formatting errors or incomplete outputs. These cases were re-processed to distinguish technical execution errors from gen-uine model refusals, ensuring that the reported met-rics reflect the model’s actual reasoning capabili-ties. 
+
+D.3 Agent Prompt Templates 
+
+We provide the detailed prompt templates used for each agent. For brevity, we first define the core task specifications shared across all prompts, fol-lowed by the general templates for the Prosecutor, Defender, and Judge. Note that templates for differ-ent stages (e.g., Track I and Track II) exhibit only minor instructional variations tailored to guide the model’s specific focus. 
+
+Global Task Definitions 
+
+[Core Definition] 
+
+Hate speech includes abusive, insulting, demean-ing, or threatening expressions targeting protected groups... Targets based on political affiliation, ideol-ogy, or policy positions do not constitute hate speech. 
+
+[Hate Category Definitions] 
+
+(0-NotHate, 1-Racist, 2-Sexist, 3-Homophobe, 4-Religion and 5-OtherHate.) 
+
+Safety Classifier Prompt (Baseline) 
+
+You are an expert AI safety classifier... Your task is to analyze the provided tweet (text and image) and determine if it expresses hate speech... [Core Definition] [Hate Category Definitions] [Output JSON instructions] 
+
+Prosecutor Agent Prompt 
+
+You are the Prosecutor in a simulated courtroom... identify at most 3 potential hate speech cues. Be maximalist, hyper-vigilant, and strict. [Core Definition] 
+
+Task Requirements: 
+
+• Direct: Explicit slurs, symbols, or clear threats. 
+
+• Socio-cultural: Implicit hate relying on stereotypes, history, or dog whistles. 
+
+• Metaphor: Dehumanization equating protected groups to animals/objects (Tenor vs. Vehicle). [Hate Category Definitions] [Output JSON instructions] 
+
+Defender Agent Prompt 
+
+You are the Defense Attorney... critically examine the Prosecutor’s cues and determine whether they can be reasonably refuted based on concrete evidence. [Core Definition] 
+
+Defense Principles: 
+
+• Rebuttals must be grounded strictly in explicit evidence. 
+
+• Acknowledge plausible cues if concrete counter-evidence is unavailable. 
+
+• Focus on whether hatred is directed at oneself, individuals, or non-human entities. [Output JSON instructions] 
+
+Judge Agent Prompt 
+
+You are the Judge... deliver a final verdict based on The Post, Prosecutor’s Arguments, and Defense’s Rebuttal. [Core Definition] 
+
+Final Decision Rules: 
+
+• Reject hate if context is self-referential or non-protected. 
+
+• If one or more cues remain credible after Defense, assign hate label (1-5). 
+
+• Evaluate for Direct, Socio-cultural, and Metaphorical cues. [Hate Category Definitions] [Output JSON instructions] Model Fine-grained Task Binary Task                                                                            
+
+> Ref.# Ref.% Ref.# Ref.% Qwen-VL-Plus (Bai et al., 2023b) 40.34 60.51 Qwen-VL-Plus w/ Ours 10 0.85 11 0.93 Qwen-VL-Max (Bai et al., 2023b) 40.34 60.51 Qwen-VL-Max w/ Ours 10 0.85 80.68 GPT-4.1-mini (Achiam et al., 2023) 00.00 00.00 GPT-4.1-mini w/ Ours 60.51 60.51 GPT-4o (Achiam et al., 2023) 00.00 00.00 GPT-4o w/ Ours 60.51 60.51 Qwen3-VL-Plus (Bai et al., 2025) 40.34 80.68 Qwen3-VL-Plus w/ Ours 60.51 90.76 Gemini-2.5-Flash (Team et al., 2023) 0000.00 Gemini-2.5-Flash w/ Ours 60.51 60.51 GPT-5-mini (OpenAI, 2025b) 00.00 00.00 GPT-5-mini w/ Ours 60.51 60.51 Gemini-2.5-Pro (Team et al., 2023) 00.00 00.00 Gemini-2.5-Pro w/ Ours 60.51 60.51 GPT-5 (OpenAI, 2025a) 261 22.16 259 21.99 GPT-5 w/ Ours 77 6.54 81 6.88
+
+Table 7: Safety refusal analysis of MLLMs. Ref.# de-notes the number of refused samples, and Ref.% de-notes the refusal rate (percentage) over the test set. 
+
+D.4 MLLM Refusals Metric Calculation Protocol. In our standard evaluation, since the majority of tested models exhibited a negligible number of safety refusals (as shown in Table 7), we excluded these refused samples from the metric calculations. However, for models characterized by highly stringent safety alignment policies, such as GPT-5, the volume of refusals is significant and warrants a dedicated anal-ysis to understand the underlying causes and the impact of our framework. 
+
+Over-Refusal Phenomenon. While MLLMs like GPT-5 possess powerful reasoning capabil-ities, they are often constrained by rigid safety guardrails. These mechanisms frequently lead to 
+
+over-refusals —where the model declines to process a sample due to the presence of sensitive keywords or imagery, even when the task is objective detec-tion rather than content generation, or when the context is benign (e.g., counter-speech). 
+
+Quantitative Analysis. As shown in Table 8, the vanilla GPT-5 exhibits a high refusal rate of 22.16% (261 samples) on our dataset. This is particularly severe in types involving explicit hateful compo-nents, such as Type 100 and Type 110, where the baseline refuses 46 and 44 samples, respectively. In contrast, our ARCADE framework significantly reduces the total refusals to 77 (6.54%), demon-strating a robust ability to bypass superficial safety triggers while maintaining compliance. 
+
+Category SMI Baseline Ours ∆
+
+Overall Statistics 
+
+Total Count – 261 77 -184 Refusal Rate – 22.16% 6.54% -15.62% 
+
+Detailed Statistics 
+
+Easy 000 1 1 0011 4 2 -2 101 35 3 -32 
+
+111 79 34 -45 
+
+Normal 010 18 12 -6 100 46 4 -42 
+
+Hard 001 34 13 -21 110 44 8 -36 
+
+Table 8: Comparison of refusal counts between the Base-line and our ARCADE framework with the backbone model GPT-5 (OpenAI, 2024) on Task I. 
+
+Mechanism of Improvement. We attribute this improvement to the asymmetric debate architecture of ARCADE, which effectively mitigates refusals in two scenarios: • Mitigating False Positives (e.g., Type 100, 110): In cases of Contextual Neutralization ,where explicit hate symbols are present but the intent is non-hateful (e.g., satire or condemna-tion), the Baseline often triggers an immediate refusal based on surface-level keyword match-ing. The Defender agent actively grounds these sensitive elements in their benign con-text, thereby providing the model with a “safe” rationale to proceed with classification rather than rejection. • Analyzing True Positives (e.g., Type 111): 
+
+Even for genuinely hateful content, the Base-line often refuses to generate a response to avoid “generating hate speech.” Our frame-work re-frames the task from generation to 
+
+adjudication . By decomposing the content into objective cues via the Prosecutor and conducting a structured debate, the model is tasked with analyzing “evidence” rather than producing toxic content directly. This proce-dural distance allows the Judge to render a verdict on hateful samples without violating safety policies. 
+
+E Case Study 
+
+To qualitatively demonstrate the reasoning capa-bilities of ARCADE, we present a comparative analysis against the baseline in Table 9 using GPT-4o (OpenAI, 2024) as the backbone MLLM. We select two representative samples that highlight the limitations of standard MLLMs in handling com-plex semantic interactions: • Case I (Contextual Neutralization): This sample represents a “False Positive” trap. It contains explicit hateful visual cues (a trans-phobic meme), but the text acts as a counter-speech mechanism to condemn the imagery. While the baseline model is misled by the surface-level toxicity, our Defender agent suc-cessfully grounds the explicit content in the user’s critical stance, preventing a wrongful accusation. • Case II (Implicit Metaphor): This sample represents a “False Negative” risk. It fea-tures a seemingly benign botanical metaphor (“weeds in white roses”) paired with a posi-tive image, masking a racist dogma. The base-line fails to connect the visual demographics with the textual metaphor. In contrast, our 
+
+Prosecutor agent, through adversarial debate, uncovers the mapping between the “invasive weeds” and the minority group, exposing the hidden malice. These cases illustrate how ARCADE’s asym-metric debate mechanism effectively disentangles conflicting modalities to achieve precise and ex-plainable detection. To provide a balanced evaluation, we further analyze typical failure patterns shown in Table 10: • Case III (Knowledge Gap): This False Nega-tive arises from the model’s lack of familiarity with specific internet slang (e.g., objectifying women as “dishwashers”). Consequently, the 
+
+Prosecutor fails to flag the initial risk during the investigation phase, triggering an incor-rect Summary Dismissal before the debate can commence. • Case IV (Misaligned Reasoning): This case illustrates a “Right for the Wrong Reasons” scenario. While ARCADE correctly identi-fies the hate category, the reasoning is impre-cise. The model over-interprets the content as a complex cultural critique (e.g., Oriental-ism) rather than detecting the specific, cruder insinuation of bestiality. This suggests that MLLMs may hallucinate high-level narratives when missing specific vulgar nuances. 
+
+> Figure 6: The user interface of our custom-built annota-tion platform. The layout is designed to strictly follow the SMI paradigm, guiding annotators from unimodal model-assisted suggestions (on the right) to final multi-modal categorization.
+
+These failure modes underscore the necessity of integrating dynamic knowledge bases to capture evolving slang and refining grounding mecha-nisms to prevent hallucinatory over-interpretation of crude content. 
+
+F Human Annotation Process 
+
+Annotators and Recruitment. We recruited a total of 10 graduate students with psychology or sociological backgrounds. All annotators had prior experience with language or multimodal content analysis. Annotation was conducted in groups of three annotators per sample to ensure labeling reli-ability and reduce individual bias. 
+
+Annotation Platform. To facilitate efficient and standardized annotation, we developed a custom web-based platform (as shown in Figure 6). The in-terface is designed to streamline the Stratified Mul-timodal Interaction (SMI) paradigm by visualizing semantic components. To reduce cognitive load, the platform integrates a Model-Assisted Reference 
+
+feature: pre-computed unimodal assessments (gen-erated by Qwen-Plus and Qwen3-VL-Plus (Bai et al., 2023a, 2025)) are displayed alongside the content as auxiliary context. This design allows annotators to quickly reference the independent Case I: Contextual Neutralization Case II: Implicit Metaphor Multimodal Input 
+
+Text: “THIS ISN’T ‘PROTECTION,’ YOU MORONS. IT’S JUST VIOLENCE WRAPPED IN HATE SPEECH... #TransRightsAreHumanRights” 
+
+GT Label: NotHate 
+
+Text: “Crying inside... weeds in the white roses again. emoji(sob) emoji(herb)” 
+
+GT Label: Hate Speech (Racist) 
+
+(Metaphorical insinuations of racial superiority) 
+
+Baseline (GPT-4o) Prediction: Hate Speech (Homophobic) Reasoning: The tweet and image imply violence towards individuals... specifically targeting transgender individuals under the guise of protecting women. 
+
+Prediction: NotHate Reasoning: The tweet appears to be expressing a metaphorical sentiment about roses and weeds without indicating hate speech. 
+
+Ours (ARCADE) Gatekeeper: Explicit threat cues detected (“he’ll crawl out...”) → Trigger Fast-Track Trial .
+
+Prosecutor (Cue): The phrase equates trans women with predatory males... creating a dangerous narrative. 
+
+Defender (Rebuttal): The tweet explicitly calls this “VIOLENCE WRAPPED IN HATE SPEECH”. The user is quoting the meme to condemn it. 
+
+Judge Verdict: NotHate .
+
+Judge Reason: The tweet explicitly condemns the hateful rhetoric and violence depicted in the meme, labeling it as ’VIOLENCE WRAPPED IN HATE SPEECH’ and ... The hashtag ’#TransRightsAreHumanRights’ further reinforces the author’s support for transgender rights... 
+
+Gatekeeper: No explicit slurs detected → Trigger Deep-Dive Trial .
+
+Prosecutor (R1): Metaphor: The tweet equates non-white people with invasive, undesirable ’weeds’ disrupting the purity or beauty of ’white roses’ ... 
+
+Defender (R1): The tweet contains no explicit reference to race, ethnicity, or skin color. The text is a generic botanical metaphor; the image shows happy, harmonious people. 
+
+(...Debate continues for 2 more rounds...) 
+
+Judge Verdict: Hate Speech (Racist) .
+
+Judge Reason: “White roses” symbolize racial purity; “weeds” imply unwanted elements, creating a dehumanizing analogy. The juxtaposition signals implicit hate speech through cultural coding. 
+
+Table 9: Qualitative Comparison between Baseline and ARCADE. Both cases are from H-VLI. Red text indicates incorrect predictions or reasoning; Green text indicates correct reasoning. 
+
+sentiment of the text and image without the need for redundant manual tagging. Consequently, anno-tators are tasked exclusively with the Multimodal Decision stage, where they synthesize these refer-ence cues to determine the final hate category based on the complex inter-modal interaction. 
+
+Annotation Guidelines and Training. All anno-tators were provided with a unified and detailed annotation guideline, including task definitions, la-beling criteria, and representative examples. 
+
+Consent and Risk Disclosure. Prior to participa-tion, all annotators provided informed consent and were notified that the annotated data would be used strictly for academic research purposes. Clear risk disclosures were provided in advance, highlighting the possibility of encountering disturbing or offen-sive content, and annotators were free to withdraw from the task at any time without penalty. 
+
+Compensation. Annotators received monetary compensation for their work at a rate consistent with local institutional standards for graduate re-search assistants, which is considered appropriate for the time commitment and task complexity. 
+
+Ethical Considerations. The annotation task in-volves minimal risk beyond exposure to offensive language and imagery. The study was conducted in accordance with institutional research ethics guide-lines and standard practices for human-in-the-loop annotation in computational linguistics research. Case III: Knowledge Gap (Slang) Case IV: Misaligned Reasoning Multimodal Input 
+
+Text: “someone added to much soap to the dishwasher again” 
+
+GT Label: Hate Speech (Sexist) 
+
+(Implies women are objects/dishwashers) 
+
+Text: “This might be appealing to certain Muslims out there. emoji(earth)” 
+
+GT Label: Hate Speech (Religious) 
+
+(Insinuations of bestiality) 
+
+Baseline (GPT-4o) Prediction: NotHate Reasoning: The model fails to identify the offensive metaphor, interpreting the statement literally as a complaint regarding a household appliance. 
+
+Prediction: Hate Speech (Religious) Reasoning: The tweet associates Muslims with camels in a way that could be interpreted as stereotyping or demeaning based on religion. 
+
+(Vague reasoning) 
+
+Ours (ARCADE) Gatekeeper: No explicit slurs detected → Trigger Deep-Dive Trial .
+
+Prosecutor (Investigation): [Failed to identify implicit mapping]. The agent failed to recognize “dishwasher” as a derogatory slang for women in this context. 
+
+Verdict: NotHate (Summary Dismissal). 
+
+Gatekeeper: No explicit slurs detected → Trigger Deep-Dive Trial .
+
+Prosecutor (R1): Orientalist Trope: The tweet implies Muslims are best understood through primitive or animalistic symbols (camels), reducing identity to desert fauna. 
+
+Defender (R1): The image presents biological facts about camels; “certain Muslims” is speculative and contextually neutral. 
+
+(...Debate continues for 2 more rounds...) 
+
+Judge Verdict: Hate Speech (Religious) .
+
+Judge Reason: The content constructs a dehumanizing narrative by equating Muslims with backwardness and primitive symbols. 
+
+Table 10: Failure Case Analysis. We analyze typical error patterns: Case III (from FHM) shows a False Negative where the model missed specific internet slang (Objectification); Case IV (from H-VLI) shows a case with the Correct Label but Misaligned Reasoning . Red text indicates incorrect predictions or reasoning; Green text indicates correct reasoning.

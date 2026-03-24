@@ -1,0 +1,848 @@
+Title: NDT: Non-Differential Transformer and Its Application to Sentiment Analysis
+
+URL Source: https://arxiv.org/pdf/2603.20704v1
+
+Published Time: Tue, 24 Mar 2026 00:37:18 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# NDT: Non-Differential Transformer and Its Application to Sentiment Analysis 
+
+Soudeep Ghoshal, Himanshu Buckchash, Sarita Paudel, Rub´ en Ruiz-Torrubiano 
+
+Abstract —From customer feedback to social media, under-standing human sentiment in text is central to how machines can interact meaningfully with people. However, despite notable progress, accurately capturing sentiment remains a challenging task, which continues to motivate further research in this area. To this end, we introduce Non-Differential Transformer (NDT). It is inspired by (but in contrast to) the state-of-the-art Differ-ential Transformer (DT) model. While standard Transformers can struggle with irrelevant context, the sota DT model uses attention map subtraction, potentially for noise cancellation. We explore an alternative motivation, hypothesizing that benefits may arise from enabling different attention components to specialize on distinct concepts within the text, similar to multiplexing information channels or mixture models, rather than primar-ily canceling noise via subtraction. Guided by this concept-multiplexing (ConPlex) view, the specific architecture presented in this paper employs a purely additive strategy. It uses only positive weights, learned during training, to ensure constructive combination of these specialized attention perspectives. This design choice explores positive only integration, though our broader framework also shows promise with less constrained linear combinations involving both positive and negative weights. Our model computes attention via this positively weighted sum of multiple distinct attention maps. This allows the model to constructively integrate diverse signals and potentially capture more complex contextual relationships. Competitive performance is achieved by the proposed model for Sentiment Analysis while tested on multiple datasets. We conclude by presenting our results, challenges and future research agenda in this important area of research. 
+
+Index Terms —Sentiment Analysis, Multi-Component Atten-tion, Additive Attention, Concept Multiplexing, Non-Differential Transformer. 
+
+I. I NTRODUCTION 
+
+# UNDERSTANDING human sentiment in text is central to how machines interact meaningfully with people. Sentiment analysis has become critical for extracting insights from vast amounts of unstructured data [1], [2], from e-commerce platforms processing millions of product reviews to financial institutions analyzing market sentiment for trading decisions [3], [4]. Despite significant advances in natural language processing, accurately capturing sentiment remains challenging. Traditional approaches, from lexicon based meth-ods to classical machine learning with handcrafted features, have demonstrated fundamental limitations in handling the nu-anced complexities of human emotional expression [5]. While deep learning and transformer architectures like BERT [6] have substantially advanced the field, these improvements have 
+
+> SG is with Kalinga Institute of Industrial Technology (KIIT), Bhubaneswar, Odisha 751024, India. HB, SP, RRT are with IMC University of Applied Sciences Krems, Piaristengasse 1, 3500 Austria.
+
+focused primarily on scaling model capacity rather than ad-dressing fundamental architectural limitations in how attention mechanisms process sentiment bearing information. The transformer architecture’s multi head attention mecha-nism faces inherent challenges in sentiment analysis tasks [7]. Standard transformers struggle with irrelevant context, particu-larly in longer texts where sentiment bearing elements may be dispersed among substantial neutral or contradictory content. The Differential Transformer (DT) [8] addresses this through attention map subtraction operating under noise cancellation principles: 
+
+Attention = sof tmax (A0) − λ · sof tmax (A1)
+
+where λ is a learned positive coefficient [8], and A0, A 1 are the first and second attention score matrices, computed from first and second pair of projected Q and K [8]. While DT has demonstrated improvements, we propose an alternative theoretical framework challenging this noise centric view. We hypothesize that benefits arise not from noise cancellation, but from enabling different attention components to specialize on distinct conceptual aspects within text, drawing inspiration from multiplexing techniques in signal processing and mixture of experts frameworks in machine learning [9], [10]. We introduce concept-multiplexing (ConPlex), which posits that effective sentiment understanding requires simultaneous attention to multiple conceptual channels: lexical sentiment in-dicators, contextual modifiers, syntactic structures, and domain specific patterns. Rather than subtracting potentially useful information, constructive combination of specialized atten-tion perspectives can yield superior contextual understand-ing. Building upon ConPlex, we present the Non-Differential Transformer (NDT), employing purely additive attention com-binations. The NDT generalizes the binary differential formula to support N attention components through the formulation: 
+
+Attention = sof tmax (A0) + λ1 · sof tmax (A1)+ · · · + λN −1 · sof tmax (AN −1),
+
+where each λi represents a learnable coefficient controlling the ith specialized attention component’s contribution. This design explores positive only integration, though our broader framework demonstrates effectiveness with various coefficient constraints including both positive and negative weights. Our approach addresses key limitations: (1) information preservation through additive combinations, (2) explicit com-ponent specialization through distinct parameterizations, (3) flexible integration of multiple sentiment indicators through learned weighting schemes, and (4) computational efficiency through shared value projections. 
+
+> arXiv:2603.20704v1 [cs.IR] 21 Mar 2026 2
+
+Contributions: (a) First, we introduce the ConPlex the-oretical framework providing an alternative foundation for multicomponent attention mechanisms, contradicting the noise cancellation hypothesis [8]. (b) Second, we present the NDT architecture operationalizing ConPlex through additive at-tention with learnable coefficients. (c) Third, we conduct comprehensive experiments across multiple sentiment datasets (IMDB, SST-2, YELP Reviews, Twitter Financial News) with systematic evaluation of coefficient constraints ( [0 , 1] , [−1, 1] ,
+
+[0 , ∞), and (−∞ , ∞)) and component scaling. (d) Fourth, we analyze component specialization through lambda evolution and attention visualization. Our results demonstrate consistent improvements over stan-dard transformers and DT: up to 1.36% on IMDB, 0.32% on SST-2, 0.32% on YELP Reviews, and 1.00% on Twitter Financial News. Analysis of learned lambda values provides evidence for component specialization, with different con-straints leading to distinct attention patterns suitable for vari-ous sentiment understanding requirements. Section II reviews related work, Section III describes methodology, Section IV presents comprehensive results and analysis and finally, Sec-tion V presents the conclusion. II. R ELATED WORKS 
+
+A. Evolution of Sentiment Analysis Approaches 
+
+Sentiment analysis has evolved from lexicon based methods through classical machine learning to modern deep learning architectures. Early approaches utilized sentiment dictionaries to assign polarity scores but struggled with context dependent expressions [5]. Classical methods including SVM and Naive Bayes employed handcrafted features yet demonstrated limi-tations in capturing nuanced emotional expression. The advent of deep learning introduced CNNs and LSTMs for hierarchical representation learning. Hybrid CNN-LSTM architectures emerged as particularly effective, with CNNs ex-tracting local features and LSTMs capturing long range depen-dencies [11], [12]. Transformer based models like BERT [6] revolutionized the field through pretrained contextual em-beddings, with subsequent variants like RoBERTa [13] and XLNet [14] further improving performance through enhanced training procedures. Despite these advances, persistent chal-lenges remain in domain adaptation, and multi class classi-fication with fine grained rating scales, motivating continued architectural innovations beyond simple capacity scaling. 
+
+B. Attention Mechanisms in Transformer Architectures 
+
+The transformer architecture introduced by Vaswani et al. [7] replaced recurrence with pure attention mechanisms, computing attention through query-key interactions scaled by key dimension. Multi head attention extends this by learning multiple parallel attention functions with different parame-terizations, enabling joint attention to information from dif-ferent representation subspaces. The parallelizability of these operations enables efficient training compared to sequential recurrent architectures. Subsequent research explored numerous variants including sparse attention methods that reduce computational complex-ity for long sequences. Longformer [15] introduced sliding window attention combined with global tokens, while Big-Bird [16] added random attention to maintain expressivity while achieving linear complexity. Studies on attention in-terpretability revealed that different heads naturally specialize on distinct patterns (syntactic relationships, positional infor-mation, or semantic connections) [17], providing empirical motivation for mechanisms that explicitly promote component specialization, as explored in the NDT architecture. 
+
+C. Differential Transformer and Subtractive Attention Mech-anisms 
+
+The Differential Transformer by Ye et al. [8] represents a significant departure from standard attention through its subtractive approach: Attention dif f = sof tmax (A0) − λ ·
+
+sof tmax (A1), where λ > 0 controls subtraction magnitude. This design stems from a noise cancellation hypothesis propos-ing that subtracting two attention maps filters common mode noise while amplifying relevant signals, drawing inspiration from differential amplifiers in electrical engineering. The underlying philosophy posits that two attention com-ponents capture similar irrelevant context (noise) but different relevant information (signal), such that subtraction preferen-tially removes noise while preserving signal through destruc-tive interference. While demonstrating empirical success in language modeling and long context understanding, this noise centric view merits examination. The NDT presents an alterna-tive framework challenging this perspective, hypothesizing that benefits arise from enabling attention components to specialize on distinct conceptual aspects with constructive rather than destructive combination. This fundamental philosophical dif-ference (viewing components as complementary information channels requiring integration rather than opposing signals requiring cancellation) distinguishes ConPlex from subtractive approaches. 
+
+D. Component Specialization and Mixture of Experts in Neu-ral Networks 
+
+The principle of component specialization has rich foun-dations in mixture of experts (MoE) frameworks. Jacobs et al. [9] demonstrated that training multiple expert networks on different input subsets, coordinated by a gating network, enables more efficient learning through natural specialization. Modern implementations by Shazeer et al. [10] scale to billions of parameters through sparse gating, where each input routes to small expert subsets, achieving dramatic capacity increases without proportional computational growth. These specialization principles extend to attention mecha-nisms. Rather than treating attention as monolithic, decom-posing it into specialized components, each potentially focus-ing on different conceptual channels like lexical indicators, syntactic structures, or contextual modifiers, could yield more powerful representations. Multi head attention exhibits natural specialization, though standard implementations use simple concatenation rather than learned weighted integration. The 3
+
+ConPlex framework draws inspiration from these principles, hypothesizing that explicit parameterization of multiple atten-tion components with learned combination weights promotes stronger specialization. Unlike MoE’s discrete routing, NDT employs continuous learned coefficients enabling all compo-nents to contribute while maintaining specialization through distinct parameterizations, providing a middle ground between sparse routing and uniform weighting. III. M ETHOD 
+
+This section presents the Non-Differential Transformer (NDT) architecture, beginning with the theoretical founda-tion of concept-multiplexing (ConPlex) and proceeding to detailed architectural specifications. We systematically develop the mathematical formulations, implementation strategies, and training methodologies that enable effective sentiment analysis through additive attention mechanisms. 
+
+A. Concept-Multiplexing (ConPlex) Framework 
+
+The ConPlex framework represents a fundamental depar-ture from noise cancellation approaches to attention mecha-nisms. We hypothesize that effective sentiment understanding emerges from simultaneous processing of multiple conceptual channels within text, each requiring specialized attention pat-terns for optimal comprehension. 
+
+1) Theoretical Foundation: Let S(x) represent the senti-ment understanding function for input sequence x. Traditional attention mechanisms model this as a single unified attention pattern: S(x) = softmax 
+
+ QK T
+
+> √d
+
+
+
+· V . The Differential Trans-former [8] extends this through subtractive combination: 
+
+Sdiff (x) = 
+
+h
+
+softmax 
+
+ Q0KT
+
+> 0√d
+
+
+
+− λ · softmax 
+
+ Q1KT
+
+> 1√d
+
+i 
+
+· V ,where λ > 0 enforces noise cancellation through subtraction. The ConPlex framework generalizes this to N specialized components through additive combination: 
+
+SConPlex (x) = 
+
+"N −1X
+
+> i=0
+
+λi · softmax 
+
+ QiKTi
+
+√d
+
+#
+
+· V (1) where λ0 = 1 is fixed and λi are learnable coefficients that enable constructive integration of specialized attention perspectives. We hypothesize that each attention component 
+
+Ai specializes on distinct conceptual channels relevant to sen-timent analysis: lexical sentiment indicators (e.g., “excellent” “terrible”), contextual modifiers (e.g., “not bad,” “surprisingly good”) [18], syntactic structures that convey sentiment, and domain specific patterns, with λi coefficients reflecting the relative importance of each specialization. 
+
+B. Non-Differential Transformer Architecture 1) Multi Component Attention Mechanism: The core inno-vation of NDT lies in its generalized attention computation that supports arbitrary numbers of specialized components. For N
+
+attention components, each component i maintains separate query and key projections while sharing a common value projection: 
+
+Qi = XW Qi , Ki = XW Ki , V = XW V (2) where WQi ∈ Rd×d/ 2, WKi ∈ Rd×d/ 2, and WV ∈ Rd×d.The reduced dimensionality (d/ 2) for individual Q and 
+
+K projections encourages component specialization while maintaining computational efficiency. For multi head attention with H heads, each component’s head dimension becomes 
+
+dhead = ( d/ 2) /H . The attention computation for each head h
+
+becomes: Attention h = 
+
+> N−1
+
+X
+
+> i=0
+
+λi · softmax Qi,h KTi,h 
+
+√dhead 
+
+!
+
+· Vh (3) 
+
+2) Lambda Parameter Learning: The λi coefficients are learned through interaction based computation that combines query and key parameters. Each component i maintains learn-able parameters λQi ∈ Rd/ 4 and λKi ∈ Rd/ 4, where the lambda computation proceeds as: 
+
+λ′ 
+
+> Qi
+
+= fconstraint (λQi ), λ′ 
+
+> Ki
+
+= fconstraint (λKi ), (4) interaction i = mean  λ′ 
+
+> Qi
+
+⊙ λ′
+
+> Ki
+
+ , (5) 
+
+λi = interaction i · αinit ,i + (1 − interaction i) · βi, (6) where ⊙ denotes element wise multiplication, αinit ,i is a component specific initialization value, and βi is a component specific bias term. 
+
+3) Constraint Configurations: We investigate four con-straint configurations for λi parameters:  
+
+> •
+
+Bounded Positive [0 , 1] : fconstraint (x) = σ(x) where 
+
+σ is the sigmoid function, ensuring purely constructive combinations.  
+
+> •
+
+Symmetric [−1, 1] : fconstraint (x) = tanh( x) allowing both positive and negative contributions for selective emphasis/suppression.  
+
+> •
+
+Non-negative [0 , ∞): fconstraint (x) = ReLU (x) providing unbounded positive combinations.  
+
+> •
+
+Unconstrained (−∞ , ∞): fconstraint (x) = x offering maximum learning flexibility. 
+
+C. Architectural Integration 1) Multi Head Extension: The NDT mechanism extends naturally to multi head attention. For H attention heads, each component i is reshaped to support multi head computation with head dimension dhead = ( d/ 2) /H :head h = 
+
+> N−1
+
+X
+
+> i=0
+
+λi · softmax Qi,h KTi,h 
+
+√dhead 
+
+!
+
+· Vh (7) The final multi head output concatenates all heads: MultiHead (Q, K, V ) = Concat (head 1, . . . , head H )W O ,
+
+where each component maintains the same lambda value λi
+
+across all heads within a given layer. 
+
+2) Layer Integration: Each NDT layer follows the standard transformer encoder structure with pre layer normalization: 
+
+Y = X + NDT-Attention (RMSNorm (X)) , (8) 
+
+Z = Y + FFN (RMSNorm (Y )) , (9) We employ RMSNorm instead of LayerNorm for improved training stability, and the feed forward network uses SwiGLU activation for enhanced expressivity. 4
+
+3) Component Scaling Strategy: We systematically evaluate component counts of N ∈ { 2, 3, 4} to analyze the relationship between architectural complexity and performance. For the base component variant, the attention computation becomes: Attention = softmax Q0KT
+
+> 0
+
+pd/ 2
+
+!
+
+· V
+
++ 
+
+> N−1
+
+X
+
+> j=1
+
+λj · softmax Qj KTj
+
+pd/ 2
+
+!
+
+· V
+
+(10) This formulation maintains a fixed base component while allowing additional components to provide specialized contri-butions. 
+
+D. Training Methodology 1) Parameter Optimization: NDT employs a multi group optimization strategy using AdamW with different weight decay rates: lambda parameters use weight_decay = 0.0 
+
+(no regularization) to learn freely, while architectural param-eters use weight_decay = 0.1 (standard L2 penalty). The training objective uses standard crossentropy loss: L =
+
+CrossEntropy (ˆ y, y ).
+
+2) Initialization Strategy: Lambda parameters are initial-ized to promote component diversity while ensuring training stability. The raw lambda parameters λQi and λKi are ini-tialized from a normal distribution N (0 , 0.02 2), with compo-nent specific initialization targets αinit ,i computed based on layer depth and component index. These values are constraint specific and clamped to appropriate ranges for each variant. Architectural parameters follow standard transformer initial-ization with Xavier uniform distribution for weight matrices and zero initialization for biases. 
+
+E. Evaluation Metrics 
+
+To comprehensively assess NDT performance, we employ multiple complementary evaluation metrics spanning classi-fication accuracy, representation quality, and computational efficiency. 
+
+Classification Performance: We use standard metrics in-cluding accuracy (proportion of correct predictions), precision (TP /(TP + FP )), F1 score (harmonic mean of precision and recall), and Area Under the ROC Curve (AUC) for discrimi-native performance across classification thresholds. 
+
+Representation Quality: We quantify learned embedding quality using the silhouette score, which measures how well samples cluster with their true class relative to other classes. For each sample i, the silhouette coefficient is: 
+
+s(i) = b(i) − a(i)max( a(i), b (i)) 
+
+where a(i) is the average intracluster distance and b(i) is the minimum average intercluster distance. Values range from −1
+
+to 1, with higher values indicating better defined clusters with greater separation between classes. 
+
+Computational Efficiency: We report total trainable parameters (in millions) as well as the difference relative to the Vanilla Transformer baseline: 
+
+∆Params (M) = Params NDT − Params Vanilla , along with average inference time (in milliseconds) per test set batch for each dataset, measured on identical hardware configurations. IV. R ESULTS AND DISCUSSIONS 
+
+This section presents comprehensive experimental results evaluating the Non-Differential Transformer across four sen-timent analysis datasets. We systematically compare NDT variants against baseline transformers, analyzing performance metrics, computational efficiency, and learned representations. 
+
+A. Experimental Setup 1) Datasets: We evaluate on four sentiment analysis bench-marks with varying characteristics: 
+
+IMDB Movie Reviews: Binary sentiment classification with 20,000 training, 5,000 validation, and 25,000 test samples. Vocabulary size: 26,284 tokens [19]. 
+
+SST-2: Binary sentiment classification with 47,754 training, 10,233 validation, and 10,234 test samples. Vocabulary size: 8,865 tokens [20]. 
+
+YELP Reviews: 5 class rating prediction with 489,999 train-ing, 105,001 validation, and 105,001 test samples. Vocabulary size: 63,385 tokens [21]. 
+
+Twitter Financial News: Ternary sentiment classification with 9,543 training, 1,194 validation, and 1,194 test samples. Vocabulary size: 3,137 tokens [22]. 
+
+2) Model Configurations: For each dataset, we evaluate 14 model configurations: 
+
+Baselines: Vanilla Transformer [7], Differential Trans-former [8]. 
+
+NDT Variants: Four constraint configurations ( [0 , 1] , [−1, 1] ,
+
+[0 , ∞), (−∞ , ∞)) × Three component counts (2, 3, 4). 
+
+B. IMDB Movie Reviews Results 1) Overall Performance Comparison: The NDT framework demonstrates consistent performance improvements over both baseline architectures on the IMDB dataset (Table I). The 
+
+NDT [0,1] variant with 2 components achieves the highest test accuracy of 85.56% , representing improvements of +1.57% 
+
+over the Vanilla Transformer and +1.36% over the Differential Transformer. This purely additive, positive weight configu-ration outperforms the subtractive DT approach, providing empirical support for the ConPlex hypothesis that constructive integration of specialized attention components can be more effective than noise cancellation through subtraction. Across all constraint configurations, the 2 component vari-ants generally achieve the strongest performance, with the 
+
+[0,1] , [-1,1] , [0, ∞), and (−∞ ,∞) configurations yielding accuracies of 85.56%, 85.33%, 85.13%, and 85.19%, re-spectively. The diminishing returns observed with 3 and 4 components (with the notable exception of NDT [0,1] with 4 components at 85.50%) suggest that two specialized atten-tion perspectives may be sufficient for capturing the primary conceptual channels in binary sentiment classification tasks. Notably, 11 out of 12 NDT variants surpass the DT baseline, with precision and F1 score metrics showing similar improve-ment patterns, indicating that the performance gains extend 5
+
+beyond simple accuracy to overall classification quality. AUC scores remain competitive across NDT variants, though DT retains a marginal advantage in ranking ability on this binary task. TABLE I: Accuracy and Classification Metrics on IMDB Dataset                                                             
+
+> Ncomp Acc (%) Precision F1 Score AUC
+> Vanilla Transformer
+> –83.99 0.844 0.839 0.927
+> Differential Transformer
+> 284.20 0.851 0.841 0.935
+> NDT [0,1]
+> 285.56 0.856 0.856 0.933 384.74 0.851 0.847 0.931 485.50 0.855 0.855 0.932
+> NDT [-1,1]
+> 285.33 0.854 0.853 0.931 385.28 0.853 0.853 0.932 483.69 0.837 0.837 0.917
+> NDT [0, ∞)
+> 285.13 0.852 0.851 0.932 384.75 0.851 0.847 0.932 484.68 0.847 0.847 0.927
+> NDT ( −∞ ,∞)
+> 285.19 0.852 0.852 0.931 384.68 0.852 0.848 0.932 484.73 0.847 0.847 0.926
+
+2) Lambda Value Analysis: The learned λ values reveal distinct patterns across constraint configurations (Table II). The NDT [0,1] variants show consistently positive, balanced contributions (0.1365 - 0.1860) with decreasing trends across component indices, suggesting all components provide con-structive information. The NDT [-1,1] configuration exhibits exclusively negative λ values (-0.2001 to -0.0575), indicating learned subtractive combinations even when positive weights are available, though this performs below the purely posi-tive [0,1] configuration. The unbounded variants [0, ∞) and 
+
+(−∞ ,∞) demonstrate higher magnitudes (up to 0.3786 in Layer 2), with λ values consistently increasing from Layer 1 to Layer 2, suggesting deeper layers benefit from stronger integration. The hierarchical progression across components (e.g., 0.2192 → 0.1803 → 0.1461) demonstrates learned importance ordering, supporting the hypothesis that the model appropriately weights different conceptual channels during training. 
+
+C. SST-2 Results 1) Overall Performance Comparison: Similar to IMDB, the NDT framework demonstrates consistent improvements over baseline architectures on the SST-2 dataset (Table III). The 
+
+NDT [0,1] variant with 3 components achieves the highest test accuracy of 91.85% , representing improvements of +1.00% 
+
+over the Vanilla Transformer and +0.32% over the Differential Transformer. Unlike IMDB, where 2 components proved optimal, SST-2 shows the best performance with 3 components in the [0,1] configuration, suggesting that the shorter, more syntactically complex sentences in SST-2 may benefit from an additional specialized attention perspective. The NDT [-1,1] variant with 2 components also performs strongly at 91.83%, closely matching the best result. TABLE II: Learned Lambda Values for the IMDB Dataset                            
+
+> Ncomp Layer 1
+> λValues Layer 2
+> λValues
+> NDT [0,1]
+> 2(0.1507) (0.1860) 3(0.1506, 0.1436) (0.1841, 0.1604) 4(0.1515, 0.1436, 0.1365) (0.1845, 0.1603, 0.1513)
+> NDT [-1,1]
+> 2(-0.2001) (-0.0575) 3(-0.1997, -0.1599) (-0.0650, -0.0958) 4(-0.2000, -0.1604, -0.1282) (-0.0596, -0.0921, -0.0708)
+> NDT [0, ∞)
+> 2(0.2178) (0.3756) 3(0.2191, 0.1781) (0.3713, 0.2193) 4(0.2192, 0.1803, 0.1461) (0.3677, 0.2222, 0.1793)
+> NDT ( −∞ ,∞)
+> 2(0.2083) (0.3786) 3(0.2146, 0.1760) (0.3575, 0.2087) 4(0.2097, 0.1810, 0.1406) (0.3556, 0.2155, 0.1711)
+
+Across all constraint configurations, performance remains tightly clustered between 91.06% and 91.85%, indicating more stable behavior across variants compared to IMDB’s wider performance spread. The superior AUC score of 0.985 
+
+achieved by NDT [0, ∞) with 4 components, despite lower accuracy (91.06%), suggests that this configuration excels at ranking predictions even when classification thresholds are suboptimal. Overall, 6 out of 12 NDT variants surpass the DT baseline, reinforcing the effectiveness of the ConPlex framework across different dataset characteristics. TABLE III: Accuracy and Classification Metrics on SST-2 Dataset                                                             
+
+> Ncomp Acc (%) Precision F1 Score AUC
+> Vanilla Transformer
+> –90.85 0.909 0.909 0.959
+> Differential Transformer
+> 291.53 0.915 0.915 0.971
+> NDT [0,1]
+> 291.74 0.917 0.917 0.964 391.85 0.919 0.918 0.962 491.65 0.916 0.916 0.963
+> NDT [-1,1]
+> 291.83 0.919 0.918 0.965 391.67 0.917 0.918 0.962 491.65 0.916 0.916 0.963
+> NDT [0, ∞)
+> 291.40 0.914 0.914 0.965 391.52 0.915 0.915 0.964 491.06 0.911 0.910 0.985
+> NDT ( −∞ ,∞)
+> 291.44 0.914 0.914 0.965 391.70 0.917 0.917 0.964 491.09 0.911 0.911 0.964
+
+2) Lambda Value Analysis: SST-2 λ values (Table IV) exhibit patterns largely consistent with IMDB, with notable magnitude differences. The NDT [0,1] configuration maintains balanced positive contributions with the familiar decreasing trend (0.1554 → 0.1342 in Layer 1), with notably higher Layer 2 values (up to 0.2032) indicating stronger specialized contributions in deeper layers. Distinctively, the NDT [-1,1] variant shows dramatically larger negative magnitudes in Layer 1 (-0.4230 vs. IMDB’s -0.2001), but transitions to mixed or positive values in Layer 2 (0.0600 for 2 components). This 6
+
+layer wise shift from strong negative to near zero/positive values is unique to SST-2, suggesting different suppression strategies at different depths for handling shorter, syntacti-cally complex sentences. The unbounded configurations show higher overall magnitudes (up to 0.5294) compared to IMDB, with consistent hierarchical decrease across components. These patterns suggest that SST-2’s linguistic characteristics (shorter text length and greater syntactic complexity) require different component weighting strategies, particularly in how subtractive mechanisms are employed across network depths. TABLE IV: Learned Lambda Values for the SST-2 Dataset                            
+
+> Ncomp Layer 1
+> λValues Layer 2
+> λValues
+> NDT [0,1]
+> 2(0.1554) (0.2032) 3(0.1518, 0.1498) (0.1990, 0.1746) 4(0.1508, 0.1428, 0.1342) (0.1987, 0.1721, 0.1591)
+> NDT [-1,1]
+> 2(-0.4230) (0.0600) 3(-0.3575, -0.3355) (-0.0312, -0.0905) 4(-0.3115, -0.2488, -0.2250) (-0.0358, -0.0777, -0.0386)
+> NDT [0, ∞)
+> 2(0.2356) (0.4322) 3(0.2730, 0.2587) (0.4027, 0.2588) 4(0.2218, 0.1845, 0.1562) (0.3829, 0.2801, 0.2539)
+> NDT ( −∞ ,∞)
+> 2(0.3523) (0.5282) 3(0.3111, 0.3014) (0.5294, 0.4174) 4(0.2363, 0.1765, 0.2183) (0.4619, 0.4223, 0.3746)
+
+D. YELP Reviews Results 1) Overall Performance Comparison: The YELP Reviews 
+
+dataset presents a markedly different performance landscape compared to IMDB and SST-2, reflecting the increased com-plexity of 5 class sentiment classification (Table V). Surpris-ingly, the Vanilla Transformer (60.73%) slightly outperforms the Differential Transformer (DT) (60.50%), contradicting the trend observed in binary classification tasks. Among NDT variants, the best performance is achieved by NDT [-1,1] with 3 components at 60.82% , representing a modest improvement of +0.09% over Vanilla but +0.32% over DT. This behavior contrasts with IMDB and SST-2, where the [0,1] constraint dominated, though the performance differ-ences between constraint types are minimal (within 0.6%). Performance across all NDT variants remains tightly clustered between 60.23% and 60.82%, with substantially less variation compared to the binary datasets, indicating that the fundamen-tal challenge of fine grained sentiment classification limits the impact of architectural innovations. Unlike the binary datasets where clear winners emerged, YELP shows no consistent pattern favoring specific component counts, with competitive results observed at 2, 3, and 4components. The precision and F1 scores follow patterns similar to accuracy, while AUC values remain consistently high (0.890 - 0.893), suggesting that the models maintain good ranking ability even when exact class predictions prove challenging. These results indicate that while the ConPlex framework 
+
+remains competitive, the benefits of specialized attention per-spectives are less pronounced in multi class scenarios where class boundaries are inherently more ambiguous. TABLE V: Accuracy and Classification Metrics on YELP Reviews Dataset                                                             
+
+> Ncomp Acc (%) Precision F1 Score AUC
+> Vanilla Transformer
+> –60.73 0.611 0.608 0.892
+> Differential Transformer
+> 260.50 0.605 0.603 0.891
+> NDT [0,1]
+> 260.36 0.603 0.603 0.891 360.46 0.611 0.606 0.890 460.48 0.597 0.598 0.891
+> NDT [-1,1]
+> 260.23 0.597 0.598 0.890 360.82 0.608 0.608 0.893 460.56 0.606 0.605 0.892
+> NDT [0, ∞)
+> 260.40 0.602 0.602 0.891 360.42 0.612 0.606 0.890 460.45 0.596 0.597 0.891
+> NDT ( −∞ ,∞)
+> 260.39 0.602 0.603 0.892 360.38 0.611 0.606 0.890 460.45 0.597 0.597 0.891
+
+2) Lambda Value Analysis: YELP λ values (Table VI) closely mirror IMDB patterns despite dramatically different classification performance, suggesting consistent component weighting strategies across binary and multi class tasks. The 
+
+NDT [0,1] configuration maintains the characteristic posi-tive, decreasing trend (0.1568 → 0.1410 in Layer 1) with increased Layer 2 magnitudes (up to 0.1926). The NDT [-1,1] variant shows exclusively negative values (-0.2003 to -0.0468) matching IMDB’s magnitude range, while unbounded configurations demonstrate magnitudes (up to 0.5085) similar to SST-2. The hierarchical decrease across components per-sists in all configurations. Despite YELP’s tight performance clustering, the well structured λ patterns suggest the challenge lies in fundamental class ambiguity rather than inappropriate component weighting, providing evidence that ConPlex suc-cessfully enables specialization even when downstream tasks limit performance ceilings. TABLE VI: Learned Lambda Values for the YELP Reviews Dataset                            
+
+> Ncomp Layer 1
+> λValues Layer 2
+> λValues
+> NDT [0,1]
+> 2(0.1568) (0.1926) 3(0.1520, 0.1462) (0.1907, 0.1635) 4(0.1527, 0.1463, 0.1410) (0.1894, 0.1634, 0.1558)
+> NDT [-1,1]
+> 2(-0.2003) (-0.0468) 3(-0.2121, -0.1778) (-0.0680, -0.0850) 4(-0.2031, -0.1703, -0.1464) (-0.0525, -0.0631, -0.0596)
+> NDT [0, ∞)
+> 2(0.2429) (0.3972) 3(0.2120, 0.1943) (0.3909, 0.2320) 4(0.2160, 0.1827, 0.1722) (0.3719, 0.2280, 0.1994)
+> NDT ( −∞ ,∞)
+> 2(0.2997) (0.5085) 3(0.2038, 0.2069) (0.4203, 0.2543) 4(0.2151, 0.1943, 0.1978) (0.3621, 0.2436, 0.2380) 7
+
+E. Twitter Financial News Results 1) Overall Performance Comparison: The Twitter Finan-cial News dataset, representing a 3 class sentiment classifica-tion task, demonstrates performance patterns more similar to the binary datasets (IMDB and SST-2) than to the 5 class YELP dataset (Table VII). The NDT framework achieves strong improvements over baseline architectures, with NDT (−∞ , ∞) with 4 components reaching the highest accuracy of 83.33% , representing improvements of +1.34% over the Vanilla Transformer and +1.00% over DT. Notably, this dataset exhibits a clear preference for 4 com-ponent architectures, with the top three performing models all using 4 components across different constraint configurations: (−∞ , ∞) at 83 .33% , [0,1] at 83 .25% , and [ −1, 1] at 83 .08% .This contrasts with IMDB’s preference for 2 components and SST-2’s preference for 3 components, suggesting that the financial domain’s specialized vocabulary and distinct sentiment expressions may benefit from additional specialized attention perspectives. The strong performance of the purely positive [0,1] con-straint ( 83 .25% with 4 components) reaffirms that constructive integration remains effective even in multi class scenarios, contradicting any assumption that subtractive mechanisms are inherently superior for handling multiple sentiment categories. Performance spread across NDT variants is moderate ( 80 .90% 
+
+to 83 .33% ), wider than YELP but narrower than IMDB, indicating reasonable architectural sensitivity. The consistently high AUC scores (0.934 - 0.948 ), combined with strong accuracy, demonstrate robust discriminative capability across all three sentiment classes. Overall, 8 out of 12 NDT variants surpass the DT baseline, reinforcing the generalizability of the ConPlex framework 
+
+across diverse sentiment analysis contexts. TABLE VII: Accuracy and Classification Metrics on Twitter Financial News Dataset                                                             
+
+> Ncomp Acc (%) Precision F1 Score AUC
+> Vanilla Transformer
+> –81.99 0.817 0.817 0.936
+> Differential Transformer
+> 282.33 0.819 0.821 0.945
+> NDT [0,1]
+> 280.90 0.808 0.808 0.940 382.50 0.826 0.824 0.941 483.25 0.828 0.829 0.948
+> NDT [-1,1]
+> 282.66 0.827 0.827 0.937 382.33 0.823 0.822 0.942 483.08 0.830 0.830 0.943
+> NDT [0, ∞)
+> 281.49 0.814 0.812 0.939 382.75 0.827 0.827 0.934 482.41 0.824 0.824 0.936
+> NDT ( −∞ ,∞)
+> 282.41 0.825 0.824 0.939 382.33 0.822 0.822 0.939 483.33 0.829 0.830 0.948
+
+2) Lambda Value Analysis: Twitter Financial News λ val-ues (Table VIII) remarkably mirror IMDB patterns despite domain differences and 3 class classification. The NDT [0,1] configuration maintains balanced positive contributions with the characteristic decreasing trend (0.1522 → 0.1372 in Layer 1) and modest Layer 2 increases (up to 0.1841), matching IMDB’s magnitude range. The NDT [-1,1] variant learns exclusively negative values (-0.2053 to -0.0593) closely matching IMDB, with stable negative values across both layers (unlike SST-2’s layer wise transitions). The unbounded config-urations show moderate magnitudes (up to 0.3741), falling be-tween IMDB and SST-2/YELP values. Notably, the ( −∞ ,∞)configuration shows unusually high Layer 1 values (0.3261), aligning with this configuration achieving best performance (83.33%). The overall stability across Twitter, IMDB, and YELP (contrasting SST-2) suggests dataset size and syntactic complexity influence component weighting more than output class count or domain characteristics. TABLE VIII: Learned Lambda Values for the Twitter Financial News Dataset                            
+
+> Ncomp Layer 1
+> λValues Layer 2
+> λValues
+> NDT [0,1]
+> 2(0.1522) (0.1841) 3(0.1512, 0.1444) (0.1839, 0.1607) 4(0.1516, 0.1441, 0.1372) (0.1822, 0.1591, 0.1515)
+> NDT [-1,1]
+> 2(-0.2053) (-0.0593) 3(-0.2012, -0.1604) (-0.0661, -0.0900) 4(-0.1996, -0.1599, -0.1282) (-0.0541, -0.0802, -0.0547)
+> NDT [0, ∞)
+> 2(0.2248) (0.3707) 3(0.2303, 0.2045) (0.3741, 0.2178) 4(0.2368, 0.1971, 0.1652) (0.3669, 0.2167, 0.1792)
+> NDT ( −∞ ,∞)
+> 2(0.3261) (0.3571) 3(0.2144, 0.2087) (0.3572, 0.2234) 4(0.2372, 0.2053, 0.1637) (0.3532, 0.2015, 0.1671)
+
+F. Representation Quality Analysis 
+
+Table IX presents the silhouette scores across all four datasets, providing insights into how well the learned embed-dings cluster samples according to their sentiment classes. The silhouette score quantifies embedding quality by measuring intraclass compactness relative to interclass separation, with higher values indicating better defined clusters. 
+
+Patterns Across Datasets: The representation quality varies dramatically across datasets, with SST-2 demonstrating the highest silhouette scores ( 0.360 - 0.499 ) and YELP show-ing the lowest ( 0.043 - 0.059 ). This stark contrast reflects the fundamental difference between binary and fine grained multi class classification: binary sentiment distinctions create naturally separable clusters in embedding space, while 5 class ratings occupy a continuous spectrum with inherently over-lapping boundaries. IMDB exhibits moderate scores ( 0.261 
+
+- 0.361 ), while Twitter Financial News shows intermediate behavior ( 0.114 - 0.276 ), consistent with its 3 class structure. 
+
+Model Comparisons: For SST-2, the Differential Trans-former achieves an exceptionally high silhouette score of 
+
+0.490 , with most NDT variants producing competitive values (0.451 - 0.499 ). The NDT [ −1, 1] with 4 components achieves the highest score of 0.499 , demonstrating superior cluster sepa-ration. On IMDB, the DT substantially outperforms the Vanilla 8
+
+Transformer ( 0.361 vs. 0.314 ), though NDT variants show more varied behavior ( 0.261 - 0.337 ), with several configu-rations slightly underperforming DT despite achieving higher classification accuracy. This dissociation between silhouette scores and accuracy suggests that classification performance depends not solely on cluster separation but also on decision boundary learning. For Twitter Financial News , NDT variants exhibit high variability ( 0.114 - 0.276 ), with NDT [ −1, 1]and [0, ∞) configurations achieving the strongest scores ( 0.265 
+
+and 0.276 with 4 and 3 components, respectively), indicating that different constraint types produce qualitatively different embedding geometries. 
+
+YELP’s Unique Challenge: The consistently low silhouette scores across all models on YELP ( 0.043 - 0.059 ) confirm that 5 class sentiment creates fundamentally ambiguous bound-aries in representation space. The minimal variation between Vanilla ( 0.059 ), DT ( 0.053 ), and NDT variants ( 0.043 - 0.058 )suggests that architectural innovations cannot overcome the inherent overlap between adjacent rating categories (e.g., 3 star vs. 4 star reviews), where linguistic differences are often subtle or context dependent. 
+
+Key Insight: While higher silhouette scores generally cor-relate with better classification performance on binary tasks, this relationship weakens for multi class datasets. The NDT framework demonstrates competitive representation quality across all datasets, though the optimal constraint configuration for embedding separability varies by dataset characteristics, highlighting the importance of architectural flexibility in the CON PLEX framework. TABLE IX: Silhouette Scores across Datasets 
+
+Ncomp IMDB Reviews SST-2 YELP Reviews Twitter Financial News 
+
+Vanilla Transformer 
+
+– 0.314 0.360 0.059 0.205 
+
+Differential Transformer 
+
+2 0.361 0.490 0.053 0.177 
+
+NDT [0,1] 
+
+2 0.318 0.467 0.055 0.114 3 0.291 0.479 0.050 0.156 4 0.303 0.467 0.057 0.174 
+
+NDT [-1,1] 
+
+2 0.303 0.469 0.043 0.261 3 0.337 0.469 0.050 0.175 4 0.335 0.499 0.051 0.265 
+
+NDT [0, ∞)
+
+2 0.325 0.451 0.053 0.126 3 0.293 0.458 0.058 0.276 4 0.295 0.455 0.044 0.220 
+
+NDT ( −∞ ,∞)
+
+2 0.302 0.475 0.055 0.201 3 0.317 0.469 0.054 0.132 4 0.261 0.471 0.051 0.154 
+
+G. Visualization Analysis 1) Confusion Matrices: Figure 1 represents the confusion matrices of the best performing NDT model for each dataset. Each subfigure corresponds to a different dataset and model configuration. These visualizations provide a clear view of the model’s prediction distribution across ground truth classes, highlighting areas of correct classification as well as common Negative Positive   
+
+> Predicted Labels
+> Negative Positive
+> True Labels
+> 10747 1753
+> 1858 10642
+> Confusion Matrix - IMDB
+> 2000
+> 3000
+> 4000
+> 5000
+> 6000
+> 7000
+> 8000
+> 9000
+> 10000
+> Count
+
+(a) NDT [0,1] — comp = 2 Negative Positive    
+
+> Predicted Labels
+> Negative Positive
+> True Labels
+> 4084 462
+> 372 5316
+> Confusion Matrix - SST-2
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> Count
+
+(b) NDT [0,1] — comp = 3 1 Star 2 Stars 3 Stars 4 Stars 5 Stars                     
+
+> Predicted Labels
+> 1 Star 2 Stars 3 Stars 4 Stars 5 Stars
+> True Labels
+> 15378 4352 703 126 318
+> 4141 11593 4380 566 312
+> 816 4214 11528 3705 769
+> 225 675 4548 10429 5054
+> 284 232 948 4771 14933
+> Confusion Matrix - YELP_REVIEWS
+> 2000
+> 4000
+> 6000
+> 8000
+> 10000
+> 12000
+> 14000
+> Count
+
+(c) NDT [-1,1] — comp = 3 Bearish Bullish Neutral        
+
+> Predicted Labels
+> Bearish Bullish Neutral
+> True Labels
+> 99 13 52
+> 15 163 52
+> 33 34 733
+> Confusion Matrix - TwitterFinancial
+> 100
+> 200
+> 300
+> 400
+> 500
+> 600
+> 700
+> Count
+
+(d) NDT [ −∞ ,∞] — comp = 4 
+
+Fig. 1: Confusion matrices for the best performing NDT model for each dataset. These visualizations illustrate how the model predictions are distributed across the ground truth classes. misclassifications. Overall, the matrices demonstrate that the NDT model achieves high class separability across all datasets, with minimal confusion between classes. 
+
+2) ROC Curves: Figure 2 presents the Receiver Oper-ating Characteristic (ROC) curves comparing the baseline DT models (Figs. 2a, 2b, 2c, 2d) and the best performing NDT models (Figs. 2e, 2f, 2g, 2h) across the datasets. Each column corresponds to one dataset, with the top row showing the ROC curves for the DT models and the bottom row displaying the curves for the optimized NDT variants. The ROC curves demonstrate that while NDT achieves higher classification accuracy across datasets, DT retains higher AUC on IMDB and SST-2. NDT shows improved AUC on YELP and Twitter Financial News, indicating that the benefits of additive attention are more pronounced in multi-class settings when measured by ranking ability. 
+
+3) t-SNE Embeddings: Figure 3 represents the t-SNE em-beddings of the best performing NDT model for each dataset. Each subfigure corresponds to a different dataset and model configuration. These visualizations illustrate how the learned representations are projected into a lower dimensional space, where well separated clusters indicate better class discrim-ination. Overall, the embeddings demonstrate that the NDT model produces compact and distinct class clusters across all datasets, further confirming its ability to capture discriminative features. 
+
+H. Computational Efficiency Analysis 1) Parameter Efficiency: Table X presents the parameter analysis across the IMDB, SST-2, YELP, and Twitter Financial News datasets. The values indicate the total number of train-able parameters (in millions) for each model configuration, 90.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - IMDB 
+
+> ROC curve (AUC = 0.9346)
+
+(a) DT - IMDB 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - SST-2  
+
+> ROC curve (AUC = 0.9712)
+
+(b) DT - SST-2 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - YELP_REVIEWS  
+
+> 1 Star (AUC = 0.9471)
+> 2 Stars (AUC = 0.8612)
+> 3 Stars (AUC = 0.8397)
+> 4 Stars (AUC = 0.8487)
+> 5 Stars (AUC = 0.9326)
+> Micro-average (AUC = 0.8908)
+
+(c) DT - YELP 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - TwitterFinancial  
+
+> Bearish (AUC = 0.8849)
+> Bullish (AUC = 0.9293)
+> Neutral (AUC = 0.9213)
+> Micro-average (AUC = 0.9447)
+
+(d) DT - Twitter Fin. News 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - IMDB 
+
+> ROC curve (AUC = 0.9331)
+
+(e) NDT - IMDB 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - SST-2  
+
+> ROC curve (AUC = 0.9623)
+
+(f) NDT - SST-2 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - YELP_REVIEWS  
+
+> 1 Star (AUC = 0.9471)
+> 2 Stars (AUC = 0.8631)
+> 3 Stars (AUC = 0.8416)
+> 4 Stars (AUC = 0.8514)
+> 5 Stars (AUC = 0.9324)
+> Micro-average (AUC = 0.8928)
+
+(g) NDT - YELP 0.0 0.2 0.4 0.6 0.8 1.0 
+
+False Positive Rate 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+> True Positive Rate
+
+ROC Curves - TwitterFinancial  
+
+> Bearish (AUC = 0.8945)
+> Bullish (AUC = 0.9330)
+> Neutral (AUC = 0.9250)
+> Micro-average (AUC = 0.9479)
+
+(h) NDT - Twitter Fin. News 
+
+Fig. 2: ROC curves comparing the baseline DT models (left column) with the best performing NDT models (right column) for each dataset. Each pair of columns corresponds to a dataset, illustrating the relative discriminative power of NDT and DT across settings. 50 25 0 25 50 
+
+t-SNE Dimension 1 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+> t-SNE Dimension 2
+
+t-SNE Visualization - IMDB 
+
+> Negative
+> Positive
+
+(a) NDT [0,1] — comp = 2 50 25 0 25 50 
+
+t-SNE Dimension 1 
+
+20 
+
+0
+
+20 
+
+> t-SNE Dimension 2
+
+t-SNE Visualization - SST-2  
+
+> Negative
+> Positive
+
+(b) NDT [0,1] — comp = 3 50 25 0 25 50 
+
+t-SNE Dimension 1 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+> t-SNE Dimension 2
+> t-SNE Visualization - YELP_REVIEWS
+> 1 Star
+> 2 Stars
+> 3 Stars
+> 4 Stars
+> 5 Stars
+
+(c) NDT [-1,1] — comp = 3 50 25 0 25 50 
+
+t-SNE Dimension 1 
+
+20 
+
+10 
+
+0
+
+10 
+
+20  
+
+> t-SNE Dimension 2
+> t-SNE Visualization - TwitterFinancial
+> Bearish
+> Bullish
+> Neutral
+
+(d) NDT [ −∞ ,∞] — comp = 4 
+
+Fig. 3: t-SNE visualizations of the learned embeddings for the best performing NDT model on each dataset. Distinct and compact clusters indicate effective class separation in the embedding space. with the final column reporting the additional parameters relative to the Vanilla Transformer baseline. This absolute measure provides a clear view of the incremental parameter cost introduced by each variant. As observed, the NDT models add only a small number of extra parameters compared to DT, demonstrating that the model’s efficiency is largely maintained even as the number of components increases. TABLE X: Parameter Overhead Analysis 
+
+Model (Ncomp )IMDB Params (M) SST-2 Params (M) YELP Params (M) Twitter Financial News Params (M) 
+
+∆
+
+Params (M) Vanilla (–) 3.63 1.40 8.38 0.67 –DT (2) 3.79 1.56 8.54 0.82 ∼ 0.16 
+
+NDT (2) 3.79 1.56 8.54 0.82 ∼ 0.16 
+
+NDT (3) 3.83 1.60 8.58 0.85 ∼ 0.20 
+
+NDT (4) 3.86 1.63 8.61 0.88 ∼ 0.23 
+
+2) Inference Time: Table XI presents the inference time comparison across the IMDB, SST-2, YELP, and Twitter Financial News datasets. The reported values correspond to the average time (in milliseconds) required for processing a single batch of test set for each dataset. While the Differential Transformer (DT) and Non-Differential Transformer (NDT) variants incur additional latency compared to the Vanilla Transformer, the increase remains moderate relative to the model size and number of components. As expected, inference time grows with the number of components in NDT, reflecting the added computational complexity, yet the overhead remains within a practical range. TABLE XI: Inference Time Comparison per Batch 
+
+Model (Ncomp )IMDB Time (ms) SST-2 Time (ms) YELP Time (ms) Twitter Financial News Time (ms) Vanilla (–) 25.58 ∼6.25 75.42 ∼0DT (2) 38.36 ∼6.25 121.65 ∼0NDT (2) 40.92 ∼6.25 126.52 ∼0NDT (3) 48.59 ∼6.25 158.15 ∼0NDT (4) 58.82 ∼6.25 197.08 ∼0
+
+Overall, the systematic investigation of four constraint con-figurations reveals that purely positive, bounded combinations ([0,1]) achieve the strongest performance on binary sentiment tasks, directly supporting our hypothesis that constructive specialization outperforms destructive interference. Analysis of learned lambda values shows consistent hierarchical im-10 
+
+portance ordering across datasets, with values increasing from Layer 1 to Layer 2. The computational efficiency analysis con-firms practical deployment feasibility, with NDT adding only 0.16 - 0.23M parameters relative to the Vanilla Transformer baseline while maintaining competitive inference times. Our key contributions extend beyond empirical gains: we in-troduce concept-multiplexing as an alternative theoretical foun-dation for multi component attention, demonstrate that purely additive combinations with positive weights can outperform subtractive approaches, and provide insights for designing attention architectures for sentiment analysis tasks. These find-ings challenge prevailing design principles in natural language processing and suggest that existing subtractive approaches may benefit from reconsideration through the ConPlex view-point. The component specialization patterns indicate that sen-timent understanding emerges from simultaneous processing of multiple conceptual channels. The results across datasets reveal that while NDT demonstrates consistent improvements, benefits are most pronounced on binary classification tasks (IMDB, SST-2) with diminishing returns on fine grained multi class scenarios (YELP’s 5 class). This pattern suggests that architectural innovations in attention mechanisms have greater impact when class boundaries are well defined. The consistent component specialization patterns observed suggest the Con-Plex framework may extend effectively to larger models. V. C ONCLUSION 
+
+This work introduces the Non-Differential Transformer (NDT) , a novel attention mechanism that challenges the noise cancellation hypothesis underlying subtractive attention approaches. Through our concept-multiplexing (ConPlex) 
+
+framework, we demonstrate that constructive integration of specialized attention components achieves superior perfor-mance compared to subtractive mechanisms in sentiment anal-ysis tasks. Our experimental evaluation across four diverse datasets, viz. IMDB Movie Reviews , SST-2 , YELP Reviews ,and Twitter Financial News , provides compelling evidence for additive attention combinations, with NDT consistently outperforming both Vanilla Transformers and the Differential Transformer by up to 1.36% on IMDB, 0.32% on SST-2, 0.32% on YELP Reviews, and 1.00% on Twitter Financial News. Future work should extend NDT to deeper architectures and larger scale pretraining to validate scalability. REFERENCES [1] B. Liu, Sentiment analysis and opinion mining . Springer Nature, 2022. [2] A. Giachanou and F. Crestani, “Like it or not: A survey of twitter sentiment analysis methods,” ACM Computing Surveys (CSUR) , vol. 49, no. 2, pp. 1–41, 2016. [3] T. Loughran and B. McDonald, “When is a liability not a liability? textual analysis, dictionaries, and 10-ks,” The Journal of finance , vol. 66, no. 1, pp. 35–65, 2011. [4] J. Bollen, H. Mao, and X. Zeng, “Twitter mood predicts the stock market,” Journal of computational science , vol. 2, no. 1, pp. 1–8, 2011. [5] M. Taboada, J. Brooke, M. Tofiloski, K. Voll, and M. Stede, “Lexicon-based methods for sentiment analysis,” Computational linguistics ,vol. 37, no. 2, pp. 267–307, 2011. [6] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, “Bert: Pre-training of deep bidirectional transformers for language understanding,” in Pro-ceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) , 2019, pp. 4171–4186. [7] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, “Attention is all you need,” Advances in neural information processing systems , vol. 30, 2017. [8] T. Ye, L. Dong, Y. Xia, Y. Sun, Y. Zhu, G. Huang, and F. Wei, “Dif-ferential transformer,” Thirteenth International Conference on Learning Representations (ICLR) , 2025. [9] R. A. Jacobs, M. I. Jordan, S. J. Nowlan, and G. E. Hinton, “Adaptive mixtures of local experts,” Neural computation , vol. 3, no. 1, pp. 79–87, 1991. [10] N. Shazeer, A. Mirhoseini, K. Maziarz, A. Davis, Q. Le, G. Hinton, and J. Dean, “Outrageously large neural networks: The sparsely-gated mixture-of-experts layer,” arXiv preprint arXiv:1701.06538 , 2017. [11] K. L. Tan, C. P. Lee, K. S. M. Anbananthen, and K. M. Lim, “Roberta-lstm: a hybrid model for sentiment analysis with transformer and recurrent neural network,” Ieee Access , vol. 10, pp. 21 517–21 525, 2022. [12] S. Lai, L. Xu, K. Liu, and J. Zhao, “Recurrent convolutional neural networks for text classification,” in Proceedings of the AAAI conference on artificial intelligence , vol. 29, no. 1, 2015. [13] Y. Liu, M. Ott, N. Goyal, J. Du, M. Joshi, D. Chen, O. Levy, M. Lewis, L. Zettlemoyer, and V. Stoyanov, “Roberta: A robustly optimized bert pretraining approach,” arXiv preprint arXiv:1907.11692 , 2019. [14] Z. Yang, Z. Dai, Y. Yang, J. Carbonell, R. R. Salakhutdinov, and Q. V. Le, “Xlnet: Generalized autoregressive pretraining for language understanding,” Advances in neural information processing systems ,vol. 32, 2019. [15] I. Beltagy, M. E. Peters, and A. Cohan, “Longformer: The long-document transformer,” arXiv preprint arXiv:2004.05150 , 2020. [16] M. Zaheer, G. Guruganesh, K. A. Dubey, J. Ainslie, C. Alberti, S. Ontanon, P. Pham, A. Ravula, Q. Wang, L. Yang et al. , “Big bird: Transformers for longer sequences,” Advances in neural information processing systems , vol. 33, pp. 17 283–17 297, 2020. [17] E. Voita, D. Talbot, F. Moiseev, R. Sennrich, and I. Titov, “Analyzing multi-head self-attention: Specialized heads do the heavy lifting, the rest can be pruned,” arXiv preprint arXiv:1905.09418 , 2019. [18] S. Poria, E. Cambria, G. Winterstein, and G.-B. Huang, “Sentic pat-terns: Dependency-based rules for concept-level sentiment analysis,” 
+
+Knowledge-Based Systems , vol. 69, pp. 45–63, 2014. [19] A. Maas, R. E. Daly, P. T. Pham, D. Huang, A. Y. Ng, and C. Potts, “Learning word vectors for sentiment analysis,” in Proceedings of the 49th annual meeting of the association for computational linguistics: Human language technologies , 2011, pp. 142–150. [20] R. Socher, A. Perelygin, J. Wu, J. Chuang, C. D. Manning, A. Y. Ng, and C. Potts, “Recursive deep models for semantic compositionality over a sentiment treebank,” in Proceedings of the 2013 conference on empirical methods in natural language processing , 2013, pp. 1631–1642. [21] “Yelp open dataset,” https://www.yelp.com/dataset, accessed: 2025-10. [22] zeroshot, “Twitter financial news sentiment dataset (version 1.0.0),” https://huggingface.co/datasets/zeroshot/ twitter-financial-news-sentiment, 2023, accessed: 2025-10; MIT License.

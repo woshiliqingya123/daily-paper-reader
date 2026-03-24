@@ -1,0 +1,686 @@
+Title: Beyond Correlation: Refutation-Validated Aspect-Based Sentiment Analysis for Explainable Energy Market Returns
+
+URL Source: https://arxiv.org/pdf/2603.21473v1
+
+Published Time: Tue, 24 Mar 2026 02:27:00 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Highlights 
+
+## Beyond Correlation: Refutation-Validated Aspect-Based Sentiment Analysis for Explainable En-ergy Market Returns 
+
+Wihan van der Heever, Keane Ong, Ranjan Satapathy, Erik Cambria 
+
+• A refutation-testing pipeline for aspect-based sentiment analysis combining placebo, random common cause, subset stability, and bootstrap validation 
+
+• Demonstrates that many previously reported sentiment–return correlations fail basic robustness checks, highlighting the prevalence of spurious associations 
+
+• Identifies economically meaningful, refutation-validated associations between specific sentiment aspects and energy sector returns with distinct patterns for traditional versus renewable energy firms 
+
+> arXiv:2603.21473v1 [cs.AI] 23 Mar 2026
+
+# Beyond Correlation: Refutation-Validated Aspect-Based Sentiment Analysis for Explainable Energy Market Returns 
+
+## Wihan van der Heever a,∗, Keane Ong c, Ranjan Satapathy b and Erik Cambria a,∗∗ 
+
+> a
+
+College of Computing and Data Science, Nanyang Technological University, 50 Nanyang Ave, Singapore, 639798, Singapore 
+
+> b
+
+Institute of High Performance Computing, Agency for Science, Technology and Research, Fusionopolis Way, #16-16 Connexis, Singapore, 138632, Singapore 
+
+> c
+
+College of Design and Engineering, National University of Singapore, 9 Engineering Drive 1, Singapore, 117575, Singapore 
+
+A R T I C L E I N F O 
+
+Keywords :Finance XAI NLP Energy 
+
+A B S T R A C T 
+
+This paper proposes a refutation-validated framework for aspect-based sentiment analysis in financial markets, addressing the limitations of correlational studies that cannot distinguish genuine associa-tions from spurious ones. Using 𝕏 data for the energy sector, we test whether aspect-level sentiment signals show robust, refutation-validated relationships with equity returns. Our pipeline combines net-ratio scoring with 𝑧 -normalization, OLS with Newey West HAC errors, and refutation tests including placebo, random common cause, subset stability, and bootstrap. Across six energy tickers, only a few associations survive all checks, while renewables show aspect and horizon specific responses. While not establishing causality, the framework provides statistically robust, directionally interpretable signals, with limited sample size (six stocks, one quarter) constraining generalizability and framing this work as a methodological proof of concept. 
+
+## 1. Introduction 
+
+The proliferation of social media has fundamentally transformed financial markets, creating vast streams of un-structured textual data that encode investor sentiment, mar-ket expectations, and risk perceptions. While computational methods for extracting sentiment from text have advanced considerably (Cambria, Mao, Zhang, Xiao, Shen and Anand, 2026), establishing genuine causal relationships between sentiment signals and asset returns remains a critical chal-lenge for both researchers and practitioners. This challenge is acute in the energy sector, where fossil fuel and renewable companies respond to distinct sentiment drivers during the energy transition (Zioło, Bąk and Spoz, 2024). 
+
+Scope and Limitations Before proceeding, we note sev-eral important constraints that bound the scope and inter-pretation of this study. First, our analysis covers only six energy-sector stocks over a single quarter, which inherently limits statistical power, generalizability, and the ability to detect subtler patterns. Second, although we apply rigorous refutation tests to filter spurious correlations, these proce-dures do not establish definitive causality. Proper causal identification would require exogenous variation through instrumental variables, natural experiments, or randomized interventions—approaches that are unavailable in our ob-servational social media setting. We therefore frame our contribution as a robustness-testing framework designed to 
+
+> ∗
+
+Corresponding author 
+
+> ∗∗
+
+Principal corresponding author  
+
+> wihan001@e.ntu.edu.sg
+
+(W. van der Heever);  
+
+> keane.ongweiyang@u.nus.edu
+
+(K. Ong);  
+
+> satapathy_ranjan@ihpc.a-star.edu.sg
+
+(R. Satapathy); cambria@ntu.edu.sg 
+
+(E. Cambria) 
+
+> ORCID
+
+(s): 0000-0003-2616-4313 (W. van der Heever);  
+
+> 0009-0000-2397-1553
+
+(K. Ong); 0000-0002-0733-7381 (R. Satapathy);  
+
+> 0000-0002-3030-1280
+
+(E. Cambria) 
+
+highlight associations most likely to reflect genuine eco-nomic relationships rather than statistical artifacts, while remaining agnostic regarding precise causal mechanisms. Existing approaches to sentiment-based financial anal-ysis rely principally on correlational methods that cannot distinguish causation from spurious association. Studies em-ploying Pearson correlation (Baker and Wurgler, 2006), Granger causality (Granger, 1969), or information-theoretic measures (Theil, 1967) identify statistical dependencies but fail to account for confounding factors, reverse causality, or the multiple testing problems inherent in high-dimensional sentiment analysis. This limitation has profound implica-tions: investment strategies based on spurious correlations can lead to systematic losses, while regulatory frameworks built on incomplete causal understanding may struggle to achieve their intended market stability objectives (Bisias, Flood, Lo and Valavanis, 2012). We address this gap by introducing a comprehensive robustness-testing framework for aspect-based sentiment analysis in finance. Our approach strives to go beyond simple sentiment aggregation to ex-amine how specific financial aspects (such as economy, inflation, and market sentiment) causally influence stock returns. By implementing rigorous refutation tests, namely placebo treatments, random common cause insertion, subset stabil-ity analysis, and bootstrap validation, we establish a new standard for identifying robust, explainable relationships between textual sentiment and market outcomes. Our con-tribution is threefold. First, we develop a refutation-testing pipeline specif-ically designed for aspect-based sentiment analysis, incor-porating heteroskedasticity and autocorrelation consistent (HAC) standard errors to address the unique statistical prop-erties of financial time series. 
+
+W. van der Heever et al.: Preprint submitted to Elsevier Page 1 of 11 Refutation-Validated ABSA for Energy Market Returns 
+
+Second, we demonstrate through comprehensive empir-ical analysis that many previously reported sentiment-return relationships fail basic robustness checks, highlighting the prevalence of spurious correlations in existing literature. Third, we identify economically meaningful, refutation-validated associations between specific sentiment aspects and energy sector returns, revealing distinct patterns for traditional versus renewable energy firms that align with economic theory and provide actionable insights for market participants. The significance of this work extends further than method-ological advancement. As financial markets increasingly de-pend on algorithmic trading and sentiment-based strategies (Brogaard and Zareei, 2023), establishing genuine causal relationships becomes essential for market efficiency and stability. Our framework provides an interpretable solution required for regulatory compliance under emerging AI gov-ernance frameworks (European Commission, 2021; Estella, 2023), while offering practitioners a principled approach to sentiment-based investment that explicitly quantifies and controls for various sources of statistical bias. Recent advances in financial sentiment analysis have substantially improved the granularity and accuracy of text-derived signals through domain-adapted language models and aspect-based representations. However, methodological progress in sentiment extraction has not been matched by comparable advances in validation rigor . In high-dimensional settings—where dozens of aspects are evaluated across multiple assets and lags—the risk of false discovery is severe, and statistically significant correlations can arise even in the absence of meaningful economic relationships (Harvey, Liu and Zhu, 2016; McLean and Pontiff, 2016). This work responds to a growing recognition that robust-ness validation must be treated as a first-class methodolog-ical concern in sentiment-based financial modelling, rather than as an auxiliary diagnostic. We therefore shift emphasis from discovering strong sentiment–return correlations to identifying associations that survive systematic refutation .By embedding refutation testing directly into the modelling pipeline, we propose a principled framework for separating economically interpretable signals from statistical artifacts in aspect-based sentiment analysis. 
+
+## 2. Literature Review 
+
+2.1. Sentiment Analysis in Finance 
+
+The application of natural language processing to finan-cial markets has evolved through three distinct paradigms. Early work focused on document-level sentiment classi-fication using dictionary-based methods (Loughran and McDonald, 2011), establishing that financial text requires domain-specific sentiment lexicons distinct from general-purpose resources. These foundational studies demonstrated significant return predictability from news sentiment(Tetlock, 2007, 2016) and earnings call transcripts (Price, Doran, Peterson and Bliss, 2012), though effect sizes varied con-siderably across markets and time periods. The second wave introduced machine learning approaches, with support vector machines (Antweiler and Frank, 2004) and neural networks (Ding, Zhang, Liu and Duan, 2015) improving sentiment extraction accuracy. However, these methods typically treated sentiment as a monolithic con-struct, aggregating diverse textual signals into single polarity scores. This aggregation obscures the multifaceted nature of financial sentiment, where attitudes toward inflation, growth, and policy may diverge substantially (Shapiro, Sudhof and Wilson, 2022). Recent advances in aspect-based sentiment analysis (ABSA) address this limitation by decomposing sentiment along specific attributes or topics (Pontiki et al., 2016). In fi-nance, ABSA enables granular analyses of sentiment toward earnings, management, products, and market conditions (Huang, Wang and Yang, 2023). Graph-based approaches in-corporating semantic knowledge (Liang, Su, Gui, Cambria and Xu, 2022) and transformer architectures with attention mechanisms (Devlin, Chang, Lee and Toutanova, 2019) have pushed state-of-the-art performance on financial ABSA tasks. However, despite these methodological advances, the fundamental question of causality remains largely unad-dressed. 
+
+2.2. Statistical Methods for Sentiment-Return Relationships 
+
+The financial sentiment literature employs various sta-tistical frameworks to link text-derived signals with market outcomes. Correlation analysis remains prevalent despite well-documented limitations (Harvey et al., 2016). Studies report correlations ranging from 0.3 to 0.7 between senti-ment indicators and returns (Brown and Cliff, 2004), but these associations often disappear when controlling for mar-ket factors or examining out-of-sample periods (McLean and Pontiff, 2016). Tests involving Granger causality offer temporal prece-dence, yet cannot establish true causation without addi-tional assumptions (Pearl, 2009). Financial applications of Granger causality to sentiment often find bidirectional relationships (Chen, Rabbani, Gupta and Zaki, 2021), sug-gesting complex feedback dynamics that violate the unidi-rectional causality assumption. Moreover, Granger tests are vulnerable to omitted variable bias, which can be problem-atic, particularly in financial markets where numerous latent factors influence returns (Stern, 2011). Information-theoretic measures such as mutual informa-tion and transfer entropy provide model-free dependence quantification (Schreiber, 2000); nevertheless, these lack directional interpretation crucial for trading strategies. The uncertainty coefficient used in recent financial sentiment studies (Kim, Ryu and Yang, 2021) captures non-linear dependencies but cannot distinguish correlation from causa-tion, limiting practical applicability. Vector autoregressions (VAR) and structural equation models offer more sophisti-cated frameworks (Sims, 1980). Even so, these approaches require strong identifying assumptions that are rarely justi-fied in financial applications. The challenge is compounded   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 2 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+by the high-dimensional nature of aspect-based sentiment, where examining multiple aspects across multiple assets cre-ates extensive hurdles in the multiple testing space(Harvey et al., 2016). 
+
+2.3. Causal Inference in Financial Machine Learning 
+
+The integration of causal inference methods into fi-nancial machine learning represents a paradigm shift from prediction to explanation (López de Prado, 2018). Pearl and Mackenzie (2018) called this paradigm shift the “Causal Revolution”, where data alone is recognised as insufficient and in which humanity’s innate causal reasoning into scien-tific methodology is formalised. Potential outcomes frame-works(Rubin, 1974) and directed acyclic graphs (Pearl, 1995) provide formal languages for causal reasoning, though their application to financial text analysis remains nascent. Recent work applies instrumental variables to news sentiment (Engelberg and Parsons, 2011), exploiting geo-graphic variation in media coverage for identification. Re-gression discontinuity designs around earnings announce-ments (DellaVigna and Pollet, 2009) and difference-in-differences approaches comparing treated and control firms (Roberts and Whited, 2013) offer quasi-experimental identi-fication strategies. However, these methods typically require natural experiments or institutional features unavailable for most sentiment analysis applications. Refutation testing emerges as a practical framework for establishing causal robustness without experimental data (Sharma and Kiciman, 2020). By systematically testing whether observed relationships persist under various per-turbations—placebo treatments, synthetic confounders, data subsampling—refutation methods provide bounded confi-dence in causal claims. Applications in recommendation systems (Bottou, Peters, Candela, Charles, Chickering, Portugaly, Ray, Simard and Snelson, 2013) and healthcare (Prosperi, Guo, Sperrin, Koopman, Min, He, Rich, Wang, Buchan and Bian, 2020) demonstrate the framework’s effec-tiveness, though financial applications remain limited. Our work synthesizes these streams, applying rigorous causal inference to aspect-based financial sentiment analy-sis. By implementing comprehensive refutation tests tailored to financial time series properties, we address the causality gap that limits current sentiment-based trading strategies and risk management frameworks. This approach provides the explainability increasingly demanded by regulators (Basel Committee on Banking Supervision, 2021) while maintain-ing the granularity necessary for actionable market insights. 
+
+## 3. Methodology 
+
+3.1. Data Collection and Preprocessing 
+
+We collected tweets using the 𝕏 API v2 with aca-demic access, sampling tweets at hourly intervals through-out Q4 2022. Our keyword selection followed a “keyword hopping” framework, initiating with “nasdaq stock mar-ket” and iteratively expanding based on term frequency analysis (threshold > 100 occurrences). The final keyword set comprised 24 financial terms including market indica-tors (“stock market”, “nasdaq”, “inflation”), temporal mar-ket references (“monday sharemarket”, “market closes”), and crisis-related terms (“recession”, “pandemic stock”). Boolean queries combined keywords using OR operators, re-stricting to English-language tweets and excluding retweets to minimise amplification effects. This process yielded ap-proximately 120,000 unique tweets for analysis. Stock price data was sourced from Yahoo Finance, focusing on six energy sector companies selected for their market capital-isation and representation of energy transition dynamics: British Petroleum, Exxon, and Shell (traditional energy); NextEra, Clearway, and Brookfield Renewable (renewable energy). We used daily closing prices adjusted for splits and dividends, aligned to NYSE trading days. 
+
+3.2. Aspect Extraction and Sentiment Scoring 
+
+Financial aspects were derived through synthesis of ex-isting financial sentiment literature (Loughran and McDon-ald, 2011; El-Haj et al., 2019), employing Non-negative Matrix Factorisation and Latent Dirichlet Allocation on financial corpora (Blei, Ng and Jordan, 2003). The resulting 131 aspects were filtered to the 20 most frequent in our 𝕏 
+
+corpus, ensuring statistical power for causal estimation. For sentiment scoring, we implemented aspect-based sentiment analysis using a modified SenticGCN architecture (Cambria et al., 2026). For each aspect 𝑎 and day 𝑡 , we com-pute the positive, negative and neutral counts, respectively, in absolute terms: Absolute counts: 𝑝 𝑎𝑡 , 𝑛 𝑎𝑡 , 𝑛𝑒𝑢 𝑎𝑡 
+
+Thereafter, we calculate the net ratio as well as the total activity as follows: Net ratio: 𝑠 𝑎𝑡 = 𝑝 𝑎𝑡 − 𝑛 𝑎𝑡 
+
+max( 𝑝 𝑎𝑡 + 𝑛 𝑎𝑡 , 1) 
+
+Total activity: 𝑎𝑐𝑡𝑖𝑣𝑖𝑡𝑦 𝑎𝑡 = 𝑝 𝑎𝑡 + 𝑛 𝑎𝑡 + 𝑛𝑒𝑢 𝑎𝑡 
+
+The net ratio metric normalises sentiment intensity while preserving directional information, addressing the scale dis-parities inherent in frequency-based measures. All sentiment scores undergo 𝑧 -score standardisation within each aspect to ensure comparability: 
+
+𝑧 𝑎𝑡 = 𝑠 𝑎𝑡 − 𝜇 𝑎 
+
+𝜎 𝑎 
+
+3.3. Statistical Inference Framework with Robustness Testing 
+
+Our statistical model specifies the relationship between lagged sentiment and returns: 
+
+𝑟 𝑖,𝑡 = 𝛼 𝑖 + 𝛽 𝑖 ⋅ 𝑧 𝑎, 𝑡 −𝑙 + 𝛾 ′𝑋 𝑡 + 𝜀 𝑖,𝑡 
+
+where 𝑟 𝑖,𝑡 represents daily returns for stock 𝑖 , 𝑧 𝑎, 𝑡 −𝑙 is the standardised sentiment for aspect 𝑎 at lag 𝑙 ∈ {0 , 1, 2, 3} , and   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 3 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+𝑋 𝑡 includes controls (lagged returns, total sentiment activ-ity). We employ Ordinary Least Squares with Newey–West heteroskedasticity and autocorrelation consistent (HAC) standard errors using lag length 
+
+ℎ =
+
+⌊
+
+4
+
+( 𝑇 
+
+100 
+
+)2∕9 ⌋
+
+= 3 ,
+
+for 𝑇 = 92 trading days (Newey and West, 1987). 
+
+Interpretive Caution The coefficient 𝛽 𝑖 estimates the as-sociation between sentiment and returns conditional on our control variables. While temporal precedence (lagged sen-timent predicting future returns) and our refutation tests strengthen confidence that this association reflects genuine economic relationships rather than spurious correlation, we cannot claim definitive causality without addressing poten-tial confounders through instrumental variables or natural experiments. Our framework identifies predictively robust 
+
+associations suitable for trading strategies while acknowl-edging that unobserved factors (e.g., private information flows, institutional trading patterns) may partially explain observed relationships. 
+
+3.4. Refutation Test Specifications for Spurious Association Filtering 
+
+We implement four complementary refutation tests to distinguish robust associations from statistical artifacts. While refutation tests do not establish causality, they provide bounded confidence by assessing whether estimated effects are robust to systematic perturbations; failure under any refuter indicates a high likelihood of spurious association rather than economic signal (Whetton, 2025). These tests systematically probe whether observed relationships persist under various perturbations, providing multiple layers of protection against false discoveries without claiming to establish causality. Algorithm 1 implements the placebo treatment refuta-tion. 
+
+Algorithm 1 Placebo Treatment Test 
+
+Require: Returns 𝑟 , sentiment series 𝑧 𝑎 , controls 𝑋 , itera-tions 𝑁 = 200  
+
+> 1:
+
+Initialise container 𝐵 ← [ ]  
+
+> 2:
+
+for 𝑘 = 1 to 𝑁 do  
+
+> 3:
+
+𝑧 placebo ← RANDOM PERMUTATION (𝑧 𝑎 ) 
+
+> 4:
+
+𝛽 placebo ← ESTIMATE MODEL (𝑟, 𝑧 placebo , 𝑋 ) 
+
+> 5:
+
+Append |𝛽 placebo | to 𝐵  
+
+> 6:
+
+end for  
+
+> 7:
+
+𝑞 95 ← PERCENTILE (𝐵, 95)  
+
+> 8:
+
+return 𝑞 95 < |𝛽 observed |
+
+Algorithm 2 implements the random common cause refutation. 
+
+Algorithm 2 Random Common Cause Test 
+
+Require: Returns 𝑟 , sentiment series 𝑧 𝑎 , controls 𝑋  
+
+> 1:
+
+Draw synthetic confounder 𝑊 ∼  (0 , 1) with length matching 𝑧 𝑎  
+
+> 2:
+
+𝑋 aug ← [𝑋, 𝑊 ] 
+
+> 3:
+
+𝛽 rcc ← ESTIMATE MODEL (𝑟, 𝑧 𝑎 , 𝑋 aug ) 
+
+> 4:
+
+return sign( 𝛽 rcc ) = sign( 𝛽 observed )
+
+Algorithm 3 implements the subset stability refutation. 
+
+Algorithm 3 Subset Stability Test 
+
+Require: Dataset , sample fraction 𝑓 = 0 .8, iterations 
+
+𝑁 = 50  
+
+> 1:
+
+Initialise list 𝑆 ← [ ]  
+
+> 2:
+
+for 𝑘 = 1 to 𝑁 do  
+
+> 3:
+
+𝑘 ← RANDOM SAMPLE (, 𝑓 ) 
+
+> 4:
+
+𝛽 𝑘 ← ESTIMATE MODEL (𝑘 ) 
+
+> 5:
+
+Append sign( 𝛽 𝑘 ) to 𝑆  
+
+> 6:
+
+end for  
+
+> 7:
+
+𝑚 ← MODE (𝑆 )
+
+> 8:
+
+̂ 𝑝 ← 1
+
+> 𝑁
+
+∑𝑠 ∈𝑆 𝕀 {𝑠 = 𝑚 } 
+
+> 9:
+
+return ̂ 𝑝 ≥ 0.8
+
+Algorithm 4 implements the bootstrap confidence inter-val procedure. 
+
+Algorithm 4 Bootstrap Confidence Intervals 
+
+Require: Dataset , iterations 𝑁 = 500  
+
+> 1:
+
+Initialise container 𝐵 ← [ ]  
+
+> 2:
+
+for 𝑘 = 1 to 𝑁 do  
+
+> 3:
+
+𝑘 ← RESAMPLE WITH REPLACEMENT () 
+
+> 4:
+
+𝛽 𝑘 ← ESTIMATE MODEL (𝑘 ) 
+
+> 5:
+
+Append 𝛽 𝑘 to 𝐵  
+
+> 6:
+
+end for  
+
+> 7:
+
+return [PERCENTILE (𝐵, 2.5) , PERCENTILE (𝐵, 97 .5) ]
+
+A causal relationship is validated only if it passes all four tests, providing multiple layers of robustness against false discoveries. The placebo test controls for multiple testing, the random common cause test addresses omitted variable bias, subset stability ensures results aren’t driven by outliers, and bootstrap intervals provide distribution-free inference. Figure A6 summarises the end-to-end pipeline, high-lighting the refutation gate that promotes correlational find-ings to causally defensible signals. 
+
+3.5. Stock Selection Rationale and Scope Limitations 
+
+Our selection of six energy-sector stocks follows a purposive sampling strategy designed to balance analytical depth with sector representation. The traditional energy co-hort (BP, Exxon, Shell) represents the three largest European and American integrated oil majors by market capitalisation as of Q4 2022, collectively accounting for approximately $650 billion in market value and serving as bellwethers for   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 4 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+fossil fuel sentiment dynamics (Zioło et al., 2024). The renewable cohort (NextEra, Clearway, Brookfield Renew-able) similarly comprises leading pure-play and diversified renewable operators, with NextEra representing the largest U.S. renewable utility and Brookfield providing geographic diversification through global hydroelectric assets. This selection strategy prioritises depth over breadth ,enabling rigorous within-stock temporal analysis across 92 trading days while maintaining sufficient cross-sectional variation to identify differential sentiment responses be-tween energy transition poles. The choice reflects method-ological pragmatism: comprehensive refutation testing re-quires substantial computational resources per stock-aspect-lag combination, and our 6 stocks × 20 aspects × 4 lags = 480 individual regression specifications already represent a substantial hypothesis space requiring careful multiple testing control. We acknowledge this sample size constrains generalisability in several ways: 
+
+• Sector concentration: Results may not transfer to other sectors with different information environments (e.g., technology, healthcare) 
+
+• Temporal specificity: Q4 2022 coincided with Fed-eral Reserve tightening, European energy crisis, and post-COVID recovery dynamics that may not persist 
+
+• Size bias: Large-cap stocks may exhibit different sentiment-return dynamics than mid- or small-cap equities due to analyst coverage and institutional ownership differences 
+
+• Geographic limitation: Our sample excludes Asian and emerging market energy companies Future validation should expand to panel datasets span-ning multiple years, additional sectors, and broader market capitalisation ranges. We frame this study as a methodolog-ical proof-of-concept demonstrating refutation-testing prin-ciples rather than definitive empirical claims about energy markets. 
+
+## 4. Application and Results 
+
+4.1. Experimental Setup 
+
+We apply our causal inference framework to investigate the relationship between aspect-based sentiment in financial social media and stock returns in the energy sector. Our analysis encompasses both traditional energy companies (British Petroleum, Exxon, Shell) and renewable energy firms (NextEra, Clearway, Brookfield Renewable), using 𝕏 
+
+data from Q4 2022 containing approximately 120,000 tweets filtered for financial content. Following aspect extraction methodologies from finan-cial literature, we construct sentiment signals for 20 financial aspects including economy , inflation , market , investors , and 
+
+finance . For each aspect, we compute daily sentiment scores using the net ratio metric: positive − negative 
+
+max( positive + negative , 1) 
+
+which normalises sentiment intensity while preserving di-rectional information. This approach differs from simple frequency counts by accounting for the relative balance of positive and negative mentions. Our causal inference pipeline employs Ordinary Least Squares regression with heteroskedasticity and autocorre-lation consistent (HAC) standard errors using Newey–West correction with 3 lags, addressing the well-documented se-rial correlation in financial time series (Newey and West, 1987). We examine causal effects at lags 0–3 to capture both immediate and delayed sentiment impacts on returns, with all sentiment scores z-score normalised to ensure compara-bility across aspects. 
+
+4.2. Robustness Through Refutation Tests 
+
+A critical limitation of existing sentiment-finance stud-ies, including the FinXABSA approach (Ong, van der Heever, Satapathy, Cambria and Mengaldo, 2023), is their reliance on correlational methods that cannot distinguish genuine causal relationships from spurious associations. We address this through four complementary refutation tests: 
+
+Placebo Treatment Test We randomly shuffle sentiment scores 200 times while preserving temporal structure, estab-lishing a null distribution of effect sizes. A genuine causal effect must exceed the 95th percentile of absolute placebo effects. This test directly addresses the multiple testing prob-lem inherent in examining numerous aspect-return pairs. 
+
+Random Common Cause Test We introduce a synthetic confounder drawn from  (0 , 1) and re-estimate the model. Robust causal effects should maintain their sign and sig-nificance despite this perturbation, indicating they are not artifacts of omitted variable bias. 
+
+Subset Stability Test We repeatedly estimate effects on 80% subsamples (50 iterations), requiring sign agreement 
+
+≥ 80% for validation. This ensures findings are not driven by outliers or specific market events. 
+
+Bootstrap Confidence Intervals Using 500 bootstrap samples, we construct non-parametric confidence intervals that account for the complex dependence structure in finan-cial data without distributional assumptions. 
+
+4.3. Main Findings 
+
+Our results reveal economically meaningful and statisti-cally robust associations between specific sentiment aspects and stock returns that survive comprehensive refutation test-ing. Table 1 presents the strongest effects that pass all robustness checks: The temporal concentration of validated effects at short horizons (lags 1–2) is consistent with semi-strong market efficiency, where public information is rapidly but not in-stantaneously incorporated into prices (Fama, 1970). Impor-tantly, the refutation framework reveals that sentiment sig-nals with longer apparent predictive horizons—often high-lighted in correlational studies—fail robustness checks and                                                                      
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 5 of 11 Refutation-Validated ABSA for Energy Market Returns
+> Table 1
+> Refutation Test (RT) results for sentiment–return associations. Top panel shows validated associations passing all four tests; bottom panel illustrates how specific test failures filter poten-tially spurious signals.
+> Ticker Aspect Lag RT1 RT2 RT3 RT4
+> Validated associations (pass all tests):
+> BP economy 1✓✓✓✓
+> Shell economy 1✓✓✓✓
+> NextEra market 2✓✓✓✓
+> NextEra inflation 3✓✓✓✓
+> Clearway investors 2✓✓✓✓
+> Filtered associations (failed ≥1test):
+> Exxon finance 1✗✓✓✓
+> BP inflation 0✓✗✓✓
+> Brookfield market 1✓✓✗✓
+> Shell investors 0✓✓✓✗
+> Notes: ✓= pass, ✗= fail. Aspect Lag is the extracted aspect at the specified lag. RT1 = Placebo: observed |̂𝛽 |exceeds 95th percentile of 200 permutation-shuffled estimates. RT2 = Random Common Cause: effect sign preserved after adding synthetic (0 ,1)
+> confounder. RT3 = Subset: sign agreement ≥80% across 50 random 80% subsamples. RT4 = Bootstrap: 95% CI excludes zero (500 resamples with replacement).
+
+are likely driven by persistent confounders or overlapping information channels. From a practitioner perspective, this finding narrows the actionable window for sentiment-based strategies. Rather than supporting long-horizon forecasting, the results suggest sentiment functions as a short-lived informational catalyst whose economic impact decays within 48 hours. This dis-tinction is critical for deployment, as it directly informs signal refresh rates, transaction cost modelling, and risk controls. The economy aspect demonstrates the most consistent 
+
+predictive relationship , with BP and Shell exhibiting next-day returns of 0.48 and 0.47 basis points respectively per standard deviation increase in economy sentiment ( 𝑝 < 0.02 ,HAC-corrected). These effects persist through all refutation tests, with placebo test statistics of 0.0031 and 0.0029 re-spectively, well below the observed effects. For renewable energy stocks, we identify distinct senti-ment drivers. NextEra shows significant sensitivity to market 
+
+sentiment at lag 2 ( 𝛽 = 0 .36 bps, 𝑝 = 0 .027 ) and negative response to inflation sentiment at lag 3 ( 𝛽 = −0 .35 bps, 
+
+𝑝 = 0.031 ). Clearway responds positively to investors 
+
+sentiment at lag 2 ( 𝛽 = 0 .34 bps, 𝑝 < 0.001 ). Notably, these effects exhibit temporal decay, with most impacts dissipating beyond lag 2, suggesting rapid information incorporation consistent with semi-strong market efficiency (Fama, 1970). 
+
+4.4. Effect Size Interpretation and Economic Significance 
+
+To contextualise our findings within practitioner-relevant frameworks, we translate statistical coefficients into eco-nomically meaningful quantities. The economy-BP associ-ation ( 𝛽 = 0 .0048 at lag 1) implies that a one-standard-deviation increase in economy sentiment predicts approxi-mately 0.48 basis points additional return the following day. While seemingly modest, this effect compounds meaning-fully: sustained positive sentiment over a 20-day trading month would predict approximately 9.6 basis points ( 0.48 × 20 ) of cumulative excess return, net of other factors. For perspective, Kirtac and Germano (2024) report that LLM-based sentiment strategies achieve Sharpe ratios of 3.05 by exploiting effects of similar magnitude across broader portfolios. Our effect sizes fall within the range reported in recent energy-sector sentiment studies using transformer-based methods (Lee and Anderl, 2025), sug-gesting our refutation-validated signals, while smaller than raw correlational estimates, remain economically viable for systematic strategies. 
+
+Traditional vs. Renewable Asymmetries The distinct temporal profiles between cohorts carry interpretive sig-nificance. Traditional energy stocks (BP, Shell) respond to economy sentiment at lag 1, consistent with their role as cyclical assets whose valuations track macroeconomic expectations. The renewable cohort exhibits more dispersed responses: NextEra’s sensitivity to market sentiment at lag 2 and inflation at lag 3 may reflect the sector’s dependence on interest rate expectations (affecting project financing costs) and policy uncertainty. Clearway’s response to investors 
+
+sentiment aligns with its yield-oriented investor base, where retail sentiment may more directly influence trading flows. These patterns align with energy economics theory sug-gesting traditional and renewable firms occupy distinct po-sitions in investor mental models (Zioło et al., 2024), with fossil fuels perceived as macroeconomic proxies and renewables as policy-sensitive growth assets. Our refutation framework provides the first causally-defensible evidence for these theorised differential sensitivities. 
+
+4.5. Comparison with Correlation-Based Approaches 
+
+To contextualise our contributions, we contrast refutation-validated estimates with standard correlational approaches prevalent in the sentiment-finance literature. Methods em-ploying Pearson correlation, Granger causality, and uncer-tainty coefficients (Ong et al., 2023; Baker and Wurgler, 2006) identify statistical dependencies but cannot distin-guish causation from spurious association. Our analysis re-veals that high correlations between sentiment and returns— magnitudes commonly reported in the literature—often fail basic refutation checks. While FinXABSA reports corre-lations up to |𝑟 | = 0 .73 between inflation sentiment and NextEra returns, our causal analysis reveals a more nuanced picture: the actual causal effect is −0 .35 basis points at lag   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 6 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+3, substantially smaller than correlation analysis would sug-gest. As an illustrative comparison, this nuance is showcased in Figure 5, where the absolute Pearson correlation ( |𝑟 |) is plotted alongside effect magnitude in basis points ( |̂ 𝛽 |). This discrepancy highlights a fundamental limitation of correlational approaches: they conflate direct causal effects with indirect associations mediated through market-wide factors. Our refutation tests demonstrate that many seem-ingly strong correlations fail causality checks. For instance, while FinXABSA identifies significant correlations between 
+
+finance sentiment and multiple stocks, our placebo tests reveal these associations are indistinguishable from random noise in 7 out of 12 cases examined. Furthermore, the Granger causality tests employed by FinXABSA, while addressing temporal precedence, cannot distinguish predictive power from true causation (Pearl, 2009). Our random common cause refutation directly tests this distinction, revealing that 40% of Granger-causal rela-tionships in our sample fail when controlling for synthetic confounders. 
+
+4.6. Explainability Through Robustness-Validated Structure 
+
+The superiority of our causal inference approach extends beyond statistical rigor to enhanced explainability. Each identified relationship carries an interpretable causal narra-tive grounded in economic theory. For instance, the positive effect of economy sentiment on traditional energy stocks aligns with their role as cyclical assets whose valuations depend on economic growth expectations (Zioło et al., 2024; Kilian and Zhou, 2020). The coefficient magnitude ( ≈ 0 .5
+
+bps) represents an economically meaningful daily impact that compounds to approximately 12 basis points monthly for sustained sentiment shifts. In contrast, correlation-based metrics like uncertainty coefficients provide limited interpretability. While FinX-ABSA reports uncertainty coefficients up to 0.29, these information-theoretic measures lack the directional clarity and economic meaning of causal effects. A practitioner cannot determine from an uncertainty coefficient whether positive sentiment increases or decreases returns, nor can they quantify the economic magnitude of the relationship. Our refutation framework also provides explicit confi-dence in causal claims. When we report that BP’s response to economy sentiment passes all four refutation tests, this conveys specific guarantees: the effect is not due to multiple testing (placebo test), omitted variables (random common cause), outliers (subset stability), or distributional assump-tions (bootstrap). This transparency enables practitioners to make informed decisions about which signals warrant trading strategies versus further investigation. The temporal structure of effects offers additional in-sights. The concentration of significant effects at lags 1– 2, with decay thereafter, suggests sentiment information is rapidly but not instantaneously incorporated into prices. This finding has practical implications for trading strategy design, indicating a narrow window for sentiment-based alpha generation that closes within 48 hours of information release. 
+
+## 5. Discussions and Conclusion 
+
+5.1. Study Limitations 
+
+The findings should be interpreted with caution due to a combination of contextual, methodological, and data-related constraints. The analysis is confined to a specific macroeconomic regime (Q4 2022), characterised by mon-etary tightening, energy-market disruptions, and heightened geopolitical uncertainty, which may limit temporal general-isability. Sentiment signals are derived exclusively from 𝕏 ,whose demographic composition and subsequent platform-level changes may introduce selection bias and impede re-producibility. Finally, while extensive refutation tests were conducted, the observational nature of the study precludes full causal identification; unobserved confounders such as private information flows, algorithmic trading activity, and institutional rebalancing may partially account for the ob-served associations. 
+
+5.2. From Correlation to Robust Association: What This Framework Does and Doesn’t Claim 
+
+We emphasize critical distinctions between our refutation-testing approach and genuine causal inference. 
+
+What Our Framework Achieves: 
+
+• Filters spurious correlations through systematic ro-bustness checks (placebo tests, synthetic confounders, stability analysis) 
+
+• Establishes temporal precedence by examining lagged sentiment predicting future returns 
+
+• Provides bounded confidence in associations through multiple independent validation layers 
+
+• Yields economically interpretable effect sizes with directional clarity 
+
+What Constitutes True Causal Inference: Establishing definitive causality requires addressing three fundamental challenges (Pearl, 2009): 1. Confounding: Unobserved variables correlated with both sentiment and returns 2. Reverse causality: Returns potentially influencing subsequent sentiment expression 3. Selection bias: Non-random patterns in who tweets and when The random common cause test addresses confounding concerns by testing robustness to synthetic confounders, but cannot eliminate all unobserved variable bias. Temporal precedence mitigates but does not eliminate reverse causality concerns.   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 7 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+Appropriate Interpretation: We identify refutation-validated predictive associations that (1) survive multiple robustness checks, (2) exhibit temporal precedence, (3) align with economic theory, and (4) demonstrate effect sizes incon-sistent with pure noise. These properties make identified signals suitable for trading strategies and risk management while acknowledging that precise causal mechanisms remain partially uncertain. Future work employing instrumental variables—such as exogenous sentiment shocks from natural disasters or regulatory announcements—could strengthen causal claims. 
+
+5.3. Sample Size and Coverage Limitations 
+
+Our analysis is substantially constrained by sample size. With only six stocks over a single quarter (Q4 2022), statistical power is limited and generalizability is uncertain. This sample size is insufficient for: 
+
+• Robust sector-wide conclusions about energy markets 
+
+• Detection of heterogeneous treatment effects across firm characteristics 
+
+• Panel methods with firm fixed effects that control for time-invariant confounders 
+
+• Subgroup analysis comparing high-liquidity vs. low-liquidity stocks Additionally, Q4 2022 represents a specific macroeco-nomic regime characterized by Federal Reserve tightening, energy price volatility, and post-pandemic market dynamics. Identified associations may be regime-dependent, with dif-ferent patterns emerging during: 
+
+• Economic expansions vs. recessions 
+
+• High vs. low volatility periods 
+
+• Different monetary policy stances 
+
+• Energy supply shocks vs. stable periods 
+
+We explicitly frame this study as an exploratory methodological proof-of-concept demonstrating refutation-testing principles for ABSA-based financial analysis. Valida-tion requires: 1. Expanded cross-sectional coverage: 15–30 stocks per sector minimum 2. Extended time series: Multi-year rolling-window es-timation 3. Out-of-sample validation: Hold-out periods for pre-dictive performance assessment 4. Cross-sector replication: Technology, healthcare, fi-nancial sectors Future work should implement these extensions before drawing policy or investment recommendations. 
+
+5.4. Methodological Constraints 
+
+Despite comprehensive refutation testing, several method-ological limitations warrant consideration. First, our senti-ment measurement relies on aspect-level aggregation that may obscure within-day dynamics and intraday sentiment-return relationships. High-frequency analysis using tick data could reveal microstructure effects invisible at daily fre-quencies. Second, the linear specification may miss impor-tant non-linearities and threshold effects. Sentiment impact might exhibit asymmetry between positive and negative do-mains or state-dependence conditional on market volatility (García, 2013). The HAC standard errors, while addressing serial cor-relation, assume stationarity that may be violated during crisis periods. Future research should explore time-varying parameter models and regime-switching frameworks that allow causal effects to evolve with market conditions. Ad-ditionally, our univariate approach examines each aspect independently, potentially missing interaction effects where multiple aspects jointly influence returns. 
+
+5.5. Implications for Regulatory Compliance and Explainable AI 
+
+The European Union’s AI Act, which entered into force in August 2024, establishes stringent transparency and ex-plainability requirements for high-risk AI systems in finan-cial services (Kim, Jeong, Cho and Chung, 2025). Credit scoring, risk assessment, and algorithmic trading systems face particular scrutiny, with regulators requiring that auto-mated decisions be interpretable, auditable, and free from unjustified bias (Habibullah et al., 2024). Our refutation-testing framework directly addresses these regulatory de-mands. Unlike black-box sentiment aggregators that produce opaque signals, our approach provides: 1. Transparent assumptions: Each association is ex-plicitly conditional on specified confounders and lag structures 2. Auditable validation: Refutation test results provide documented evidence that signals survive multiple robustness checks 3. Directional interpretability: Effect sizes carry clear economic meaning (basis points per standard devia-tion) rather than abstract correlation coefficients 4. Bounded confidence: Bootstrap intervals and subset stability tests quantify uncertainty in ways amenable to risk management frameworks The Financial Stability Oversight Council’s 2024 An-nual Report elevated AI as a systemic risk concern, specifi-cally citing model opacity and the difficulty of auditing com-plex ML systems (Financial Stability Oversight Council, 2024). Refutation testing offers a practical middle ground between fully interpretable linear models (which may sac-rifice predictive power) and opaque deep learning systems (which face regulatory skepticism). By demonstrating that sentiment signals can be rigorously validated without sac-rificing economic meaning, our framework provides a tem-plate for compliance-ready sentiment analytics.   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 8 of 11 Refutation-Validated ABSA for Energy Market Returns
+
+For practitioners deploying sentiment-based strategies, we recommend: 
+
+• Documenting refutation test results as part of model validation packages 
+
+• Establishing minimum pass rates across refutation suites before signal deployment 
+
+• Maintaining audit trails linking trading decisions to specific validated associations 
+
+• Implementing periodic re-validation to detect regime changes that may invalidate historical relationships 
+
+5.6. Causal Identification Challenges 
+
+While refutation tests strengthen causal claims, they can-not eliminate all threats to identification. Unobserved con-founders correlated with both sentiment and returns—such as private information diffusion or algorithmic trading pat-terns—may bias estimates despite passing refutation tests. The assumption of no anticipatory effects (strict exogeneity) may be violated if sophisticated traders act on sentiment predictions before they materialise in social media. Furthermore, our framework assumes homogeneous treatment effects across stocks within each sector. Het-erogeneous responses based on firm characteristics (size, leverage, analyst coverage) could provide more granular insights but require larger samples for reliable estimation. Panel methods with firm fixed effects and clustered standard errors represent a natural extension. 
+
+5.7. Limitations 
+
+The findings presented in this study are subject to several important constraints. The small sample (six stocks, one quarter) precludes definitive sector-wide conclusions. Our refutation tests strengthen confidence in identified associ-ations but cannot establish causality without instrumental variables or natural experiments. Unobserved confounders— such as private information flows, algorithmic trading activ-ity, and institutional rebalancing—may partially account for the observed relationships, and the observational nature of the study precludes full causal identification. We therefore frame contributions as methodological, demonstrating how systematic robustness testing filters spurious correlations in high-dimensional sentiment analysis, rather than as defini-tive empirical claims about energy markets. 
+
+5.8. Future Research Directions 
+
+Several avenues merit investigation. First, incorporat-ing large language models (LLMs) for sentiment extraction could improve aspect detection and sentiment classification accuracy. Zero-shot and few-shot learning approaches might identify emergent aspects not captured by predefined lexi-cons. Second, graph neural networks could model the inter-dependence structure between aspects, capturing sentiment spillovers and contagion effects. Methodologically, instrumental variable approaches us-ing exogenous sentiment shocks (regulatory announcements, natural disasters) could provide stronger identification. Syn-thetic control methods (Bouttell, Craig, Lewsey, Robin-son and Popham, 2018; Abadie, 2010) comparing treated stocks to synthetic counterfactuals offer another identifica-tion strategy. Machine learning methods for causal inference, including causal forests (Wager and Athey, 2018) and double machine learning (Chernozhukov et al., 2018), could accommodate high-dimensional controls while maintaining valid inference. From a practical perspective, developing real-time im-plementation requires addressing several challenges: senti-ment extraction latency, online learning for parameter up-dates, and transaction cost modelling. Integration with port-folio optimisation frameworks would translate causal in-sights into implementable trading strategies with explicit risk-return tradeoffs. Extending the framework to other textual sources— earnings calls, analyst reports, regulatory filings—would provide a more comprehensive view of information flow in financial markets. Cross-modal analysis combining text, audio, and visual data represents the frontier for multimodal financial sentiment analysis, requiring new causal frame-works for heterogeneous data integration. 
+
+5.9. Conclusion 
+
+This paper presented a robustness-testing framework 
+
+that elevates aspect-based sentiment analysis beyond naive correlation by combining aspect-specific signals (net-ratio scoring with z-normalisation), OLS with Newey–West HAC errors, and four refutation tests (placebo, random common cause, subset stability, bootstrap) to filter spurious associ-ations. Applied to ∼120,000 𝕏 posts in Q4 2022 for six energy-sector equities, the framework isolates a small set of 
+
+refutation-validated associations that are economically in-terpretable and statistically robust: economy sentiment pre-dicts next-day returns for BP and Shell ( ≈0.48/0.47 bps per s.d.), while renewables exhibit aspect- and horizon-specific responses. The framework yields sentiment signals that are directionally interpretable, economically sized, and more reliable than correlational baselines, providing a foundation for expanded validation across markets and time periods. 
+
+## Acknowledgements 
+
+This research is supported by the RIE2025 Industry Alignment Fund – Industry Collaboration Projects (IAF-ICP) (Award I2301E0026), administered by A*STAR, as well as supported by Alibaba Group and NTU Singa-pore through Alibaba-NTU Global e-Sustainability Cor-pLab (ANGEL). The work is also supported by the Ministry of Education, Singapore under its MOE Academic Research Fund Tier 2 (MOE-T2EP20123-0005). 
+
+## A. Appendix 
+
+Please see Figure A6.   
+
+> W. van der Heever et al.: Preprint submitted to Elsevier Page 9 of 11
+
+Refutation-Validated ABSA for Energy Market Returns 
+
+## CRediT authorship contribution statement 
+
+Wihan van der Heever: Conceptualization, Methodol-ogy, Software, Formal Analysis, Writing - Original Draft, Visualization. Keane Ong: Data curation, Investigation. 
+
+Ranjan Satapathy: Methodology, Validation, Writing - Re-view & Editing. Erik Cambria: Supervision, Resources, Writing - Review & Editing. 
+
+## References 
+
+Abadie, A., 2010. Synthetic control methods for comparative case studies: Estimating the effect of california’s tobacco control program. Journal of the American Statistical Association 105, 493–505. Antweiler, W., Frank, M.Z., 2004. Is all that talk just noise? the information content of internet stock message boards. Journal of Finance 59, 1259– 1294. Baker, M., Wurgler, J., 2006. Investor sentiment and the cross-section of stock returns. Journal of Finance 61, 1645–1680. Basel Committee on Banking Supervision, 2021. Principles for operational resilience. Technical Report. Bank for International Settlements. Basel, Switzerland. Bisias, D., Flood, M., Lo, A.W., Valavanis, S., 2012. A survey of systemic risk analytics. Annual Review of Financial Economics 4, 255–296. Blei, D.M., Ng, A.Y., Jordan, M.I., 2003. Latent dirichlet allocation. Journal of machine Learning research 3, 993–1022. Bottou, L., Peters, J., Candela, J.Q., Charles, D.X., Chickering, D.M., Portugaly, E., Ray, D., Simard, P., Snelson, E., 2013. Counterfactual reasoning and learning systems: The example of computational adver-tising. Journal of Machine Learning Research 14, 3207–3260. Bouttell, J., Craig, P., Lewsey, J., Robinson, M., Popham, F., 2018. Synthetic control methodology as a tool for evaluating population-level health interventions. J Epidemiol Community Health 72, 673–678. Brogaard, J., Zareei, A., 2023. Machine learning and the stock market. Journal of Financial and Quantitative Analysis 58, 1431–1472. Brown, G., Cliff, M.T., 2004. Investor sentiment and the near-term stock market. Journal of Empirical Finance 11, 1–27. Cambria, E., Mao, R., Zhang, X., Xiao, L., Shen, T., Anand, A., 2026. SenticNet 9: Generative commonsense for emotion AI via conceptual primitive discovery and time shift mechanism. IEEE Transactions on Computational Social Systems 13. Chen, Y., Rabbani, R.M., Gupta, A., Zaki, M.J., 2021. Comparative text analytics via topic modeling in banking, in: Proceedings of the IEEE Symposium Series on Computational Intelligence, pp. 1–8. Chernozhukov, V., et al., 2018. Double/debiased machine learning for treatment and structural parameters. Econometrics Journal 21, C1–C68. DellaVigna, S., Pollet, J.M., 2009. Investor inattention and friday earnings announcements. Journal of Finance 64, 709–749. Devlin, J., Chang, M., Lee, K., Toutanova, K., 2019. Bert: Pre-training of deep bidirectional transformers for language understanding, in: Proceed-ings of NAACL-HLT, pp. 4171–4186. Ding, X., Zhang, Y., Liu, T., Duan, J., 2015. Deep learning for event-driven stock prediction, in: Proceedings of the 24th International Joint Conference on Artificial Intelligence, pp. 2327–2333. El-Haj, M., et al., 2019. In search of meaning: Lessons, resources and next steps for computational analysis of financial discourse. Journal of Business Finance & Accounting 46, 265–306. Engelberg, J., Parsons, C.A., 2011. The causal impact of media in financial markets. Journal of Finance 66, 67–97. Estella, A., 2023. Trust in artificial intelligence: Analysis of the european commission proposal for a regulation of artificial intelligence. Ind. J. Global Legal Stud. 30, 39. European Commission, 2021. Proposal for a Regulation laying down har-monised rules on artificial intelligence. Technical Report COM(2021) 206 final. European Commission. Brussels. Fama, E.F., 1970. Efficient capital markets: A review of theory and empirical work. Journal of Finance 25, 383–417. Financial Stability Oversight Council, 2024. 2024 Annual Re-port. Technical Report. U.S. Department of the Treasury. Wash-ington, DC. URL: https://home.treasury.gov/system/files/261/ FSOC2024AnnualReport.pdf .García, D., 2013. Sentiment during recessions. Journal of Finance 68, 1267–1300. Granger, C.W.J., 1969. Investigating causal relations by econometric models and cross-spectral methods. Econometrica 37, 424–438. Habibullah, K.M., et al., 2024. Explainable ai: A diverse stakeholder per-spective, in: 2024 IEEE 32nd International Requirements Engineering Conference (RE), IEEE. pp. 494–495. Harvey, C.R., Liu, Y., Zhu, H., 2016. ... and the cross-section of expected returns. Review of Financial Studies 29, 5–68. Huang, A.H., Wang, H., Yang, Y., 2023. Finbert: A large language model for extracting information from financial text. Contemporary Accounting Research 40, 806–841. Kilian, L., Zhou, X., 2020. The propagation of regional shocks in housing markets: Evidence from oil price shocks in canada. Journal of Money, Credit and Banking 52, 1749–1791. Kim, B.J., Jeong, S., Cho, B.K., Chung, J.B., 2025. Ai governance in the context of the eu ai act. IEEE Access . Kim, K., Ryu, D., Yang, H., 2021. Information uncertainty, investor sen-timent, and analyst reports. International Review of Financial Analysis 77, 101835. Kirtac, K., Germano, G., 2024. Sentiment trading with large language models. Finance Research Letters 62, 105227. Lee, C.Y., Anderl, E., 2025. Does business news sentiment matter in the energy stock market? adopting sentiment analysis for short-term stock market prediction in the energy industry. Frontiers in artificial intelligence 8, 1559900. Liang, B., Su, H., Gui, L., Cambria, E., Xu, R., 2022. Aspect-based sen-timent analysis via affective knowledge enhanced graph convolutional networks. Knowledge-Based Systems 235, 107643. Loughran, T., McDonald, B., 2011. When is a liability not a liability? textual analysis, dictionaries, and 10-ks. Journal of Finance 66, 35–65. McLean, R.D., Pontiff, J., 2016. Does academic research destroy stock return predictability? Journal of Finance 71, 5–32. Newey, W.K., West, K.D., 1987. A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. Econometrica 55, 703–708. Ong, K., van der Heever, W., Satapathy, R., Cambria, E., Mengaldo, G., 2023. FinXABSA: Explainable finance through aspect-based sentiment analysis, in: Proceedings of the IEEE International Conference on Data Mining Workshops, pp. 773–782. Pearl, J., 1995. Causal diagrams for empirical research. Biometrika 82, 669–688. Pearl, J., 2009. Causality: Models, Reasoning and Inference. 2 ed., Cambridge University Press, Cambridge, UK. Pearl, J., Mackenzie, D., 2018. The Book of Why: The New Science of Cause and Effect. First ed., Basic Books, New York, NY. Pontiki, M., et al., 2016. Semeval-2016 task 5: Aspect based sentiment analysis, in: Proceedings of the 10th International Workshop on Seman-tic Evaluation, pp. 19–30. López de Prado, M., 2018. Advances in Financial Machine Learning. Wiley, Hoboken, NJ. Price, S.E., Doran, J.S., Peterson, D.R., Bliss, B.A., 2012. Earnings conference calls and stock returns: The incremental informativeness of textual tone. Journal of Banking and Finance 36, 992–1011. Prosperi, M., Guo, Y., Sperrin, M., Koopman, J.S., Min, J.S., He, X., Rich, S., Wang, M., Buchan, I.E., Bian, J., 2020. Causal inference and counterfactual prediction in machine learning for actionable healthcare. Nature Machine Intelligence 2, 369–375. Roberts, M.R., Whited, T.M., 2013. Endogeneity in empirical corporate fi-nance, in: Handbook of the Economics of Finance. Elsevier, Amsterdam. volume 2, pp. 493–572. Rubin, D.B., 1974. Estimating causal effects of treatments in randomized and nonrandomized studies. Journal of Educational Psychology 66, 688– 701. 
+
+W. van der Heever et al.: Preprint submitted to Elsevier Page 10 of 11 Refutation-Validated ABSA for Energy Market Returns 
+
+Schreiber, T., 2000. Measuring information transfer. Physical Review Letters 85, 461–464. Shapiro, A.H., Sudhof, M., Wilson, D.J., 2022. Measuring news sentiment. Journal of Econometrics 228, 221–243. Sharma, A., Kiciman, E., 2020. Dowhy: An end-to-end library for causal inference. arXiv:2011.04216 .Sims, C.A., 1980. Macroeconomics and reality. Econometrica 48, 1–48. Stern, D.I., 2011. From correlation to granger causality. Crawford School Research Paper . Tetlock, P., 2016. The role of media in the stock market. News and Finance .Tetlock, P.C., 2007. Giving content to investor sentiment: The role of media in the stock market. Journal of Finance 62, 1139–1168. Theil, H., 1967. Economics and Information Theory. North-Holland, Amsterdam. Wager, S., Athey, S., 2018. Estimation and inference of heterogeneous treat-ment effects using random forests. Journal of the American Statistical Association 113, 1228–1242. Whetton, K., 2025. A practical guide to interpreting refutation tests in causal inference. URL: https://medium.com/@knp25/ a-practical-guide-to-interpreting-refutation-tests-in-causal-inference-934036cf0d0f .medium article. Zioło, M., Bąk, I., Spoz, A., 2024. The role of financial markets in energy transitions. Energies 17, 6315. 
+
+Aspect Sentiment 
+
+𝑧 𝑎,𝑡 −𝑙 
+
+Stock Returns 
+
+𝑟 𝑖,𝑡 
+
+Observed Controls 
+
+𝑋 𝑡 
+
+Unobserved Confounders 𝑈 
+
+Market Factors 
+
+𝑀 𝑡 
+
+𝛽 𝑖    
+
+> Treatment Outcome Observed Unobserved Target effect Confounding
+
+Figure 1: Directed acyclic graph (DAG) representing the assumed causal structure for sentiment–return analysis. The target estimand is 𝛽 𝑖 , the effect of lagged aspect sentiment 
+
+𝑧 𝑎,𝑡 −𝑙 on returns 𝑟 𝑖,𝑡 . Observed controls 𝑋 𝑡 (lagged returns, sentiment activity) are included in the OLS specification. Dashed elements represent unobserved confounders 𝑈 (e.g., private information flows, algorithmic trading patterns) whose influence refutation tests help assess sensitivity to. Refutation testing cannot eliminate confounding but provides bounded confidence that estimates are not purely artifactual. 
+
+Figure 2: Dot-and-whisker plot of bootstrap 95% confidence intervals for top signals. Blue: associations passing all four refutation tests; grey: filtered associations failing ≥ 1 test. Coefficient labels in basis points ( ×100). The dashed red line marks zero. W. van der Heever et al.: Preprint submitted to Elsevier Page 11 of 11 Refutation-Validated ABSA for Energy Market Returns 
+
+Figure 3: Stem plot of market sentiment coefficients across lags 0–3 for NextEra. Only the lag-2 coefficient (blue) survives all four refutation tests, with temporal decay evident at lag 3. 
+
+Lag 0 Lag 1 Lag 2 Lag 3 
+
+economy – 0.48 – –
+
+market – – 0.36 –
+
+inflation – – – −0.35 
+
+investors – – 0.34 –
+
+finance – – – –
+
+growth – – – –
+
+Scale     
+
+> +0.4 to +0.5
+> +0.3 to +0.4
+> Not validated
+> −0.2 to −0.3
+> −0.3 to −0.4
+> Units: bps per s.d.
+
+Figure 4: Heatmap of validated sentiment–return associations across aspects and lags. Colored cells show refutation-validated coefficients ( ̂ 𝛽 × 100 , basis points per standard deviation); gray cells indicate associations failing at least one refutation test. The clustering of positive effects at lags 1–2 with a negative 
+
+inflation effect at lag 3 suggests aspect-specific temporal dynamics in information incorporation. 
+
+Correlational vs. Refutation-Validated 
+
+|𝑟 | or |̂𝛽 |0 0.15 0.30 0.45 0.60 0.75 
+
+BP: economy 𝐿 1 0.73 
+
+> 0.048
+
+Shell: economy 𝐿 1 0.68 
+
+> 0.047
+
+NextEra: market 𝐿 2 0.52 
+
+> 0.036
+
+NextEra: inflation 𝐿 3 0.73 
+
+> 0.035
+
+Clearway: investors 𝐿 2 0.45    
+
+> 0.034
+> Correlation |𝑟 |
+> Validated |̂𝛽 |
+
+Figure 5: Comparison of correlational effect sizes (red, Pearson 
+
+|𝑟 |) versus refutation-validated regression coefficients (green, 
+
+|̂𝛽 | in daily return units). Raw correlations range from 0.45 to 0.73, while validated effects are an order of magnitude smaller (0.034–0.048), illustrating the substantial “deflation” that occurs when spurious associations are filtered through systematic robustness testing. W. van der Heever et al.: Preprint submitted to Elsevier Page 12 of 11 Refutation-Validated ABSA for Energy Market Returns 
+
+Yes No 
+
+𝕏 corpus 
+
+Q4 2022; ∼120k posts 
+
+Daily equity prices 
+
+6 energy tickers 
+
+Preprocessing 
+
+clean, deduplicate, align 
+
+Aspect discovery 
+
+NMF/LDA, literature 
+
+ABSA scoring 
+
+net ratio, per-aspect 
+
+𝑧 -normalisation 
+
+within aspect 
+
+OLS with Newey–West HAC 
+
+lags 0–3; controls: lagged returns, activity 
+
+Placebo 
+
+> shuffle sentiment
+
+Random cause 
+
+> synthetic confounder
+
+Subset stability 
+
+> 80% subsamples
+
+Bootstrap CIs 
+
+> 500 resamples
+
+Refutation Suite 
+
+Pass all tests? Validated effects 
+
+economy →BP/Shell L1; etc. 
+
+Discard 
+
+spurious/unstable 
+
+Interpretation & theory 
+
+direction, magnitude, horizon 
+
+Visualisation & reporting 
+
+tables, plots, heatmaps 
+
+> DATA SIGNAL
+> MODEL
+> VALIDATE
+> OUTPUT
+
+Figure A6: End-to-end workflow for refutation-validated sentiment analysis. Data inputs (top) flow through signal construction and OLS modelling to a four-part refutation suite. Only associations passing all refutation tests proceed to interpretation; spurious signals are discarded. W. van der Heever et al.: Preprint submitted to Elsevier Page 13 of 11

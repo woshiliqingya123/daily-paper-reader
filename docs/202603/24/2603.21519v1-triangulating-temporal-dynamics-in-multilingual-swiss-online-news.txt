@@ -1,0 +1,656 @@
+Title: Triangulating Temporal Dynamics in Multilingual Swiss Online News
+
+URL Source: https://arxiv.org/pdf/2603.21519v1
+
+Published Time: Tue, 24 Mar 2026 01:45:06 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# Triangulating Temporal Dynamics in Multilingual Swiss Online News 
+
+## Victor Bros 1, 2 , Evan Dufraisse 3, Adrian Popescu 3, Daniel Gatica-Perez 1, 2 
+
+> 1
+
+Idiap Research Institute, Switzerland 
+
+> 2
+
+EPFL, Switzerland 
+
+> 3
+
+Universit´ e Paris-Saclay, CEA, LIST, France victor.bros@idiap.ch, adrian.popescu@cea.fr, gatica@idiap.ch 
+
+Abstract 
+
+Analyzing news coverage in multilingual societies can offer valuable insights into the dynamics of public discourse and the development of collective narratives, yet comprehensive studies that account for linguistic and cultural diversity within national media ecosystems remain limited, particularly in complex contexts such as Switzerland. This paper studies temporal trends in Swiss digital media across the country’s three main linguistic regions, French, German, and Italian, using a triangulated methodology that combines quantitative analyses with qualitative insights. We collected and processed over 1.7 million news articles (January 2019–January 2023), applying lexical metrics (diversity, density, sentence length), named entity recognition and Wikidata-based linking, tar-geted sentiment analysis, and consensus-based change-point detection. To enable principled cross-language comparisons and to connect to theories of domestication and cultural prox-imity, we derive domestication profiles together with a prox-imity salience ratio. Our analysis spans thematic, recurrent, and singular events (e.g. the British Royal Family, Christ-mas, Brexit, and the Swiss Wolf). By integrating quantita-tive data with qualitative interpretation, we provide new in-sights into the dynamics of Swiss digital media and demon-strate the usefulness of triangulation in media studies. The findings reveal distinct temporal patterns and highlight how linguistic and cultural contexts influence reporting. For exam-ple, French outlets emphasize France’s role in Brexit negoti-ations, while German and Italian media focused on broader European implications, patterns reflected in our domestica-tion and proximity indices. In contrast, coverage of the Swiss Wolf is strongly localized, with each linguistic region high-lighting its own cantons and concerns, and with consistently high Swiss anchoring across languages. Our approach offers a framework applicable to other multilingual or culturally di-verse media environments, contributing to a deeper under-standing of how news is shaped by linguistic and cultural fac-tors. 
+
+## 1 Introduction 
+
+The digital transition has reshaped how news is produced, distributed, and consumed. Audiences, especially younger ones, favor online formats, pushing legacy outlets toward digital platforms and accelerating the transnational circula-tion of news (Bengtsson and Johansson 2021; Jehel 2021; 
+
+Copyright © 2026, Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. 
+
+Alipour et al. 2024). This environment is also more frag-mented, with implications for how users encounter and evaluate information (Steppat, Castro, and Esser 2023). While widespread “echo chambers” are contested, pock-ets of strong ideological segregation exist and can af-fect public discourse (Mok, Inzlicht, and Anderson 2023; Garimella et al. 2021). Temporal analysis is important for making sense of news dynamics: it reveals agenda fluctu-ations, framing shifts, and the evolution of sentiment and actors over time (Kwak, An, and Ahn 2020). Advances in NLP and time-series analysis enable scalable detection of phases and breaks in coverage (Patel 2022). In our approach, these tools are tied to classic accounts of agenda-setting and issue-attention cycles, which anticipate surges and de-clines around focusing events and institutionalized rhythms (Downs 1991). In multilingual contexts, however, diver-gences in coverage may reflect linguistic and cultural dy-namics, domestication, and cultural proximity, rather than clear-cut fragmentation. We therefore ground the study in four complementary strands. First, the agenda-setting and issue-attention cycles model temporal salience shifts (McCombs and Shaw 1993). Second, domestication and cultural proximity predict that foreign events are reframed through national or local lenses with systematic cross-linguistic variation (Clausen 2004; Straubhaar 2021). Third, comparative media systems place Switzerland in the Democratic Corporatist model, shaping professional norms and outlet roles (Hallin and Mancini 2004). Fourth, research on segmented and transnational public spheres anticipates partially parallel, linguistically bounded spheres that remain loosely coupled (Wessler et al. 2008). These perspectives motivate our temporal modeling and our operationalization of cross-linguistic domestication and proximity. Switzerland offers a distinctive testbed. It is a small, federal, officially multilingual state (German, French, Ital-ian, Romansh, a small minority) with news production and consumption organized along federal and language-regional lines and persistent, though porous, language cleavages (the “R¨ ostigraben”) (FSO 2025; Linder and Mueller 2021). The market has consolidated around a few private groups (TX Group, CHMedia, Ringier) alongside a strong public service media (SRG SSR) mandated to serve all language regions (Udris, F¨ urst, and Eisenegger 2024; OFCOM 2025). Swiss 
+
+> arXiv:2603.21519v1 [cs.CL] 23 Mar 2026
+
+audiences are simultaneously exposed to proximate foreign media spheres (France, Germany, Italy), reflecting cultural proximity (Udris and Eisenegger 2024). These structural features plausibly shape agenda-setting and domestication across regions, public service media counterbalance market concentration, while cross-border ties and federalism sup-port partially segmented but loosely coupled public spheres (Blum 2003). At the same time, consolidation and staffing cuts have raised concerns about regional diversity and the emergence of “news deserts” (swissinfo 2024, 2022; Aber-nathy 2018; Vogler, Weston, and Udris 2023). Despite this rich context and literature, few studies oper-ationalize agenda-setting, domestication, and cultural prox-imity at scale across coexisting linguistic regions within one national media system. We address this gap with a trian-gulated design that integrates quantitative and qualitative lenses: lexical indices, Wikidata-linked domestication pro-files and a proximity salience ratio, targeted sentiment to-ward entities, and a consensus-based change-point proce-dure. Triangulation enhances interpretability by situating quantitative signals in event timelines and media routines (Olsen 2004; Hart 2018; Hinternesch 2019). We examine temporal trends in Swiss digital media by focusing on different event types, thematic , singular , and 
+
+recurrent , across the three main language regions. We illus-trate the approach with two focal cases, Brexit (international, singular) and the Swiss Wolf (domestic, thematic), and pro-vide parallel analyses for Christmas (domestic, recurrent) and the British Royal Family (international, thematic). This leads us to the following research questions: 
+
+RQ1 : What temporal patterns emerge in the coverage of dif-ferent event types in Swiss online media? 
+
+RQ2 : How do temporal trends in media coverage differ across linguistic regions in Switzerland? 
+
+RQ3 : How can a triangulated methodology, combining quantitative and qualitative analyses, enhance understanding of media dynamics in a multilingual context? We contribute to the literature by (1) developing a triangu-lated approach that integrates quantitative data analysis and qualitative interpretation, including standardized lexical in-dices, entity-linked domestication and proximity measures, and consensus change-point detection; (2) analyzing me-dia coverage of various event types across French, German, and Italian online news outlets in Switzerland over a four-year period; (3) providing insights into how linguistic and cultural contexts influence news reporting in a multilingual country; and (4) demonstrating the utility of triangulated ap-proaches in media studies, particularly within complex, mul-tilingual environments. Although centered on Switzerland, the framework is portable to other multilingual or culturally segmented media systems (e.g. Belgium, Canada, Spain, and India) where coexisting language spheres shape coverage. 
+
+## 2 Related Work 
+
+Research on digital news media encompasses media framing effects, event representation, narrative evolution, and com-putational techniques to analyze news content. In the con-text of our study on temporal analysis of multilingual news articles, we review literature on media framing and tempo-ral analysis, event detection using NLP methods, multilin-gual media studies, definitions of media events, triangulation methodologies, and the Swiss media landscape. 
+
+2.1 Media Framing, Agenda-Setting, and Temporal Dynamics in News Studies 
+
+Media framing significantly influences public perception by emphasizing certain aspects of events. Kwak, An, and Ahn (2020) conducted a frame analysis of 1.5 million New York Times articles using a media frame classifier, uncov-ering both short-term fluctuations corresponding to ma-jor events and long-term trends, such as the rise of the ”Cultural identity” frame. Similarly, Dehler-Holland, Schu-macher, and Fichtner (2021) applied topic modeling and change-point analysis to examine shifts in framing of the German Renewable Energy Act over 17 years, highlight-ing transitions in media coverage from optimism to cost concerns. In exploring sensitive social issues, Mittal et al. (2024) analyzed media framing of violence against women, finding that national, right-leaning, and conspiratorial news sources employed more stigmatized framings. This under-scores the impact of media attributes on representation and influence. Whereas framing captures how issues are in-terpreted through specific schemata, agenda-setting con-cerns what issues receive attention and when, the two tra-ditions are complementary for studying temporal patterns of news salience. Beyond framing, agenda-setting research provides a foundational account of how media coverage structures issue salience and attention over time (McCombs and Shaw 1993). Downs’ “issue-attention cycles” anticipate surges in attention around focusing events or institutional-ized rhythms, followed by declines even when problems per-sist (Downs 1991). These regularities justify modeling at-tention as time series and identifying structural breaks: in our analyses, peaks and shifts in article volume, lexical pro-files, and entity prominence are read as empirical traces of agenda-building and attention cycling. Prior research has examined how news coverage unfolds over time and how different issues are reported. For in-stance, Calvo Figueras, Caselli, and Broersma (2021) inves-tigated temporal dimensions such as lifespan and burstiness, revealing distinct behaviors across different stories. Addi-tionally, Moutinho, Brazdil, and Cordeiro (2019) examined Portuguese news articles and related tweets and observed that news publications intensify around key events, while social media discussions are more evenly distributed. Ad-vancements in natural language processing have enabled au-tomated event detection and analysis in news media. Trilling and van Hoof (2020) proposed methods to identify news events as an intermediate level between articles and top-ics, facilitating meaningful comparisons of media coverage and audience exposure. Enhancements to topic modeling for short texts were introduced by Yang et al. (2016), who integrated human judgment to improve similarity between text pairs, thereby improving accuracy on sources such as Twitter. Beyond event detection and topic modeling, other computational approaches have focused on understanding the evolution and propagation of sentiment and information in news coverage. For example, Tan, Friggeri, and Adamic (2016) found that sentiment diminishes in news coverage compared to source press releases but increases in social me-dia interactions. Their work highlights complexities in how content evolves across different platforms. These methodologies inform our approach, which em-ploys NLP techniques, such as topic modeling and sentiment analysis, combined with change-point detection to automat-ically identify trends and phases in news coverage. 
+
+2.2 Multilingual Media Studies & Swiss Context 
+
+Comparative media systems research situates Switzerland in the Democratic Corporatist model, characterized by strong public service media, professionalized journalism, and his-torically robust press traditions (Hallin and Mancini 2004). For Switzerland specifically, scholarship documents distinc-tive media structures and regulatory traditions (Blum 2003) and shows that media type often explains variance in “hard news” orientation more strongly than ownership or language region (Udris et al. 2020). This evidence tempers purely linguistic explanations by foregrounding system-level at-tributes, e.g. public service versus commercial outlets, as consequential drivers of coverage. At the same time, do-mestication research argues that foreign events are routinely recontextualized through national or local frames (Clausen 2004), amid debates over convergence toward a “global newsroom” versus persistent national particularism (Gure-vitch, Levy, and Roeh 1993; Hafez 1999). Recent work formalizes “degrees of domestication,” showing systematic cross-national variation in how foreign events are related to domestic actors, institutions, and everyday life (van Doore-malen and Duyvendak 2025). Cultural proximity predicts that outlets emphasize familiar linguistic and cultural refer-ents (Straubhaar 2021). In multilingual polities, these pro-cesses unfold within partially parallel, linguistically seg-mented public spheres that are nevertheless loosely coupled through translation and cross-lingual gatekeeping (Wessler et al. 2008). Our cross-language comparisons of salience (frequency), referential focus (entities and locations), and sentiment thus probe domestication and proximity within a multilingual media system. Complementing these system-level considerations, the multilingual nature of global news media presents both challenges and opportunities. West and Pfeffer (2017) uti-lized unsupervised methods to compile a multilingual cor-pus on armed conflicts, revealing disparities in coverage even when controlling for violence levels. Mendelsohn et al. (2023) highlighted the role of multilingual users in facilitat-ing cross-lingual information exchange on social media, in-fluencing the diffusion of regional politics and social move-ments. In media organizations operating in multilingual con-texts, Nelissen and Hendrickx (2024) examined Belgium’s national news agency and found a heavy reliance on local information subsidies, raising concerns about content diver-sity. To scale up framing analysis, Akter and Anastasopoulos (2024) explored the creation of datasets via crowdsourcing across 12 languages, demonstrating the feasibility of multi-lingual media frame analysis. Focusing on Switzerland, Udris et al. (2020) analyzed fac-tors influencing the coverage of major current events and public affairs, finding that media types and ownership ex-plain differences more than language regions. Vogler and Udris (2021) studied transregional coverage and noted varia-tions by topic and media type. Additionally, Vogler, Weston, and Udris (2023) applied geoparsing to analyze local news articles, observing signs of news desertification but stable place name diversity. These studies emphasize the impor-tance of considering linguistic and cultural factors in me-dia analysis, particularly in multilingual contexts such as Switzerland (Bros and Gatica-Perez 2025). The Swiss me-dia landscape offers a unique context for examining me-dia quality and coverage diversity. Zhang (2022) compared Swiss and Chinese media coverage of Switzerland’s engage-ment with the Belt and Road Initiative, revealing differences shaped by ideological positions and cultural contexts. These insights into the Swiss media landscape underscore the importance of considering multilingual and regional dy-namics in media analysis, a central focus of our study. 
+
+2.3 Triangulation Methodologies in Media Studies 
+
+Triangulation refers to the use of multiple methods or sources in research to gain a comprehensive perspective on a phenomenon. In this sense, integrating quantitative and qualitative methods deepens understanding in media research. Olsen (2004) discussed the benefits of triangula-tion in enhancing interpretation rather than merely valida-tion. In news translation, Davier and Doorslaer (2018) sug-gested combining comparative text analysis with fieldwork to contextualize findings. Similarly, Ong (2019) employed a multidisciplinary approach to analyze media coverage of international events, combining discourse analysis with at-titudinal studies. Moran-Ellis et al. (2006) elaborated on the processes of triangulation, emphasizing data integration across stages to support thoughtful analysis. This method-ological approach aligns with our intention to triangulate quantitative automatic analyses with qualitative case stud-ies to interpret media coverage patterns. Despite rich tra-ditions in agenda-setting, domestication/cultural proximity, and comparative media systems, few studies operationalize these frameworks at scale across coexisting language re-gions within a single national media system. Our triangu-lated design directly addresses this gap. 
+
+## 3 Methodology 
+
+In this study, we analyze temporal trends in Swiss digital media across the French, German, and Italian languages. We collected a comprehensive dataset of news articles and employed a combination of automatic extraction methods and linguistic analyses to identify and characterize differ-ent types of media events, including measurement of lexi-cal diversity and density, named entity recognition and link-ing with country anchoring, targeted sentiment analysis, and robust, consensus-based change-point detection. To enable principled cross-language comparisons, we standardize lex-ical metrics within language and operationalize domestica-tion and cultural proximity through two indices derived from Figure 1: Triangulated methodology for temporal analysis of Swiss digital news events. The diagram summarizes the integrated workflow, combining multilingual data collection, automatic event extraction, quantitative analyses, qualitative in-terpretation, and triangulated findings on temporal and cross-lingual patterns. Wikidata-linked entities. We conclude with a triangulation approach that integrates quantitative and qualitative analy-ses to provide a nuanced understanding of media coverage. Figure 1 provides an overview of the end-to-end pipeline. The remainder of this section details each stage. 
+
+3.1 Data Collection and Processing 
+
+We compiled a dataset of digital news articles from CC-News (Hamborg et al. 2017), a subset of the CommonCrawl repository containing exclusively media outlet content. Ar-ticles were collected from January 2019 to January 2023, encompassing a range of Swiss news sources in French, German, and Italian. Language inference was performed on each article using language detection algorithms to accu-rately categorize the content (Joulin et al. 2016). Despite ini-tial consideration, we excluded Romansh from our analysis due to the limited number of articles (fewer than 8,000 over four years from a single reliable source), focusing instead on the other Swiss official languages with sufficient data vol-ume. We selected sources based on three criteria: (i) tem-poral consistency—sources with a consistent distribution of articles over the entire timeframe to ensure comprehensive coverage; (ii) content scope—generalist news outlets to cap-ture a broad spectrum of topics, excluding niche publica-tions that may not reflect general media trends; and (iii) data quality—exclusion of sources with a high ratio of missing or faulty content ( ≥ 5% ). We also screened articles for boil-erplate (e.g. repeated footers or newsletter invitations) and removed identifiable boilerplate to enhance data cleanliness. The corpus contains 1,702,671 articles from 29 unique out-lets: 1,247,048 German (18 outlets), 332,822 French (8), and 122,801 Italian (4). 
+
+3.2 Definition of Media Events 
+
+Previous studies have provided foundational definitions of media events, notably the work of Dayan and Katz (1992), who conceptualized media events as exceptional occur-rences that interrupt regular programming and command the collective attention of audiences. Skey (2020) expanded on this by introducing a master category of exceptional medi-ated events, encompassing four main types: media events, media disasters, news events, and pseudo-events. This cate-gorization emphasizes the need for analytical tools that fo-cus on temporality, organization, scale, liveness, and genre in understanding media events within a complex landscape. While these frameworks provide valuable insights, our study adopts a different approach, focusing specifically on the temporal dimension to accommodate automatic extrac-tion. Using unsupervised techniques, we identify events within our dataset and define media events based on their temporal characteristics and manifestations in digital news articles, categorizing them into three distinct types: • Thematic Events : Events characterized by an overarch-ing theme or topic that evolves over time. These events are connected through common subject matter rather than a singular occurrence and are identified using topic modeling methods, specifically BERTopic (Grootendorst 2022). Because of their thematic nature, they are more challenging to delineate within clear temporal bound-aries. • Singular Events : Unique occurrences within a specific time frame that attract intense media coverage. These events are significant happenings that do not recur fre-quently, such as major political decisions or significant policy announcements. We extract these events using the BM25 algorithm (Robertson and Zaragoza 2009), em-ploying predefined keywords as queries to retrieve rel-evant articles. With this approach, we prioritize precision over recall to ensure that the selected articles are highly relevant to the event. • Recurrent Events : Events that occur regularly, often an-nually, and are anticipated by both media and the public. They include cultural festivals, holidays, and annual con-ferences. Similar to singular events, we extract recurrent events using the BM25 algorithm with predefined key-words, focusing on events that are known to recur within specific time intervals. Our definitions and categorizations are thus closely aligned with the automatic extraction methods employed. The use of BERTopic for thematic events allows us to un-cover latent topics in the dataset without prior knowledge, while BM25 enables us to target specific events based on known keywords. This methodology may result in some overlap between event types, reflecting the complexities of media reporting where an event can have both singular oc-currences and thematic elements. We distinguish targeted retrieval (BM25) and unsupervised discovery (BERTopic) with method-specific inclusion rules. BM25 events had to appear in all three language regions and meet minimum per-language volume ( ≈ 100 articles for the smallest lan-guage, Section 4). Queries prioritized precision and were validated by manual spot checks (full lists in Appendix D). For BERTopic we retained interpretable, adequately sized clusters that surfaced in ≥ 2 linguistic regions with visible temporal structure (Appendix E). 
+
+3.3 Lexical Diversity and Density 
+
+We summarize textual variation with three standard metrics used across French, German, and Italian: (i) Type–Token Ratio (TTR) as an indicator of vocabulary variety; (ii) lexical density (share of content words among all tokens); and (iii) mean sentence length (MSL) as a proxy for syntactic com-plexity (Kettunen 2014; Sherstinova, Ushakova, and Melnik 2020). Because absolute levels are not directly comparable across languages, we standardize each metric within a lan-guage by converting article-level values to z-scores relative to that language’s corpus. To obtain a single summary indicator, we compute a com-posite standardized index as the equal-weight average of the three language-specific z-scores. We aggregate monthly and apply a three-month rolling mean for visualization. All cross-language comparisons rely on standardized scores, a relative-change robustness is developed in the Appendix G. 
+
+3.4 Named Entity Recognition and Linking 
+
+We extract named entities with GLiNER (Zaratiana et al. 2023), focusing on three canonical categories widely used in media analysis and an additional custom one, enabled by the generalist model used: Person , Location , Organization ,and Event . In line with news usage, categories are functional (e.g. a non-human actor may be treated as a Person if framed as an agent in coverage. In the Results, ”Wolf” may be clas-sified as a Person when it is treated as an actor in the narra-tive of the news articles.). To consolidate variant surface forms and enable cross-language comparisons, we link extracted mentions to Wiki-data IDs using mGENRE (De Cao et al. 2022) and retain links with confidence ≥ 0.5. Linked entities are aggregated at weekly or monthly levels and serve as inputs to domesti-cation and cultural proximity indicators. Model benchmarks, threshold checks, and additional notes on cross-language ro-bustness are provided in Appendices H and F. 
+
+3.5 Operationalizing Domestication and Cultural Proximity 
+
+To connect our quantitative analysis to domestication and cultural proximity (see Section 2), we derive two comple-mentary measures from linked entities: a domestication pro-file and a proximity salience ratio. Both are computed at the article level and then aggregated weekly. 
+
+Domestication profile. For each article, we compute the proportions of linked mentions anchored to (i) Switzerland, (ii) the language’s proximate neighbor(s) (France for FR, Germany/Austria for DE, Italy for IT), and (iii) other foreign actors (including EU institutions and the UK). Country an-chors are inferred from Wikidata properties associated with the linked items. Aggregation yields weekly shares by lan-guage. We minimally augment recall with short language-specific cue lists, details are in Appendix F. 
+
+Cultural proximity ratio (PSR). We quantify the relative salience of proximate versus other foreign references using a smoothed log ratio, as LPSR = log  (mprox + 1) /(mother +1)  where mprox counts mentions anchored to the language’s proximate partner(s) and mother counts foreign mentions that are neither proximate nor Swiss. We compute weekly aver-ages by language. 
+
+3.6 Sentiment Analysis 
+
+To assess sentiment toward entities, we follow recent guide-lines for reliable sentiment measurement in news con-texts (Hamborg and Donnay 2021; Bestvater and Monroe 2023) and employ targeted sentiment classification (TSC) models. Specifically, we utilize the training dataset and pro-tocol from Dufraisse et al. (2023) to train encoder-based models for French, German, and Italian. Sentiment inference is performed as a 3-class task (positive, neutral, negative) for each entity mention. To compute an aggregated sentiment score for each entity, we subtract the negative-class proba-bility from the positive-class probability (positive values in-dicate positive sentiment), yielding a continuous score that reflects the overall sentiment polarity associated with the en-tity across a sample of occurrences. 
+
+3.7 Change Point Detection 
+
+To identify meaningful shifts in coverage that relate to agenda-building and attention cycles, we adopt a robust, consensus-based change-point detection (CPD) procedure. We build weekly time series for article frequency, but can be generalized to various time series (e.g. Lexical Metrics, Named Entity Frequency). For display, we show weekly counts together with a three-week moving average and a LOESS trend. CP detection is run on the smoothed se-ries (three-week moving average). We generate candidate change points using multiple detectors (PELT with an RBF cost across a small penalty grid, Binary Segmentation with the number of breakpoints matched to PELT’s baseline, and Bayesian Online CPD with a constant hazard), and then cluster all candidate cut points within ±1 week. We retain the cluster median as a consensus change point if it is sup-ported by at least two detectors. 
+
+3.8 Triangulation Approach 
+
+Our study employs a triangulation methodology that inte-grates quantitative analyses with qualitative insights to pro-vide a comprehensive understanding of media event cov-erage, while avoiding reliance on any single indicator. We proceed in five coordinated steps: (1) Quantitative analy-sis : track article frequencies, compute lexical metrics, ex-tract named entities and link them to derive domestication and cultural proximity profiles, estimate targeted sentiment toward entities, and apply change-point detection. (2) Con-textualization with a priori knowledge : compile concise event timelines (key dates, milestones, institutional rhythms, background) to anchor statistical variation. (3) Qualitative interpretation : align shifts, peaks, and breakpoints with timelines and media routines, assessing plausible mecha-nisms (policy windows, seasonality, focusing events). (4) 
+
+Comparative analysis : systematically compare across lan-guages and event types, with particular attention to domesti-cation profiles and LPSR to probe cultural proximity, along-side contrasts in salience, referential focus, and sentiment. (5) Integration of findings : synthesize these strands into in-tegrated narratives that characterize phases of coverage and cross-lingual dynamics. This triangulated design enhances interpretability by situ-ating automatic signals within event chronologies and media practices and by seeking converging evidence across hetero-geneous indicators, yielding concise, comparable accounts of temporal structure and domestication in a multilingual news system. 
+
+## 4 Results 
+
+We analyze media coverage of four events: Brexit, Christ-mas, the British Royal Family, and the Swiss Wolf. The se-lection balances event types and extraction methods (singu-lar/recurrent via BM25, thematic via BERTopic). We present full, parallel analyses for two focal events in the main text, Brexit (international, BM25-targeted singular) and the Swiss Wolf (domestic, BERTopic/thematic), and include complete dossiers for the other events in the Appendix J and K. This structure demonstrates breadth (multi-event coverage) and depth (two detailed cases). The four event subsets contain 2,093/2,699/801 Brexit articles, 4,226/5,179/2,284 Christmas articles, 764/2,579/0 Royal Family articles, and 2,374/2,918/652 Swiss Wolf articles in French/German/Ital-ian, respectively. The Royal Family topic did not surface in the Italian topic model. 
+
+4.1 Focal Case Studies: Brexit and the Swiss Wolf 
+
+We report parallel results for both focal events: frequency and change points, standardized lexical metrics, domestica-tion profiles, and proximity ratios, named entities with tar-geted sentiment, and a triangulated narrative. Plotting con-ventions and CPD visualization details are summarized in Appendix I. 
+
+Article Frequency and Change Points Weekly arti-cle counts with consensus change-point detection delin-eate phases of coverage (see Change Point Detection 3.7). Shaded bands in Figures 2 and 3 mark consensus change points. Implementation choices and plotting settings are in Appendix I. 
+
+Brexit (singular, BM25-targeted). Figure 2 shows a clas-sic issue-attention cycle with a small build-up in early 2019, followed by a sharp regime shift in mid-2019 around the UK leadership change. The most intense phase spans au-tumn 2019 to early 2020, with multiple consensus change points bracketing the prorogation crisis, the December 2019 general election, and the UK’s formal withdrawal from the EU (31 January 2020). Subsequent segments capture the negotiation and implementation period: breakpoints in late 2020 align with the end-of-year deadline and signature of the Trade and Cooperation Agreement, while early 2021 marks the start of the post-Brexit regime and related frictions. After a lower and more stable plateau through 2021–early 2022, a final cluster of change points in mid-to-late 2022 coin-cides with the UK leadership turmoil (Johnson’s resigna-tion, Truss’s short premiership, Sunak’s appointment) and a tapering of attention thereafter. The LOESS trend mirrors these phases, with the global maximum occurring around the late-2019/early-2020 interval. 2020 2021 2022 2023   
+
+> 0
+> 60
+> 120
+> 180
+> Number of Articles
+> Weekly Count 3-week MA LOESS trend
+
+Figure 2: Weekly Brexit article counts. Shaded bands indi-cate consensus change points. 
+
+Swiss Wolf (thematic, BERTopic-derived). In Figure 3, coverage increases steadily from early 2019 and culminates in a pronounced burst in late summer–early autumn 2020, bounded by consensus change points around the national referendum on the hunting law (27 September 2020). A marked break and decline at the turn of 2020/2021 signal the end of the referendum phase. Thereafter, attention becomes cyclical, with recurrent summer–autumn pulses that coin-cide with the alpine grazing season and reports of livestock depredations. Change-point clusters in 2021–2022 track regulatory steps and cantonal authorizations for culls, the largest post-referendum surge in late summer–autumn 2022 corresponds to a series of high-salience incidents and feder-al/cantonal decisions, followed by a gradual easing toward the end of the observation window. The smoothed trend thus reflects a domestically anchored, seasonally patterned atten-tion cycle punctuated by national policy episodes. 2020 2021 2022 2023   
+
+> 0
+> 30
+> 60
+> 90
+> Number of Articles
+> Weekly Count 3-week MA LOESS trend
+
+Figure 3: Weekly Swiss Wolf article counts. Shaded bands indicate consensus change points. Standardized Lexical Complexity Over Time We sum-marize lexical variation with a composite standardized index (within-language z-scored TTR, lexical density, and mean sentence length; higher values indicate more varied/dense/-longer language). A robustness check using relative changes yields the same ordering (Appendix G). 
+
+Brexit. Figure 4 shows elevated lexical complexity in late 2019–early 2020 in French and German outlets, consistent with legalistic and procedural reporting around the election, withdrawal date, and the Trade and Cooperation Agreement. From mid-2020 onward, both languages exhibit a gradual drift toward simpler writing (indices trending to or below zero), in line with the routinization of coverage as the story moves from negotiation to implementation. A mild rebound in 2022 coincides with the UK leadership crisis, when inter-pretive pieces and retrospectives temporarily increased lin-guistic complexity. The Italian series is more volatile, partly reflecting the smaller sample size, but shows the same broad pattern of a dip through 2020–2021 and a short-lived uptick around mid-2022. Overall amplitudes remain moderate (typ-ically within ±0.5, z ), indicating changes in article mix and style rather than wholesale shifts in register. 2019 2020 2021 2022 2023   
+
+> -0.3
+> 0.0
+> 0.3
+> Lexical z-score
+> French German Italian
+
+Figure 4: Standardized composite lexical index for Brexit 
+
+(monthly, 3-month MA). 
+
+Swiss Wolf. For the Swiss Wolf topic (Figure 5), the composite index is comparatively stable and organized in episodes. French- and German-language coverage sits slightly above baseline through 2019–early 2020 and peaks around the 2020 hunting-law referendum, when articles in-clude legislative detail and expert commentary. Indices then soften through 2021, a period dominated by brief incident reports and updates, before a partial recovery in late 2022 during renewed regulatory debates and cantonal decisions. The Italian series shows two marked, event-concordant rises (Q4 2021 and late summer–autumn 2022), consistent with bursts of analysis tied to regional salience. As with Brexit, magnitudes are modest, suggesting that observed fluctua-tions chiefly reflect shifts in the mix between short news items and longer explanatory pieces rather than system-atic language-specific baselines, which are controlled for by standardization. 
+
+Domestication Profile and Cultural Proximity (LPSR) 
+
+We report weekly domestication shares (Swiss, neighbor, foreign-other) alongside the log Proximity Salience Ratio 2019 2020 2021 2022 2023   
+
+> -0.2
+> 0.0
+> 0.2
+> Lexical z-score
+> French German Italian
+
+Figure 5: Standardized composite lexical index for Swiss Wolf (monthly, 3-month MA). (LPSR). Figures 6–9 show small multiples by language. 
+
+Figure 6: Weekly domestication profile for Brexit .
+
+Brexit. As expected for an international story, foreign an-choring dominates across languages (large “foreign” strata in Figure 6). French-language outlets display the most pro-nounced and sustained “neighbor” share, particularly dur-ing negotiation and decision windows (late 2019; late 2020), whereas German- and Italian-language coverage leans more heavily on EU institutions and the UK (“foreign-other”), with only episodic domestication spikes around Swiss im-pact pieces (e.g. market access, bilateral relations). The LPSR trajectories in Figure 7 are consistently neg-ative, indicating that references to proximate partners are outweighed by other foreign actors. The French and Ital-ian series show brief upward movements toward zero in negotiation or leadership crisis phases, consistent with the heightened salience of proximate elites. The German se-ries, by contrast, remains more persistently negative through 2021–2022, in line with an EU-level frame rather than a Germany-specific one. Overall, the pattern aligns with do-mestication and cultural-proximity expectations: a predom-inantly foreign, supranational frame with language-specific tilts toward proximate actors, strongest in French coverage. 2019 2020 2021 2022   
+
+> −4
+> −3
+> −2
+> −1
+> 0
+> Average log-PSR
+> French German Italian
+
+Figure 7: LPSR over time for Brexit (weekly averages). 
+
+Figure 8: Weekly domestication profile for Swiss Wolf .
+
+Swiss Wolf. The Swiss Wolf topic is overwhelmingly do-mesticated in all three languages (Figure 8). Swiss anchor-ing rises markedly around the 2020 hunting-law referendum and remains elevated thereafter, with French coverage ap-proaching saturation in several stretches and German/Ital-ian coverage maintaining high Swiss shares while still re-flecting regional variation. Neighbor references are marginal and largely confined to episodic cross-border mentions (e.g. Alpine packs, regulatory comparisons), which never dis-place the Swiss focus. Consistent with this strong domestication, LPSR values hover near zero or mildly negative in Figure 9, reflect-ing the rarity of foreign mentions and the absence of a proximate-neighbor lens. Occasional positive blips, most visible in the Italian series in late 2021–2022, coincide with short bursts of articles referencing Italy or Austrian cases, but these remain temporary and bounded. Taken together, the domestication profile and LPSR confirm that the Swiss Wolf is framed as a Swiss, often cantonal, issue with limited reliance on proximate foreign referents. 
+
+Entity Salience and Targeted Sentiment We track men-tion counts for canonical entities (persons, organizations, lo-cations, event/legislative labels) with Wikidata linking, and 2019 2020 2021   
+
+> −2.4
+> −1.6
+> −0.8
+> 0.0
+> 0.8
+> Average log-PSR
+> French German Italian
+
+Figure 9: LPSR over time for Swiss Wolf (weekly averages). targeted sentiment for entity mentions using a 3-class TSC model, aggregated weekly. 
+
+Brexit. Figure 10 shows that entity salience follows the phases identified by change-point detection. Mentions of UK political leaders (Theresa May, Boris Johnson, Liz Truss, Rishi Sunak) and EU actors (e.g. the European Com-mission and Council) surge during the 2019 leadership change, the December 2019 election, the 31 January 2020 withdrawal, and the end-2020 agreement deadline. Peaks for Brussels and EU institutions align with negotiation win-dows, whereas later flares in 2022 reflect leadership turnover in the UK. The Italian series is more irregular due to lower volume, but displays the same alignment of entity spikes with milestone weeks. 2019 2020 2021 2022 2023 
+
+> Month
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Mentions (log scale)
+> Boris Johnson
+> Brexit
+> Jeremy Corbyn
+> Liz Truss
+> Parti Travailliste
+> Rishi Sunak
+> Royaume-Uni
+> Theresa May
+> Union européenne
+> Entity
+> Boris Johnson
+> Brexit
+> Jeremy Corbyn
+> Liz Truss
+> Parti Travailliste
+> Rishi Sunak
+> Royaume-Uni
+> Theresa May
+> Union européenne
+
+Figure 10: Monthly frequency of Brexit key named entities in French-language coverage. Targeted sentiment (Figure 11, French subset for illustra-tion) is slightly negative overall for the event and for most political figures. Theresa May’s trajectory trends down-ward through mid-2019, Boris Johnson’s polarity oscillates around mildly negative with dips at moments of procedural crisis, Liz Truss registers a short positive blip at appointment followed by a rapid fall at resignation. Rishi Sunak remains closer to neutral in the observed window. The “Union eu-rop´ eenne” and “Royaume-Uni” entities hover near neutral to slightly negative, consistent with conflict-heavy reporting and economic-impact frames during peak phases. 
+
+Swiss Wolf. Figure 12 plots entity salience on a log scale and highlights the strong domestication of this topic. Men-tions of the animal entity (Loup/Wolf/Lupo) and of leg-islative or hunting labels (Chasse/Jagdgesetz/Caccia) rise 2019 2020 2021 2022 
+
+> −3
+> −2
+> −1
+> 0
+> 1
+> 2
+> Avg. sentiment
+> Entity
+> Boris Johnson
+> Brexit
+> Jeremy Corbyn
+> Liz Truss
+> Rishi Sunak
+> Royaume-Uni
+> Theresa May
+> Union européenne
+
+Figure 11: Evolution of weekly sentiment scores for Brexit -event entities in French-language coverage. sharply around the 2020 hunting-law referendum, then re-turn in seasonal waves that coincide with the alpine grazing period. Location entities are distinctly language-regional: 
+
+Valais in French, Graub¨ unden in German, Ticino/Grigioni 
+
+in Italian, underscoring cantonal anchoring and local inci-dent reporting. 2019 2020 2021 2022 
+
+> Month
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Mentions (log scale)
+> Entity (Language)
+> Jagdgesetz (German)
+> Wolf (German)
+> Graubünden (German)
+> Chasse (French)
+> Loup (French)
+> Valais (French)
+> Caccia (Italian)
+> Lupo (Italian)
+> Ticino (Italian)
+> Grigioni (Italian)
+
+Figure 12: Monthly frequency of Swiss Wolf key named en-tities across all languages. The multi-language targeted sentiment series in Figure 13 cluster around neutrality with event-concordant swings. Negative excursions accompany periods dominated by live-stock attacks or authorization of culls, while brief positive turns appear during conservation or management announce-ments. German-language lines tied to the legislative label (Jagdgesetz ) show clearer spikes around national decision points, French and Italian series display smaller amplitudes but follow the same referendum and seasonal rhythm. Taken together with the domestication indices, these trajectories in-dicate that the Swiss Wolf is framed primarily through local impacts and regulatory episodes, with sentiment responding to incident-driven controversy rather than to a stable ideo-logical tone. 
+
+Triangulated Case Narratives Bringing the signals to-gether, Brexit displays a textbook issue–attention cycle. Consensus change points bracket leadership change, the De-cember 2019 election, the 31 January 2020 withdrawal, and the end-2020 agreement, followed by a lower, steadier im-plementation phase with brief resurgences during the 2022 leadership turmoil. The standardized lexical index is high-est during the procedural/negotiation peak and gradually declines as coverage routinizes. Domestication and prox-imity metrics indicate a predominantly foreign frame with 2019 2020 2021 
+
+> −1.5
+> −1.0
+> −0.5
+> 0.0
+> 0.5
+> 1.0
+> Avg. sentiment
+> Language — Entity
+> French — Chasse
+> French — Loup
+> French — Valais
+> German — Jagdgesetz
+> German — Wolf
+> German — Graubünden
+> Italian — Caccia
+> Italian — Lupo
+> Italian — Ticino
+> Italian — Grigioni
+
+Figure 13: Evolution of weekly sentiment scores for key en-tities in Swiss Wolf coverage (by language). language-specific tilts: French outlets temporarily raise the neighbor share and LPSR around negotiation milestones, whereas German and Italian coverage remains anchored in EU/UK institutions. Entity timelines align with these phases (leaders and EU bodies peaking at key junctures), and tar-geted sentiment is mildly negative for most actors, with short-lived positive inflections at appointments that fade at moments of crisis. By contrast, the Swiss Wolf case is strongly domesti-cated across the board. Attention peaks around the 2020 hunting-law referendum and returns seasonally with the alpine grazing period, lexical complexity is comparatively stable with modest upticks during legislative debates. The domestication profile is dominated by Swiss anchoring, and LPSR hovers near zero or negative, reflecting the marginal role of proximate foreign referents. Entity salience is can-tonal and language-regional (Valais, Graub¨ unden, Ticino/G-rigioni), and targeted sentiment oscillates around neutrality with sharper negative dips during livestock attacks or culling authorizations and small positive pulses around management or conservation announcements. Together, these parallel narratives show how agenda dy-namics interact with domestication: a transnational negotia-tion covered through supranational actors versus a localized wildlife-policy issue rooted in cantonal experience. 
+
+4.2 Cross-Event Synthesis 
+
+Across the four cases, we observe distinct temporal “sig-natures” by event type. The international singular event (Brexit) shows spikes aligned with institutional mile-stones and a strong foreign anchoring, the domestic the-matic case (Swiss Wolf) exhibits a referendum peak fol-lowed by seasonal pulses with cantonal anchoring, the re-current cultural event (Christmas) displays stable annual peaks with domesticated coverage, and the international celebrity-thematic case (British Royal Family) is organized in short, high-visibility bursts tied to ceremonial or media moments. Domestication and proximity patterns are consistent with these signatures. Brexit and the British Royal Family are dominated by foreign references with negative LPSR, and only modest, episodic neighbor tilts (strongest in French). Swiss Wolf is overwhelmingly domesticated in all lan-guages, with LPSR hovering near zero or negative. Christ-mas is locally anchored at the peak while retaining a per-sistent foreign-other layer (global retail/travel frames), with LPSR mostly negative and only short-lived proximate lifts. Lexical variation is generally modest across events, and higher complexity coincides with procedural or legislative windows (e.g. Brexit peak, referendum phase for Swiss Wolf). Entity salience and targeted sentiment align with the temporal structure of each case: commemorations and fes-tivities trend neutral-to-positive, while controversy windows (e.g. leadership crises, culling authorizations, celebrity con-flicts) are associated with more negative sentiment. Full de-tails are provided in the event dossiers (Appendix). 
+
+## 5 Discussion 
+
+5.1 Interpretation of Findings 
+
+The observed differences in media coverage across regions can be interpreted in light of Switzerland’s distinct linguistic and cultural contexts. The focus of French-language media on national actors during Brexit, for example, may reflect a cultural orientation toward France’s international role and political leadership. In contrast, the emphasis on European institutions and broader EU implications in German- and Italian-language outlets suggests a perspective more attuned to supranational dynamics and their impact on local com-munities. These tendencies are reflected in our domestica-tion profiles and proximity salience ratios: Brexit coverage is predominantly anchored in foreign and supranational ac-tors, with only episodic neighbor tilts, most visible in French outlets. The relatively uniform coverage of Christmas across all language regions, with each highlighting local customs and commercial activities, points to the shared cultural sig-nificance of the holiday while also reflecting the diversity of regional traditions within Switzerland. At the same time, the domestication profiles show a clear rise in Swiss anchoring around the seasonal peak, with foreign references primarily tied to global cues. For internationally themed celebrity coverage, such as the British Royal Family, attention is organized in short, high-visibility bursts tied to ceremonial events and me-dia releases. This pattern is accompanied by overwhelm-ingly foreign anchoring and negative proximity ratios across languages, consistent with an international, entertainment-adjacent framing rather than a neighbor-centric one. Cover-age of the Swiss Wolf event demonstrates how local realities and concerns are foregrounded in each linguistic commu-nity, while national debates can unify coverage across re-gions during key moments. The prominence of cantonal en-tities and legislative labels, the consistently high Swiss an-choring, and proximity ratios near zero underscore a domes-ticated, policy-centered framing with seasonal pulses. Tar-geted sentiment reinforces this picture: it oscillates around neutrality with sharper negative dips during livestock attacks or culling authorizations and small positive pulses around management or conservation announcements. Taken together, the change-point detection, lexical in-dices, entity timelines, and targeted sentiment cohere into parallel narratives: a transnational negotiation framed through supranational and UK actors versus a localized wildlife-policy issue rooted in cantonal experience. 
+
+5.2 Influence of Linguistic and Cultural Contexts 
+
+The findings underscore the significant influence of linguis-tic and cultural contexts on media coverage in Switzerland. Despite operating within a shared national framework, each language community exhibits unique reporting styles and emphases, tailoring content to resonate with audience in-terests, cultural values, and societal priorities. The domes-tication profiles and proximity ratios align with expecta-tions from cultural proximity and segmented public sphere research: French outlets display stronger episodic neighbor orientation for Brexit, whereas German and Italian cover-age is more persistently anchored in EU-level frames; for the Swiss Wolf, domestication dominates in all three languages with marked cantonal anchoring. The linguistic features in-herent in each language also impact readability and compre-hension. The stability of standardized lexical indices sug-gests consistent outlet language use. Where variation occurs, it aligns with shifts in the article mix (e.g. from brief inci-dent reports to explanatory or legislative pieces) rather than wholesale shifts in register. The decrease in lexical com-plexity during Brexit’s implementation phase, for instance, may reflect routinization as audiences grow familiar with the topic. These insights reinforce the value of a triangulated methodology that combines quantitative and qualitative ap-proaches, enabling a more nuanced understanding of media dynamics in multilingual societies and connecting system-level structures to observable content indicators. 
+
+5.3 Limitations of the Study 
+
+While this study provides valuable insights into media cov-erage patterns, several limitations should be acknowledged. Firstly, the dataset is limited to articles included in CCNews, which does not contain the entirety of media output during the study period. This could result in incomplete coverage of certain events or underrepresentation of specific outlets. Secondly, the selection of events and keywords for analysis was predetermined for targeted retrieval, which may intro-duce bias. The reliance on BM25 with predefined keywords favors precision over recall, potentially overlooking relevant articles that discuss events using different terminology. For thematic topics derived from BERTopic, we retained clus-ters that were interpretable and of adequate size, a choice that may introduce researcher degrees of freedom. Thirdly, the sentiment analysis, Named Entity Recognition, and en-tity linking depend on model accuracy. Although we miti-gate errors by aggregating results and retaining linked men-tions with sufficient confidence, mislinking or missed an-chors may affect domestication profiles and proximity ra-tios. The compact lexica used to detect Swiss and proxi-mate cues provide recall gains but may introduce heuris-tic bias at the margins. Additionally, the lexical complex-ity metrics provide a general overview but may not cap-ture deeper linguistic features such as tone, metaphor, or idiomatic expressions that could influence reader interpre-tation. Our treatment of discourse is intentionally minimal, focusing on lexical variation, entity anchoring, and senti-ment, while richer discourse layers lie outside the present scope. Standardization enables cross-language comparisons but abstracts from absolute language-specific baselines. Fi-nally, while the comparative analysis offers insights into lin-guistic and cultural influences, it does not account for other factors such as differences in editorial policies, journalistic standards, media type, or ownership structures. The iden-tification of change points may also vary with smoothing choices and penalty settings, even under a consensus-based procedure. Future studies could address these limitations by expanding the dataset to include a wider range of sources, refining language and linking resources, and incorporating additional outlet-level covariates to deepen the analysis. 
+
+## 6 Conclusion 
+
+In this study, we analyzed temporal trends in Swiss digital media across French, German, and Italian language regions by focusing on different types of events. We addressed the research questions as follows: For RQ1 , we showed that distinct temporal patterns are associated with different event types. Recurrent events, such as Christmas, displayed regular annual peaks, reflect-ing predictable media cycles tied to seasonal or scheduled events. Singular events, such as Brexit, had spikes in cov-erage aligned with specific institutional milestones, which our consensus change-point procedure captured as structural breaks. Thematic events, such as the British Royal Family and the coexistence with the Swiss Wolf, exhibited coverage peaks corresponding to identifiable phases (e.g. legislative debates and seasonal pulses for the Wolf, ceremonial and media releases for the Royal Family). Addressing RQ2 , we observed differences in media cov-erage among the French, German, and Italian language re-gions. These differences were influenced by linguistic and cultural contexts, affecting the emphasis and framing of events. For instance, French-language media tended to focus on France’s role in international events, while German- and Italian-language media highlighted broader European per-spectives or national implications. Our domestication pro-files and proximity ratios corroborate these tilts, distinguish-ing foreign, supranational anchoring for international stories from strong Swiss anchoring in domestically rooted issues. Regarding RQ3 , the triangulated methodology proved ef-fective in enhancing the understanding of media dynamics. By integrating article frequency, lexical indices, NER and linking, targeted sentiment, and change-point detection with qualitative interpretation, we gained deeper insights into how media narratives evolve over time. This allowed us to contextualize quantitative findings within real-world events and cultural nuances, revealing how linguistic and cultural factors influence reporting in a multilingual society. In summary, our study demonstrates that temporal pat-terns in Swiss digital media coverage vary according to event types and linguistic regions. The key takeaways from this research are: (1) linguistic and cultural contexts in-fluence media narratives within Switzerland, shaping the framing and emphasis of events in each language region; (2) combining quantitative and qualitative methods, specif-ically, lexical indices, domestication and proximity mea-sures, targeted sentiment, and change-point detection, pro-vides a comprehensive framework for analyzing media trends in multilingual environments; and (3) understand-ing temporal dynamics in media coverage offers valuable insights into how events are reported and perceived over time, informing future research and media practices. While centered on Switzerland, the proposed framework can be adapted to other multilingual environments. Applied to Bel-gium and Canada, our pipeline simply swaps neighbor sets (FR–NL–DE; US–FR) and incorporates the PSB remit (RTBF/VRT; CBC/Radio-Canada) as a media-system factor. 
+
+## Acknowledgments 
+
+This work was supported by the European Union’s Horizon 2020 program through the AI4Media project (No. 951911) and by the EU Horizon Europe program through the ELIAS project (No. 101120237). We thank Alessandro Fornaroli and Enno Hermann for their help in clarifying language-region-specific features of the Swiss media landscape. 
+
+## References                   
+
+> Abernathy, P. M. 2018. The Expanding News Desert .Akter, S. S.; and Anastasopoulos, A. 2024. A Study on Scaling Up Multilingual News Framing Analysis. Alipour, S.; Marco, N. D.; Avalle, M.; Etta, G.; Cinelli, M.; and Quattrociocchi, W. 2024. The Drivers of Global News Spreading Patterns. Scientific Reports .Bengtsson, S.; and Johansson, S. 2021. A phenomenology of news: Understanding news in digital culture. Journalism .Bestvater, S. E.; and Monroe, B. L. 2023. Sentiment is Not Stance: Target-Aware Opinion Classification for Political Text Analysis.
+> Political Analysis .Blum, R. 2003. Medienstrukturen der Schweiz. In Handbuch Kommunikations- und Medienwissenschaft .Bros, V.; and Gatica-Perez, D. 2025. Decoding community prox-imity discourse: A mixed-methods comparative analysis of online local and national newspapers in Romandy, Switzerland. PLOS ONE .Calvo Figueras, B.; Caselli, T.; and Broersma, M. 2021. Finding Narratives in News Flows: The Temporal Dimension of News Sto-ries. Digital humanities quarterly .Campello, R. J. G. B.; Moulavi, D.; and Sander, J. 2013. Density-Based Clustering Based on Hierarchical Density Estimates. In Ad-vances in Knowledge Discovery and Data Mining .Clausen, L. 2004. Localizing the Global: ‘Domestication’ Pro-cesses in International News Production. Media, Culture & So-ciety .Davier, L.; and Doorslaer, L. V. 2018. Translation without a source text: methodological issues in news translation. Across Languages and Cultures .Dayan, D.; and Katz, E. 1992. Media Events: The Live Broadcast-ing of History .De Cao, N.; Wu, L.; Popat, K.; Artetxe, M.; Goyal, N.; Plekhanov, M.; Zettlemoyer, L.; Cancedda, N.; Riedel, S.; and Petroni, F. 2022. Multilingual Autoregressive Entity Linking. Transactions of the Association for Computational Linguistics .Dehler-Holland, J.; Schumacher, K.; and Fichtner, W. 2021. Topic Modeling Uncovers Shifts in Media Framing of the German Re-newable Energy Act. Patterns .Downs, A. 1991. Up and Down With Ecology: The “Issue-Attention Cycle”. In Agenda Setting .Dufraisse, E.; Popescu, A.; Tourille, J.; Brun, A.; and Deshayes, J. 2023. MAD-TSC: A Multilingual Aligned News Dataset for
+
+Target-dependent Sentiment Classification. In Proc. of Annual Meeting of the Association for Computational Linguistics .FSO. 2025. Fact sheet: Language, religion and culture survey. Garimella, K.; Smith, T.; Weiss, R.; and West, R. 2021. Political Polarization in Online News Consumption. Grootendorst, M. 2022. BERTopic: Neural topic modeling with a class-based TF-IDF procedure. Gurevitch, M.; Levy, M. R.; and Roeh, l. 1993. The global news-room: convergences and diversities in the globalization of televi-sion news. In Communication and Citizenship .Hafez, K. 1999. International news coverage and the problems of media globalization. In search of a new global-local nexus. Inno-vation: The European Journal of Social Science Research .Hallin, D. C.; and Mancini, P. 2004. Comparing Media Systems: Three Models of Media and Politics .Hamborg, F.; and Donnay, K. 2021. NewsMTSC: A Dataset for (Multi-)Target-dependent Sentiment Classification in Political News Articles. In Proceedings of the 16th Conference of the Euro-pean Chapter of the ACL .Hamborg, F.; Meuschke, N.; Breitinger, C.; and Gipp, B. 2017. news-please: A Generic News Crawler and Extractor. In Proceed-ings of the 15th International Symposium of Information Science .Hart, C. 2018. Event-Frames Affect Blame Assignment and Per-ception of Aggression in Discourse on Political Protests: An Ex-perimental Case Study in Critical Discourse Analysis. Applied Lin-guistics .Hinternesch, M. 2019. Same News, Different Stories : Framing, Va-lence and Journalistic Quality in US News Reporting on the Brett Kavanaugh Allegations . Master’s thesis, University of Twente. Jehel, S. 2021. 7` e Rapport de l’Observatoire des pratiques num´ eriques des adolescents en Normandie. Joulin, A.; Grave, E.; Bojanowski, P.; and Mikolov, T. 2016. Bag of Tricks for Efficient Text Classification. Kettunen, K. 2014. Can Type-Token Ratio be Used to Show Mor-phological Complexity of Languages? Journal of Quantitative Lin-guistics .Kwak, H.; An, J.; and Ahn, Y. 2020. A Systematic Media Frame Analysis of 1.5 Million New York Times Articles from 2000 to 2017. Linder, W.; and Mueller, S. 2021. Swiss Democracy: Possible So-lutions to Conflict in Multicultural Societies .McCombs, M. E.; and Shaw, D. L. 1993. The Evolution of Agenda-Setting Research: Twenty-Five Years in the Marketplace of Ideas. 
+
+Journal of Communication .McInnes, L.; Healy, J.; Saul, N.; and Großberger, L. 2018. UMAP: Uniform Manifold Approximation and Projection. Journal of Open Source Software .Mendelsohn, J.; Ghosh, S.; Jurgens, D.; and Budak, C. 2023. Bridging Nations: Quantifying the Role of Multilinguals in Com-munication on Social Media. Proc. Int. AAAI Conf. on Web and Social Media .Mittal, S.; Foriest, J. C.; Horne, B. D.; and Choudhury, M. D. 2024. News Media and Violence against Women: Understanding Fram-ings of Stigma. Proc. Int. AAAI Conf. on Web and Social Media .Mok, L.; Inzlicht, M.; and Anderson, A. 2023. Echo Tunnels: Po-larized News Sharing Online Runs Narrow but Deep. Proceedings of the International AAAI Conference on Web and Social Media .Moran-Ellis, J.; Alexander, V. D.; Cronin, A.; Dickinson, M.; Fielding, J.; Sleney, J.; and Thomas, H. 2006. Triangulation and integration: processes, claims and implications. Moutinho, V.; Brazdil, P.; and Cordeiro, J. 2019. Association and Temporality between News and Tweets. In 11th International Con-ference on Knowledge Discovery and Information Retrieval .Nelissen, E.; and Hendrickx, J. 2024. How does a national, multilingual news agency contribute to news diversity? A mixed-methods case study. OFCOM. 2025. SRG SSR en g´ en´ eral. Olsen, W. 2004. Triangulation in social research: Qualitative and quantitative methods can really be mixed. Ong, T. 2019. The Construction of Malaysian Airlines Tragedies MH370 and MH17 in the Malaysian and British Newspapers: A Multidisciplinary Study. Patel, P. 2022. A Recurrent Neural Model for Temporal Informa-tion Extraction. Computer Science & Engineering Journal .Robertson, S.; and Zaragoza, H. 2009. The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Infor-mation Retrieval .Sherstinova, T.; Ushakova, E.; and Melnik, A. 2020. Measures of Syntactic Complexity and their Change over Time (the Case of Russian). In 27th Conference of Open Innovations Association .Skey, M. 2020. W(h)ither Media Events? Building a Typology for Theorizing Exceptional Events that Break with the Norm in a Com-plex Media Landscape. Communication Theory .Steppat, D.; Castro, L.; and Esser, F. 2023. What News Users Per-ceive as ‘Alternative Media’ Varies between Countries: How Media Fragmentation and Polarization Matter. Digital Journalism .Straubhaar, J. 2021. Cultural Proximity. In The Routledge Hand-book of Digital Media and Globalization .swissinfo. 2022. Swiss media workforce keeps shrinking. swissinfo. 2024. Swiss publisher Tamedia makes massive job cuts and closes printing plants. Tan, C.; Friggeri, A.; and Adamic, L. 2016. Lost in Propagation? Unfolding News Cycles from the Source. Proceedings of the Inter-national AAAI Conference on Web and Social Media .Trilling, D.; and van Hoof, M. 2020. Between Article and Topic: News Events as Level of Analysis and Their Computational Iden-tification. Digital Journalism .Udris, L.; and Eisenegger, M. 2024. Switzerland — Digital News Report 2024. Udris, L.; Eisenegger, M.; Vogler, D.; Schneider, J.; and H¨ auptli, A. 2020. Mapping and Explaining Media Quality: Insights from Switzerland’s Multilingual Media System. Media and Communi-cation .Udris, L.; F¨ urst, S.; and Eisenegger, M. 2024. Are news from public service media crowding out private news media? Usage and will-ingness to pay in Switzerland. van Dooremalen, T.; and Duyvendak, J. W. 2025. To foreignize or to domesticate? How media vary cross-nationally in their degrees of incorporating foreign events. Journalism .Vogler, D.; and Udris, L. 2021. Transregional News Media Cover-age in Multilingual Countries: The Impact of Market Size, Source, and Media Type in Switzerland. Journalism Studies .Vogler, D.; Weston, M.; and Udris, L. 2023. Investigating News Deserts on the Content Level: Geographical Diversity in Swiss News Media. Media and Communication .Wessler, H.; Peters, B.; Br¨ uggemann, M.; K¨ onigsl¨ ow, K. K.-v.; and Sifft, S. 2008. The Transnationalization of Public Spheres: Theo-retical Considerations. In Transnationalization of Public Spheres .West, R.; and Pfeffer, J. 2017. Armed Conflicts in Online News: A Multilingual Study. ICWSM .Yang, X.; Ying, S.; Yu, W.; Zhang, R.; and Zhang, Z. 2016. En-hancing Topic Modeling on Short Texts with Crowdsourcing. In 
+
+Proceedings of The 8th Asian Conference on Machine Learning .Zaratiana, U.; Tomeh, N.; Holat, P.; and Charnois, T. 2023. GLiNER: Generalist Model for Named Entity Recognition using Bidirectional Transformer. Zhang, Z. 2022. The Mediated Engagement of Switzerland with BRI: A Transnational Comparative Framing Analysis. Journal of Transcultural Communication .Checklist 
+
+1. For most authors... (a) Would answering this research question advance sci-ence without violating social contracts, such as violat-ing privacy norms, perpetuating unfair profiling, exac-erbating the socio-economic divide, or implying disre-spect to societies or cultures? Yes, the study is based exclusively on aggregate, pub-licly available news data and does not involve personal or sensitive information. See Methodology and Data Collection. (b) Do your main claims in the abstract and introduction accurately reflect the paper’s contributions and scope? Yes, the claims in the abstract and introduction are consistent with the methods and results. (c) Do you clarify how the proposed methodological ap-proach is appropriate for the claims made? Yes, the methodology is described in detail and is ap-propriate for the research questions. See Methodology and Triangulation Approach. (d) Do you clarify what are possible artifacts in the data used, given population-specific distributions? Yes, the paper discusses dataset coverage, possible bi-ases, and limitations. See Limitations of the Study. (e) Did you describe the limitations of your work? Yes, limitations are discussed explicitly. See Limita-tions of the Study. (f) Did you discuss any potential negative societal im-pacts of your work? Yes, the study notes possible biases and underrep-resentation, but no direct negative societal impact is identified. See Limitations and Discussion. (g) Did you discuss any potential misuse of your work? No, as the work is based on aggregate media analysis and does not present realistic misuses. (h) Did you describe steps taken to prevent or mitigate po-tential negative outcomes of the research, such as data and model documentation, data anonymization, re-sponsible release, access control, and the reproducibil-ity of findings? Yes, only publicly available news data is used, and no personal or sensitive information is processed. See Data Collection and Processing. (i) Have you read the ethics review guidelines and en-sured that your paper conforms to them? Yes, the study conforms to ethical guidelines as it uses only public, aggregate data. 2. Additionally, if your study involves hypotheses testing... (a) Did you clearly state the assumptions underlying all theoretical results? NA, as the study is primarily empirical and does not present formal theoretical results. (b) Have you provided justifications for all theoretical re-sults? NA (c) Did you discuss competing hypotheses or theories that might challenge or complement your theoretical re-sults? Yes, the study is situated within the relevant litera-ture and discusses alternative explanations. See Re-lated Work and Discussion. (d) Have you considered alternative mechanisms or expla-nations that might account for the same outcomes ob-served in your study? Yes, alternative explanations and limitations are dis-cussed. See Limitations and Discussion. (e) Did you address potential biases or limitations in your theoretical framework? Yes, see Limitations of the Study. (f) Have you related your theoretical results to the existing literature in social science? Yes, see Related Work and Discussion. (g) Did you discuss the implications of your theoretical results for policy, practice, or further research in the social science domain? Yes, implications for future research and media analy-sis are discussed. See Conclusion and Discussion. 3. Additionally, if you are including theoretical proofs... (a) Did you state the full set of assumptions of all theoret-ical results? NA, no formal theoretical proofs are included. (b) Did you include complete proofs of all theoretical re-sults? NA 4. Additionally, if you ran machine learning experiments... (a) Did you include the code, data, and instructions needed to reproduce the main experimental results (ei-ther in the supplemental material or as a URL)? No, because the code and data are not being released. (b) Did you specify all the training details (e.g., data splits, hyperparameters, how they were chosen)? Yes, relevant details for model training and inference are provided in the Methodology and Sentiment Anal-ysis sections. (c) Did you report error bars (e.g., with respect to the ran-dom seed after running experiments multiple times)? No, as the main analyses are descriptive and not based on repeated stochastic ML model training. (d) Did you include the total amount of compute and the type of resources used (e.g., type of GPUs, internal cluster, or cloud provider)? Yes, see Appendix on computation resources. (e) Do you justify how the proposed evaluation is suffi-cient and appropriate to the claims made? Yes, the evaluation is aligned with the research ques-tions and the triangulated methodology. See Triangu-lation Approach and Results. (f) Do you discuss what is “the cost“ of misclassification and fault (in)tolerance? No, as the main analyses are descriptive and not fo-cused on classification tasks. 5. Additionally, if you are using existing assets (e.g., code, data, models) or curating/releasing new assets, without compromising anonymity ... (a) If your work uses existing assets, did you cite the cre-ators? Yes, all major assets (e.g. CCNews, BERTopic, GLiNER, mGenre) are cited. See Data Collection and References. (b) Did you mention the license of the assets? No, the licenses are not specified in the current version. (c) Did you include any new assets in the supplemental material or as a URL? No, new datasets or code are not being released. (d) Did you discuss whether and how consent was ob-tained from people whose data you’re using/curating? NA, as only public news articles are used. (e) Did you discuss whether the data you are using/curat-ing contains personally identifiable information or of-fensive content? Yes, the dataset contains only public news articles and excludes personal information. See Data Collection and Processing. (f) If you are curating or releasing new datasets, did you discuss how you intend to make your datasets FAIR (see FORCE11 (2020))? NA, as no new datasets are being released. (g) If you are curating or releasing new datasets, did you create a Datasheet for the Dataset (see Gebru et al. (2021))? NA 6. Additionally, if you used crowdsourcing or conducted research with human subjects, without compromising anonymity ... (a) Did you include the full text of instructions given to participants and screenshots? NA, no human subjects or crowdsourcing involved. (b) Did you describe any potential participant risks, with mentions of Institutional Review Board (IRB) ap-provals? NA (c) Did you include the estimated hourly wage paid to participants and the total amount spent on participant compensation? NA (d) Did you discuss how data is stored, shared, and dei-dentified? Yes, only public, non-personal data is used. See Data Collection and Processing. A List of Selected Sources             
+
+> German French Italian
+> 20 Minuten 20 minutes Corriere del Ticino Aargauer Zeitung 24 heures Swissinfo Basler Zeitung La Gruy` ere Ticinolibero bz Basel La Tribune de Gen` eve TicinOnline ch.ch RFJ Der Bund RJB FM1Today RTN Finanz und Wirtschaft Swissinfo Grenchner Tagblatt Hochparterre Der Landbote Limmattaler Zeitung Luzerner Zeitung Neue Z¨ urcher Zeitung SRF Swissinfo St. Galler Tagblatt Tages-Anzeiger Z¨ urcher Unterl¨ ander
+
+Table 1: List of selected news sources by language. 
+
+## B Topic Modeling Parameters 
+
+The topic modeling was performed using the BERTopic framework (Grootendorst 2022). We used the multilingual BGE-M3 model, which can embed text at different levels of granularity (sentence, passage, document) and supports over 100 languages, including those under study. News ar-ticles exceeding the 8,192-token context limit are truncated. We used dense embeddings to be compatible with BERTopic framework. In the process of topic modeling, several parameters were systematically tuned to optimize dimensionality reduction using UMAP (McInnes et al. 2018) and subsequent dense clustering performed by HDBSCAN (Campello, Moulavi, and Sander 2013). This tuning involved exploring a defined range of values for the key parameters governing these steps (see Table 2).        
+
+> Parameter Values UMAP Parameters
+> n components [5, 7] min dist [0.05, 0.1] neighbors [15, 30, 50]
+> HDBSCAN Parameters
+> min sample fraction [0.3, 0.5, 0.75] min cluster size [30, 50, 100] cluster selection method [”leaf”, ”eom”]
+
+Table 2: Hyperparameter grid for UMAP and HDBSCAN. Then, we qualitatively identified configurations that yielded meaningful and coherent topic structures for each language split. The final set of parameters that were retained for each language split can be found in Table 3.                      
+
+> Parameter German French Italian
+> n components 777min dist 0.1 0.05 0.1 neighbors 15 30 30 min sample fraction 0.3 0.3 0.3 min cluster size 100 30 30 cluster selection method eom eom eom
+
+Table 3: Best hyperparameters found per language. Further details and any additional preprocessing steps can be provided upon request. 
+
+## C Computation Resources 
+
+The main compute-intensive steps in the analysis were as follows: • NER Extraction: Entities were extracted for 57 events, each requiring approximately 2 GPU-hours on an RTX 3090 ( ∼0.4kWh). • Topic Modeling: Dense embedding inference with BGE-M3 runs once, taking approximately 5 GPU-hours on A100s ( ∼1.5kWh). Clustering with BERTopic runs on CPU. • Entity Linking and Sentiment Analysis: Entity-linking is time-consuming, and mGenre’s guided generation hin-ders GPU efficiency. Inference took ∼96 GPU-hours for linking and ∼40 GPU-hours for sentiment on an RTX 2080Ti cluster. Effective energy use was 3.8kWh for linking and 8kWh for sentiment. All computations were performed on local or institutional compute resources. Details for each step can be provided upon request. 
+
+## D BM25 Keyword Sets and Retrieval Protocol 
+
+Protocol. We built language-specific BM25 indexes over the CCNews-derived corpus and executed Boolean queries per language without a score cut-off. Following a precision-first strategy over recall, we designed compact, expert-curated query sets around canonical event names and widely used acronyms, enumerated salient variants, and applied minimal disambiguation where obvious ambiguity was observed. We validated relevance through qualitative spot checks of ran-dom samples. Candidates that did not meet cross-language coverage (three languages), sufficient per-language volume, or acceptable qualitative precision were dropped. 
+
+Final multilingual queries (with a non-exhaustive list of examples not retained in the study to illustrate the strategy). 
+
+• Brexit 
+
+– FR: "brexit" 
+
+– DE: "brexit" 
+
+– IT: "brexit" 
+
+• Christmas – FR: "no¨ el" 
+
+– DE: "weihnachten" 
+
+– IT: "natale" 
+
+• UN climate conferences 
+
+– FR: "cop25" ; "cop26" ; "cop27" ;
+
+"conf´ erence des parties" 
+
+– DE: "cop25" ; "cop26" ; "cop27" ;
+
+"klimakonferenz" ;
+
+– IT: "cop25" ; "cop26" ; "cop27" 
+
+• Grape harvest 
+
+– FR: "vendanges" 
+
+– DE: "weinlese" 
+
+– IT: "vendemmia" 
+
+• Feminist strikes 
+
+– FR: "gr` eve f´ eministe" 
+
+– DE: "frauenstreik" 
+
+– IT: "sciopero femminista" 
+
+• 5G 
+
+– FR: "5g" 
+
+– DE: "5g" 
+
+– IT: "5g" 
+
+Candidates not retained. We considered additional can-didates (e.g. WEF, WM/Weltmeisterschaft, Berlinale, Pierre Maudet affair, Cr´ edit Suisse), but excluded them due to lim-ited cross-language coverage (especially in Italian), insuffi-cient per-language volume, or unstable precision under com-pact high-precision queries. 
+
+## E Thematic Topic Selection (BERTopic) 
+
+From the BERTopic clusters obtained per language (Ap-pendix B), we retained only topics that were (i) qualitatively interpretable by the authors with a meaningful coverage in the Swiss media ecosystem, (ii) of adequate size to support downstream analyses, and (iii) present in at least two lan-guage regions. We prioritized topics exhibiting a visible tem-poral structure over 2019–2023. Topics failing interpretabil-ity, size, or cross-language presence were dropped. 
+
+## F Cue Lexica and Linking Robustness 
+
+We use compact, language-specific cue lexica to boost recall of Swiss anchoring beyond entity linking by adding a small bonus (+0.1, clipped at 1.0) to pswiss when a cue is detected in the article text. Patterns are implemented as case-insensitive regular expressions and comprise (i) institutional and politi-cal cues and (ii) canton names in the respective language. French (examples): • Institutional/political cues: conseil f´ ed´ eral, conf´ ed´ eration, canton, cantons, CHF, franc suisse, francs suisses, UDC, PS, PLR, Le Centre, PVL, Verts, accord bilat´ eral, accords bilat´ eraux, accord-cadre, Rahmenabkommen. • Cantons: Zurich, Berne, Lucerne, Uri, Schwyz, Ob-wald, Nidwald, Glaris, Zoug, Fribourg, Soleure, Bˆ ale-Ville, Bˆ ale-Campagne, Schaffhouse, Appenzell Rhodes-Ext´ erieures, Appenzell Rhodes-Int´ erieures, Saint-Gall, Grisons, Argovie, Thurgovie, Tessin, Vaud, Valais, Neuchˆ atel, Gen` eve, Jura. German (examples): • Institutional/political cues: Bundesrat, Eidgenossen-schaft, Kanton, Kantone, CHF, Schweizer Franken, SVP, SP, FDP, Die Mitte, Gr¨ une, GLP, bilaterales Abkommen, bilaterale Abkommen, Rahmenabkommen. • Cantons: Z¨ urich, Bern, Luzern, Uri, Schwyz, Ob-walden, Nidwalden, Glarus, Zug, Freiburg, Solothurn, Basel-Stadt, Basel-Landschaft, Schaffhausen, Appen-zell Ausserrhoden, Appenzell Innerrhoden, St. Gallen, Graub¨ unden, Aargau, Thurgau, Tessin, Waadt, Wallis, Neuenburg, Genf, Jura. Italian (examples): • Institutional/political cues: Consiglio federale, Confed-erazione, cantone, cantoni, CHF, franco svizzero, franchi svizzeri, UDC, PS, PLR, Il Centro, Verdi, PVL, accordi bilaterali, accordo quadro, Rahmenabkommen. • Cantons: Zurigo, Berna, Lucerna, Uri, Svitto, Obvaldo, Nidvaldo, Glarona, Zugo, Friburgo, Soletta, Basilea Citt` a, Basilea Campagna, Sciaffusa, Appenzello Esterno, Appenzello Interno, San Gallo, Grigioni, Argovia, Tur-govia, Ticino, Vaud, Vallese, Neuchˆ atel, Ginevra, Giura. Linking-threshold robustness. We recomputed domestica-tion profiles and LPSR with mGENRE confidence thresh-olds at 0.6, 0.7, and 0.8 (baseline 0.5). Aggregate series and qualitative conclusions were unchanged across thresholds. 
+
+## G Relative-Change Robustness for Lexical Metrics 
+
+We compute relative change as percent deviation from the language-specific baseline mean for each metric m ∈{TTR, LD, MSL }:
+
+rm(t) = 100 × xm(t) − μm
+
+μm
+
+,
+
+and then average monthly (three-month rolling mean). The temporal ordering and cross-language contrasts mirror those obtained with standardized z-scores, magnitudes differ as expected. 
+
+## H GLiNER Benchmarks and Cross-language Comparability 
+
+The GLiNER model has been extensively evaluated across benchmarks (Zaratiana et al., 2023). On the out-of-domain NER benchmark (seven datasets), the large variant achieves an average F1 of 60.9, outperforming instruction-tuned LLMs such as UniNER-13B (55.6) and InstructUIE-11B (47.2) while using far fewer parameters (Table 1 in Zaratiana et al., 2023). Across 20 additional NER datasets, GLiNER-L attains a 47.8 average zero-shot F1 and 58.9 on the mul-tilingual WikiANN dataset (Table 2). For multilingual ro-bustness on complex settings, GLiNER-Multi (multilingual 2019 2020 2021 2022 2023   
+
+> -4
+> 0
+> 4
+> 8
+> Relative change (%)
+> French German Italian
+
+Figure 14: Brexit: relative-change composite lexical index by language (monthly, three-month rolling mean). 2019 2020 2021 2022 2023   
+
+> -4
+> 0
+> 4
+> Relative change (%)
+> French German Italian
+
+Figure 15: Swiss Wolf: relative-change composite lexical in-dex by language. backbone) reports competitive zero-shot results on Multi-CoNER for high-resource Latin-script languages, with F1 of 39.5 (German) and 42.1 (Spanish), exceeding ChatGPT on most languages in that benchmark (Table 3). To further mit-igate any residual model or language effects in our study, we: (i) mainly use comparisons to canonical entity types (PER/ORG/LOC), (ii) perform Wikidata linking and retain only linked mentions (mGENRE conf. ≥ 0.5), and (iii) ag-gregate at weekly/monthly levels and use proportion- or ratio-based indicators (e.g. domestication profiles, LPSR), emphasizing within-language contrasts over absolute levels. 
+
+## I Plotting Conventions and CPD Implementation Details 
+
+For display, we plot weekly counts with a three-week mov-ing average and a LOESS trend. Some events are not consis-tently covered across all language subsets over the full win-dow (most notably in Italian). To avoid spurious fluctuations, we truncate a language series when the per-period sample is too small to be reliable, affected figures therefore show gaps or early terminations. Captions flag restricted windows where applicable (e.g. Christmas lexical plots show only November–March). Change-point detection (implementation). CPD is run on the three-week–smoothed series. We generate candidate change points using multiple detectors, PELT with an RBF cost 2019 2020 2021 2022 2023   
+
+> -5
+> 0
+> 5
+> Relative change (%)
+> French German Italian
+
+Figure 16: Christmas (Nov–Mar): relative-change compos-ite lexical index by language. 2019 2020 2021 2022 2023  
+
+> -5
+> 0
+> 5
+> 10
+> Relative change (%)
+> French German
+
+Figure 17: British Royal Family: relative-change composite lexical index by language. across a small penalty grid, Binary Segmentation with the number of breakpoints matched to PELT’s baseline, and Bayesian Online CPD with a constant hazard. We cluster all candidate cut points within ±1 week and retain the cluster median as a consensus change point when supported by at least two detectors. In figures, consensus CPs are shown as shaded ±1 week bands. 
+
+## J Dossier: Christmas 
+
+Articles over time and change points. Figure 18 shows the expected calendar-driven pattern: attention rises in late November, peaks in December, and drops sharply in early January. The consensus CPD bands consistently bracket the beginning of Advent and the post-holiday decline, indicating stable seasonal segmentation across years. Peak amplitude grows over the period, with particularly pronounced spikes in 2021–2022, this coincides with renewed public interest and logistics/regulation angles (e.g. reopening of markets, pandemic-related rules), but may also reflect a gradual shift toward more digital service coverage. 
+
+Standardized lexical complexity. The composite stan-dardized lexical index in Figure 19 varies only modestly around zero, consistent with a recurrent event covered largely through service pieces, event guides, and features. Slight positive departures in late 2019–2020 (notably in 2019 2020 2021 2022 2023   
+
+> 0
+> 250
+> 500
+> 750
+> Number of Articles
+> Weekly Count 3-week MA LOESS trend
+
+Figure 18: Weekly distribution of Christmas -related news articles across all languages, with change points detected (consensus bands). For Christmas, lexical plots display only Nov–Mar when the sample is meaningful. German and French) align with explanatory items on re-strictions, supply chains, or public-health guidance, whereas 2021–2022 shows a mild drift toward simpler, more practi-cal formats (lists, market guides). Overall, differences are small, suggesting stability in register with episodic ex-cursions when contextual or policy information becomes salient. 2019 2020 2021 2022 2023   
+
+> -0.2
+> 0.0
+> 0.2
+> 0.4
+> Lexical z-score
+> French German Italian
+
+Figure 19: Evolution of the standardized composite lexical index for Christmas in French, German, and Italian Swiss media (monthly averages, three-month rolling mean). 
+
+Domestication profile and LPSR. Combining the domes-tication stacks and LPSR (Figures 20 and 21) shows that the topic is primarily domesticated at the peak: Swiss anchoring rises around December as outlets emphasize local markets, municipal events, and retail. A persistent “foreign-other” layer reflects global retail and travel references, whereas the neighbor share is comparatively small. The weekly log-PSR is mostly negative in all languages, indicating that when foreign actors appear they are more often non-proximate than proximate, short-lived upward bumps occur around cross-border markets or policy comparisons, with slightly more frequent lifts in the French series. This pattern is con-sistent with a local service agenda supplemented by global, not neighbor-centric, cues. 
+
+Key entities and sentiment. Entity timelines (Figure 22, log scale) follow the Advent–Christmas cycle, with richer lexical differentiation in German ( Weihnachtsmarkt , Ad-vent , Christkind , Weihnachtsmann ) and smoother profiles 
+
+Figure 20: Weekly domestication profile for Christmas by language. 2019 2020 2021 2022   
+
+> −2
+> −1
+> 0
+> 1
+> Average log-PSR
+> French German Italian
+
+Figure 21: LPSR over time for Christmas by language (weekly averages). for French ( No¨ el , Avent ) and Italian ( Natale ). Targeted sen-timent (Figure 23) is predominantly neutral to mildly posi-tive, reflecting lifestyle and culture frames. Temporary dips in 2020–2021 for market-related terms align with cancella-tions and restrictions, sentiment rebounds thereafter, turn-ing clearly positive for several German entities by late 2022, while French and Italian remain closer to neutral with small positive drifts. 
+
+Brief narrative. Taken together, the Christmas dossier de-picts a recurrent, institutionally timed attention cycle: cov-erage builds with Advent, peaks in December, and recedes immediately after the holidays. Language use is stable and service-oriented, with only brief complexity upticks when contextual or regulatory information becomes newsworthy (notably in 2020–2021). Domestication intensifies at the peak as outlets foreground local markets and municipal events, while LPSR remains mostly negative, foreign ref-erences are present but global rather than neighbor-centric, with only episodic proximate lifts. Entity salience reflects the same seasonal rhythm and a richer lexical differenti-ation in German, and targeted sentiment stays neutral to 2019 2020 2021 2022 2023 
+
+> Month
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Mentions (log scale)
+> Entity (Language)
+> Weihnachten (German)
+> Advent (German)
+> Weihnachtsmarkt (German)
+> Weihnachtsmann (German)
+> Christkind (German)
+> Noël (French)
+> Avent (French)
+> Natale (Italian)
+
+Figure 22: Monthly frequency of named entities related to 
+
+Christmas across French, German, and Italian Swiss media. 2019 2020 2021 2022 
+
+> −2
+> −1
+> 0
+> 1
+> 2
+> 3
+> Avg. sentiment
+> Language — Entity
+> French — Noël
+> French — Avent
+> French — Marché de Noël
+> French — Père Noël
+> French — Saint-Nicolas
+> German — Weihnachten
+> German — Advent
+> German — Weihnachtsmarkt
+> German — Weihnachtsmann
+> German — Christkind
+> Italian — Natale
+> Italian — Avvento
+> Italian — Mercatino di Natale
+> Italian — Babbo Natale
+> Italian — San Nicolao
+
+Figure 23: Evolution of monthly sentiment scores for key entities in Christmas coverage (by language). mildly positive, dipping during cancellations and rebound-ing as in-person festivities return. Overall, Christmas func-tions as a strongly domesticated, culturally shared event across language regions, with cross-linguistic variation ex-pressed more in vocabulary than in framing. 
+
+## K Dossier: British Royal Family 
+
+The British Royal Family emerged as a high-quality the-matic topic in French and German, but did not reach rep-resentation thresholds in Italian. We therefore report it as a two-language case. 
+
+Articles over time and change points. Figure 24 ex-hibits a sequence of sharp, event-driven surges. Consen-sus bands cluster around well-known milestones: the cou-ple’s step-back announcement (January2020), the death and funeral of Prince Philip (April2021), the Platinum Jubilee (June2022), and the death of Queen ElizabethII with the accession of CharlesIII (September2022, the global maxi-mum. A further rise appears in December 2022 with stream-ing releases and related coverage. Between these spikes, the LOESS trend returns to a low steady baseline, indicating a celebrity/ceremonial agenda punctuated by high-visibility moments rather than a sustained beat. 
+
+Standardized lexical complexity. The lexical index varies only modestly around zero in both French and Ger-man coverage. French shows brief above-baseline bursts (early 2020 - mid 2022) that quickly revert to baseline or below, consistent with waves of explanatory or commemo-rative pieces around high-visibility moments. German starts 2019 2020 2021 2022 2023   
+
+> 0
+> 60
+> 120
+> 180
+> Number of Articles
+> Weekly Count 3-week MA LOESS trend
+
+Figure 24: Weekly distribution of British Royal Family -related news articles across French and German, with change points detected (consensus bands). slightly higher in early 2019 but remains mostly below base-line from 2021 onward, suggesting a predominance of short updates outside peak phases. 2019 2020 2021 2022 2023  
+
+> -0.2
+> 0.0
+> 0.2
+> 0.5
+> Lexical z-score
+> French German
+
+Figure 25: Evolution of the standardized composite lexical index for British Royal Family in French and German Swiss media (monthly averages, three-month rolling mean). 
+
+Domestication profile and LPSR. The domestication stacks and LPSR (Figures 26 and 27) point to a predom-inantly foreign frame in both languages. “Foreign-other” (which includes the UK and supranational entities) satu-rates coverage, Swiss anchoring is minimal and neighbor shares are marginal. Consistently, weekly log-PSR values are strongly negative throughout, indicating that foreign ref-erences, when present, are overwhelmingly non-proximate rather than tied to France or Germany/Austria. Occasional, short-lived upticks reflect cross-border angles (e.g. travel, media distribution), but they do not alter the overall inter-national celebrity framing. 
+
+Key entities and sentiment. Entity timelines in Figure 28 align closely with the change-points. Mentions of Meghan Markle spike around January 2020, Prince Philip surges in April 2021 alongside “fun´ erailles”, Queen Elizabeth II dom-inates in June 2022 (Jubilee) and reaches the series’ apex in September 2022, “Charles III” emerges from that point onward. References to “Netflix” climb near major releases (e.g. “The Crown” seasons, late-2022 documentary), espe-cially in French coverage. Targeted sentiment (Figure 29) is heterogeneous: the Queen and ceremonial labels trend neutral-to-positive (commemorative tone), Meghan Markle Figure 26: Weekly domestication profile for British Royal Family by language. 2020 2021 2022 
+
+−4.5 
+
+−3.0 
+
+−1.5 
+
+0.0 
+
+> Average log-PSR
+
+French German 
+
+Figure 27: LPSR over time for British Royal Family by lan-guage (weekly averages). is more negative on average in both languages during contro-versy windows, and “Netflix” skews mildly positive, partic-ularly in German, around entertainment features, with dips when coverage turns to criticism or controversy. These tra-jectories reinforce a media logic centered on major cere-monies and media tie-ins rather than sustained policy or in-stitutional angles. 2019 2020 2021 2022 2023 
+
+> Month
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Mentions (log scale)
+> Entity (Language)
+> Meghan Markle (French)
+> Elizabeth II (French)
+> Charles III (French)
+> Prince Philip (French)
+> Netflix (French)
+> funérailles (French)
+> jubilé de platine (French)
+> Meghan Markle (German)
+> Elisabeth II (German)
+> Charles III (German)
+> Prinz Philip (German)
+> Netflix (German)
+
+Figure 28: Monthly frequency of named entities in French and German coverage of the British Royal Family . The star marks the first mention of “Charles III” in the corpus. 
+
+Brief narrative. Overall, the British Royal Family dossier portrays an internationally framed, personality-driven topic punctuated by ceremonial and media events. Attention concentrates around a small set of global milestones, 2019 2020 2021 2022 
+
+−1 
+
+0
+
+1
+
+2
+
+> Avg. sentiment
+> Language — Entity
+> French — Meghan Markle
+> French — Elizabeth II
+> French — Charles III
+> French — Prince Philip
+> French — Netflix
+> French — funérailles
+> French — jubilé de platine
+> German — Meghan Markle
+> German — Elisabeth II
+> German — Charles III
+> German — Prinz Philip
+> German — Netflix
+
+Figure 29: Evolution of monthly sentiment scores for key entities in British Royal Family coverage (by language). domestication remains negligible, and cultural-proximity cues are weak. Entity salience and sentiment track these bursts, respectful around commemorations, more polar-ized around celebrity controversies, and mildly positive around streaming releases, underscoring a transnational, entertainment-adjacent news logic in both French- and German-language Swiss outlets.
