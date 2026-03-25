@@ -1,0 +1,365 @@
+Title: Beyond Hate: Differentiating Uncivil and Intolerant Speech in Multimodal Content Moderation
+
+URL Source: https://arxiv.org/pdf/2603.22985v1
+
+Published Time: Wed, 25 Mar 2026 00:53:43 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Beyond Hate: Differentiating Uncivil and Intolerant Speech in Multimodal Content Moderation 
+
+# Nils A. Herrmann 1, Tobias Eder 1, Jingyi He 1, Georg Groh 1
+
+> 1
+
+Technical University of Munich nils hermann@outlook.de, tobias.eder@in.tum.de, holly.he@tum.de, grohg@in.tum.de 
+
+Abstract 
+
+Current multimodal toxicity benchmarks typically use a sin-gle binary hatefulness label. This coarse approach conflates two fundamentally different characteristics of expression: tone and content. Drawing on communication science the-ory, we introduce a fine-grained annotation scheme that dis-tinguishes two separable dimensions: incivility (rude or dis-missive tone) and intolerance (content that attacks plural-ism and targets groups or identities) and apply it to 2,030 memes from the Hateful Memes dataset. We evaluate dif-ferent vision-language models under coarse-label training, transfer learning across label schemes and a joint learning approach that combines the coarse hatefulness label with our fine-grained annotations. Our results show that fine-grained annotations complement existing coarse labels and, when used jointly, improve overall model performance. Moreover, models trained with the fine-grained scheme exhibit more balanced moderation-relevant error profiles and are less prone to under-detection of harmful content than models trained on hatefulness labels alone (FNR-FPR, the difference be-tween false negative and false positive rates: 0.74 to 0.42 for LLaVA-1.6-Mistral-7B; 0.54 to 0.28 for Qwen2.5-VL-7B). This work contributes to data-centric approaches in content moderation by improving the reliability and accuracy of mod-eration systems through enhanced data quality. Overall, com-bining both coarse and fine-grained labels provides a practical route to more reliable multimodal moderation. 
+
+# Introduction 
+
+Content moderation on online platforms increasingly relies on automated systems to detect harmful multimodal con-tent such as memes 1 (Martinez Pandiani, Tjong Kim Sang, and Ceolin 2025). These systems are trained on benchmark datasets whose label definitions implicitly encode normative choices about what counts as harmful. The most widely used multimodal benchmark, the Hateful Memes Dataset (Kiela et al. 2020), uses a single binary distinction between hateful and benign content. This coarse operationalization necessar-
+
+> 1
+
+Content warning: This paper contains images and text taken from the Hateful Memes dataset, which contains hateful and abu-sive language, identity-based slurs, and offensive stereotypes, in-cluding content targeting individual groups (e.g., race, ethnicity, religion, gender, sexual orientation). It may also include harass-ment and references to violence. 
+
+ily conflates two fundamentally different characteristics of expression, namely tone and content. This conflation is not just a technical inconvenience. From a normative perspective, communication science research has established that incivility - rude or dismissive tone -and intolerance - content that attacks pluralism and targets identities - are conceptually and empirically distinct (Coe, Kenski, and Rains 2014; Rossini 2022; K¨ umpel and Un-kel 2023). Uncivil speech may still contribute to democratic deliberation despite its tone (Rossini 2022), while intoler-ant speech poses a fundamentally different kind of threat by seeking to dehumanize or exclude. A moderation sys-tem that cannot distinguish between these dimensions risks both over-moderating legitimate disagreement and under-detecting harmful content that happens to be expressed in civil language. Existing multimodal benchmarks, by col-lapsing these dimensions into a single label, obscure this distinction and propagate it into every model trained on their data. In practice, using a fine-grained multi-label approach 
+
+which distinguishes between tone (incivility) and content (intolerance) enables the development of nuanced anno-tation schemes, which in turn lead to more reliable data with versatile use-cases. Drawing on the theoretical dis-tinction between incivility and intolerance, we introduce a fine-grained annotation scheme and apply it to 2,030 memes from the Hateful Memes dataset. We evaluate vision-language models under coarse-label training, transfer learn-ing across label schemes, and a joint learning approach that combines the coarse hatefulness label with our fine-grained annotations. We situate our work across unimodal, multi-modal, and generative approaches that have been proposed for toxic meme detection (Waseem et al. 2017; Hossain, Hoque, and Hossain 2023; Liang et al. 2022; Kumar and Nandakumar 2022; Qu et al. 2023; Koutlis, Schinas, and Pa-padopoulos 2023; Lin et al. 2023, 2024; Cao et al. 2022; Jain et al. 2023). Our results show that the original binary hatefulness la-bel captures most forms of identity-based intolerance reli-ably, but largely misses politically-oriented intolerance and the dimension of incivility. Moreover, we show that auto-mated models trained with fine-grained labels exhibit more balanced moderation-relevant error profiles: Open-source VLMs shift from systematic under-detection of harmful con-
+
+> arXiv:2603.22985v1 [cs.CL] 24 Mar 2026
+
+tent towards symmetric error trade-offs (FNR-FPR: 0.74 to 0.42 for LLaVA-1.6-Mistral-7B; 0.54 to 0.28 for Qwen2.5-VL-7B), a finding with direct implications for platforms de-ploying these models for content moderation. 
+
+Research Questions. To evaluate whether a conceptually grounded distinction between tone and content improves multimodal moderation models, we address the following four research questions: 1. RQ1 (Construct separability): Do incivility (tone) and intolerance (content) empirically separate in multimodal memes, and how often do they co-occur? 2. RQ2 (Predictive utility): Does supervision with fine-grained labels (incivility and intolerance), alone or jointly with the original coarse hatefulness label, im-prove model performance compared to coarse-only su-pervision? 3. RQ3 (Error trade-offs): How does label granularity af-fect moderation-relevant error trade-offs when detecting harmful content? 4. RQ4 (Operationalization alignment): What does the original binary hatefulness label operationalize in prac-tice: intolerance, incivility, their conjunction, or their dis-junction? 
+
+Contributions. We make four contributions: 1. Fine-grained annotation scheme: We introduce a mul-timodal annotation scheme that operationalizes harmful expression along two dimensions: incivility (tone) and in-tolerance (content). The scheme is grounded in commu-nication science and accompanied by detailed guidelines and sub-types to support consistent labeling. 2. Open-access dataset and code: We release an annotated subset of the Hateful Memes dataset containing fine-grained incivility and intolerance labels (in compliance with the dataset license), along with annotation guide-lines, documentation, and scripts that allow users to re-construct the full dataset. 3. Empirical evaluation of label granularity: We evalu-ate vision-language models under four training configu-rations (zero-shot, baseline fine-tuning, transfer learning and joint learning) to quantify how coarse versus fine-grained supervision affects learnability and generaliza-tion across tasks. 4. Moderation-relevant error and construct analysis: 
+
+We analyze false positive and false negative behavior to assess whether different supervision schemes bias mod-els toward over-flagging or under-detection. Addition-ally, we test alternative operationalizations linking the original binary hateful label to incivility and intolerance, clarifying what single-label hate detection captures in practice. 
+
+# Related Work 
+
+## Current Multimodal Computational Approaches 
+
+Effectively identifying hateful memes requires multimodal understanding, as the meaning often emerges from the in-teraction between visual and textual components. Unimodal models which process only text or image, struggle to cap-ture these interactions, particularly in the presence of be-nign confounders where neither modality alone is sufficient (Kiela et al. 2020). Two major computational paradigms have emerged for this task. The first is the specialist approach , which relies on CLIP-style encoders combined with task-specific fusion and interaction mechanisms for multimodal hate classifica-tion (Radford et al. 2021). Notable examples include Hate-CLIPper (Kumar and Nandakumar 2022) and MemeCLIP (Shah et al. 2024). The second is the generalist approach ,which employs instruction-tuned vision-language models such as LLaVA (Liu et al. 2023) and Qwen2-VL (Wang et al. 2024), adapting them to the benchmark via supervised fine-tuning and related strategies. More recent work augments such models with retrieval or staged adaptation procedures to increase robustness (Mei et al. 2025). Together these two modeling families provide a natural basis for studying how annotation choices interact with multimodal learning. 
+
+## Datasets for Hateful Meme Identification 
+
+Most multimodal hate speech datasets, including the Hateful Memes Challenge (Kiela et al. 2020), employ a single binary label to distinguish hateful from non-hateful content (Sabat, Ferrer, and Giro-i-Nieto 2019; Badour and Brown 2021). Subsequent work has introduced more nuanced labeling schemes. Rajput et al. (2022) frame hatefulness as a multi-class problem, differentiating between hate-inducing, satiri-cal, and non-offensive memes, while Bhandari et al. (2023) extend single-label approaches by distinguishing between directed and undirected hate. Other studies conceptualize hatefulness as a multi-dimensional phenomenon captured through multiple labels. Grover et al. (2025) distinguish between the sentiment, content, direction, and target of toxic memes. Lin et al. (2025) introduce GOAT-Bench, which covers related dimen-sions such as hatefulness, misogyny, offensiveness, sarcasm, and harmfulness, with each dimension based on a different dataset and treated as a separate classification task. Kumari, Bandyopadhyay, and Ekbal (2023) show that jointly learn-ing offensiveness with related dimensions improves detec-tion performance, further indicating that hatefulness cannot be captured by a single label. Research most closely related to this study augments the original Hateful Memes dataset with additional annotation layers. Mathias et al. (2021) expand the dataset by labeling protected categories (e.g., race, religion, disability) and at-tack types (e.g., mocking, dehumanizing, inciting violence), while Hee, Chong, and Lee (2023) add contextual expla-nations for why content is considered hateful. Collectively, these efforts provide a more detailed view of multimodal hatefulness. However, none jointly annotate tone and con-tent, leaving open questions about how stylistic and seman-tic elements co-occur in multimodal expressions of hate. 
+
+## Multi-label Hatefulness 
+
+There are recent efforts to disentangle different forms of harmful online expression by distinguishing between in-civility and intolerance. Rossini (2022) argues that these two forms of speech are not only conceptually distinct but also empirically separable in political discourse. Incivility, marked by rudeness, often emerges in discussions that re-flect the vibrant, even confrontational, nature of democratic deliberation. By contrast, intolerance refers to speech that undermines democratic values by attacking rights, identities, or pluralism. Rossini (2022) provides evidence that incivil-ity can occur even in productive political engagement, while intolerance appears in contexts that exacerbate harm. It is crucial to recognize this distinction in order to reframe de-bates about moderation, which differentiate between an un-civil tone and the more substantial threats posed by intoler-ant content. Our approach builds on Bianchi et al. (2022), who apply a multi-label framework to a large corpus of immigration-related tweets from the US and UK. They use text-based models to detect both incivility and intolerance. This multi-label approach improves understanding of harmful dis-course, producing models that outperform those trained on coarse-grained datasets. These results reinforce the idea that multi-label schemes can improve both the conceptual clarity and the empirical performance of content moderation. 
+
+# Data 
+
+## Hateful Memes Dataset 
+
+The Hateful Memes dataset (Kiela et al. 2020) was intro-duced as a technical benchmark for multimodal hate speech detection. Its goal is to test whether models can effectively combine image and text information to detect hateful con-tent. The dataset includes ’benign confounders’ to make the task more challenging and avoid shortcuts based on uni-modal cues. Figure 1 illustrates the concept of benign con-founders, which are cases where neither the image nor the text alone is sufficient to determine whether content is hate-ful. 
+
+Figure 1: Example memes from the hateful meme dataset that illustrate the concept of ’benign confounders’. Image above is a compilation of assets, including ©Getty Images. The dataset contains approximately 10,000 memes, each consisting of an image paired with embedded text. Labels are binary: memes are either marked as hateful or not. The challenge defines hateful content as follows: A direct or indirect attack on people based on char-acteristics, including ethnicity, race, nationality, im-migration status, religion, caste, sex, gender identity, sexual orientation, and disability or disease. We de-fine attack as violent or dehumanizing (comparing people to non-human things, e.g. animals) speech, statements of inferiority, and calls for exclusion or segregation. Mocking hate crime is also considered hate speech. Although previous research (Davidson et al. 2017) pro-posed a three-way distinction separating hateful, offensive, and normal content, the Hateful Memes challenge opted for a single binary label. They justify this choice by arguing that the distinction between hatefulness and offensiveness is “murky, and the classification decision less actionable” (Kiela et al. 2020, p. 3). While a single binary label is appropriate for a technical benchmark that prioritizes standardized evaluation over re-alism (Orr and Kang 2024), real-world moderation demands finer distinctions. Kern et al. (2023) show that annotation clarity and agreement are highest when annotators classify tone and content simultaneously, underscoring the practi-cal value of separating these dimensions. Omitting incivility also deprives models of linguistic cues that can reveal cases where tone amplifies or conceals harmful content. 
+
+## Annotation of the Hateful Memes Dataset 
+
+To introduce a more nuanced understanding of hatefulness, we annotate a subset of the Hateful Memes dataset with two variables that distinguish between incivility and intoler-ance. Specifically, we annotate a 21% stratified random sam-ple by split of the original dataset, corresponding to 2030 datapoints. 2 Our goal is representativeness with respect to the Hateful Memes benchmark. The annotated subset is in-tended to approximate the content and label distributions of each split, rather than to represent online meme distri-butions in the wild. In addition to representativeness, we chose this sample size to be sufficient for both reliable de-scriptive and associative analyses of label co-occurrence and for supervised adaptation of the evaluated models. Empiri-cally, learning-curve experiments reported in the Appendix show that, for our fine-tuned VLMs, performance on the fine-grained tasks saturated well before the full 2,030 sam-ples, indicating diminishing returns from annotating addi-tional items. We therefore treat the 21% subset as an ade-quate compromise between annotation cost and model reli-ability. Our annotation scheme is grounded in definitions from communication science, drawing particularly on the work of Rossini (2022) and Coe, Kenski, and Rains (2014). Incivility and intolerance are treated as two separate variables, each capturing a different dimension of discourse. 
+
+Incivility is defined as Rude, disrespectful or dismissive tone towards others as well as opinions expressed with antinormative in-tensity. 
+
+Intolerance is defined as 
+
+> 2The fine-grained subset annotation labels will be made avail-able online. The annotations are provided in Parquet format with documented schemas and an explicit license, ensuring FAIR com-pliance (FORCE11 2020).
+
+Content that is threatening to democracy and plural-ism—such as prejudice, segregation, hateful or vio-lent speech, and the use of stereotyping in order to disqualify others and groups. Annotators are provided with definitions of incivility and intolerance, along with lists of their respective sub-types. The scheme specifies three types of incivility and nine types of intolerance. A full description and definition of the differ-ent subtypes can be found in the Appendix. Annotators must indicate the specific sub-type whenever any is present. For fine-tuning and evaluation, the annotations are consolidated into two separate binary labels. The binarization preserves the core incivility-intolerance distinction while remaining compatible with the original benchmark. Subtype labels are retained in the release data and used for annotation training, further analysis and adjudication. Table 1 contrasts the two annotation strategies used in this study. The original approach applies a coarse single-label scheme, classifying content as either hateful or neu-tral . Our approach adopts a fine-grained multi-label scheme with two binary labels, distinguishing intolerant from toler-ant and uncivil from civil .        
+
+> Annotation type Labels Count % of original dataset Coarse single-label Hateful vs. Neutral 9664 100% Fine-grained multi-label Intolerant vs. Tolerant Uncivil vs. Civil 2030 21%
+
+Table 1: Two annotation schemes used in this study, with their respective coverage in the dataset. 
+
+Annotators & Procedure The dataset was annotated by three annotators. Two annotators are domain experts, while one annotator is a trained non-expert. The annotation process consisted of two stages, each fol-lowed by an annotation round. First, the annotation scheme, theoretical background and annotation guidelines were in-troduced in an initial session. This was followed by the first annotation round of the complete subset. Second, a calibra-tion session was conducted to align interpretations. This was followed by a re-annotation round of the subset of the data where labels did not agree between expert annotators. The fi-nal labels were determined via majority vote across the three annotators. 
+
+Agreement & Statistics The inter-annotator agreement is reported in Table 2. Results indicate substantial agreement between senior annotators and moderate agreement with ju-nior annotator.        
+
+> Incivility Intolerance Sr. 1 vs. Sr. 2 0.88 (0.77) 0.90 (0.78)
+> Sr. 1 vs. Jr. 1 0.71 (0.39) 0.67 (0.37)
+> Sr. 2 vs. Jr. 1 0.69 (0.38) 0.69 (0.42)
+
+Table 2: Agreement between senior annotators (Sr. 1 and Sr. 2) and junior annotator (Jr. 1). Table shows share of labels that agree between annotators with Cohen’s κ in brackets. 
+
+Dataset Statistics In total, 2,030 memes were annotated using the fine-grained scheme. Table 3 reports the marginal distributions of the original coarse hatefulness label and the newly introduced incivility and intolerance labels. The statistics show that harmful content, as captured by hateful-ness and intolerance, occurs at similar rates in the annotated subset.         
+
+> Hateful Intolerant Uncivil Original (coarse) 0.37 --
+> Our (fine-grained) 0.35 0.37 0.44
+
+Table 3: Marginal distributions in the original dataset and our fine-grained subset. Table 4 summarizes the joint distribution of incivility and intolerance labels. The distribution highlights that incivility and intolerance frequently co-occur but also appear inde-pendently, underscoring the importance of modeling them as separate dimensions.      
+
+> Tolerant Intolerant Civil 0.50 0.06
+> Uncivil 0.13 0.31
+
+Table 4: Joint distribution of incivility and intolerance labels in our fine-grained subset. 
+
+# Empirical Methodology 
+
+## Toxicity Identification 
+
+In hateful meme detection, harmfulness often emerges not from the text or image alone but from their interaction, re-quiring models to perform joint multimodal reasoning rather than isolated analysis. To capture this interaction, we evaluate vision–language models that process visual and textual inputs in a unified framework. We test two open-source models, LLaVA-1.6-Mistral-7B (Liu et al. 2023) and Qwen2.5-VL-7B (Bai et al. 2025), both released under the Apache 2.0 license. These models represent two prominent open-source VLMs: LLaVA-1.6 as a widely adopted instruction-tuned VLM with a strong track record on vision-language benchmarks, and Qwen2.5-VL as a more recent model reflecting the current state of open-source multimodal capabilities. Both operate at the 7B parameter scale, balancing capability with the re-source constraints typical of real-world moderation deploy-ments. In addition, we evaluate GPT-5.1 , a closed-source model accessed via the OpenAI API and governed by Ope-nAI’s terms of service, to approximate performance in a commercial deployment setting (OpenAI 2025). It simulta-neously serves as an upper bound for available commercial methods without task-specific fine-tuning. Vision–language models encode images into visual to-kens that are combined with text tokens and jointly pro-cessed by a large language model, enabling integrated rea-soning across modalities. Figure 2 illustrates the full experi-mental pipeline. 
+
+Figure 2: Evaluation pipeline. A meme–text pair is passed to the VLM (e.g. LLaVA-1.6) along with a prompt asking whether the content is “Hateful” or “Neutral”. The model generates a binary classification based on both visual and textual input. Image above is a compilation of assets, includ-ing ©Getty Images. This design enables cross-modal information flow throughout the transformer layers and supports fine-grained alignment between image regions and linguistic context. 
+
+## Fine-Tuning Setups 
+
+To evaluate both the capabilities of multimodal models and the generalisability of different annotation schemes, we con-sider four fine-tuning setups. These setups are designed to probe (i) off-the-shelf model competence, (ii) task-specific specialisation, (iii) cross-task generalisation, and (iv) the po-tential benefits of combining coarse and fine-grained super-vision. Together, they allow us to assess not only model per-formance but also the practical implications of different la-beling strategies for multimodal content moderation. 
+
+Overview. We distinguish between the following configu-rations: • Zero-shot inference , where pretrained models make pre-dictions without any task-specific fine-tuning. This set-ting is particularly relevant for closed-source models where fine-tuning is restricted, and serves as a reference point for the benefit of supervised adaptation. • Baseline fine-tuning , where models are trained and eval-uated using the same annotation scheme. This measures how learnable each labeling strategy is given comparable supervision and training budgets. • Transfer learning , where models are trained on one annotation scheme and evaluated on another, probing whether representations learned under one operational-ization of toxicity implicitly capture information relevant to another. • Joint learning , where models are trained simultaneously on coarse and fine-grained labels, testing whether the dif-ferent annotation strategies provide complementary su-pervision signals. Each setup isolates a different aspect of model behavior and provides complementary evidence about how annotation granularity affects learning and generalisation. 
+
+## Evaluation of Fine-Tuning Setups 
+
+We evaluate all fine-tuning setups using accuracy and weighted F1 score, standard metrics for binary classification that enable direct comparison with prior work on hate speech and toxicity detection. 
+
+## Error Biases 
+
+Beyond overall performance, we analyze prediction errors to assess whether models exhibit systematic error biases .In content moderation, different types of errors have dif-ferent consequences: false positives correspond to over-moderation, while false negatives indicate under-detection. We examine whether models trained under different an-notation strategies tend to systematically over-moderate or under-detect harmful content. This analysis is particularly important because similar accuracy or F1 scores can mask substantially different error profiles across models and label schemes. Our aim is to compare annotation strategies with respect to error symmetry , that is, whether false positives and false negatives occur at comparable rates. For each model and evaluation task, we compute the false positive rate ( F P R ) and false negative rate ( F N R ). We quantify error asymmetry as the difference between these rates, F N R −F P R . This measure captures whether a model is more prone to missing hateful content or to incorrectly flagging benign content. An error asymmetry of zero indi-cates a symmetric error profile, where false negatives and false positives occur at comparable rates. Positive values indicate under-moderation, meaning that hateful content is missed more frequently than benign content is over-flagged, whereas negative values indicate over-moderation, where benign content is more often incorrectly classified as hate-ful. 
+
+## Relationship Between Incivility, Intolerance, and Hatefulness 
+
+To examine how the commonly used single-label notion of hatefulness relates to a fine-grained multi-label approach, we analyze the relationship between the original hatefulness labels in the Hateful Memes dataset and our annotations for incivility and intolerance. The relationship between hatefulness and tone is not self-evident. While many conceptualizations treat hate as pri-marily content-based, benchmark definitions and annotation practice often mix semantic harm with stylistic cues such as mocking or demeaning language. Prior work has repeat-edly noted ambiguity at the boundary between hate speech and merely offensive or uncivil speech. As a result, it is un-clear whether the original binary hatefulness label in Hateful Memes corresponds more closely to intolerance, incivility or their combination. We therefore evaluate four alternative operationalizations that map hatefulness to our fine-grained labels. A meme is therefore either hateful if it is labeled as: • intolerant • uncivil • intolerant and uncivil • intolerant or uncivil For each operationalization, we compare the implied la-bels to the original hatefulness labels. We compute corre-lations to measure alignment and conduct chi-squared tests of independence to assess statistical association. This anal-ysis clarifies whether the binary hatefulness label primarily reflects intolerance, incivility, or a combination of both. 
+
+# Results 
+
+## Toxicity Identification 
+
+The results for all models and learning setups are shown in Table 5. As described in the Method section, we evalu-ate four configurations: zero-shot inference, baseline fine-tuning, transfer learning across annotation schemes, and joint learning. 
+
+Zero-shot In the zero-shot setting, GPT-5.1 achieves strong performance across all evaluation tasks, identifying hateful and intolerant content at similarly high rates. In contrast, open-source models show noticeably lower zero-shot performance, particularly for fine-grained labels. Both LLaVA-1.6-Mistral-7B and Qwen2.5-VL-7B achieve higher accuracy and F1 scores when predicting coarse hatefulness than when predicting intolerance or incivility, indicating that fine-grained distinctions are harder to recover without task-specific supervision. 
+
+Baseline fine-tuning After supervised fine-tuning, both open-source models achieve broadly comparable perfor-mance across annotation schemes and evaluation metrics. Accuracy and F1 scores for coarse hatefulness and fine-grained incivility and intolerance are closely aligned, indi-cating that the models can successfully adapt to either label-ing strategy. One exception is observed for hatefulness prediction with LLaVA-1.6, where the F1 score is lower than in the zero-shot setting. This drop is driven by systematic under-detection of hateful content, as reflected in the high false negative rate reported in Table 6. Despite this outlier, the overall results suggest that neither the coarse nor the fine-grained annota-tion scheme is inherently more difficult to learn, given com-parable supervision and training budgets. 
+
+Transfer learning Transfer learning results indicate sub-stantial generalization across annotation schemes. For hate-fulness and intolerance, performance differences relative to baseline fine-tuning are small and vary in direction, with mi-nor gains in some cases and minor losses in others. These mixed outcomes do not support a clear conclusion that one annotation scheme consistently generalizes better than the other. In contrast, incivility detection shows noticeably weaker transfer performance when models are trained solely on coarse hatefulness labels. This suggests that incivility-specific information is largely absent from single-label su-pervision and cannot be reliably recovered without explicit fine-grained annotation. Overall, the transfer results high-light partial semantic overlap between annotation schemes, while underscoring the limits of coarse labels for capturing stylistic dimensions such as tone. 
+
+Joint learning Joint learning yields the strongest over-all performance across tasks and models. Compared to baseline fine-tuning, jointly training on coarse hatefulness and fine-grained incivility and intolerance labels consis-tently improves performance for all three prediction tasks. These gains indicate that coarse and fine-grained annota-tion schemes are compatible and provide complementary su-pervision signals rather than redundant or conflicting ones. Combining both forms of annotation therefore emerges as a promising strategy for improving multimodal toxic content detection. Under the joint learning setup, Qwen2.5-VL-7B achieves the best overall performance. It outperforms GPT-5.1 eval-uated zero-shot on both hatefulness and incivility detection and matches GPT-5.1’s performance on intolerance. This re-sult suggests that, when provided with structured and het-erogeneous supervision, open-source vision–language mod-els can reach, and even exceed the performance of strong closed-source baselines. 
+
+## Performance Biases 
+
+When detecting harmful content (i.e. hateful or intolerant) models achieve broadly similar performance under baseline and transfer learning setups. However, comparable accuracy and F1 scores mask substantial differences in error behavior across models and annotation schemes, as shown in Table 6. GPT-5.1’s error profile is not directly comparable to the fine-tuned open models, as it reflects prompt-dependent safety behavior and calibration choices inherent to commer-cial instruction-tuned systems. Nevertheless, the model ex-hibits relatively balanced false positive and false negative rates under both label schemes. The false positive rate is slightly higher than the false negative rate, indicating a mild tendency toward over-moderation that is consistent across label granularity. In contrast, open-source models display strongly asym-metric error profiles, particularly for coarse hatefulness de-tection. These models are characterized by very low false positive rates but substantially higher false negative rates, re-flecting systematic under-detection of harmful content. No-tably, this asymmetry is reduced when models are trained and evaluated using the fine-grained intolerance labels, sug-gesting that finer-grained supervision can mitigate under-moderation tendencies in open-source systems. LLaVA-1.6-Mistral-7B Qwen2.5-VL-7B GPT-5.1 Setup Finetune Split Evaluation Split Acc. F1 Acc. F1 Acc. F1 Zero-shot - Hateful 0.68 0.68 0.68 0.68 0.80 0.80                                                                         
+
+> -Uncivil 0.61 0.60 0.56 0.51 0.74 0.74
+> -Intolerant 0.49 0.46 0.58 0.56 0.81 0.81
+> Baseline Hateful Hateful 0.73 0.67 0.77 0.74 --Uncivil/Intolerant Uncivil 0.78 0.77 0.77 0.76 --Intolerant 0.75 0.73 0.76 0.74 --Transfer Learning Uncivil/Intolerant Hateful 0.73 0.71 0.75 0.75 --Hateful Uncivil 0.74 0.72 0.70 0.70 --Intolerant 0.71 0.72 0.78 0.78 --Joint Learning Uncivil/Intolerant +Hateful Hateful 0.76 0.75 0.82 0.81 --Uncivil 0.79 0.78 0.82 0.82 --Intolerant 0.76 0.74 0.81 0.81 --
+
+Table 5: Multi-model comparison for accuracy (Acc.) and weighted F1 score (F1) across all learning setups. Best results per model and evaluation split are highlighted in bold. Overall, fine-grained intolerance supervision shifts open-source models away from a strongly conservative decision rule (very low FPR but high FNR) toward a more symmetric error profile, reducing systematic under-detection of harmful content without a substantial increase in over-flagging.                             
+
+> Model Task FPR FNR FNR-FPR
+> GPT-5.1 Hateful 0.22 0.17 -0.05
+> GPT-5.1 Intolerance 0.21 0.16 -0.05
+> LLaVA-1.6-Mistral-7B Hateful 0.01 0.75 0.74 LLaVA-1.6-Mistral-7B Intolerance 0.09 0.52 0.42
+> Qwen2.5-VL-7B Hateful 0.04 0.58 0.54 Qwen2.5-VL-7B Intolerance 0.09 0.36 0.28
+
+Table 6: False positive rate (FPR) and false negative rate (FNR) across models and label granularity when detecting harmful content. Error asymmetry (FNR-FPR) is smaller with the fine-grained annotation scheme.           
+
+> Operationalization Match rate Correlation
+> Hateful = Intolerant 0.89 0.76
+> Hateful = Intolerant AND Uncivil 0.88 0.73 Hateful = Intolerant OR Uncivil 0.81 0.65 Hateful = Uncivil 0.80 0.59
+
+Table 7: Comparison of alternative operationalizations re-lating hatefulness to incivility and intolerance. Match rate indicates the proportion of cases where the label implied by a given operationalization matches the original hatefulness label. Correlation is the phi coefficient (equivalent to Pear-son’s r for binary variables). All associations are statistically significant according to a chi-squared test of independence at α = 0 .001 .
+
+## Relationship Between Incivility, Intolerance, and Hatefulness 
+
+Table 7 examines how the coarse hatefulness label in the Hateful Memes dataset aligns with different combinations of the fine-grained incivility and intolerance labels. For each operationalization, we compute a match rate and a correla-tion to assess how well the implied labels correspond to the original hatefulness annotation. Overall, hatefulness aligns most closely with intolerance alone. The operationalization Hateful = Intolerant yields the highest match rate (0.89) and correlation (0.76), outperform-ing operationalizations that additionally require incivility or rely on incivility in isolation. Requiring both intolerance and incivility (Hateful = Intolerant AND Uncivil) slightly weak-ens alignment, while defining hatefulness purely in terms of incivility results in substantially lower correlation. These findings suggest that the original hatefulness la-bel primarily captures intolerant content rather than uncivil tone. Incivility therefore represents a related but distinct di-mension that is largely absent from the dataset’s operational-ization of hatefulness. This supports our decision to separate tone (incivility) from content (intolerance) and shows that fine-grained annotations make explicit distinctions that re-main implicit or conflated in coarse single-label schemes. To examine how different forms of incivility and intoler-ance relate to the original hatefulness label at a more granu-lar level, we compute the conditional probability of hateful-ness and the ϕ coefficient for each subtype after majority-vote aggregation (Table 8). Categories with fewer than 30 instances are marked with a dagger symbol and are ignored in our analysis. Full label distributions before aggregation are reported in the Appendix. The results confirm and extend the aggregate alignment findings from Table 7. Among intolerance subtypes, most categories exhibit hatefulness rates above 85%, with racism (ϕ = 0.40 ), religious intolerance ( ϕ = 0.37 ), and gen-der intolerance ( ϕ = 0 .34 ) showing the strongest associa-tions. This indicates that the coarse hatefulness label cap-Category n P(hateful) ϕ                                       
+
+> Incivility
+> Attacks 106 0.91 0.27 Vulgar 537 0.60 0.31 Aspersions 45 0.56 0.06 Civil 1140 0.10 -0.59
+> Intolerance
+> Threats to Rights †61.00 0.07 Ableism 58 0.95 0.21 Racism 208 0.92 0.40 Gender Intolerance 153 0.92 0.34 Offensive Stereotypes 70 0.91 0.22 Religious Intolerance 186 0.91 0.37 Violent Threats 40 0.85 0.15 Political Intolerance 63 0.35 -0.00 Tolerant 1278 0.08 -0.76
+
+Table 8: Empirical hatefulness probability conditioned on fine-grained categories and ϕ coefficient (majority vote ag-gregation). tures these forms of intolerance reliably. However, politi-cal intolerance stands out as a clear exception: despite be-ing defined as content that delegitimizes opposing political views or calls for the elimination of political actors, it has a hatefulness rate of only 0.35 and essentially no associa-tion with the original label ( ϕ = −0.00 ). This suggests that the benchmark’s operationalization of hate largely excludes politically-oriented intolerance, a category with particular relevance for platform governance in light of democratic dis-course. On the incivility dimension, hatefulness rates decrease along a gradient from attacks (0.91) through vulgar language (0.60) and aspersions (0.56) to civil content (0.10). However, the ϕ coefficients for all incivility categories remain substan-tially lower than those of the major intolerance subtypes, with aspersions showing near-zero association ( ϕ = 0 .06 ). This pattern indicates that while uncivil tone frequently co-occurs with content the benchmark considers hateful, it does not independently drive the hatefulness label. The low asso-ciation for aspersions is notable alongside the political in-tolerance finding: both suggest that the benchmark is least sensitive to forms of harmful expression that operate in the political rather than identity-based register. 
+
+# Discussion and Conclusion 
+
+This study introduces a fine-grained annotation scheme for multimodal content moderation grounded in communication science. By explicitly distinguishing between tone (incivil-ity) and content (intolerance), we move beyond binary no-tions of toxicity that dominate existing benchmarks. Our re-sults demonstrate that fine-grained annotations complement existing coarse labels and, when used jointly, improve over-all model performance. Moreover, fine-grained supervision reduces moderation-relevant error asymmetry. In our tests, open-source models shift from systematic under-detection of harmful content toward more balanced error profiles with-out resorting to blanket over-moderation. These gains come from improved data quality rather than model architecture, underscoring the practical value of data-centric approaches. Our alignment analysis reveals that the original hateful-ness label in the Hateful Memes dataset corresponds primar-ily to intolerance (match rate 0.89, ϕ = 0 .76 ), while incivil-ity contributes little additional explanatory power. However, the subtype-level analysis shows that even within intoler-ance, the benchmark’s coverage is uneven. Identity-based categories such as racism, religious intolerance and gen-der intolerance are captured reliably, with hatefulness rates above 90% and strong ϕ coefficients. In contrast, political in-tolerance has a hatefulness rate of only 35% and effectively no association with the original label ( ϕ = −0.00 ). Since the Hateful Memes dataset has served as the primary mul-timodal hate detection benchmark, these findings have im-plications beyond our study. Reported performance figures based on the Hateful Memes dataset should be understood as primarily reflecting identity-based intolerance detection, while politically-oriented harmful expression remains out-side the benchmark’s effective scope. This selectivity is not inherently a flaw, as prioritizing identity-based intolerance may constitute a defensible mod-eration strategy. However, this prioritization is currently im-plicit, as neither the benchmark documentation nor the mod-els trained on it signal which forms of harmful expression are included and which are excluded. Our annotation scheme makes these choices explicit by separating tone from content and preserving subtype-level distinctions, allowing system designers to see what their training data captures and what it misses. Whether to moderate political intolerance, identity-based intolerance, uncivil speech or combinations thereof is a governance decision that different platforms may rea-sonably answer differently and decide by conscious choice, rather than it being an artifact of benchmark construction. 
+
+# Limitations 
+
+The findings of this paper should be interpreted primarily as evidence about construct operationalization and moderation-relevant error trade-offs within the Hateful Memes bench-mark. Hateful Memes is deliberately curated and may not reflect the distribution, cultural context and rapidly evolv-ing formats of memes encountered in real-world platforms. Consequently, the incidence and expression of incivility and intolerance may differ outside this setting. In addition, our fine-grained labels cover a 21% split-stratified subset of the benchmark dataset. While learning-curve analyses suggest diminishing returns for the evaluated models at this scale, rare phenomena and less frequent subtype manifestations may be underrepresented. Finally, the annotation of inci-vility and intolerance remains context-sensitive despite high agreement, and our modeling focuses on binary targets, leav-ing subtype-level prediction to future work. 
+
+# Ethical Statement 
+
+In line with the European Union’s guidelines on Trustwor-thy AI (European Commission 2019), this project aims to mitigate harm by detecting hateful content. We follow a data-centric approach that enhances model detection capa-bilities and increases transparency through the introduction of a detailed annotation codebook. This codebook provides nuanced definitions of incivility and intolerance, supporting more precise and interpretable moderation decisions. Several ethical considerations and limitations remain. First, striking a balance between preventing harm and pre-serving freedom of speech is a central concern. Overly re-strictive moderation risks suppressing legitimate discourse, while insufficient intervention can allow harmful content to persist. Second, assessments of content are not entirely ob-jective; they are often shaped by the annotator’s individ-ual perspective and sociocultural context (Hettiachchi et al. 2023), which can introduce variability and bias into anno-tations. Third, adaptability is a major challenge. Internet memes are fast-evolving communicative artifacts that reflect rapidly shifting cultural symbols, formats, and narratives. To remain effective, moderation systems must be resilient while also capable of adapting to emerging patterns in both form and meaning. 
+
+# Acknowledgements 
+
+While drafting this paper, generative large language mod-els were used to assist with editing, and revising portions of the manuscript. Additionally we used an AI-assisted coding tool (ClaudeCode) to support refactoring and debugging of research code. All scientific claims, experimental design de-cisions, data analysis, and interpretations, as well as the final code implementation, are the sole responsibility and work of the authors. 
+
+# References 
+
+Badour, J.; and Brown, J. A. 2021. Hateful Memes Classifi-cation Using Machine Learning. In 2021 IEEE Symposium Series on Computational Intelligence (SSCI) , 1–8. Bai, S.; Chen, K.; Liu, X.; Wang, J.; Ge, W.; Song, S.; Dang, K.; Wang, P.; Wang, S.; Tang, J.; Zhong, H.; Zhu, Y.; Yang, M.; Li, Z.; Wan, J.; Wang, P.; Ding, W.; Fu, Z.; Xu, Y.; Ye, J.; Zhang, X.; Xie, T.; Cheng, Z.; Zhang, H.; Yang, Z.; Xu, H.; and Lin, J. 2025. Qwen2.5-VL Technical Report. arXiv:2502.13923. Bhandari, A.; Shah, S. B.; Thapa, S.; Naseem, U.; and Nasim, M. 2023. CrisisHateMM: Multimodal Analysis of Directed and Undirected Hate Speech in Text-Embedded Images from Russia-Ukraine Conflict. In 2023 IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW) , 1994–2003. Bianchi, F.; Hills, S.; Rossini, P.; Hovy, D.; Tromble, R.; and Tintarev, N. 2022. “It’s Not Just Hate”: A Multi-Dimensional Perspective on Detecting Harmful Speech On-line. In Goldberg, Y.; Kozareva, Z.; and Zhang, Y., eds., 
+
+Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , 8093–8099. Abu Dhabi, United Arab Emirates: Association for Computational Lin-guistics. Cao, R.; Lee, R. K.-W.; Chong, W.-H.; and Jiang, J. 2022. Prompting for Multimodal Hateful Meme Classification. In Goldberg, Y.; Kozareva, Z.; and Zhang, Y., eds., Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , 321–332. Abu Dhabi, United Arab Emirates: Association for Computational Linguistics. Coe, K.; Kenski, K.; and Rains, S. A. 2014. Online and Uncivil? Patterns and Determinants of Incivility in Newspa-per Website Comments. Journal of Communication , 64(4): 658–679. Davidson, T.; Warmsley, D.; Macy, M.; and Weber, I. 2017. Automated Hate Speech Detection and the Problem of Of-fensive Language. Proceedings of the International AAAI Conference on Web and Social Media , 11(1): 512–515. European Commission. 2019. Ethics Guidelines for Trust-worthy AI . Publications Office of the European Union. ISBN 978-92-76-11998-2. FORCE11. 2020. The FAIR Data Principles. Grover, P.; Gohil, V.; Goel, B.; Veeramani, H.; Shah, S. B.; Jain, S. R.; Thapa, S.; Razzak, I.; and Naseem, U. 2025. PoliMeme: Exploring Offensive Meme Propagation in the Israel-Palestine Conflict. In Companion Proceedings of the ACM on Web Conference 2025 , WWW ’25, 1969–1978. New York, NY, USA: Association for Computing Machin-ery. ISBN 979-8-4007-1331-6. Hee, M. S.; Chong, W.-H.; and Lee, R. K.-W. 2023. De-coding the Underlying Meaning of Multimodal Hateful Memes. In Proceedings of the Thirty-Second International Joint Conference on Artificial Intelligence , IJCAI ’23, 5995– 6003. Macao, P.R.China. ISBN 978-1-956792-03-4. Hettiachchi, D.; Holcombe-James, I.; Livingstone, S.; de Silva, A.; Lease, M.; Salim, F. D.; and Sanderson, M. 2023. How Crowd Worker Factors Influence Subjective An-notations: A Study of Tagging Misogynistic Hate Speech in Tweets. Proceedings of the AAAI Conference on Human Computation and Crowdsourcing , 11: 38–50. Hossain, E.; Hoque, M. M.; and Hossain, M. A. 2023. An Inter-modal Attention Framework for Multimodal Offense Detection. In Vasant, P.; Weber, G.-W.; Marmolejo-Saucedo, J. A.; Munapo, E.; and Thomas, J. J., eds., Intelligent Com-puting & Optimization , 853–862. Cham: Springer Interna-tional Publishing. ISBN 978-3-031-19958-5. Hu, E. J.; Shen, Y.; Wallis, P.; Allen-Zhu, Z.; Li, Y.; Wang, S.; Wang, L.; and Chen, W. 2021. LoRA: Low-Rank Adap-tation of Large Language Models. arXiv:2106.09685. Jain, R.; Maity, K.; Jha, P.; and Saha, S. 2023. Generative Models vs Discriminative Models: Which Performs Better in Detecting Cyberbullying in Memes? In 2023 Interna-tional Joint Conference on Neural Networks (IJCNN) , 1–8. Kern, C.; Eckman, S.; Beck, J.; Chew, R.; Ma, B.; and Kreuter, F. 2023. Annotation Sensitivity: Training Data Col-lection Methods Affect Model Performance. In Bouamor, H.; Pino, J.; and Bali, K., eds., Findings of the Associa-tion for Computational Linguistics: EMNLP 2023 , 14874– 14886. Singapore: Association for Computational Linguis-tics. Kiela, D.; Firooz, H.; Mohan, A.; Goswami, V.; Singh, A.; Ringshia, P.; and Testuggine, D. 2020. The Hateful Memes Challenge: Detecting Hate Speech in Multimodal Memes. In Advances in Neural Information Processing Systems , vol-ume 33, 2611–2624. Curran Associates, Inc. Koutlis, C.; Schinas, M.; and Papadopoulos, S. 2023. Meme-Fier: Dual-stage Modality Fusion for Image Meme Clas-sification. In Proceedings of the 2023 ACM International Conference on Multimedia Retrieval , ICMR ’23, 586–591. New York, NY, USA: Association for Computing Machin-ery. ISBN 979-8-4007-0178-8. Kumar, G. K.; and Nandakumar, K. 2022. Hate-CLIPper: Multimodal Hateful Meme Classification Based on Cross-modal Interaction of CLIP Features. In Biester, L.; Dem-szky, D.; Jin, Z.; Sachan, M.; Tetreault, J.; Wilson, S.; Xiao, L.; and Zhao, J., eds., Proceedings of the Second Workshop on NLP for Positive Impact (NLP4PI) , 171–183. Abu Dhabi, United Arab Emirates (Hybrid): Association for Computa-tional Linguistics. Kumari, G.; Bandyopadhyay, D.; and Ekbal, A. 2023. EmoffMeme: Identifying Offensive Memes by Leveraging Underlying Emotions. Multimedia Tools and Applications ,82(29): 45061–45096. K¨ umpel, A. S.; and Unkel, J. 2023. Differential Percep-tions of and Reactions to Incivil and Intolerant User Com-ments. Journal of Computer-Mediated Communication ,28(4): zmad018. Liang, X.; Huang, Y.; Liu, W.; Zhu, H.; Liang, Z.; and Chen, L. 2022. TRICAN: Multi-Modal Hateful Memes Detection with Triplet-Relation Information Cross-Attention Network. In 2022 International Joint Conference on Neural Networks (IJCNN) , 1–8. Lin, H.; Luo, Z.; Gao, W.; Ma, J.; Wang, B.; and Yang, R. 2024. Towards Explainable Harmful Meme Detection through Multimodal Debate between Large Language Mod-els. In Proceedings of the ACM Web Conference 2024 ,WWW ’24, 2359–2370. New York, NY, USA: Association for Computing Machinery. ISBN 979-8-4007-0171-9. Lin, H.; Luo, Z.; Ma, J.; and Chen, L. 2023. Beneath the Surface: Unveiling Harmful Memes with Multimodal Rea-soning Distilled from Large Language Models. In Bouamor, H.; Pino, J.; and Bali, K., eds., Findings of the Association for Computational Linguistics: EMNLP 2023 , 9114–9128. Singapore: Association for Computational Linguistics. Lin, H.; Luo, Z.; Wang, B.; Yang, R.; and Ma, J. 2025. GOAT-Bench: Safety Insights to Large Multimodal Models through Meme-Based Social Abuse. ACM Trans. Intell. Syst. Technol. 
+
+Liu, H.; Li, C.; Wu, Q.; and Lee, Y. J. 2023. Visual Instruc-tion Tuning. Advances in Neural Information Processing Systems , 36: 34892–34916. Martinez Pandiani, D. S.; Tjong Kim Sang, E.; and Ceolin, D. 2025. ‘Toxic’ Memes: A Survey of Computational Per-spectives on the Detection and Explanation of Meme Toxic-ities. Online Social Networks and Media , 47: 100317. Mathias, L.; Nie, S.; Mostafazadeh Davani, A.; Kiela, D.; Prabhakaran, V.; Vidgen, B.; and Waseem, Z. 2021. Find-ings of the WOAH 5 Shared Task on Fine Grained Hate-ful Memes Detection. In Mostafazadeh Davani, A.; Kiela, D.; Lambert, M.; Vidgen, B.; Prabhakaran, V.; and Waseem, Z., eds., Proceedings of the 5th Workshop on Online Abuse and Harms (WOAH 2021) , 201–206. Online: Association for Computational Linguistics. Mei, J.; Chen, J.; Yang, G.; Lin, W.; and Byrne, B. 2025. Ro-bust Adaptation of Large Multimodal Models for Retrieval Augmented Hateful Meme Detection. In Christodoulopou-los, C.; Chakraborty, T.; Rose, C.; and Peng, V., eds., Pro-ceedings of the 2025 Conference on Empirical Methods in Natural Language Processing , 23806–23828. Suzhou, China: Association for Computational Linguistics. ISBN 979-8-89176-332-6. OpenAI. 2025. GPT-5.1 System Card. Orr, W.; and Kang, E. B. 2024. AI as a Sport: On the Com-petitive Epistemologies of Benchmarking. In Proceedings of the 2024 ACM Conference on Fairness, Accountability, and Transparency , FAccT ’24, 1875–1884. New York, NY, USA: Association for Computing Machinery. ISBN 979-8-4007-0450-5. Qu, Y.; He, X.; Pierson, S.; Backes, M.; Zhang, Y.; and Zan-nettou, S. 2023. On the Evolution of (Hateful) Memes by Means of Multimodal Contrastive Learning. In 2023 IEEE Symposium on Security and Privacy (SP) , 293–310. IEEE Computer Society. ISBN 978-1-6654-9336-9. Radford, A.; Kim, J. W.; Hallacy, C.; Ramesh, A.; Goh, G.; Agarwal, S.; Sastry, G.; Askell, A.; Mishkin, P.; Clark, J.; Krueger, G.; and Sutskever, I. 2021. Learning Transferable Visual Models From Natural Language Supervision. In Pro-ceedings of the 38th International Conference on Machine Learning , 8748–8763. PMLR. Rajput, K.; Kapoor, R.; Rai, K.; and Kaur, P. 2022. Hate Me Not: Detecting Hate Inducing Memes in Code Switched Languages. AMCIS 2022 Proceedings .Rossini, P. 2022. Beyond Incivility: Understanding Patterns of Uncivil and Intolerant Discourse in Online Political Talk. 
+
+Communication Research , 49(3): 399–425. Sabat, B. O.; Ferrer, C. C.; and Giro-i-Nieto, X. 2019. Hate Speech in Pixels: Detection of Offensive Memes towards Automatic Moderation. arXiv:1910.02334. Shah, S. B.; Shiwakoti, S.; Chaudhary, M.; and Wang, H. 2024. MemeCLIP: Leveraging CLIP Representations for Multimodal Meme Classification. In Al-Onaizan, Y.; Bansal, M.; and Chen, Y.-N., eds., Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing , 17320–17332. Miami, Florida, USA: Associa-tion for Computational Linguistics. Wang, P.; Bai, S.; Tan, S.; Wang, S.; Fan, Z.; Bai, J.; Chen, K.; Liu, X.; Wang, J.; Ge, W.; Fan, Y.; Dang, K.; Du, M.; Ren, X.; Men, R.; Liu, D.; Zhou, C.; Zhou, J.; and Lin, J. 2024. Qwen2-VL: Enhancing Vision-Language Model’s Perception of the World at Any Reso-lution. arXiv:2409.12191. Waseem, Z.; Davidson, T.; Warmsley, D.; and Weber, I. 2017. Understanding Abuse: A Typology of Abusive Lan-guage Detection Subtasks. In Waseem, Z.; Chung, W. H. K.; Hovy, D.; and Tetreault, J., eds., Proceedings of the First Workshop on Abusive Language Online , 78–84. Vancouver, BC, Canada: Association for Computational Linguistics. Appendix Appendix A: Annotation Scheme 
+
+This appendix provides an overview of the sub-types used in our annotation scheme for incivility and intolerance. Anno-tators labeled each meme using the definitions below. 
+
+## Incivility Sub-types 
+
+To guide the annotation of incivility, we use a typology that captures different forms of uncivil expression. Each subtype is described in both text and image, since the idea of “tone” can appear differently in each. Textual incivility may involve word choice or phrasing, while visual incivility can appear through imagery or symbols. Table 9 lists the categories and provides a description for each modality. 
+
+## Intolerance Sub-types 
+
+To guide the annotation of intolerance, we use a typology that captures different forms of harmful content. Unlike in-civility, which can manifest in different ways in text and im-ages, the meaning of intolerant messages tends to remain consistent across modalities. Table 10 presents each subtype alongside a brief description. 
+
+# Appendix B: Data 
+
+## Annotation Subset 
+
+The original Hateful Memes dataset contains 9,664 memes after removing duplicates and unavailable images. To create the subset for fine-grained annotation, we randomly sampled memes from the original dataset while stratifying by train/-val/test split. We annotated 21% of the dataset, corresponding to 2,030 memes. To justify this choice, we evaluated how model per-formance scales with the amount of annotated data. Specifi-cally, we fine-tuned the models for hatefulness prediction us-ing increasing shares of the annotated subset and measured validation accuracy. Figure 3 shows accuracy as a function of the share of annotated data for both models. For LLaVA-1.6, accuracy is relatively constant across different annotation sizes. For Qwen2.5-VL-7B, accuracy increases strongly up to about 12% of annotated data and then largely stagnates. Overall, annotating 21% of the dataset provides a reason-able balance between annotation effort and empirical bene-fit, ensuring stable training while remaining feasible for ex-pert annotation. 
+
+## Label Frequency 
+
+Figure 4 shows the frequency of each fine-grained label across all annotations before aggregation. Note that a sin-gle meme can be assigned multiple labels, as annotations capture several aspects of incivility and intolerance simulta-neously. All labels in the annotation scheme are used, but they ap-pear with very different frequencies. For incivility, the civil 
+
+label is by far the most frequent, while more severe forms such as aspersions occur less often. For intolerance, the tol-erant label is most common, whereas categories such as so-cial and economic intolerance appear comparatively rarely. 
+
+Figure 3: Validation accuracy for hatefulness prediction across different shares of annotated training data. 
+
+Figure 4: Frequency of fine-grained incivility (left) and in-tolerance (right) labels across all annotations before aggre-gation. A single meme may receive multiple labels. 
+
+# Appendix C: Training Details 
+
+This section describes the training setup, hyperparameter tuning procedure, and computational resources used in our experiments. 
+
+## Open-Source Models 
+
+Models. We evaluate two open-source vision–language models: Qwen2.5-VL-7B and LLaVA-1.6-Mistral-7B. These models represent recent general-purpose VLMs with strong performance on multimodal reasoning tasks and are widely adopted in current research (Mei et al. 2025). 
+
+Model Versions. To reduce computational cost and im-prove accessibility and reproducibility, we fine-tune quan-tized 4-bit versions of both models. Quantization substan-tially lowers GPU memory requirements while preserving competitive downstream performance, enabling training on a single commodity GPU. 
+
+Fine-Tuning Strategy. All open-source models are fine-tuned using Low-Rank Adaptation (LoRA) . LoRA up-dates a small number of task-specific parameters while keep-ing the base model frozen, which significantly improves training efficiency and reduces memory consumption (Hu et al. 2021). This approach allows us to run multiple hyper-parameter configurations within a fixed resource budget. Nr. Form of Incivility Text Visual 
+
+0 Civil Absence of incivility. Absence of offensive, hostile, or degrading imagery. 1 Profane or vulgar Use of explicit profanities or vulgarities, regardless of whether they are directed at a person or entity. Images containing profanity, obscene gestures, or crude/vulgar symbolism. Sexual or violent images aimed at intimidating, shocking, or degrading pub-lic discourse. 2 Attacks Derogatory or pejorative language directed at spe-cific individuals or groups. These can focus on per-sonal characteristics (e.g., appearance), traits, char-acter, or choices. Images targeting identifiable individuals or demo-graphic groups with pejorative, mocking, or dehu-manising intent. 3 Aspersions Attacks targeting groups, organizations, or institu-tions aiming to undermine credibility, legitimacy, or moral standing. Images delegitimising institutions, policies, or par-ties through ridicule, slurs, or hostile visual metaphors. 
+
+Table 9: Subtypes of Incivility in Text and Visual Content. Used in the annotation scheme. 
+
+Nr. Form of Intolerance Description 
+
+0 Tolerant / Neutral Absence of expressions of intolerance. 1 Threats to Individual Rights Claims or images where certain groups do not have equal civil, political, or human rights. 2 Intolerance Toward Political Positions Delegitimizing opposing political views or calling for elimination of political actors. 3 Racism Discriminatory, stereotypical, hateful, or prejudicial speech toward racial minorities. 4 Social/Economic Intolerance Discriminatory, stereotypical, hateful, or prejudicial speech toward others based on edu-cation level, social status, or income. 5 Gender and Sexual Intolerance Discriminatory, stereotypical, hateful, or prejudicial speech toward women and/or LGBTQ+ individuals based on gender status or sexual orientation. 6 Religious Intolerance Discriminatory, stereotypical, hateful, or prejudicial speech toward individuals or groups based on religion. 7 Offensive Stereotyping Cultural, regional, physical, or professional stereotyping with derogatory framing. 8 Violent Threats Calls to harm individuals or institutions, or support for violence. 9 Ableism Prejudice, stereotypes, mockery, exclusion, or hostility toward people with physical, in-tellectual, sensory, or mental disabilities. 
+
+Table 10: Subtypes of Intolerance in Text Content. Used in the annotation scheme. 
+
+## Hyperparameter Tuning 
+
+For each task and training configuration, we perform inde-pendent hyperparameter tuning . All tuning runs share: • the same random-search hyperparameter space (18 dif-ferent configurations), • an identical tuning budget, • fixed training–validation splits, and • model selection based on validation weighted F1 score .For reproducibility, the hyperparameter configurations corresponding to the best-performing runs are provided in Table 11. 
+
+## Training Results 
+
+Table 12 reports training results on the validation split .For each model and learning setup, we repeat the best-performing hyperparameter configuration with five random seeds and report mean accuracy and invalid prediction rate, with the standard deviation shown in brackets. Overall, we observe relatively stable training behavior for LLaVA-1.6, as reflected by low variance across random seeds. In contrast, Qwen2.5-VL-7B exhibits higher variabil-ity across runs. This instability is primarily driven by a small number of runs producing invalid predictions , where labels could not be reliably recovered from the generated text output. These cases introduce additional variance in the reported metrics but do not reflect systematic performance degradation of the model. 
+
+## Computational Resources 
+
+Required Resources. All open-source fine-tuning experi-ments can be executed on a single 24 GB GPU , made possi-ble through 4-bit quantization and LoRA-based training. 
+
+Resources Used. Experiments were conducted on an in-ternal compute cluster using NVIDIA H100 94 GB GPUs .For the fine-grained dataset, one training epoch (1420 sam-ples) takes approximately 17 minutes . This setup allowed us to complete hyperparameter tuning within a practical time frame. 
+
+## Closed-Source Model 
+
+For comparison, we also evaluate a closed-source model us-ing GPT-5.1 . All inference is performed via the provider API without model fine-tuning. The total cost to evaluate the test split (407 samples) is approximately $ 0.30 .Setup Model LoRA r LoRA α Dropout Learning Rate Weight Decay Epochs Coarse Qwen2.5-VL-7B 64 128 0.0 2e-3 0.05 2LLaVA-v1.6-Mistral-7B 64 128 0.05 2e-4 0.05 2
+
+Fine Qwen2.5-VL-7B 128 256 0.1 2e-3 0.05 2LLaVA-v1.6-Mistral-7B 64 128 0.05 5e-4 0.0 2
+
+Joint Qwen2.5-VL-7B 64 128 0.0 2e-3 0.05 3LLaVA-v1.6-Mistral-7B 128 256 0.05 5e-4 0.1 2
+
+Table 11: Hyperparameters for all models across training setups. 
+
+LLaVA-1.6-Mistral-7B Qwen2.5-VL-7B Setup Finetune Split Evaluation Split Acc. IPR Acc. IPR Coarse Hateful Hateful 0.64 ( ±0.05) 0.00 ( ±0.00) 0.65 ( ±0.15) 0.15 ( ±0.02) Fine Uncivil/Intolerant Uncivil 0.75 ( ±0.02) 0.00 ( ±0.00) 0.81 ( ±0.03) 0.05 ( ±0.07) Intolerant 0.77 ( ±0.02) 0.76 ( ±0.08) Joint Uncivil/Intolerant/Hateful Hateful 0.73 ( ±0.03) 0.01 ( ±0.01) 0.68 ( ±0.09) 0.12 ( ±0.01) Uncivil 0.75 ( ±0.04) 0.77 ( ±0.02) Intolerant 0.75 ( ±0.02) 0.69 ( ±0.09) 
+
+Table 12: Average validation accuracy (Acc.) and invalid prediction rate (IPR) across models and training setups using 5 different seeds. Standard deviation reported in brackets. 
+
+# Appendix D: Prompt Specifications 
+
+All prompts follow a system–user message structure. We use three prompt variants: a coarse-grained hatefulness prompt (Listing 1), a fine-grained incivility and intolerance prompt (Listing 2), and a joint prompt covering all three dimensions (Listing 3). For each meme, the placeholder {MEME TEXT } was filled with the corresponding meme text. Listing 1: Coarse-grained prompt 
+
+1 System prompt: 
+
+2 You are a content moderation assistant. Aid me to label images with text as hateful or neutral. Hateful images are defined as containing a direct or indirect attack on people based on characteristics, including ethnicity, race, nationality, immigration status, religion, caste, sex, gender identity, sexual orientation, and disability or disease. 
+
+3 User prompt: 
+
+4 Considering the image and its text: {MEME_TEXT}. Is the content of the image and its text hateful or neutral ? Respond only with the word "Hateful" or "Neutral". 
+
+# Appendix E: Additional Annotation Analyses 
+
+## Raw fine-grained frequencies 
+
+This section contains data on raw fine-grained frequencies. Table 13 contains the distribution for incivility. Table 14 contains the distribution for intolerance. Note that these rep-Listing 2: Fine-grained prompt 
+
+1 System prompt: 
+
+2 You are a content moderation assistant. You need to classify images with text across multiple dimensions: incivility and intolerance. -Incivility: Rude, disrespectful or dismissive tone towards others as well as opinions expressed with antinormative intensity.- Intolerance : Behaviors that are threatening to democracy and pluralism - such as prejudice, segregation, hateful or violent speech, and the use of stereotyping in order to disqualify others and groups. 
+
+3 User prompt: 
+
+4 Considering the image and its text: { MEME_TEXT}. Classify this content on two dimensions: 1. Incivility: Is this content civil or uncivil? 2. Intolerance: Is this content tolerant or intolerant? Respond in the format : "Incivility: [Civil/Uncivil], Intolerance: [Tolerant/Intolerant]" 
+
+resent all labels. A large subset of data points received mul-tiple valid labels in these categories. Listing 3: Joint prompt 
+
+1 System prompt: 
+
+2 You are a content moderation assistant. You need to classify images with text across multiple dimensions: incivility, intolerance, and hatefulness. - Incivility: Rude, disrespectful or dismissive tone towards others as well as opinions expressed with antinormative intensity.- Intolerance: Behaviors that are threatening to democracy and pluralism - such as prejudice, segregation, hateful or violent speech, and the use of stereotyping in order to disqualify others and groups.- Hatefulness: Hateful content is defined as containing a direct or indirect attack on people based on characteristics, including ethnicity, race, nationality, immigration status, religion, caste, sex, gender identity, sexual orientation, and disability or disease. 
+
+3 User prompt: 
+
+4 Considering the image and its text: {MEME_TEXT}. Classify this content on three dimensions: 1. Incivility: Is this content civil or uncivil? 2. Intolerance: Is this content tolerant or intolerant? 3. Hatefulness: Is this content hateful or neutral? Respond in the format: "Incivility: [Civil/Uncivil], Intolerance: [Tolerant/Intolerant], Hatefulness: [Hateful/Neutral]" 
+
+Category Count Share Civil 3552 0.58 
+
+Vulgar 1623 0.27 
+
+Attacks 603 0.10 
+
+Aspersions 323 0.05 
+
+Total 6101 1.00 
+
+Table 13: Distribution of incivility categories in the dataset. 
+
+Category Count Share Tolerant 3463 0.52 
+
+Threats to Rights 56 0.01 
+
+Political Intolerance 255 0.04 
+
+Racism 815 0.12 
+
+Social Intolerance 25 0.00 
+
+Gender Intolerance 615 0.09 
+
+Religious Intolerance 615 0.09 
+
+Offensive Stereotypes 372 0.06 
+
+Violent Threats 259 0.04 
+
+Ableism 195 0.03 
+
+Total 6670 1.00 
+
+Table 14: Distribution of intolerance categories in the dataset. 
+
+## Fine-grained labels majority vote 
+
+In addition to the probabilities shown in the main part of the paper, we present the conditional probabilities for the major-ity voting on different categories in Figure 5. This includes the Wilson Score Interval in the form of error bars, beyond the numbers represented in the Table from the main paper. Note that Threats to Rights is again a special case, due to the low number of memes that received this annotation. 
+
+Figure 5: Hatefulness empirical probability conditioned on each category. Error bars represent the Wilson Score Interval at 0.05 significance level. 
+
+## Logistic Regression on Fine-Grained Labels 
+
+Performing a naive majority-vote aggregation of the fine-grained incivility and intolerance labels discards a large part of the annotations where there is no clear majority category across annotators. To prevent this information loss, we con-ducted additional experiments, where we represent each an-notator’s response as a probability distribution over the label categories, where the weight of 1 is split equally across all categories selected by that annotator. To assess how these granular labels relate to hatefulness, we fit a logistic regression with the aggregated category probabilities as predictors and the majority-voted binary hateful label as the outcome. The model is stable and robust: it achieves a high R2 (0.60 ), a significant log-likelihood ra-tio p-value ( < 0.000 ), and converges after 7 iterations. The estimated intercept implies that only exp( −4.2) ≈ 1.4% of memes coded as both civil and tolerant are labeled hateful, confirming that the baseline rate for non-offensive content is near zero. 
+
+Figure 6: Odds ratios from a logistic regression of the hate-ful label on fine-grained incivility and intolerance category probabilities. Points to the right of the dashed line ( OR > 1)indicate a positive association with hatefulness. Error bars denote 95% confidence intervals. The results from this regression again reveal a structural difference between incivility and intolerance. Incivility cat-egories (with the exception of aspersions) significantly in-crease the odds of hatefulness, but the effect sizes are mod-erate. Intolerance categories, by contrast, are associated with substantially higher odds ratios, indicating that explicit ide-ological targeting is a much stronger signal of hatefulness than linguistic incivility alone. Among individual categories, 
+
+Racism , Offensive Stereotypes , and Ableism emerge as the clearest predictors of hateful content.

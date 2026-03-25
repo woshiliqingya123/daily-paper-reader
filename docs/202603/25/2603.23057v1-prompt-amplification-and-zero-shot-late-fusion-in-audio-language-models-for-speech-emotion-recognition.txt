@@ -1,0 +1,161 @@
+Title: Prompt Amplification and Zero-Shot Late Fusion in Audio-Language Models for Speech Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2603.23057v1
+
+Published Time: Wed, 25 Mar 2026 01:01:26 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+# Prompt Amplification and Zero-Shot Late Fusion in Audio-Language Models for Speech Emotion Recognition 
+
+Saurabh Kataria 
+
+School of Nursing Emory University 
+
+Atlanta, USA saurabhkataria10@gmail.com 
+
+Xiao Hu 
+
+School of Nursing Emory University 
+
+Atlanta, USA xiao.hu@emory.edu 
+
+Abstract —Audio-Language Models (ALMs) are making strides in understanding speech and non-speech audio. However, domain-specialist Foundation Models (FMs) remain the best for closed-ended speech processing tasks such as Speech Emotion Recognition (SER). Using ALMs for Zero-shot SER is a popular choice, but their potential to work with specialists to achieve state-of-the-art (SOTA) performance remains unexplored. We propose ZS-Fuse, a late-fusion method that combines zero-shot emotion estimates from a dual-encoder ALM with specialist FMs. To handle ambiguity in emotions and sensitivity to prompt choice, 1) we use a simple prompt ensemble and 2) suggest a novel technique called prompt amplification, which repeats audio and text queries to discover stronger zero-shot capabilities. We demonstrate the efficacy of our technique by evaluating ZS-Fuse with three dual-encoder ALMs and two FMs, and report improvements over SOTA baselines, such as WavLM-Large, on three speech emotion recognition datasets. 
+
+Index Terms —Speech Emotion Recognition, Audio-Language Models, Zero-Shot, Late Fusion, Prompt Engineering 
+
+I. I NTRODUCTION 
+
+Speech Emotion Recognition (SER) is a crucial paralin-guistic task in human understanding [1]. It facilitates the development of emotion-aware spoken dialogue systems [2], empathetic assistants [3], customer satisfaction [4], and mental state monitoring [5]. Recent works such as EmoBox [6] and VoxEmo [7] demonstrate the growing potential of Foundation Models (FM) and Audio-Language Models (ALM) for SER. While conventional FMs achieve state-of-the-art (SOTA) performance [7], [8], ALMs provide semantic grounding, reasoning, and zero-shot prediction capabilities. However, they suffer from over-confidence, which is addressed via confidence calibration, retrieval-based grounding, and uncertainty estima-tion [9]. Our proposal, ZS-Fuse (Fig. 1), safely navigates this issue by using zero-shot scores as a semantic prior and late fusing them with the conventional supervised FM fine-tuning pipeline. We choose the Dual-Encoder (DE) ALM family over generative ones, such as Audio Flamingo 3 [10] and Qwen 3 [11], because it aligns closely with our closed-set (fixed number of emotion classes) setup. Contrastive Language-Audio Pretraining (CLAP) [12] is a prominent instance of DE ALM, trained on caption-audio pairs and is suitable for open-vocabulary retrieval and comparing arbitrary text-audio pairs. A related work, ABHINAYA [13], uses FMs and gener-ative ALMs, but does decision-level fusion. [8] created a generative ALM using multiple FMs, but overall does not consistently surpass SOTA. There have been prior efforts to develop paralinguistic FMs (emotion2vec [14]) and DE ALMs (ParaCLAP [15]), but they do not examine their combination. Hence, in our proposal ZS-Fuse, 1) we focus specifically on surpassing SOTA and propose a simple late fusion method to combine predictions of dual-encoder Audio-Language Models with Foundation Model representations, 2) we propose a novel technique, prompt amplification , which repeats audio and text queries to discover stronger zero-shot capabilities of ALMs, 3) we report improvements over the strong WavLM-Large baseline and discuss potential pitfalls in zero-shot fusion. II. ZS-F USE 
+
+A. Overview 
+
+We illustrate our proposal Zero-shot Fusion (ZS-Fuse) in Fig. 1. The first branch performs standard fine-tuning of the speech foundation model, yielding a D-dimensional vector 
+
+h. The second branch uses a dual-encoder Audio-Language Model (ALM) to obtain zero-shot predictions ( s) for each emotion class ( E). P prompts are used for querying, and their zero-shot scores are averaged, making this a simplistic version of Zero-Shot Prompt Ensembling [16]. Finally, we use LayerNorm (LN) and concatenation to do the late fusion as z = h ; LN( s) ∈ RD+E , which is then fed to the classification output layer. ZS-Fuse may be seen as semantic grounding without explicit Automatic Speech Recognition. 
+
+B. Prompt Engineering 
+
+We use three prompts per emotion class: an emotion+speech form (“angry speech”), a speaker-centric form (“a person speaking angrily”), and a voice-attribute form (“anger in the voice”). The ensemble covers the classes used in each dataset: A (anger), C (contempt), D (disgust), F (fear), H (happiness), N (neutral), S (sadness), and U (surprise). A 
+
+> arXiv:2603.23057v1 [eess.AS] 24 Mar 2026
+
+Fig. 1: Proposed Zero-shot Fusion (ZS-Fuse) method. The speech foundation fine-tuning branch is complemented by zero-shot estimates from an audio-text dual encoder. The similarity score ( P × E) of pre-determined prompt templates ( P ) is computed for all emotion classes ( E). Additionally, prompt amplification trick can be used to increase the audio length by repeating it and prompt strength by replacing “ <emotion_j> ” with “ N instances of <emotion_j> ”, for further potential gains. 
+
+TABLE I: UAR (mean ±std) across three datasets. Bold=global best for each dataset. Underline=best within each backbone block and per dataset. The first row shows the random baseline. For each backbone block, arrows indicate a change relative to the corresponding + none 
+
+baseline. The last column indicates the number of results that improved ( ↑) or degraded ( ↓) when using an Audio-Language Model. 
+
+Setting (FM + ALM) RAVDESS UAR MSP-Podcast UAR IEMOCAP UAR Imp. Count Random 0.2628 ±0.0450 0.1241 ±0.0106 0.2503 ±0.0017 –
+
+FM 1.1: WavLM-Base+ 
+
+WavLM-Base+ + none 0.6953 ±0.0994 0.2955 ±0.0037 0.6736 ±0.0060 baseline WavLM-Base+ + clap 0.6719 ±0.0442 ↓ 0.2945 ±0.0003 ↓ 0.7023 ±0.0183 ↑ 1↑, 2 ↓
+
+WavLM-Base+ + reclap 0.7969 ±0.0442 ↑ 0.2862 ±0.0026 ↓ 0.6833 ±0.0190 ↑ 2↑, 1 ↓
+
+WavLM-Base+ + clsp 0.7500 ±0.0442 ↑ 0.2946 ±0.0060 ↓ 0.7045 ±0.0093 ↑ 2↑, 1 ↓
+
+FM 1.2: WavLM-Large 
+
+WavLM-Large + none 0.8438 ±0.0552 0.3088 ±0.0042 0.7051 ±0.0108 baseline WavLM-Large + clap 0.8086 ±0.0497 ↓ 0.3118 ±0.0042 ↑ 0.7142 ±0.0201 ↑ 2↑, 1 ↓
+
+WavLM-Large + reclap 0.8125 ±0.0442 ↓ 0.3046 ±0.0019 ↓ 0.6939 ±0.0209 ↓ 0↑, 3 ↓
+
+WavLM-Large + clsp 0.8711 ±0.0387 ↑ 0.3041 ±0.0017 ↓ 0.7111 ±0.0074 ↑ 2↑, 1 ↓
+
+FM 2.1: HuBERT-Base 
+
+HuBERT-Base + none 0.8125 ±0.0221 0.2723 ±0.0001 0.6845 ±0.0256 baseline HuBERT-Base + clap 0.7578 ±0.0442 ↓ 0.2755 ±0.0021 ↑ 0.6711 ±0.0135 ↓ 1↑, 2 ↓
+
+HuBERT-Base + reclap 0.7422 ±0.0442 ↓ 0.2675 ±0.0007 ↓ 0.6839 ±0.0012 ↓ 0↑, 3 ↓
+
+HuBERT-Base + clsp 0.7969 ±0.0110 ↓ 0.2927 ±0.0045 ↑ 0.6907 ±0.0213 ↑ 2↑, 1 ↓
+
+FM 2.2: HuBERT-Large 
+
+HuBERT-Large + none 0.8125 ±0.0442 0.2775 ±0.0002 0.6987 ±0.0229 baseline HuBERT-Large + clap 0.7539 ±0.0387 ↓ 0.2760 ±0.0162 ↓ 0.7177 ±0.0019 ↑ 1↑, 2 ↓
+
+HuBERT-Large + reclap 0.7539 ±0.1602 ↓ 0.2716 ±0.0051 ↓ 0.6988 ±0.0055 ↑ 1↑, 2 ↓
+
+HuBERT-Large + clsp 0.8242 ±0.0055 ↑ 0.2895 ±0.0029 ↑ 0.7184 ±0.0092 ↑ 3↑, 0 ↓
+
+distinct feature of our prompt ensemble is its simplicity. Prompt engineering is shown to influence zero-shot perfor-mance [17]–[19]. We also propose a technique, prompt am-plification , which serves as a controlled amplification knob. In audio, it simply repeats the signal, while in text, it re-places <emotion_j> speech with N instances of <emotion_j> speech . This enables us to safely discover stronger zero-shot capabilities of Audio-Language Models in a controlled manner. We defer fine-grained prompting [18] and bigger prompt ensembles to future work. III. M ETHODOLOGY 
+
+Here, we describe the components of the ZS-Fuse. 
+
+A. Test Datasets 
+
+RAVDESS [20]: This is a validated corpus of emotional speech and song from which we extract speech-only record-ings for the 4-class subset: angry, happy, sad, and neutral, with distribution: {N:96, H:192, S:192, A:192 }. We create a speaker-disjoint split across the 24 actors, yielding 672 utter-Fig. 2: Zero-shot UAR of three ALMs on three datasets for 16 combinations of audio and text repeats ( [1 , 2, 3, 4] × [1 , 2, 3, 4] ). ances in total, with 448/112/112 train/validation/test samples. The total dataset is 0.69 h, and the average utterance is 3.70 s. 
+
+MSP-PODCAST [21]: This is a large corpus of natural-istic emotional speech drawn from podcast recordings and annotated with both categorical emotion labels and dimen-sional ratings such as arousal, valence, and dominance. Class distribution is {N:52753, H:29454, S:8347, A:10342, U:5227, C:5127, D:2827, F:1997 }. We use the provided partitions, and evaluate on merged “test1” and “test2”. The resulting labeled subset contains 116,074 utterances (65,205 train / 15,341 dev / 35,528 test), with a total duration of 182.9 h and an average utterance length of 5.67 s. 
+
+IEMOCAP [22]: We use IEMOCAP in the standard 4-class setting comprising neutral, sad, angry, and happy, with excited merged with happy. Class distribution is {N:1708, H:1636, S:1084, A:1103 }. We have 5,531 unique utterances from 10 speakers, totaling 6.99 h and an average utterance length of 4.55 s. We then construct 5 leave-one-session-out folds, using 3/1/1 sessions for train/val/test, respectively. 
+
+B. Foundation Models 
+
+We evaluate WavLM-Base+ (94.7M), WavLM-Large (316.6M) [23], HuBERT-Base (90M), and HuBERT-Large (300M) [24], all of which are pretrained self-supervised speech encoders. WavLM augments the HuBERT framework with gated relative position bias and denoising-based pretraining, whereas HuBERT uses masked prediction of hidden units. We investigated Whisper [25] of similar sizes but it gave inferior results. 
+
+C. Dual-Encoder Audio-Language Models 
+
+We investigate three ALMs: 1) CLAP (Contrastive Language-Audio Pretraining) [12] (specifically the stronger LAION CLAP [26] version), 2) ReCLAP [18], and 3) CLSP (Contrastive Language-Speech Pretraining) [27]. CLAP is trained with contrastive learning to align audio and text (cap-tion) in a joint embedding space for open-vocabulary retrieval. ReCLAP improves training by enhancing training captions with a Large Language Model (LLM). CLSP goes further ahead by incorporating fine-grained supervision via external captioning models and agentic verification for filtering. 
+
+D. Training details 
+
+We keep ALM frozen (both its text and speech encoders) and audio FM unfrozen. Training is performed using the AdamW optimizer, a batch size of 32, 30 epochs, a learning rate of 2e-5, and with 3 random seeds to capture training stochasticity via standard deviation. The best validation UAR epoch is used to report the test UAR. IV. R ESULTS 
+
+A. Baseline 
+
+In Table I, we report Unweighted Average Recall (UAR) for three datasets and four foundation models. In the first row, we TABLE II: Effect of audio/text repetition on UAR (mean ±std). We report Best/Default ( a=1 , t =1 )/Worst combinations (among total 16), the range ∆ = Best − Worst, and the no-ALM baseline. Per case (A,B), we report best and second best in bold and underline.                                  
+
+> System Dataset Best a×tDefault 1×1Worst a×tRange ∆
+> (Best-Worst) No ALM Baseline Case A: WavLM-Large + CLSP
+> WavLM-Large + CLSP RAVDESS a1×t2:
+> 0.8984 ±0.0221
+> a1×t1:0.8750 ±0.0442
+> a3×t2:0.8008 ±0.0276 0.0977 a0×t0:0.8438 ±0.0552 WavLM-Large + CLSP MSP-Podcast a1×t2:
+> 0.3108 ±0.0008
+> a1×t1:0.3081 ±0.0035
+> a2×t3:0.3020 ±0.0011 0.0088 a0×t0:0.3088 ±0.0042 WavLM-Large + CLSP IEMOCAP a1×t4:
+> 0.7254 ±0.0021
+> a1×t1:0.7118 ±0.0031
+> a3×t3:0.7106 ±0.0117 0.0148 a0×t0:0.7051 ±0.0108
+> Case B: WavLM-Base+ + CLAP
+> WavLM-Base+ + CLAP RAVDESS a4×t2:
+> 0.7703 ±0.0356
+> a1×t1:0.7422 ±0.1038
+> a2×t2:0.6969 ±0.0666 0.0734 a0×t0:0.6953 ±0.0994 WavLM-Base+ + CLAP MSP-Podcast a2×t4:0.2947 ±0.0009
+> a1×t1:0.2908 ±0.0006
+> a4×t3:0.2807 ±0.0032 0.0140 a0×t0:
+> 0.2955 ±0.0037
+> WavLM-Base+ + CLAP IEMOCAP a1×t4:
+> 0.7017 ±0.0056
+> a1×t1:0.6833 ±0.0078
+> a1×t3:0.6799 ±0.0003 0.0218 a0×t0:0.6736 ±0.0060
+
+note the random UAR value for reference. The first row of each result block, “ FM + none ”, is the baseline that uses only FM fine-tuning. Here, we see that WavLM-Large substantially outperforms the other three FMs on all three datasets. WavLM-Large achieves close to 0.84 UAR on RAVDESS, 0.30 UAR on MSP-PODCAST, and 0.70 UAR on IEMOCAP. The next three rows utilize the three ALMs. The last column reports the number of datasets on which improvement ( ↑) or degradation (↓) is observed when using the dual encoders. Across the 12 runs, CLAP improved UAR in 5/12, ReCLAP in 3/12, and CLSP in 9/12. Thus, CLSP showed the most consistent gains relative to the corresponding FM + none baseline. Note that these results are without prompt amplification ( a1 × t1). 
+
+B. Comprehensive zero-shot evaluation 
+
+In Fig. 2, we note the zero-shot performance of three ALMs with different audio and text repeats. We first perform a sanity check to ensure that all settings outperform the random baseline. Visually, we observe that lighter colors (better performance) are toward the right (more text repeats) and downward (more audio repeats). More repetitions of either modality generally help; however, CLSP degrades with audio repeats, which we attribute to software implementation since we limited the audio length to 6 s due to memory constraints. Overall, CLSP performs best on RAVDESS (UAR=0.742, 
+
+a1 × t4), even surpassing the WavLM-Base-Plus supervised baseline (UAR=0.695 from Table I). In the literature, more complex ALMs, such as Audio Flamingo 3 (AF3) [10] and Qwen2-A-Inst [28], achieve IEMOCAP performance of 63.8% and 59.2%, respectively, whereas CLSP zero-shot performance reaches 60.2% ( a1 × t4 config), indicating that dual-encoder ALMs are underutilized. We also note that zero-shot perfor-mance exhibits high variability with respect to the number of modality repeats and shows no clear trends along the two axes, making it difficult to determine which a × t config to deploy. 
+
+C. Results with Prompt Amplification 
+
+In Table II, we report a summary of ZS-Fuse results. Of the 16 repeat combinations, we present the best, the default (a1xt1), and the worst. Since we found CLSP as the best ALM in the zero-shot study (Fig. 2), we conduct this study using WavLM-Large (Case A). For completeness, we also present WavLM-Base-Plus with CLAP (Case B). Observations are similar in both cases, with improvements in all datasets except MSP-PODCAST (case B), which is more suited for processing by CLAP instead of CLSP, as suggested by Fig. 2. Except for one result, the best a×t substantially improves over the default 
+
+a1×t1 as well as the no ALM baseline. The worst a×t coun-terintuitively degrades performance, sometimes even below the no ALM baseline. This shows that the prompt amplification trick can have unexpected behavior during deployment. Thus, our proposal is powerful for achieving state-of-the-art results, but the prompt amplification component remains a discrete optimization strategy. Prompt amplification can also be seen as a test-time self-conditioning [29] / ensembling [16] trick with potential bias-correction and calibration effects [30]. In future work, we will investigate this further and work on establishing a 1:1 correspondence between isolated zero-shot strength and downstream utility to enhance the reliability of ZS-Fuse. V. C ONCLUSION 
+
+We introduced ZS-Fuse, a late-fusion method that safely integrates zero-shot speech emotion predictions derived from ALMs into the conventional supervised foundation models 
+
+pipeline. We establish the efficacy of our proposal by exploring three dual-encoder ALMs (CLAP, ReCLAP, CLSP), two FMs (WavLM, HuBERT), and three datasets (RAVDESS, MSP-PODCAST, IEMOCAP). To discover stronger zero-shot ca-pabilities, we devise a novel technique, prompt amplification ,that repeats the audio and text queries. Finally, we show that default (no audio or text repeat) and best-repeat combinations can substantially surpass the state-of-the-art. In future work, we will improve prompt amplification and extend the study to generative ALMs and better prompt ensembles. REFERENCES [1] Bj¨ orn Schuller, Stefan Steidl, Anton Batliner, Alessandro Vinciarelli, Klaus Scherer, Fabien Ringeval, Mohamed Chetouani, Felix Weninger, Florian Eyben, Erik Marchi, et al. The interspeech 2013 computational paralinguistics challenge: Social signals, conflict, emotion, autism. In 
+
+Proceedings INTERSPEECH 2013, 14th Annual Conference of the International Speech Communication Association, Lyon, France , 2013. [2] Yukun Ma, Khanh Linh Nguyen, Frank Z Xing, and Erik Cambria. A survey on empathetic dialogue systems. Information Fusion , 64:50–70, 2020. [3] Yong Ma, Yuchong Zhang, Miroslav Bachinski, and Morten Fjeld. Emotion-aware voice assistants: Design, implementation, and prelimi-nary insights. In Proceedings of the Eleventh International Symposium of Chinese CHI , pages 527–532, 2023. [4] Luis Felipe Parra-Gallego and Juan Rafael Orozco-Arroyave. Clas-sification of emotions and evaluation of customer satisfaction from speech in real world acoustic environments. Digital Signal Processing ,120:103286, 2022. [5] Eric Jordan, Rapha¨ el Terrisse, Valeria Lucarini, Motasem Alrahabi, Marie-Odile Krebs, Julien Descl´ es, and Christophe Lemey. Speech emotion recognition in mental health: Systematic review of voice-based applications. JMIR mental health , 12(1):e74260, 2025. [6] Ziyang Ma, Mingjie Chen, Hezhao Zhang, Zhisheng Zheng, Wenxi Chen, Xiquan Li, Jiaxin Ye, Xie Chen, and Thomas Hain. Emobox: Multilingual multi-corpus speech emotion recognition toolkit and bench-mark. arXiv preprint arXiv:2406.07162 , 2024. [7] Hezhao Zhang, Huang-Cheng Chou, Shrikanth Narayanan, and Thomas Hain. Voxemo: Benchmarking speech emotion recognition with speech llms. arXiv preprint arXiv:2603.08936 , 2026. [8] Zhixian Zhao, Xinfa Zhu, Xinsheng Wang, Shuiyuan Wang, Xuelong Geng, Wenjie Tian, and Lei Xie. Steering language model to stable speech emotion recognition via contextual perception and chain of thought. IEEE Transactions on Audio, Speech and Language Processing ,34:415–426, 2025. [9] Lei Huang, Weijiang Yu, Weitao Ma, Weihong Zhong, Zhangyin Feng, Haotian Wang, Qianglong Chen, Weihua Peng, Xiaocheng Feng, Bing Qin, et al. A survey on hallucination in large language models: Principles, taxonomy, challenges, and open questions. ACM Transactions on Information Systems , 43(2):1–55, 2025. [10] Arushi Goel, Sreyan Ghosh, Jaehyeon Kim, Sonal Kumar, Zhifeng Kong, Sang-gil Lee, Chao-Han Huck Yang, Ramani Duraiswami, Dinesh Manocha, Rafael Valle, et al. Audio flamingo 3: Advancing audio intelligence with fully open large audio language models. arXiv preprint arXiv:2507.08128 , 2025. [11] Jin Xu, Zhifang Guo, Hangrui Hu, Yunfei Chu, Xiong Wang, Jinzheng He, Yuxuan Wang, Xian Shi, Ting He, Xinfa Zhu, et al. Qwen3-omni technical report. arXiv preprint arXiv:2509.17765 , 2025. [12] Benjamin Elizalde, Soham Deshmukh, Mahmoud Al Ismail, and Huam-ing Wang. Clap learning audio concepts from natural language su-pervision. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2023. [13] Soumya Dutta, Smruthi Balaji, Viveka Salinamakki, Sriram Ganapathy, et al. Abhinaya–a system for speech emotion recognition in naturalistic conditions challenge. arXiv preprint arXiv:2505.18217 , 2025. [14] Ziyang Ma, Zhisheng Zheng, Jiaxin Ye, Jinchao Li, Zhifu Gao, Shiliang Zhang, and Xie Chen. emotion2vec: Self-supervised pre-training for speech emotion representation. In Findings of the Association for Computational Linguistics: ACL 2024 , pages 15747–15760, 2024. [15] Xin Jing, Andreas Triantafyllopoulos, and Bj¨ orn Schuller. Paraclap– towards a general language-audio model for computational paralinguistic tasks. arXiv preprint arXiv:2406.07203 , 2024. [16] James Urquhart Allingham, Jie Ren, Michael W Dusenberry, Xiuye Gu, Yin Cui, Dustin Tran, Jeremiah Zhe Liu, and Balaji Lakshminarayanan. A simple zero-shot prompt weighting technique to improve prompt ensembling in text-image models. In International Conference on Machine Learning , pages 547–568. PMLR, 2023. [17] Kaiyang Zhou, Jingkang Yang, Chen Change Loy, and Ziwei Liu. Learning to prompt for vision-language models. International journal of computer vision , 130(9):2337–2348, 2022. [18] Sreyan Ghosh, Sonal Kumar, Chandra Kiran Reddy Evuru, Oriol Nieto, Ramani Duraiswami, and Dinesh Manocha. Reclap: Improving zero shot audio classification by describing sounds. In ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2025. [19] Michel Olvera, Paraskevas Stamatiadis, and Slim Essid. A sound de-scription: Exploring prompt templates and class descriptions to enhance zero-shot audio classification. arXiv preprint arXiv:2409.13676 , 2024. [20] Steven R Livingstone and Frank A Russo. The ryerson audio-visual database of emotional speech and song (ravdess): A dynamic, multi-modal set of facial and vocal expressions in north american english. 
+
+PloS one , 13(5):e0196391, 2018. [21] Carlos Busso, Reza Lotfian, Kusha Sridhar, Ali N Salman, Wei-Cheng Lin, Lucas Goncalves, Srinivas Parthasarathy, Abinay Reddy Naini, Seong-Gyun Leem, Luz Martinez-Lucas, et al. The msp-podcast corpus. 
+
+arXiv preprint arXiv:2509.09791 , 2025. [22] Carlos Busso, Murtaza Bulut, Chi-Chun Lee, Abe Kazemzadeh, Emily Mower, Samuel Kim, Jeannette N Chang, Sungbok Lee, and Shrikanth S Narayanan. Iemocap: Interactive emotional dyadic motion capture database. Language resources and evaluation , 42(4):335–359, 2008. [23] Sanyuan Chen, Chengyi Wang, Zhengyang Chen, Yu Wu, Shujie Liu, Zhuo Chen, Jinyu Li, Naoyuki Kanda, Takuya Yoshioka, Xiong Xiao, et al. Wavlm: Large-scale self-supervised pre-training for full stack speech processing. IEEE Journal of Selected Topics in Signal Process-ing , 16(6):1505–1518, 2022. [24] Wei-Ning Hsu, Benjamin Bolte, Yao-Hung Hubert Tsai, Kushal Lakho-tia, Ruslan Salakhutdinov, and Abdelrahman Mohamed. Hubert: Self-supervised speech representation learning by masked prediction of hidden units. IEEE/ACM transactions on audio, speech, and language processing , 29:3451–3460, 2021. [25] Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and Ilya Sutskever. Robust speech recognition via large-scale weak supervision. In International conference on machine learning ,pages 28492–28518. PMLR, 2023. [26] Yusong Wu, Ke Chen, Tianyu Zhang, Yuchen Hui, Taylor Berg-Kirkpatrick, and Shlomo Dubnov. Large-scale contrastive language-audio pretraining with feature fusion and keyword-to-caption augmenta-tion. In ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2023. [27] Yifan Yang, Bing Han, Hui Wang, Wei Wang, Ziyang Ma, Long Zhou, Zengrui Jin, Guanrou Yang, Tianrui Wang, Xu Tan, et al. Towards fine-grained and multi-granular contrastive language-speech pre-training. 
+
+arXiv preprint arXiv:2601.03065 , 2026. [28] Yunfei Chu, Jin Xu, Qian Yang, Haojie Wei, Xipin Wei, Zhifang Guo, Yichong Leng, Yuanjun Lv, Jinzheng He, Junyang Lin, et al. Qwen2-audio technical report. arXiv preprint arXiv:2407.10759 , 2024. [29] Saurabh Kataria, Jes ˜ Aºs Villalba, Thomas Thebaud, Najim Dehak, et al. Self-film: Conditioning gans with self-supervised representations for bandwidth extension based speaker recognition. arXiv preprint arXiv:2303.03657 , 2023. [30] Mingjian Jiang, Yangjun Ruan, Sicong Huang, Saifei Liao, Silviu Pitis, Roger Baker Grosse, and Jimmy Ba. Calibrating language models via augmented prompt ensembles. 2023.

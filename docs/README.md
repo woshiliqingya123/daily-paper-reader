@@ -6,58 +6,46 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-24
-- 运行时间：2026-03-24 20:22:48 UTC
+- 最新运行日期：2026-03-25
+- 运行时间：2026-03-25 19:36:11 UTC
 - 运行状态：成功
-- 本次总论文数：12
+- 本次总论文数：8
 - 精读区：6
-- 速读区：6
+- 速读区：2
 
 ### 今日简报（AI）
-今日深度解析 12 篇前沿成果，聚焦开放词汇情感推理与算法交易策略的跨越式优化。
-满分论文 AcoustEmo 创新性地利用声学 Q-Former 强化情感理解，同时多模态融合技术在仇恨言论检测与能源市场分析中展现出极高实用价值。
-建议优先研读情感计算与量化金融的结合点，探索如何利用多模态意图识别提升复杂场景下的智能决策精度。
-- 详情：[/202603/24/README](/202603/24/README)
+今日深度复盘 8 篇多模态情感计算论文，重点攻克对话情感识别与情感记忆引擎两大核心技术。
+满分论文提出的动态融合感知图卷积网络显著提升了对话理解力，Memory Bear 引擎则为情感智能注入了科学的记忆机制。
+推荐关注图神经网络在复杂语境下的融合策略，以及如何构建具备长期情感记忆能力的 AI 系统。
+- 详情：[/202603/25/README](/202603/25/README)
 
 ### 精读区论文标签
-1. [AcoustEmo: Open-Vocabulary Emotion Reasoning via Utterance-Aware Acoustic Q-Former](/202603/24/2603.20894v1-acoustemo-open-vocabulary-emotion-reasoning-via-utterance-aware-acoustic-q-former)  
+1. [Dynamic Fusion-Aware Graph Convolutional Neural Network for Multimodal Emotion Recognition in Conversations](/202603/25/2603.22345v1-dynamic-fusion-aware-graph-convolutional-neural-network-for-multimodal-emotion-recognition-in-conversations)  
    标签：评分：10.0/10、query:msa
-   evidence：通过多模态大语言模型进行开放词汇情感推理
-2. [Algorithmic Trading Strategy Development and Optimisation](/202603/24/2603.15848v2-algorithmic-trading-strategy-development-and-optimisation)  
+   evidence：利用动态融合进行对话中的多模态情感识别
+2. [Memory Bear AI Memory Science Engine for Multimodal Affective Intelligence: A Technical Report](/202603/25/2603.22306v1-memory-bear-ai-memory-science-engine-for-multimodal-affective-intelligence-a-technical-report)  
    标签：评分：9.0/10、query:msa
-   evidence：情感分析在财报电话会议算法交易中的应用
-3. [NDT: Non-Differential Transformer and Its Application to Sentiment Analysis](/202603/24/2603.20704v1-ndt-non-differential-transformer-and-its-application-to-sentiment-analysis)  
+   evidence：以记忆为中心的多模态情感智能框架
+3. [Beyond Hate: Differentiating Uncivil and Intolerant Speech in Multimodal Content Moderation](/202603/25/2603.22985v1-beyond-hate-differentiating-uncivil-and-intolerant-speech-in-multimodal-content-moderation)  
    标签：评分：9.0/10、query:msa
-   evidence：用于情感分析的Transformer架构
-4. [ERM-MinMaxGAP: Benchmarking and Mitigating Gender Bias in Multilingual Multimodal Speech-LLM Emotion Recognition](/202603/24/2603.21050v1-erm-minmaxgap-benchmarking-and-mitigating-gender-bias-in-multilingual-multimodal-speech-llm-emotion-recognition)  
+   evidence：多模态内容审核中的情感语气与内容分析
+4. [Prompt Amplification and Zero-Shot Late Fusion in Audio-Language Models for Speech Emotion Recognition](/202603/25/2603.23057v1-prompt-amplification-and-zero-shot-late-fusion-in-audio-language-models-for-speech-emotion-recognition)  
    标签：评分：9.0/10、query:msa
-   evidence：多语言多模态语音大模型情感识别基准
-5. [Test-Time Adaptation via Cache Personalization for Facial Expression Recognition in Videos](/202603/24/2603.21309v1-test-time-adaptation-via-cache-personalization-for-facial-expression-recognition-in-videos)  
-   标签：评分：9.0/10、query:msa
-   evidence：使用视觉语言模型进行视频面部表情识别
-6. [Reading Between the Lines: How Electronic Nonverbal Cues shape Emotion Decoding](/202603/24/2603.21038v1-reading-between-the-lines-how-electronic-nonverbal-cues-shape-emotion-decoding)  
+   evidence：使用音频语言模型进行语音情感识别的最新进展
+5. [MSP-Conversation: A Corpus for Naturalistic, Time-Continuous Emotion Recognition](/202603/25/2603.22536v1-msp-conversation-a-corpus-for-naturalistic-time-continuous-emotion-recognition)  
    标签：评分：8.0/10、query:msa
-   evidence：从文本中的电子非语言线索解码情感
+   evidence：自然连续情感识别语料库
+6. [I Came, I Saw, I Explained: Benchmarking Multimodal LLMs on Figurative Meaning in Memes](/202603/25/2603.23229v1-i-came-i-saw-i-explained-benchmarking-multimodal-llms-on-figurative-meaning-in-memes)  
+   标签：评分：8.0/10、query:msa
+   evidence：多模态大模型解释模因中的比喻含义
 
 ### 速读区论文标签
-1. [Unbiased Dynamic Multimodal Fusion](/202603/24/2603.19681v1-unbiased-dynamic-multimodal-fusion)  
-   标签：评分：8.0/10、query:msa
-   evidence：适用于真实场景的无偏动态多模态融合
-2. [More Than Sum of Its Parts: Deciphering Intent Shifts in Multimodal Hate Speech Detection](/202603/24/2603.21298v1-more-than-sum-of-its-parts-deciphering-intent-shifts-in-multimodal-hate-speech-detection)  
-   标签：评分：8.0/10、query:msa
-   evidence：多模态仇恨言论检测与语义意图转变
-3. [Beyond Correlation: Refutation-Validated Aspect-Based Sentiment Analysis for Explainable Energy Market Returns](/202603/24/2603.21473v1-beyond-correlation-refutation-validated-aspect-based-sentiment-analysis-for-explainable-energy-market-returns)  
-   标签：评分：8.0/10、query:msa
-   evidence：金融市场的细粒度情感分析
-4. [Is AI Ready for Multimodal Hate Speech Detection? A Comprehensive Dataset and Benchmark Evaluation](/202603/24/2603.21686v1-is-ai-ready-for-multimodal-hate-speech-detection-a-comprehensive-dataset-and-benchmark-evaluation)  
-   标签：评分：8.0/10、query:msa
-   evidence：结合图像和文本的多模态仇恨言论检测
-5. [Emotion-Aware Quantization for Discrete Speech Representations: An Analysis of Emotion Preservation](/202603/24/2603.21224v1-emotion-aware-quantization-for-discrete-speech-representations-an-analysis-of-emotion-preservation)  
-   标签：评分：7.0/10、query:tokencomp
-   evidence：语音表示与基于token模型的压缩
-6. [Triangulating Temporal Dynamics in Multilingual Swiss Online News](/202603/24/2603.21519v1-triangulating-temporal-dynamics-in-multilingual-swiss-online-news)  
+1. [Modelling Emotions is an Elusive Pursuit in Affective Computing](/202603/25/2603.23017v1-modelling-emotions-is-an-elusive-pursuit-in-affective-computing)  
    标签：评分：7.0/10、query:msa
-   evidence：多语言新闻文章的有针对性情感分析
+   evidence：通过维度情感定义推进情感计算研究
+2. [Enhancing Alignment for Unified Multimodal Models via Semantically-Grounded Supervision](/202603/25/2603.19807v1-enhancing-alignment-for-unified-multimodal-models-via-semantically-grounded-supervision)  
+   标签：评分：6.0/10、query:msa
+   evidence：统一多模态模型与语义接地监督
 
 
 <div class="dpr-home-promo-card">
