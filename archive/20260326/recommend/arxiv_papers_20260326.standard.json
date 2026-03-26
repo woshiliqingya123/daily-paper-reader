@@ -1,0 +1,284 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-26T20:12:16.364348+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2603.23650v1",
+      "title": "Foundation Model Embeddings Meet Blended Emotions: A Multimodal Fusion Approach for the BLEMORE Challenge",
+      "abstract": "We present our system for the BLEMORE Challenge at FG 2026 on blended emotion recognition with relative salience prediction. Our approach combines six encoder families through late probability fusion: an S4D-ViTMoE face encoder adapted with soft-label KL training, frozen layer-selective Wav2Vec2 audio features, finetuned body-language encoders (TimeSformer, VideoMAE), and -- for the first time in emotion recognition -- Gemini Embedding 2.0, a large multimodal model whose video embeddings produce competitive presence accuracy (ACCP = 0.320) from only 2 seconds of input. Three key findings emerge from our experiments: selecting prosody-encoding layers (6--12) from frozen Wav2Vec2 outperforms end-to-end finetuning (Score 0.207 vs. 0.161), as the non-verbal nature of BLEMORE audio makes phonetic layers irrelevant; the post-processing salience threshold $β$ varies from 0.05 to 0.43 across folds, revealing that personalized expression styles are the primary bottleneck; and task-adapted encoders collectively receive 62\\% of ensemble weight over general-purpose baselines. Our 12-encoder system achieves Score = 0.279 (ACCP = 0.391, ACCS = 0.168) on the test set, placing 6th.",
+      "authors": [
+        "Masoumeh Chapariniya",
+        "Aref Farhadipour",
+        "Sarah Ebling",
+        "Volker Dellwo",
+        "Teodora Vukovic"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-24T18:49:49+00:00",
+      "link": "https://arxiv.org/pdf/2603.23650v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "multimodal fusion approach for blended emotion recognition challenge",
+      "llm_evidence_cn": "混合情感识别挑战赛的多模态融合方法",
+      "llm_evidence": "混合情感识别挑战赛的多模态融合方法",
+      "canonical_evidence": "混合情感识别挑战赛的多模态融合方法",
+      "llm_tldr_en": "Combines multiple encoders and multimodal embeddings for high-performance blended emotion recognition.",
+      "llm_tldr_cn": "结合多个编码器和多模态嵌入，实现高性能的混合情感识别。",
+      "llm_tldr": "结合多个编码器和多模态嵌入，实现高性能的混合情感识别。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.23673v1",
+      "title": "Crab: Multi Layer Contrastive Supervision to Improve Speech Emotion Recognition Under Both Acted and Natural Speech Condition",
+      "abstract": "Speech Emotion Recognition (SER) in real-world scenarios remains challenging due to severe class imbalance and the prevalence of spontaneous, natural speech. While recent approaches leverage self-supervised learning (SSL) representations and multimodal fusion of speech and text, most existing methods apply supervision only at the final classification layer, limiting the discriminative power of intermediate representations. In this work, we propose Crab (Contrastive Representation and Multimodal Aligned Bottleneck), a bimodal Cross-Modal Transformer architecture that integrates speech representations from WavLM and textual representations from RoBERTa, together with a novel \\textit{Multi Layer Contrastive Supervision} (MLCS) strategy. MLCS injects multi-positive contrastive learning signals at multiple layers of the network, encouraging emotionally discriminative representations throughout the model without introducing additional parameters at inference time. To further address data imbalance, we adopt weighted cross-entropy during training. We evaluate the proposed approach on three benchmark datasets covering different degrees of emotional naturalness: IEMOCAP, MELD, and MSP-Podcast 2.0. Experimental results demonstrate that Crab consistently outperforms strong unimodal and multimodal baselines across all datasets, with particularly large gains under naturalistic and highly imbalanced conditions. These findings highlight the effectiveness of \\textit{Multi Layer Contrastive Supervision} as a general and robust strategy for SER. Official implementation can be found in https://github.com/AI-Unicamp/Crab.",
+      "authors": [
+        "Lucas H. Ueda",
+        "João G. T. Lima",
+        "Paula D. P. Costa"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.SD"
+      ],
+      "published": "2026-03-24T19:27:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.23673v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "speech emotion recognition under natural real-world conditions",
+      "llm_evidence_cn": "真实自然场景下的语音情感识别",
+      "llm_evidence": "真实自然场景下的语音情感识别",
+      "canonical_evidence": "真实自然场景下的语音情感识别",
+      "llm_tldr_en": "Proposes a contrastive multimodal architecture to improve emotion recognition in real-world spontaneous speech.",
+      "llm_tldr_cn": "提出一种对比多模态架构，以提高真实世界自发语音中的情感识别能力。",
+      "llm_tldr": "提出一种对比多模态架构，以提高真实世界自发语音中的情感识别能力。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "applications of multimodal sentiment analysis in real world scenarios",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.21309v2",
+      "title": "Test-Time Adaptation via Cache Personalization for Facial Expression Recognition in Videos",
+      "abstract": "Facial expression recognition (FER) in videos requires model personalization to capture the considerable variations across subjects. Vision-language models (VLMs) offer strong transfer to downstream tasks through image-text alignment, but their performance can still degrade under inter-subject distribution shifts. Personalizing models using test-time adaptation (TTA) methods can mitigate this challenge. However, most state-of-the-art TTA methods rely on unsupervised parameter optimization, introducing computational overhead that is impractical in many real-world applications. This paper introduces TTA through Cache Personalization (TTA-CaP), a cache-based TTA method that enables cost-effective (gradient-free) personalization of VLMs for video FER. Prior cache-based TTA methods rely solely on dynamic memories that store test samples, which can accumulate errors and drift due to noisy pseudo-labels. TTA-CaP leverages three coordinated caches: a personalized source cache that stores source-domain prototypes, a positive target cache that accumulates reliable subject-specific samples, and a negative target cache that stores low-confidence cases as negative samples to reduce the impact of noisy pseudo-labels. Cache updates and replacement are controlled by a tri-gate mechanism based on temporal stability, confidence, and consistency with the personalized cache. Finally, TTA-CaP refines predictions through fusion of embeddings, yielding refined representations that support temporally stable video-level predictions. Our experiments on three challenging video FER datasets, BioVid, StressID, and BAH, indicate that TTA-CaP can outperform state-of-the-art TTA methods under subject-specific and environmental shifts, while maintaining low computational and memory overhead for real-world deployment.",
+      "authors": [
+        "Masoumeh Sharafi",
+        "Muhammad Osama Zeeshan",
+        "Soufiane Belharbi",
+        "Alessandro Lameiras Koerich",
+        "Marco Pedersoli",
+        "Eric Granger"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-22T16:31:25+00:00",
+      "link": "https://arxiv.org/pdf/2603.21309v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "facial expression recognition in videos using vision-language models",
+      "llm_evidence_cn": "利用视觉语言模型进行视频面部表情识别",
+      "llm_evidence": "利用视觉语言模型进行视频面部表情识别",
+      "canonical_evidence": "利用视觉语言模型进行视频面部表情识别",
+      "llm_tldr_en": "Presents a gradient-free test-time adaptation method for personalizing facial expression recognition in videos.",
+      "llm_tldr_cn": "提出一种无梯度的测试时自适应方法，用于视频面部表情识别的个性化处理。",
+      "llm_tldr": "提出一种无梯度的测试时自适应方法，用于视频面部表情识别的个性化处理。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.21686v2",
+      "title": "Is AI Ready for Multimodal Hate Speech Detection? A Comprehensive Dataset and Benchmark Evaluation",
+      "abstract": "Hate speech online targets individuals or groups based on identity attributes and spreads rapidly, posing serious social risks. Memes, which combine images and text, have emerged as a nuanced vehicle for disseminating hate speech, often relying on cultural knowledge for interpretation. However, existing multimodal hate speech datasets suffer from coarse-grained labeling and a lack of integration with surrounding discourse, leading to imprecise and incomplete assessments. To bridge this gap, we propose an agentic annotation framework that coordinates seven specialized agents to generate hierarchical labels and rationales. Based on this framework, we construct M^3 (Multi-platform, Multi-lingual, and Multimodal Meme), a dataset of 2,455 memes collected from X, 4chan, and Weibo, featuring fine-grained hate labels and human-verified rationales. Benchmarking state-of-the-art Multimodal Large Language Models reveals that these models struggle to effectively utilize surrounding post context, which often fails to improve or even degrades detection performance. Our finding highlights the challenges these models face in reasoning over memes embedded in real-world discourse and underscores the need for a context-aware multimodal architecture. Our dataset and code are available at https://github.com/mira-ai-lab/M3.",
+      "authors": [
+        "Rui Xing",
+        "Qi Chai",
+        "Jie Ma",
+        "Jing Tao",
+        "Pinghui Wang",
+        "Shuming Zhang",
+        "Xinping Wang",
+        "Hao Wang"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA"
+      ],
+      "published": "2026-03-23T08:17:29+00:00",
+      "link": "https://arxiv.org/pdf/2603.21686v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multimodal hate speech detection in memes combining text and images",
+      "llm_evidence_cn": "结合文本和图像的多模态模因仇恨言论检测",
+      "llm_evidence": "结合文本和图像的多模态模因仇恨言论检测",
+      "canonical_evidence": "结合文本和图像的多模态模因仇恨言论检测",
+      "llm_tldr_en": "Introduces a comprehensive multimodal dataset and benchmark for detecting hate speech in internet memes.",
+      "llm_tldr_cn": "引入了一个全面的多模态数据集和基准，用于检测互联网模因中的仇恨言论。",
+      "llm_tldr": "引入了一个全面的多模态数据集和基准，用于检测互联网模因中的仇恨言论。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.18425v1",
+      "title": "Multimodal Task Interference: A Benchmark and Analysis of History-Target Mismatch in Multimodal LLMs",
+      "abstract": "Task interference, the performance degradation caused by task switches within a single conversation, has been studied exclusively in text-only settings despite the growing prevalence of multimodal dialogue systems. We introduce a benchmark for evaluating this phenomenon in multimodal LLMs, covering six tasks across text and vision with systematic variation of history-target along three axes: modality mismatch, reasoning mismatch, and answer format mismatch. Experiments on both open-weights and proprietary models reveal that task interference is highly directional: switching from text-only to image-based targets causes severe performance drops, while the reverse transition yields minimal degradation. Interference is further amplified when mismatches co-occur across multiple dimensions, and is driven most strongly by modality differences, followed by answer format, while reasoning requirement shifts cause minimal degradation.",
+      "authors": [
+        "Masayuki Kawarada",
+        "Tatsuya Ishigaki",
+        "Hiroya Takamura"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-19T02:36:42+00:00",
+      "link": "https://arxiv.org/pdf/2603.18425v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "benchmark for multimodal dialogue systems and task interference",
+      "llm_evidence_cn": "多模态对话系统和任务干扰的基准测试",
+      "llm_evidence": "多模态对话系统和任务干扰的基准测试",
+      "canonical_evidence": "多模态对话系统和任务干扰的基准测试",
+      "llm_tldr_en": "Analyzes task interference in multimodal LLMs, providing a benchmark for switching between text and vision tasks.",
+      "llm_tldr_cn": "分析多模态大模型中的任务干扰现象，为文本和视觉任务切换提供基准测试。",
+      "llm_tldr": "分析多模态大模型中的任务干扰现象，为文本和视觉任务切换提供基准测试。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.23568v1",
+      "title": "Causal Reconstruction of Sentiment Signals from Sparse News Data",
+      "abstract": "Sentiment signals derived from sparse news are commonly used in financial analysis and technology monitoring, yet transforming raw article-level observations into reliable temporal series remains a largely unsolved engineering problem. Rather than treating this as a classification challenge, we propose to frame it as a causal signal reconstruction problem: given probabilistic sentiment outputs from a fixed classifier, recover a stable latent sentiment series that is robust to the structural pathologies of news data such as sparsity, redundancy, and classifier uncertainty. We present a modular three-stage pipeline that (i) aggregates article-level scores onto a regular temporal grid with uncertainty-aware and redundancy-aware weights, (ii) fills coverage gaps through strictly causal projection rules, and (iii) applies causal smoothing to reduce residual noise. Because ground-truth longitudinal sentiment labels are typically unavailable, we introduce a label-free evaluation framework based on signal stability diagnostics, information preservation lag proxies, and counterfactual tests for causality compliance and redundancy robustness. As a secondary external check, we evaluate the consistency of reconstructed signals against stock-price data for a multi-firm dataset of AI-related news titles (November 2024 to February 2026). The key empirical finding is a three-week lead lag pattern between reconstructed sentiment and price that persists across all tested pipeline configurations and aggregation regimes, a structural regularity more informative than any single correlation coefficient. Overall, the results support the view that stable, deployable sentiment indicators require careful reconstruction, not only better classifiers.",
+      "authors": [
+        "Stefania Stan",
+        "Marzio Lunghi",
+        "Vito Vargetto",
+        "Claudio Ricci",
+        "Rolands Repetto",
+        "Brayden Leo",
+        "Shao-Hong Gan"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-03-24T09:13:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.23568v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "causal reconstruction of sentiment signals from sparse news data",
+      "llm_evidence_cn": "从稀疏新闻数据中因果重建情感信号",
+      "llm_evidence": "从稀疏新闻数据中因果重建情感信号",
+      "canonical_evidence": "从稀疏新闻数据中因果重建情感信号",
+      "llm_tldr_en": "Presents a pipeline to reconstruct stable latent sentiment series from sparse and redundant news article data.",
+      "llm_tldr_cn": "提出了一种从稀疏且冗余的新闻文章数据中重建稳定潜在情感序列的流水线。",
+      "llm_tldr": "提出了一种从稀疏且冗余的新闻文章数据中重建稳定潜在情感序列的流水线。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.24410v1",
+      "title": "Real Talk, Virtual Faces: A Formal Concept Analysis of Personality and Sentiment in Influencer Audiences",
+      "abstract": "Virtual influencers~(VIs) -- digitally synthetic social-media personas -- attract audiences whose discourse appears qualitatively different from discourse around human influencers~(HIs). Existing work characterises this difference through surveys or aggregate engagement statistics, which reveal \\emph{what} audiences say but not \\emph{how} multiple signals co-occur. We propose a two-layer, structure-first framework grounded in Formal Concept Analysis~(FCA) and association rule mining. The first layer applies FCA with support-based iceberg filtering to weekly-aggregated comment data, extracting discourse profiles -- weekly co-occurrence bundles of sentiment, Big Five personality cues, and topic tags. The second layer mines association rules at the comment level, revealing personality--sentiment--topic dependencies invisible to frequency-table analysis.   Applied to YouTube comments from three VI--HI influencer pairs, the two-layer analysis reveals a consistent structural divergence: HI discourse concentrates into a single, emotionally regulated (stability-centred) regime (low neuroticism anchoring positivity), while VI discourse supports three structurally distinct discourse modes, including an appearance-discourse cluster absent from HI despite near-equal marginal prevalence. Topic-specific analyses further show that VI contexts exhibit negative sentiment in psychologically sensitive domains (mental health, body image, artificial identity) relative to HI contexts. Our results position FCA as a principled tool for multi-signal discourse analysis and demonstrate that virtuality reshapes not just what audiences say, but the underlying grammar of how signals co-occur in their reactions.",
+      "authors": [
+        "Shahram Chaudhry",
+        "Sidahmed Benabderrahmane",
+        "Talal Rahwan"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY",
+        "cs.AI"
+      ],
+      "published": "2026-03-25T15:23:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.24410v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "co-occurrence bundles of sentiment and personality cues in social media",
+      "llm_evidence_cn": "社交媒体中情感与人格特质的共现分析",
+      "llm_evidence": "社交媒体中情感与人格特质的共现分析",
+      "canonical_evidence": "社交媒体中情感与人格特质的共现分析",
+      "llm_tldr_en": "Proposes a framework using Formal Concept Analysis to extract sentiment and personality profiles from influencer comments.",
+      "llm_tldr_cn": "提出一种基于形式概念分析的框架，用于从网红评论中提取情感和人格特征概况。",
+      "llm_tldr": "提出一种基于形式概念分析的框架，用于从网红评论中提取情感和人格特征概况。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
