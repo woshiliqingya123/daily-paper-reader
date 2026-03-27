@@ -1,0 +1,204 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-27T19:17:22.813148+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2603.25041v1",
+      "title": "AdaLTM: Adaptive Layer-wise Task Vector Merging for Categorical Speech Emotion Recognition with ASR Knowledge Integration",
+      "abstract": "Integrating Automatic Speech Recognition (ASR) into Speech Emotion Recognition (SER) enhances modeling by providing linguistic context. However, conventional feature fusion faces performance bottlenecks, and multi-task learning often suffers from optimization conflicts. While task vectors and model merging have addressed such conflicts in NLP and CV, their potential in speech tasks remains largely unexplored. In this work, we propose an Adaptive Layer-wise Task Vector Merging (AdaLTM) framework based on WavLM-Large. Instead of joint optimization, we extract task vectors from in-domain ASR and SER models fine-tuned on emotion datasets. These vectors are integrated into a frozen base model using layer-wise learnable coefficients. This strategy enables depth-aware balancing of linguistic and paralinguistic knowledge across transformer layers without gradient interference. Experiments on the MSP-Podcast demonstrate that the proposed approach effectively mitigates conflicts between ASR and SER.",
+      "authors": [
+        "Chia-Yu Lee",
+        "Huang-Cheng Chou",
+        "Tzu-Quan Lin",
+        "Yuanchao Li",
+        "Ya-Tse Wu",
+        "Shrikanth Narayanan",
+        "Chi-Chun Lee"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-03-26T05:22:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.25041v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "speech emotion recognition with ASR knowledge integration",
+      "llm_evidence_cn": "集成语音识别知识的语音情感识别",
+      "llm_evidence": "集成语音识别知识的语音情感识别",
+      "canonical_evidence": "集成语音识别知识的语音情感识别",
+      "llm_tldr_en": "Proposes an adaptive task vector merging framework to enhance speech emotion recognition using ASR context.",
+      "llm_tldr_cn": "提出一种自适应任务向量合并框架，利用 ASR 上下文增强语音情感识别。",
+      "llm_tldr": "提出一种自适应任务向量合并框架，利用 ASR 上下文增强语音情感识别。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.24896v1",
+      "title": "LogSigma at SemEval-2026 Task 3: Uncertainty-Weighted Multitask Learning for Dimensional Aspect-Based Sentiment Analysis",
+      "abstract": "This paper describes LogSigma, our system for SemEval-2026 Task 3: Dimensional Aspect-Based Sentiment Analysis (DimABSA). Unlike traditional Aspect-Based Sentiment Analysis (ABSA), which predicts discrete sentiment labels, DimABSA requires predicting continuous Valence and Arousal (VA) scores on a 1-9 scale. A central challenge is that Valence and Arousal differ in prediction difficulty across languages and domains. We address this using learned homoscedastic uncertainty, where the model learns task-specific log-variance parameters to automatically balance each regression objective during training. Combined with language-specific encoders and multi-seed ensembling, LogSigma achieves 1st place on five datasets across both tracks. The learned variance weights vary substantially across languages due to differing Valence-Arousal difficulty profiles-from 0.66x for German to 2.18x for English-demonstrating that optimal task balancing is language-dependent and cannot be determined a priori.",
+      "authors": [
+        "Baraa Hikal",
+        "Jonas Becker",
+        "Bela Gipp"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-03-26T00:21:13+00:00",
+      "link": "https://arxiv.org/pdf/2603.24896v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "dimensional aspect-based sentiment analysis",
+      "llm_evidence_cn": "维度的基于方面的情感分析",
+      "llm_evidence": "维度的基于方面的情感分析",
+      "canonical_evidence": "维度的基于方面的情感分析",
+      "llm_tldr_en": "Uses uncertainty-weighted multitask learning for continuous valence and arousal prediction in sentiment analysis.",
+      "llm_tldr_cn": "在情感分析中使用不确定性加权多任务学习来预测连续的效价和唤醒度分数。",
+      "llm_tldr": "在情感分析中使用不确定性加权多任务学习来预测连续的效价和唤醒度分数。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.25103v1",
+      "title": "Layer-Specific Lipschitz Modulation for Fault-Tolerant Multimodal Representation Learning",
+      "abstract": "Modern multimodal systems deployed in industrial and safety-critical environments must remain reliable under partial sensor failures, signal degradation, or cross-modal inconsistencies. This work introduces a mathematically grounded framework for fault-tolerant multimodal representation learning that unifies self-supervised anomaly detection and error correction within a single architecture. Building upon a theoretical analysis of perturbation propagation, we derive Lipschitz- and Jacobian-based criteria that determine whether a neural operator amplifies or attenuates localized faults. Guided by this theory, we propose a two-stage self-supervised training scheme: pre-training a multimodal convolutional autoencoder on clean data to preserve localized anomaly signals in the latent space, and expanding it with a learnable compute block composed of dense layers for correction and contrastive objectives for anomaly identification. Furthermore, we introduce layer-specific Lipschitz modulation and gradient clipping as principled mechanisms to control sensitivity across detection and correction modules. Experimental results on multimodal fault datasets demonstrate that the proposed approach improves both anomaly detection accuracy and reconstruction under sensor corruption. Overall, this framework bridges the gap between analytical robustness guarantees and practical fault-tolerant multimodal learning.",
+      "authors": [
+        "Diyar Altinses",
+        "Andreas Schwung"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-26T07:22:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.25103v1",
+      "tags": [
+        "query:MSA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Fault-tolerant multimodal representation learning for signal degradation",
+      "llm_evidence_cn": "针对信号退化的容错多模态表示学习",
+      "llm_evidence": "针对信号退化的容错多模态表示学习",
+      "canonical_evidence": "针对信号退化的容错多模态表示学习",
+      "llm_tldr_en": "Proposes a framework for reliable multimodal learning under sensor failures or cross-modal inconsistencies.",
+      "llm_tldr_cn": "提出了一种在传感器故障或跨模态不一致情况下实现可靠多模态学习的框架。",
+      "llm_tldr": "提出了一种在传感器故障或跨模态不一致情况下实现可靠多模态学习的框架。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.25107v1",
+      "title": "Label What Matters: Modality-Balanced and Difficulty-Aware Multimodal Active Learning",
+      "abstract": "Multimodal learning integrates complementary information from different modalities such as image, text, and audio to improve model performance, but its success relies on large-scale labeled data, which is costly to obtain. Active learning (AL) mitigates this challenge by selectively annotating informative samples. In multimodal settings, many approaches implicitly assume that modality importance is stable across rounds and keep selection rules fixed at the fusion stage, which leaves them insensitive to the dynamic nature of multimodal learning, where the relative value of modalities and the difficulty of instances shift as training proceeds. To address this issue, we propose RL-MBA, a reinforcement-learning framework for modality-balanced, difficulty-aware multimodal active learning. RL-MBA models sample selection as a Markov Decision Process, where the policy adapts to modality contributions, uncertainty, and diversity, and the reward encourages accuracy gains and balance. Two key components drive this adaptability: (1) Adaptive Modality Contribution Balancing (AMCB), which dynamically adjusts modality weights via reinforcement feedback, and (2) Evidential Fusion for DifficultyAware Policy Adjustment (EFDA), which estimates sample difficulty via uncertainty-based evidential fusion to prioritize informative samples. Experiments on Food101, KineticsSound, and VGGSound demonstrate that RL-MBA consistently outperforms strong baselines, improving both classification accuracy and modality fairness under limited labeling budgets.",
+      "authors": [
+        "Yuqiao Zeng",
+        "Xu Wang",
+        "Tengfei Liang",
+        "Yiqing Hao",
+        "Yi Jin",
+        "Hui Yu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-26T07:26:48+00:00",
+      "link": "https://arxiv.org/pdf/2603.25107v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "modality-balanced active learning for multimodal data",
+      "llm_evidence_cn": "多模态数据的模态平衡主动学习",
+      "llm_evidence": "多模态数据的模态平衡主动学习",
+      "canonical_evidence": "多模态数据的模态平衡主动学习",
+      "llm_tldr_en": "Proposes a reinforcement learning framework for dynamic modality-balanced active learning in multimodal tasks.",
+      "llm_tldr_cn": "提出一种强化学习框架，用于多模态任务中的动态模态平衡主动学习。",
+      "llm_tldr": "提出一种强化学习框架，用于多模态任务中的动态模态平衡主动学习。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.25570v1",
+      "title": "TAAC: A gate into Trustable Audio Affective Computing",
+      "abstract": "With the emergence of AI techniques for depression diagnosis, the conflict between high demand and limited supply for depression screening has been significantly alleviated. Among various modal data, audio-based depression diagnosis has received increasing attention from both academia and industry since audio is the most common carrier of emotion transmission. Unfortunately, audio data also contains User-sensitive Identity Information (ID), which is extremely vulnerable and may be maliciously used during the smart diagnosis process. Among previous methods, the clarification between depression features and sensitive features has always serve as a barrier. It is also critical to the problem for introducing a safe encryption methodology that only encrypts the sensitive features and a powerful classifier that can correctly diagnose the depression. To track these challenges, by leveraging adversarial loss-based Subspace Decomposition, we propose a first practical framework \\name presented for Trustable Audio Affective Computing, to perform automated depression detection through audio within a trustable environment. The key enablers of TAAC are Differentiating Features Subspace Decompositor (DFSD), Flexible Noise Encryptor (FNE) and Staged Training Paradigm, used for decomposition, ID encryption and performance enhancement, respectively. Extensive experiments with existing encryption methods demonstrate our framework's preeminent performance in depression detection, ID reservation and audio reconstruction. Meanwhile, the experiments across various setting demonstrates our model's stability under different encryption strengths. Thus proving our framework's excellence in Confidentiality, Accuracy, Traceability, and Adjustability.",
+      "authors": [
+        "Xintao Hu",
+        "Feng-Qi Cui"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR",
+        "cs.AI"
+      ],
+      "published": "2026-03-26T15:43:19+00:00",
+      "link": "https://arxiv.org/pdf/2603.25570v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "audio affective computing for depression diagnosis",
+      "llm_evidence_cn": "用于抑郁症诊断的音频情感计算",
+      "llm_evidence": "用于抑郁症诊断的音频情感计算",
+      "canonical_evidence": "用于抑郁症诊断的音频情感计算",
+      "llm_tldr_en": "Explores trustable audio affective computing for depression screening while protecting user identity information.",
+      "llm_tldr_cn": "探索可信的音频情感计算用于抑郁症筛查，同时保护用户身份信息。",
+      "llm_tldr": "探索可信的音频情感计算用于抑郁症筛查，同时保护用户身份信息。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
