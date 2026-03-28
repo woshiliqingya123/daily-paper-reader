@@ -1,0 +1,260 @@
+Title: EmoTaG: Emotion-Aware Talking Head Synthesis on Gaussian Splatting with Few-Shot Personalization
+
+URL Source: https://arxiv.org/pdf/2603.21332v1
+
+Published Time: Tue, 24 Mar 2026 01:46:53 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# EmoTaG: Emotion-Aware Talking Head Synthesis on Gaussian Splatting with Few-Shot Personalization 
+
+# Haolan Xu 1, Keli Cheng 2, Lei Wang 2, Ning Bi 2, Xiaoming Liu 11Michigan State University, East Lansing, MI 48824 
+
+> 2
+
+# Qualcomm Technologies Inc., San Diego, CA 92121 
+
+{xuhaola2, liuxm }@msu.edu, {kelic, wlei, nbi }@qti.qualcomm.com 
+
+Figure 1. EmoTaG generates expressive and synchronized 3D talking heads from only 5-second new identity videos. Built upon a FLAME-Gaussian model [30] and a Gated Residual Motion Network, our method achieves better emotional expressiveness, lip synchronization, visual realism, and motion stability compared to state-of-the-art approaches. 
+
+# Abstract 
+
+Audio-driven 3D talking head synthesis has advanced rapidly with Neural Radiance Fields (NeRF) and 3D Gaus-sian Splatting (3DGS). By leveraging rich pre-trained pri-ors, few-shot methods enable instant personalization from just a few seconds of video. However, under expressive fa-cial motion, existing few-shot approaches often suffer from geometric instability and audio-emotion mismatch, high-lighting the need for more effective emotion-aware motion modeling. In this work, we present EmoTaG, a few-shot emotion-aware 3D talking head synthesis framework built on the Pretrain-and-Adapt paradigm. Our key insight is to reformulate motion prediction in a structured FLAME parameter space rather than directly deforming 3D Gaus-sians, thereby introducing explicit geometric priors that im-prove motion stability. Building upon this, we propose a Gated Residual Motion Network (GRMN), which captures emotional prosody from audio while supplementing head pose and upper-face cues absent from audio, enabling ex-pressive and coherent motion generation. Extensive exper-iments demonstrate that EmoTaG achieves state-of-the-art performance in emotional expressiveness, lip synchroniza-tion, visual realism, and motion stability. 
+
+# 1. Introduction 
+
+Audio-driven talking head synthesis, which aims to gen-erate realistic facial animations synchronized with audio, has become a key technology in digital humans and vir-tual reality [4, 11, 30, 37, 42, 46]. The advent of Neural       
+
+> arXiv:2603.21332v1 [cs.CV] 22 Mar 2026 Figure 2. Neutral vs emotional articulation complexity. We compare horizontal and vertical mouth opening trajectories mea-sured from lip landmarks. Emotional audio shows stronger tem-poral fluctuation and higher variance ( σemotional = 7 .88 ,6.92 ) than neutral audio ( σneutral = 3 .11 ,1.86 ), revealing more complex ar-ticulation patterns.
+
+Radiance Fields (NeRF) [26] and 3D Gaussian Splatting (3DGS) [17] has significantly advanced 3D talking head synthesis [6, 20–22, 39]. But current 3D person-specific models [6, 20, 21, 23, 43] still rely on minute-level monoc-ular videos and subject-wise optimization, which impedes rapid deployment and scalable personalization. A promising direction is the Pretrain-and-Adapt (PAA) paradigm that learns a universal audio-motion prior and adapts it to new identities using a few seconds of video. However, existing PAA-based pipelines [22, 27] primarily focus on neutral speech scenarios with limited ability to capture emotion-driven facial motion, a central component of real-world human communication. Empirical evidence in Fig. 2 further shows that emotional audio exhibits more complex motion dynamics than neutral audio, highlighting the need to model emotion-driven prosodic cues beyond phonemes. This raises a core question: Can few-shot 3D talking head synthesis move beyond neutral speech to sup-port emotion-aware animation for expressive speech? 
+
+To answer this question, we propose Emotion-Aware Talking Head Synthesis on Gaussian Splatting (EmoTaG) ,a framework for emotion-aware and structurally consistent 3D talking head synthesis with few-shot personalization, as shown in Fig. 1. Specifically, we adopt FLAME [24] as an explicit geometric prior and predict its expression and jaw parameters. These predicted parameters deform the FLAME mesh and drive rigged 3D Gaussians through a FLAME-Gaussian formulation [30] for stable facial mo-tion. Intra-oral regions are further refined using mouth Gaussians selected by lip landmarks, which capture fine-grained articulations such as teeth and tongue movements. Building on this, we propose a Gated Residual Motion Net-work (GRMN) composed of an Identity-Conditioned En-coder and an Expert Motion Decoder. The encoder inte-grates prosody-aware audio features and upper-face Action Unit cues to capture emotion-related dynamics, while incor-porating an identity embedding through AdaIN-based mod-ulation [15, 16] for personalized feature adaptation. The decoder contains three cooperative branches: a base branch that captures phonetic audio-motion mapping, a residual branch that models emotion-related and identity-specific variations, and a gate branch that adaptively combines the base and residual outputs to produce stable and expressive facial motion. To enhance emotional sensitivity, we fur-ther introduce Semantic Emotion Guidance, which distills the emotion distribution and emotion intensity score from a pretrained emotion recognizer named DeepFace [31] into the GRMN’s residual and gate branches, enabling emotion-aware motion learning without manual annotations. Our main contributions are summarized as follows: • We propose EmoTaG , a framework for emotion-aware and stable few-shot 3D talking head synthesis that adapts to a new identity using only 5 seconds of video. • We design a Gated Residual Motion Network that sep-arates phonetic articulation from emotion-related mo-tion and adaptively fuses them through a gating mecha-nism. We further introduce Semantic Emotion Guidance, which distills semantic emotion knowledge from a pre-trained emotion recognizer to enable emotion-aware mo-tion learning without manual annotations. • Extensive experiments show that EmoTaG achieves state-of-the-art performance in emotional expressiveness, lip synchronization, visual realism, and motion stability across diverse evaluation scenarios. 
+
+# 2. Related Works 
+
+2.1. Audio-Driven 3D Talking Head Synthesis 
+
+With the emergence of NeRF [26] and 3D Gaussian Splat-ting (3DGS) [17], 3D talking head synthesis has become a promising direction. Existing 3D person-specific meth-ods [6, 20, 21, 23, 43] train a model for each identity from scratch, achieving high-fidelity results but requiring several minutes of video. To reduce this cost, one-shot methods [14, 33, 41] adapt pretrained priors from a single portrait, but their limited identity information often yields less personalized and unstable results. Alternatively, few-shot Pretrain-and-Adapt methods such as InsTaG [22] and FIAG [27] adapt a universal motion prior learned from a multi-identity corpus to new identities using only a few seconds of video, enabling efficient and realistic person-alization. However, these few-shot methods face two key limitations: the lack of explicit emotional modeling, lead-ing to less expressive facial animations; and unconstrained 3DGS deformation, which causes geometric instability un-der diverse and exaggerated expressions. Our work ad-dresses both limitations by introducing emotion-aware mo-tion learning with a strong structural prior. 
+
+2.2. Emotional Talking Head Synthesis 
+
+Natural talking head synthesis requires not only accurate lip synchronization but also emotionally expressive facial dy-Figure 3. Overview of EmoTaG. For pretraining, our Gated Residual Motion Network learns a universal motion prior from a multi-identity corpus. This network comprises an Identity-Conditioned Encoder for integrating audio, expression, and identity through AdaIN-based modulation, followed by an Expert Motion Decoder that leverages emotion-distilled supervision to train three cooperative branches (Base, Residual, Gate). During adaptation, the Gated Residual Motion Network is efficiently adapted to a new identity from 5-second video via only tuning the AdaIN modulation parameters. At inference, the adapted model produces expressive, high-fidelity 3D facial animation driven by new audio with head pose and upper-face cues. 
+
+namics. Recent 2D generative approaches [32–34] produce vivid expressions, but the absence of explicit 3D structural priors makes it difficult to preserve consistent geometry and realistic deformation, particularly under large head poses or highly expressive facial motions. In the 3D domain, EMOTE [9] and EmoVOCA [28] rely on 3D face datasets with manual emotion annotations to train FLAME-based models. However, such annotation-driven pipelines are re-stricted by coarse discrete emotion categories and annota-tor subjectivity, preventing them from learning fine-grained emotional dynamics directly from audio. EmoTalk3D [13] achieves high-fidelity results with 3D Gaussian Splatting, but its reliance on person-specific optimization significantly limits scalability for rapid personalization. To our knowl-edge, no methods simultaneously achieve few-shot adapta-tion, 3D structural consistency, and natural emotion-aware modeling from audio, as achieved by EmoTaG. 
+
+# 3. Method 
+
+As illustrated in Fig. 3, EmoTaG consists of two major com-ponents: (a) FLAME-Gaussian Model (Sec. 3.2.3), which provides a robust structural 3D prior; and (b) Gated Resid-ual Motion Network (GRMN), which predicts dynamic fa-cial motion. GRMN contains two modules: an Identity-Conditioned Encoder (Sec. 3.2.1), which integrates multi-modal driving cues through AdaIN-based modulation, and an Expert Motion Decoder (Sec. 3.2.2) that employs three complementary motion branches. We further incorporate Semantic Emotion Guidance (Sec. 3.2.4), which distills emotion distributions and intensity scores from a pretrained emotion recognizer [31] to guide the residual and gate branches in the decoder without manual annotations. 
+
+3.1. Preliminaries 
+
+FLAME Parametric Model. FLAME [24] is a statistical head model based on linear blend skinning, which repre-sents facial geometry with a compact set of interpretable parameters. Given shape parameters β, expression param-eters Ψ, and pose parameters Θ, FLAME outputs a mesh: 
+
+M (β, Ψ, Θ) ∈ R3×N , (1) where N denotes the number of vertices. In our work, β is fixed to preserve identity, while the motion prediction task is defined as regressing Ψ and the jaw-related pose subset 
+
+Θjaw ∈ R3. This formulation provides a strong structural prior that ensures stability across different identities. 
+
+3D Gaussian Splatting. 3DGS [17] represents a scene by anisotropic Gaussians: 
+
+G = {gi}Ki=1 , gi = ( μi, ri, si, α i, SH i), (2) where μi ∈ R3 is the Gaussian center, ri and si denote its rotation and scale vectors used to construct the covari-ance, αi is opacity, and SH i are spherical-harmonic co-efficients for view-dependent color. This explicit point-based representation enables high-quality real-time render-ing. We initialize the 3D Gaussians G by uniformly sam-pling an equal number of points per FLAME mesh triangle 
+
+T = ( v1, v2, v3). Each Gaussian center is computed via barycentric interpolation: 
+
+μi =
+
+> 3
+
+X
+
+> j=1
+
+wij vj ,
+
+> 3
+
+X
+
+> j=1
+
+wij = 1 , w ij ≥ 0. (3) The barycentric weights bind each Gaussian to its parent tri-angle, allowing consistent deformation by updating vj dur-ing FLAME mesh deformation. The intra-oral Gaussian subset Gmouth ⊂ G is derived by identifying a mouth region  Ωmouth  on an augmented FLAME mesh completed with intra-oral geometry follow-ing [30]. We lift 2D mouth landmarks to 3D via barycen-tric interpolation on this augmented mesh, map them to the nearest vertices, and expand them via geometry-constrained region growing to obtain a contiguous intra-oral surface. Gaussians whose centers fall within  Ωmouth  are selected to form  Gmouth , providing an anatomically coherent initializa-tion for modeling intra-oral dynamics. 
+
+3.2. Gated Residual Motion Network 
+
+3.2.1. Identity-Conditioned Encoder 
+
+The GRMN fuses audio, expression, and identity into a uni-fied motion representation. Specifically, we encode: (i) an audio feature A to capture phonetic content and prosodic rhythm, (ii) an expression feature E to supply the frame-wise upper-face expression information (e.g., brow raise, eye squeeze) absent in A, and (iii) an identity feature s to preserve identity-specific motion style. We obtain the audio feature A by first feeding the raw waveform through a pretrained Wav2Vec 2.0 encoder [1] to extract frame-level speech embeddings. Following AD-NeRF [12], we refine these embeddings using a temporal 1D CNN, and then apply an MLP to project them into the input space of a 4-layer Transformer encoder, which fur-ther enriches the representation with long-range temporal and prosodic cues. For each video frame, we compute Ac-tion Unit (AU) parameters using OpenFace [2, 3], providing complementary upper-face expression cues. The AU pa-rameters are subsequently mapped into a compact embed-ding by an MLP-based AU encoder, yielding the expression feature E. To model personalized motion characteristics, we compute the identity feature s by selecting the top-50 neutral frames ranked by DeepFace [31] and averaging their AdaFace [19] features, resulting in a compact identity de-scriptor. The identity feature s is then used to modulate the other two feature streams via feature-wise normalization us-ing Adaptive Instance Normalization (AdaIN) [15, 16]. For-mally, given an input feature F ∈ { A, E} and the identity feature s, the modulation parameters (γ, β) are predicted through an MLP: 
+
+γ, β = MLP( s), (4) and the modulated feature ˜F is computed as: 
+
+˜F = γ · InstanceNorm( F) + β.  (5) This process injects personalized motion characteristics into both audio and expression features before they are fused for motion prediction. After modulation, the fused feature is passed through the Expert Motion Decoder, which contains three cooperative branches. 
+
+3.2.2. Expert Motion Decoder Base branch. This branch models identity-agnostic audio-motion mapping, focusing on neutral speech articulation disentangled from emotion and identity. Although the in-put audio features are identity-modulated via AdaIN, this branch is supervised to capture shared phoneme-driven deformation patterns across multiple identities, predicting base deformation parameters δb = ( δface , δmouth ) that rep-resent neutral lower-face and mouth motion. Here,  δface  de-notes the FLAME expression and jaw pose offsets for global facial motion, while  δmouth  represents intra-oral Gaussian deformation offsets for fine-grained mouth articulation. 
+
+Residual branch. To capture emotion-driven deviations, we introduce a residual branch consisting of an MLP-based EMO encoder-decoder module. The EMO encoder takes the modulated and concatenated audio-expression fea-tures to produce an emotion latent ze, while the EMO de-coder maps ze to motion residuals δr = (δ′
+
+> face
+
+, δ′
+
+> mouth
+
+).This branch leverages upper-face cues to enhance emotion-related facial motion, providing complementary signals that are absent in audio. This design increases responsiveness to emotion-driven variations. Its training is guided by the Se-mantic Emotion Guidance described in Sec. 3.2.4. 
+
+Gate branch. Because emotional intensity varies across frames, the gating unit predicts a scalar  g ∈ [0 , 1]  that adap-tively fuses neutral and emotion-related motion: 
+
+δ = δb + g · δr. (6) The gate dynamically regulates the contribution of emotion-related motion, preventing over-exaggeration and preserv-ing structural stability. The fused motion representation  ˆδ
+
+is used to drive the FLAME-Gaussian model, producing ge-ometrically consistent and emotion-aware facial motion. 
+
+3.2.3. FLAME-Gaussian Motion Mapping 
+
+Given the predicted FLAME expression and jaw pose pa-rameters (Ψ, Θjaw ), we propagate mesh deformation to the Figure 4. Overview of Semantic Emotion Guidance. DeepFace provides both a categorical emotion distribution and a scalar emo-tion score to guide GRMN’s residual and gate branches. 
+
+3D Gaussians through a rigged mapping scheme [30]. Each 3D Gaussian  gi ∈ G  is bound to a parent FLAME mesh triangle  j, and is defined in the triangle’s local coordinate frame while being transformed into the global space as the triangle deforms. Let  Rj , Cj , and  kj denote the rotation matrix, center, and isotropic scale of the FLAME mesh tri-angle  j. For each Gaussian  gi, we denote its local attributes in the triangle’s coordinate frame with subscript  l, including position  μl, rotation  rl, scale  sl, opacity  αl, and spherical harmonics  SH l. The global attributes of Gaussian  gi are then computed via: 
+
+Gi =
+
+
+
+μi = kj Rj μl + Cj ,
+
+ri = Rj rl,
+
+si = kj sl,αi = αl,
+
+SH i = SH l.
+
+(7) This mapping preserves the structural consistency of the FLAME mesh while allowing each Gaussian to move co-herently with its corresponding surface patch. For Gaussians inside the intra-oral region Gmouth ,we further apply the network-predicted residual offsets 
+
+(∆ μ, ∆r, ∆s) to enhance fine-grained articulations: 
+
+μ∗ = μ + ∆ μ, r∗ = r + ∆ r, s∗ = s + ∆ s. (8) Here, α and SH remain fixed since they primarily encode static appearance. This hybrid deformation preserves struc-tural motion from FLAME while introducing intra-oral de-tails through learned Gaussian refinements. 
+
+3.2.4. Semantic Emotion Guidance 
+
+While GRMN supports structured motion decomposition, we incorporate explicit emotional supervision to enhance its sensitivity to emotion-driven variations. Given the scarcity and bias of manual annotations, we adopt a teacher-student distillation framework termed Semantic Emotion Guidance, as illustrated in Fig. 4. An off-the-shelf emotion recognizer, DeepFace [31], serves as the teacher and provides two su-pervisory signals for each training frame: (i) a normalized emotion distribution  pemo  representing the probabilities of seven basic emotions, and (ii) a scalar emotion score  e that measures the intensity of the current expression, defined as: 
+
+e = 1 − pemo (neutral ). (9) These teacher signals guide two submodules in GRMN: the residual branch captures emotion information by align-ing its latent representation  ze with the teacher’s emotion distribution  pemo , while the gate branch learns emotion in-tensity by matching the scalar  e. This dual guidance enables GRMN to model both the type and intensity of emotions, yielding expressive yet controllable motion generation. 
+
+3.3. Pretrain & Adaptation Framework 
+
+During pretraining, the Gated Residual Motion Network (GRMN) learns a universal motion prior from a multi-identity corpus. During adaptation, we achieve efficient personalization by freezing the pretrained GRMN and only fine-tuning the AdaIN modulation parameters, which en-ables EmoTaG to capture identity-specific dynamics from just a 5-second video. Once the GRMN has been adapted, we perform inference using this personalized motion net-work. Because audio carries very limited information about upper-face expression or head pose, we additionally pro-vide a set of pose & expression frames as auxiliary inputs during inference, following the previous works [22, 40, 41]. These frames are processed by the FLAME Tracker to get head pose, and by the Expression Network to obtain upper-face cues. With new audio as the driving signal and the pose & expression cues offering complementary condition-ing, the adapted GRMN produces expressive and coherent facial motions that naturally correspond to the new audio. 
+
+3.4. Training Objectives 
+
+Our full objective combines photometric, emotional, and geometric supervision: 
+
+L = LRender + LKL + LScore + LGeo , (10) where the first three losses are used in both pretraining and adaptation, while LGeo is applied only during adaptation. 
+
+Rendering loss. Following 3D Gaussian Splatting [17], the rendering loss ensures both pixel and structural fidelity: 
+
+LRender = L1(I, I GT )+ λD-SSIM ·(1 −SSIM( I, I GT )) , (11) where L1 enforces color consistency, while SSIM [36] pre-serves perceptual structure. 
+
+Emotion distillation losses. To distill explicit emotion cues from the DeepFace [31] teacher, the residual branch Figure 5. Qualitative comparison on self-reconstruction . EmoTaG generates more expressive, temporally coherent, and well-synchronized talking heads than previous methods across both neutral and emotional test cases. It preserves accurate mouth articulation and natural upper-face motion even under challenging expressions. The red rectangles highlight regions where previous methods produce distorted and inaccurate facial motions. We strongly recommend watching the supplementary video for dynamic comparison. 
+
+aligns its latent emotion representation ze with the teacher-provided emotion distribution pemo :
+
+LKL = DKL (pemo ∥ Softmax( ze)) , (12) while the gate branch regresses the teacher’s scalar emotion score e:
+
+LScore = |gpred − e|. (13) 
+
+Geometric loss. Following Gaussianpro [5], we compute the 2D depth D and normal N maps from the rendered im-age I during adaptation. These maps are compared against pseudo-ground-truths DGT and NGT from Sapiens [18]: 
+
+LGeo = LD (D, D GT ) + LN (N, N GT ). (14) This auxiliary loss mitigates overfitting under limited visual supervision and preserves physically consistent facial ge-ometry across frames. 
+
+# 4. Experiment 
+
+Datasets. We train EmoTaG on the HDTF dataset [45], using 70 videos (90-240 seconds each) from 70 identities to learn identity-agnostic audio-motion priors. For evalua-tion, we construct two test sets: a neutral set comprising 10 public videos of 10 identities from [20, 39], and an emo-tional set derived from MEAD [35], covering 5 emotion categories-happy , sad , surprised , angry , and fear -with 3 in-tensity levels and 2 identities per emotion. All videos are face-centered cropped and resized to 512 ×512 at 25 FPS. 
+
+Baselines. We compare EmoTaG with representative 3D talking-head baselines across different training set-tings. Train-from-scratch methods include ER-NeRF [20] and TalkingGaussian [21], which require full retrain-ing per identity. In the one-shot setting, we evaluate Real3DPortrait [41], which enables rapid identity initializa-tion from a single reference image. For few-shot adaptation, we compare against GeneFace++ [38], MimicTalk [40], and InsTaG [22]. All baselines are reproduced using their offi-cial implementations, with Wav2Vec 2.0 [1] as the unified audio feature extractor for fair comparison. 
+
+Metrics. We evaluate EmoTaG in terms of rendering fi-delity, motion accuracy, lip synchronization, and efficiency. Image quality is assessed using PSNR, SSIM [36], and LPIPS [44] between rendered and ground-truth frames. Facial-motion accuracy is measured by Landmark Distance (LMD) and Action Unit Error for the lower face and up-per face (AUE-L/U) [10, 21]. Audio-visual synchroniza-Method Neutral Set Emotional Set Efficiency                                                                                                                              
+
+> PSNR ↑LPIPS ↓SSIM ↑LMD ↓AUE-(L/U) ↓Sync-C ↑PSNR ↑LPIPS ↓SSIM ↑LMD ↓AUE-(L/U) ↓Sync-C ↑Train ↓FPS ↑
+> Real3DPortrait [41] 25.41 0.053 0.827 3.415 1.143 1.084 6.719 25.16 0.063 0.815 3.642 1.183 1.149 6.583 –8.9 ER-NeRF [20] 28.21 0.038 0.847 3.549 1.314 0.466 3.142 27.31 0.054 0.822 4.215 1.541 0.802 2.714 2 h 33.2 TalkingGaussian [21] 28.43 0.034 0.844 3.582 1.167 0.401 3.631 27.84 0.042 0.836 4.392 1.213 0.618 3.059 27 min 118.4 GeneFace++ [38] 27.58 0.044 0.835 3.521 1.212 0.647 3.737 27.16 0.047 0.824 3.721 1.253 0.961 3.588 7 h 19.3 MimicTalk [40] 25.26 0.071 0.857 3.478 0.964 0.781 6.341 25.13 0.079 0.842 3.577 0.961 0.913 6.113 17 min 8.6 InsTaG [22] 28.92 0.029 0.866 3.145 0.921 0.407 5.329 27.82 0.040 0.851 3.428 0.995 0.651 4.828 13 min 82.5
+> EmoTaG (Ours) 30.02 0.019 0.883 2.221 0.685 0.210 6.212 29.95 0.022 0.877 2.456 0.702 0.236 6.147 11 min 76.4
+
+Table 1. Quantitative comparison on self-reconstruction of neutral and emotional talking videos with 5s training data. and indicate the 1st and 2nd best results on the neutral set, while and indicate the 1st and 2nd best results on the emotional set. Efficiency columns (Train, FPS) are ranked using the red palette. Methods PSNR ↑ LMD ↓ AUE-(L/U) ↓ Sync-C ↑
+
+Level-1 (Weaker Intensity) 
+
+Real3DPortrait [41] 25.27 3.581 1.148 1.094 6.593 
+
+MimicTalk [40] 25.18 3.504 0.946 0.895 6.129 InsTaG [22] 28.03 3.352 0.968 0.613 5.014 
+
+EmoTaG (Ours) 30.01 2.367 0.697 0.221 6.154 
+
+Level-3 (Stronger Intensity) 
+
+Real3DPortrait [41] 25.11 3.742 1.215 1.238 6.585 
+
+MimicTalk [40] 25.05 3.637 0.981 0.933 6.118 InsTaG [22] 27.56 3.559 1.144 0.704 4.637 
+
+EmoTaG (Ours) 29.92 2.522 0.721 0.244 6.126 Table 2. Quantitative comparison on emotion-intensity . We adapt models on Level-2 (medium) and test on Level-1 (weaker) and Level-3 (stronger) separately. [Key: Best , Second Best] 
+
+tion is quantified with SyncNet-based Confidence (Sync-C) and Error (Sync-E) [7, 8]. Efficiency is reported in terms of training time and inference FPS. 
+
+Implementation Details. We employ VHAP [29] as our FLAME tracker to obtain the FLAME shape parameters, non-jaw head pose, and camera parameters. The 3D Gaus-sian field is initialized with 60K Gaussians uniformly sam-pled from the FLAME mesh. Training follows a two-stage curriculum. For each identity, the first 1,000 iterations opti-mize static appearance only, after which Gaussian parame-ters and the Gated Residual Motion Network are jointly op-timized. Pretraining and adaptation are performed for 250 Kand 20 K iterations, respectively, using AdamW [25] with learning rates of 5×10 −3 and 5×10 −4, correspondingly. Loss weights are set to λD-SSIM =2 ×10 −1, λD =1 ×10 −2,and λN =1 ×10 −3. All experiments are conducted on a single NVIDIA RTX A6000 GPU. In our method, audio encoding is performed once per sequence ( ∼25 ms), and each frame requires ∼6 ms for GRMN inference and ∼7ms for 3DGS rendering. Additional implementation details are provided in the supplementary material. 
+
+4.1. Evaluation 
+
+Comparison Settings. We evaluate EmoTaG under three settings: (1) Self-reconstruction , where each model is 
+
+Methods Cross Identity Cross Language 
+
+Sync-E ↓ Sync-C ↑ Sync-E ↓ Sync-C ↑
+
+ER-NeRF [20] 11.732 2.833 11.931 2.542 GeneFace++ [38] 10.515 3.497 11.052 3.107 TalkingGaussian [21] 10.407 3.207 10.938 2.941 InsTaG [22] 9.921 4.722 10.033 4.391 
+
+EmoTaG (Ours) 9.133 5.814 9.662 5.432 
+
+Table 3. Quantitative results of lip synchronization on OOD audio-driven . We evaluate two challenging scenarios: cross-identity and cross-language . [Key: Best , Second Best] 
+
+adapted on a 5-second video and evaluated on another clip (3-10 seconds) of the same emotion and identity, measuring few-shot rendering quality, motion accuracy, and lip syn-chronization. (2) Emotion-intensity , where models adapted on Level-2 are tested on Level-1 and Level-3 audio of the same emotion and identity to assess sensitivity to inten-sity variation. (3) Out-of-distribution (OOD) audio-driven ,which evaluates generalization to unseen audio while keep-ing the adapted identity fixed. We consider (a) cross-identity—speech from a different speaker in the same lan-guage, and (b) cross-language—speech in a different lan-guage from the adaptation clip. For each case, we sample three audio clips from public videos. Following the prior work [22], we use pose & expression cues from the test clip for self-reconstruction and emotion-intensity settings, and from the adaptation clip for OOD audio-driven .
+
+Quantitative Results. Tab. 1 reports the self-reconstruction 
+
+results. Across both neutral and emotional test sets, Emo-TaG achieves the best overall performance, with the highest PSNR/SSIM and lowest LPIPS, indicating superior appear-ance fidelity and geometric stability. Its lowest LMD and AUE-(L/U) further reflect accurate lip articulation and nat-ural upper-face motion. Although EmoTaG is not the best on Sync-C, it remains close to the two large-scale pretrained models [40, 41] and substantially outperforms them on the remaining metrics. EmoTaG adapts in 11 minutes and runs in real time at 76.4 FPS. Tab. 2 evaluates emotion-intensity 
+
+sensitivity. When adapted on Level-2 and tested on Level-1/Level-3, EmoTaG obtains the lowest LMD and AUE-(L/U), demonstrating precise modulation across intensity Method Emo Expr Lip Sync Visual Realism Real3DPortrait [41] 2.20 3.50 3.20 TalkingGaussian [21] 3.30 2.40 3.00 MimicTalk [40] 3.50 4.10 3.70 InsTaG [22] 3.80 3.90 4.20 
+
+EmoTaG (Ours) 4.50 4.70 4.60 
+
+Table 4. User study on emotional expressiveness, lip synchro-nization, and visual realism. Ratings range from 1 to 5, where higher indicates better performance. [Key: Best , Second Best] 
+
+levels while maintaining competitive Sync-C and the high-est visual quality. Notably, its performance gains over In-sTaG are larger at higher intensity, highlighting greater ro-bustness to intense emotions. In the out-of-distribution eval-uation (Tab. 3), EmoTaG achieves the lowest Sync-E and highest Sync-C in both cross-identity and cross-language 
+
+settings, confirming better audio-motion generalization and lip synchronization under unseen speakers and languages. 
+
+Qualitative Comparison. Fig. 5 presents qualitative com-parisons under the self-reconstruction setting. Compared with existing approaches, EmoTaG produces more expres-sive results with stable identity preservation. TalkingGaus-sian [21] exhibits visible artifacts and mouth-audio mis-alignment, while InsTaG [22] improves lip synchronization but lacks natural emotional variation. MimicTalk [40] and Real3DPortrait [41] achieve better alignment due to large-scale pretraining yet still generate rigid and over-smoothed expressions. Using strong structural priors and emotion-aware motion learning, EmoTaG reconstructs photorealistic details and consistent facial dynamics in both neutral and emotional tests. We strongly recommend viewing the sup-plementary video for dynamic comparison. 
+
+User Study. To assess perceptual quality, we conduct a user study comparing EmoTaG against representative baselines. Twenty participants rate anonymized results from the self-reconstruction setting on emotional expressiveness, lip syn-chronization, and visual realism (1-5 Likert, higher is bet-ter). As shown in Tab. 4, EmoTaG achieves the best overall scores, notably on emotional expressiveness, demonstrating stronger emotion-aware and coherent facial motion. 
+
+4.2. Ablation Study 
+
+To evaluate the contribution of each component, we ablate by removing key modules of EmoTaG. Quantitative results are listed in Tab. 5, and qualitative examples are in Fig. 6. 
+
+Semantic Emotion Guidance (SEG). Removing SEG leads to a consistent degradation across all evaluation met-rics, underscoring its crucial role in enabling emotion-aware audio-motion mapping. A deeper look into its compo-nents reveals that removing LScore primarily harms audio-motion synchronization due to unstable motion representa-tion, whereas removing LKL results in the more significant                                 
+
+> Variant PSNR ↑LPIPS ↓LMD ↓Sync-C ↑
+> EmoTaG (Full Model) 29.95 0.022 2.456 6.147
+> w/o Score Distill ( LScore )29.52 0.026 2.731 5.874 w/o KL Distill ( LKL )29.36 0.031 2.985 5.712 w/o SEG 29.01 0.034 3.067 5.541 w/o Gate Branch 28.77 0.036 3.358 5.004 w/o Residual Branch 28.52 0.038 3.572 4.896 w/o Identity Modulation (AdaIN) 28.38 0.040 4.021 4.621
+
+Table 5. Ablation study of EmoTaG. Evaluated under the 5s self-reconstruction setting on the emotional test set, showing the effect of each component on quality and synchronization. 
+
+Figure 6. Effect of Semantic Emotion Guidance (SEG). SEG enhances upper-face expressiveness and audio-emotion coherence compared to the model without it. 
+
+decline in both motion accuracy and visual fidelity, since the residual branch loses its semantic guidance for model-ing emotion-driven deformation patterns. 
+
+Expert Motion Decoder. Removing the gate branch intro-duces temporal instability and weakens audio-motion syn-chronization. Disabling the residual branch yields over-smoothed and less expressive motion due to the loss of fine-grained emotional variation. Eliminating AdaIN-based identity modulation causes the largest performance drop, indicating that it is crucial for preserving identity-specific motion and stabilizing pretraining, without which learning becomes substantially more entangled across identities. 
+
+# 5. Conclusion 
+
+We propose EmoTaG, a novel emotion-aware 3D talking head framework with few-shot personalization. Existing methods struggle on emotional scenarios due to entangled motion representations that overlook prosodic cues and compromise structural stability. EmoTaG addresses this through explicit disentanglement: a Gated Residual Mo-tion Network (GRMN) separates phonetic articulation from emotion-driven modulation, guided by Semantic Emotion Guidance via knowledge distillation. The AdaIN-based modulation further enables efficient adaptation by freezing GRMN and fine-tuning only identity-specific AdaIN pa-rameters from a 5-second video. Comprehensive experi-ments show that EmoTaG achieves state-of-the-art perfor-mance, generating geometrically stable and emotionally co-herent talking heads under diverse emotion conditions. Its emotion-aware design effectively bridges physical accuracy and affective expressiveness, enabling more emotionally adaptive 3D talking head avatars. References 
+
+[1] Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli. wav2vec 2.0: A framework for self-supervised learning of speech representations. Advances in neural infor-mation processing systems , 33:12449–12460, 2020. 4, 6 [2] Tadas Baltruˇ saitis, Marwa Mahmoud, and Peter Robinson. Cross-dataset learning and person-specific normalisation for automatic action unit detection. In 2015 11th IEEE inter-national conference and workshops on automatic face and gesture recognition (FG) , pages 1–6. IEEE, 2015. 4 [3] Tadas Baltrusaitis, Amir Zadeh, Yao Chong Lim, and Louis-Philippe Morency. Openface 2.0: Facial behavior analysis toolkit. In 2018 13th IEEE International Conference on Au-tomatic Face & Gesture Recognition (FG 2018) , pages 59– 66, 2018. 4 [4] Zhiyuan Chen, Jiajiong Cao, Zhiquan Chen, Yuming Li, and Chenguang Ma. Echomimic: Lifelike audio-driven portrait animations through editable landmark conditions. In Pro-ceedings of the AAAI Conference on Artificial Intelligence ,pages 2403–2410, 2025. 1 [5] Kai Cheng, Xiaoxiao Long, Kaizhi Yang, Yao Yao, Wei Yin, Yuexin Ma, Wenping Wang, and Xuejin Chen. Gaussianpro: 3d gaussian splatting with progressive propagation. In Forty-first International Conference on Machine Learning , 2024. 6 [6] Kyusun Cho, Joungbin Lee, Heeji Yoon, Yeobin Hong, Jaehoon Ko, Sangjun Ahn, and Seungryong Kim. Gaus-siantalker: Real-time talking head synthesis with 3d gaus-sian splatting. In Proceedings of the 32nd ACM International Conference on Multimedia , pages 10985–10994, 2024. 2 [7] Joon Son Chung and Andrew Zisserman. Lip reading in the wild. In Asian conference on computer vision , pages 87–103. Springer, 2016. 7 [8] Joon Son Chung and Andrew Zisserman. Out of time: auto-mated lip sync in the wild. In Asian conference on computer vision , pages 251–263. Springer, 2016. 7 [9] Radek Danˇ eˇ cek, Kiran Chhatre, Shashank Tripathi, Yan-dong Wen, Michael Black, and Timo Bolkart. Emotional speech-driven animation with content-emotion disentangle-ment. In SIGGRAPH Asia 2023 Conference Papers , pages 1–13, 2023. 3 [10] Paul Ekman, Wallace V Friesen, and JC Hager. Facial action coding system: manual. palo alto. CA: Consulting Psychol-ogists , 1978. 6 [11] Guy Gafni, Justus Thies, Michael Zollhofer, and Matthias Nießner. Dynamic neural radiance fields for monocular 4d facial avatar reconstruction. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,pages 8649–8658, 2021. 1 [12] Yudong Guo, Keyu Chen, Sen Liang, Yong-Jin Liu, Hu-jun Bao, and Juyong Zhang. AD-NeRF: Audio Driven Neural Radiance Fields for Talking Head Synthesis, 2021. arXiv:2103.11078 [cs]. 4 [13] Qianyun He, Xinya Ji, Yicheng Gong, Yuanxun Lu, Zhengyu Diao, Linjia Huang, Yao Yao, Siyu Zhu, Zhan Ma, Song-cen Xu, et al. Emotalk3d: High-fidelity free-view synthesis of emotional 3d talking head. In European Conference on Computer Vision , pages 55–72. Springer, 2024. 3 [14] Wentao Hu, Shunkai Li, Ziqiao Peng, Haoxian Zhang, Fan Shi, Xiaoqiang Liu, Pengfei Wan, Di Zhang, and Hui Tian. Ggtalker: Talking head systhesis with generalizable gaus-sian priors and identity-specific adaptation. arXiv preprint arXiv:2506.21513 , 2025. 2 [15] Xun Huang and Serge Belongie. Arbitrary style transfer in real-time with adaptive instance normalization. In Proceed-ings of the IEEE international conference on computer vi-sion , pages 1501–1510, 2017. 2, 4 [16] Tero Karras, Samuli Laine, and Timo Aila. A style-based generator architecture for generative adversarial networks. In Proceedings of the IEEE/CVF conference on computer vi-sion and pattern recognition , pages 4401–4410, 2019. 2, 4 [17] Bernhard Kerbl, Georgios Kopanas, Thomas Leimk¨ uhler, and George Drettakis. 3d gaussian splatting for real-time radiance field rendering. ACM Trans. Graph. , 42(4):139–1, 2023. 2, 3, 5 [18] Rawal Khirodkar, Timur Bagautdinov, Julieta Martinez, Su Zhaoen, Austin James, Peter Selednik, Stuart Anderson, and Shunsuke Saito. Sapiens: Foundation for human vision mod-els. arXiv preprint arXiv:2408.12569 , 2024. 6 [19] Minchul Kim, Anil K Jain, and Xiaoming Liu. Adaface: Quality adaptive margin for face recognition. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , pages 18750–18759, 2022. 4 [20] Jiahe Li, Jiawei Zhang, Xiao Bai, Jun Zhou, and Lin Gu. Efficient region-aware neural radiance fields for high-fidelity talking portrait synthesis. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 7568– 7578, 2023. 2, 6, 7 [21] Jiahe Li, Jiawei Zhang, Xiao Bai, Jin Zheng, Xin Ning, Jun Zhou, and Lin Gu. Talkinggaussian: Structure-persistent 3d talking head synthesis via gaussian splatting. In European Conference on Computer Vision , pages 127–145. Springer, 2024. 2, 6, 7, 8 [22] Jiahe Li, Jiawei Zhang, Xiao Bai, Jin Zheng, Jun Zhou, and Lin Gu. Instag: Learning personalized 3d talking head from few-second video. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 10690–10700, 2025. 2, 5, 6, 7, 8 [23] Linzhou Li, Yumeng Li, Yanlin Weng, Youyi Zheng, and Kun Zhou. Rgbavatar: Reduced gaussian blendshapes for online modeling of head avatars. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 10747–10757, 2025. 2 [24] Tianye Li, Timo Bolkart, Michael J Black, Hao Li, and Javier Romero. Learning a model of facial shape and expression from 4d scans. ACM Trans. Graph. , 36(6):194–1, 2017. 2, 3 [25] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. arXiv preprint arXiv:1711.05101 , 2017. 7 [26] Ben Mildenhall, Pratul P Srinivasan, Matthew Tancik, Jonathan T Barron, Ravi Ramamoorthi, and Ren Ng. Nerf: Representing scenes as neural radiance fields for view syn-thesis. Communications of the ACM , 65(1):99–106, 2021. 2[27] Hong Nie, Fuyuan Cao, Lu Chen, Fengxin Chen, Yue-feng Zou, and Jun Yu. Few-shot identity adaptation for 3d talking heads via global gaussian field. arXiv preprint arXiv:2506.22044 , 2025. 2 [28] Federico Nocentini, Claudio Ferrari, and Stefano Berretti. Emovoca: Speech-driven emotional 3d talking heads. In 
+
+2025 IEEE/CVF Winter Conference on Applications of Com-puter Vision (WACV) , pages 2859–2868. IEEE, 2025. 3 [29] Shenhan Qian. Vhap: Versatile head alignment with adaptive appearance priors, 2024. 7 [30] Shenhan Qian, Tobias Kirschstein, Liam Schoneveld, Davide Davoli, Simon Giebenhain, and Matthias Nießner. Gaus-sianavatars: Photorealistic head avatars with rigged 3d gaus-sians. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition , pages 20299–20309, 2024. 1, 2, 4, 5 [31] Sefik Serengil and Alper Ozpinar. A benchmark of facial recognition pipelines and co-usability performances of mod-ules. Journal of Information Technologies , 17(2):95–107, 2024. 2, 3, 4, 5 [32] Shuai Tan, Bin Ji, Mengxiao Bi, and Ye Pan. Edtalk: Effi-cient disentanglement for emotional talking head synthesis. In European Conference on Computer Vision , pages 398– 416. Springer, 2024. 3 [33] Shuai Tan, Bill Gong, Bin Ji, and Ye Pan. Fixtalk: Taming identity leakage for high-quality talking head generation in extreme cases. arXiv preprint arXiv:2507.01390 , 2025. 2 [34] Weipeng Tan, Chuming Lin, Chengming Xu, FeiFan Xu, Xiaobin Hu, Xiaozhong Ji, Junwei Zhu, Chengjie Wang, and Yanwei Fu. Disentangle identity, cooperate emo-tion: Correlation-aware emotional talking portrait genera-tion. arXiv preprint arXiv:2504.18087 , 2025. 3 [35] Kaisiyuan Wang, Qianyi Wu, Linsen Song, Zhuoqian Yang, Wayne Wu, Chen Qian, Ran He, Yu Qiao, and Chen Change Loy. Mead: A large-scale audio-visual dataset for emotional talking-face generation. In European conference on com-puter vision , pages 700–717. Springer, 2020. 6 [36] Zhou Wang, Alan C Bovik, Hamid R Sheikh, and Eero P Si-moncelli. Image quality assessment: from error visibility to structural similarity. IEEE transactions on image processing ,13(4):600–612, 2004. 5, 6 [37] Mingwang Xu, Hui Li, Qingkun Su, Hanlin Shang, Liwei Zhang, Ce Liu, Jingdong Wang, Yao Yao, and Siyu Zhu. Hallo: Hierarchical audio-driven visual synthesis for portrait image animation. arXiv preprint arXiv:2406.08801 , 2024. 1 [38] Zhenhui Ye, Jinzheng He, Ziyue Jiang, Rongjie Huang, Ji-awei Huang, Jinglin Liu, Yi Ren, Xiang Yin, Zejun Ma, and Zhou Zhao. Geneface++: Generalized and stable real-time audio-driven 3d talking face generation. arXiv preprint arXiv:2305.00787 , 2023. 6, 7 [39] Zhenhui Ye, Ziyue Jiang, Yi Ren, Jinglin Liu, Jinzheng He, and Zhou Zhao. Geneface: Generalized and high-fidelity audio-driven 3d talking face synthesis. arXiv preprint arXiv:2301.13430 , 2023. 2, 6 [40] Zhenhui Ye, Tianyun Zhong, Yi Ren, Ziyue Jiang, Jiawei Huang, Rongjie Huang, Jinglin Liu, Jinzheng He, Chen Zhang, Zehan Wang, et al. Mimictalk: Mimicking a per-sonalized and expressive 3d talking face in minutes. Ad-vances in neural information processing systems , 37:1829– 1853, 2024. 5, 6, 7, 8 [41] Zhenhui Ye, Tianyun Zhong, Yi Ren, Jiaqi Yang, Weichuang Li, Jiawei Huang, Ziyue Jiang, Jinzheng He, Rongjie Huang, Jinglin Liu, et al. Real3d-portrait: One-shot realistic 3d talking portrait synthesis. arXiv preprint arXiv:2401.08503 ,2024. 2, 5, 6, 7, 8 [42] Egor Zakharov, Aliaksandra Shysheya, Egor Burkov, and Victor Lempitsky. Few-shot adversarial learning of realistic neural talking head models. In Proceedings of the IEEE/CVF international conference on computer vision , pages 9459– 9468, 2019. 1 [43] Jiawei Zhang, Zijian Wu, Zhiyang Liang, Yicheng Gong, Dongfang Hu, Yao Yao, Xun Cao, and Hao Zhu. Fate: Full-head gaussian avatar with textural editing from monocular video. In Proceedings of the Computer Vision and Pattern Recognition Conference , pages 5535–5545, 2025. 2 [44] Richard Zhang, Phillip Isola, Alexei A Efros, Eli Shecht-man, and Oliver Wang. The unreasonable effectiveness of deep features as a perceptual metric. In Proceedings of the IEEE conference on computer vision and pattern recogni-tion , pages 586–595, 2018. 6 [45] Zhimeng Zhang, Lincheng Li, Yu Ding, and Changjie Fan. Flow-guided one-shot talking face generation with a high-resolution audio-visual dataset. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 3661–3670, 2021. 6 [46] Wojciech Zielonka, Timo Bolkart, and Justus Thies. Instant volumetric head avatars. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,pages 4574–4584, 2023. 1
