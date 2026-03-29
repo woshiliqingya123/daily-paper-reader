@@ -6,25 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-28
-- 运行时间：2026-03-28 19:10:50 UTC
+- 最新运行日期：2026-03-29
+- 运行时间：2026-03-29 19:50:04 UTC
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：2
 - 精读区：0
-- 速读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日聚焦 3D 高斯泼溅驱动的情绪化数字人合成，探索高保真头像的快速个性化。
-EmoTa
-- 详情：[/202603/28/README](/202603/28/README)
+今日聚焦 LLM 赋能历史报纸分析与 PixelSmile 实现精细化面部表情编辑。
+重点展示了 AI 在数字人文领域的文本挖掘潜力，以及像素级细腻表情控制的新突破。
+建议关注 AI 如何重塑历史研究工具并提升图像编辑的精准度。
+- 详情：[/202603/29/README](/202603/29/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [EmoTaG: Emotion-Aware Talking Head Synthesis on Gaussian Splatting with Few-Shot Personalization](/202603/28/2603.21332v1-emotag-emotion-aware-talking-head-synthesis-on-gaussian-splatting-with-few-shot-personalization)  
+1. [Approaches to Analysing Historical Newspapers Using LLMs](/202603/29/2603.25051v1-approaches-to-analysing-historical-newspapers-using-llms)  
    标签：评分：7.0/10、query:msa
-   evidence：多模态合成中的情感感知运动建模
+   evidence：基于大语言模型的属性级情感分析
+2. [PixelSmile: Toward Fine-Grained Facial Expression Editing](/202603/29/2603.25728v1-pixelsmile-toward-fine-grained-facial-expression-editing)  
+   标签：评分：7.0/10、query:msa
+   evidence：细粒度面部表情编辑与情感标注
 
 
 <div class="dpr-home-promo-card">
