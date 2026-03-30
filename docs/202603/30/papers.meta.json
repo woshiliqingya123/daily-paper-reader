@@ -1,0 +1,51 @@
+{
+  "label": "2026-03-30",
+  "date": "2026-03-30",
+  "generated_at": "2026-03-30T20:26:05",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202603/30/2603.25752v1-relational-graph-driven-differential-denoising-and-diffusion-attention-fusion-for-multimodal-conversation-emotion-recognition",
+      "section": "deep",
+      "title_en": "Relational graph-driven differential denoising and diffusion attention fusion for multimodal conversation emotion recognition",
+      "authors": "Ying Liu, Yuntao Shou, Wei Ai, Tao Meng, Keqin Li",
+      "date": "2026-03-22",
+      "pdf": "https://arxiv.org/pdf/2603.25752v1",
+      "score": "10.0",
+      "evidence": "结合去噪和注意力融合的多模态对话情感识别",
+      "tldr": "针对多模态对话情感识别中音视频噪声干扰及模态间信息不平衡问题，本文提出一种关系感知去噪与扩散注意力融合模型。该模型通过差分Transformer显式抑制音视频噪声，利用关系子图捕捉说话人间的细粒度情感依赖，并引入文本引导的跨模态扩散机制，将音视频信息自适应融合至文本流，显著提升了识别的稳健性与准确性。",
+      "tags": "query:msa",
+      "abstract_en": "In real-world scenarios, audio and video signals are often subject to environmental noise and limited acquisition conditions, resulting in extracted features containing excessive noise. Furthermore, there is an imbalance in data quality and information carrying capacity between different modalities. These two issues together lead to information distortion and weight bias during the fusion phase, impairing overall recognition performance. Most existing methods neglect the impact of noisy modalities and rely on implicit weighting to model modality importance, thereby failing to explicitly account for the predominant contribution of the textual modality in emotion understanding. To address these issues, we propose a relation-aware denoising and diffusion attention fusion model for MCER. Specifically, we first design a differential Transformer that explicitly computes the differences between two attention maps, thereby enhancing temporally consistent information while suppressing time-irrelevant noise, which leads to effective denoising in both audio and video modalities. Second, we construct modality-specific and cross-modality relation subgraphs to capture speaker-dependent emotional dependencies, enabling fine-grained modeling of intra- and inter-modal relationships. Finally, we introduce a text-guided cross-modal diffusion mechanism that leverages self-attention to model intra-modal dependencies and adaptively diffuses audiovisual information into the textual stream, ensuring more robust and semantically aligned multimodal fusion.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/30/2603.26586v1-ma-bench-towards-fine-grained-micro-action-understanding",
+      "section": "deep",
+      "title_en": "MA-Bench: Towards Fine-grained Micro-Action Understanding",
+      "authors": "Kun Li, Jihao Gu, Fei Wang, Zhiliang Wu, Hehe Fan, Dan Guo",
+      "date": "2026-03-27",
+      "pdf": "https://arxiv.org/pdf/2603.26586v1",
+      "score": "9.0",
+      "evidence": "利用多模态大模型进行微动作理解以支持情感分析",
+      "tldr": "针对多模态大模型在微动作理解（情绪分析的关键）方面的空白，本文提出了MA-Bench基准测试。该基准包含1000个视频和1.2万个问答对，通过三层评估架构考察感知、关系理解和推理能力。研究发现现有模型在细粒度动作捕捉上存在短板，为此作者还提供了大规模训练集MA-Bench-Train，显著提升了模型在微动作推理与解释任务上的表现。",
+      "tags": "query:msa",
+      "abstract_en": "With the rapid development of Multimodal Large Language Models (MLLMs), their potential in Micro-Action understanding, a vital role in human emotion analysis, remains unexplored due to the absence of specialized benchmarks. To tackle this issue, we present MA-Bench, a benchmark comprising 1,000 videos and a three-tier evaluation architecture that progressively examines micro-action perception, relational comprehension, and interpretive reasoning. MA-Bench contains 12,000 structured question-answer pairs, enabling systematic assessment of both recognition accuracy and action interpretation. The results of 23 representative MLLMs reveal that there are significant challenges in capturing motion granularity and fine-grained body-part dynamics. To address these challenges, we further construct MA-Bench-Train, a large-scale training corpus with 20.5K videos annotated with structured micro-action captions for fine-tuning MLLMs. The results of Qwen3-VL-8B fine-tuned on MA-Bench-Train show clear performance improvements across micro-action reasoning and explanation tasks. Our work aims to establish a foundation benchmark for advancing MLLMs in understanding subtle micro-action and human-related behaviors. Project Page: https://MA-Bench.github.io",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202603/30/2603.26587v1-entacs-analyzing-the-relationship-between-sentiment-and-language-choice-in-english-tamil-code-switching",
+      "section": "quick",
+      "title_en": "EnTaCs: Analyzing the Relationship Between Sentiment and Language Choice in English-Tamil Code-Switching",
+      "authors": "Paul Bontempo",
+      "date": "2026-03-27",
+      "pdf": "https://arxiv.org/pdf/2603.26587v1",
+      "score": "7.0",
+      "evidence": "语码转换中情感与语言选择的关系",
+      "tldr": "本研究探讨了英语-泰米尔语混用文本中情感与语言选择的关系。通过对3.5万余条YouTube评论进行分析，利用微调的XLM-RoBERTa模型识别语言并结合线性回归模型，发现正面情感倾向于使用更多英语，而混合情感则伴随更高的语码转换频率。研究揭示了社会语言学因素如何通过情感内容影响多语言环境下的表达方式。",
+      "tags": "query:msa",
+      "abstract_en": "This paper investigates the relationship between utterance sentiment and language choice in English-Tamil code-switched text, using methods from machine learning and statistical modelling. We apply a fine-tuned XLM-RoBERTa model for token-level language identification on 35,650 romanized YouTube comments from the DravidianCodeMix dataset, producing per-utterance measurements of English proportion and language switch frequency. Linear regression analysis reveals that positive utterances exhibit significantly greater English proportion (34.3%) than negative utterances (24.8%), and mixed-sentiment utterances show the highest language switch frequency when controlling for utterance length. These findings support the hypothesis that emotional content demonstrably influences language choice in multilingual code-switching settings, due to socio-linguistic associations of prestige and identity with embedded and matrix languages.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

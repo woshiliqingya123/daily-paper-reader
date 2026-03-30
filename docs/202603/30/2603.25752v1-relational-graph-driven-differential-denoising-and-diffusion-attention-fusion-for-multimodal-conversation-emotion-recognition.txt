@@ -1,0 +1,748 @@
+Title: Relational graph-driven differential denoising and diffusion attention fusion for multimodal conversation emotion recognition
+
+URL Source: https://arxiv.org/pdf/2603.25752v1
+
+Published Time: Mon, 30 Mar 2026 00:02:01 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Relational graph-driven differential denoising and diffusion attention fusion for multimodal conversation emotion recognition 
+
+## Ying Liu a, Yuntao Shou a, Wei Ai a,∗, Tao Meng a and Keqin Li b
+
+> a
+
+College of Computer and Mathematics, Central South University of Forestry and Technology, 410004, Hunan, Changsha China 
+
+> b
+
+Department of Computer Science, State University of New York, New Paltz, New York, 12561, USA 
+
+A R T I C L E I N F O 
+
+Keywords :Multimodal Conversation Emotion Recog-nition Differential Transformer Diffusion Attention Fusion Relation Subgraphs 
+
+A B S T R A C T 
+
+Multimodal Conversation Emotion Recognition (MCER) aims to classify the emotional states of utterances by leveraging textual, acoustic, and visual features. However, in real-world scenarios, audio and video signals are often subject to environmental noise and limited acquisition conditions, resulting in extracted features containing excessive noise. Furthermore, there is an imbalance in data quality and information carrying capacity between different modalities. These two issues together lead to information distortion and weight bias during the fusion phase, impairing overall recognition performance. Most existing methods neglect the impact of noisy modalities and rely on implicit weighting to model modality importance, thereby failing to explicitly account for the predominant contribution of the textual modality in emotion understanding. To address these issues, we propose a relation-aware denoising and diffusion attention fusion model for MCER. Specifically, we first design a differential Transformer that explicitly computes the differences between two attention maps, thereby enhancing temporally consistent information while suppressing time-irrelevant noise, which leads to effective denoising in both audio and video modalities. Second, we construct modality-specific and cross-modality relation subgraphs to capture speaker-dependent emotional dependencies, enabling fine-grained modeling of intra- and inter-modal relationships. Finally, we introduce a text-guided cross-modal diffusion mechanism that leverages self-attention to model intra-modal dependencies and adaptively diffuses audiovisual information into the textual stream, ensuring more robust and semantically aligned multimodal fusion. Experiments on multiple real-world datasets demonstrate that our model achieves superior performance compared to existing state-of-the-art methods, significantly improving robustness and accuracy in MCER. 
+
+## 1. Introduction 
+
+With the rapid development of artificial intelligence and human-computer interaction technologies, Multimodal Conversation Emotion Recognition (MCER) has emerged as a key research focus in the field of Artificial Intelli-gence. MCER enables computational systems to gain a deeper understanding of interactive contexts and perceive emotional states in conversations [1, 2, 3]. Due to its broad application prospects in areas such as intelligent customer service [4, 5, 6], virtual assistants [7, 8, 9], online education [10, 11, 12], and mental health monitoring [13, 14, 15], MCER has received increasing research attention. The key to the MCER task lies in modeling semantic dependencies across multiple modalities to achieve com-plementary feature fusion, thereby enhancing the accuracy of emotion recognition. In recent years, researchers have proposed various fusion strategies to address this challenge. Early concatenation-based fusion methods combined feature vectors from different modalities along the feature dimen-sion to form a unified representation. This representation was then fed into sequential models such as RNNs or LSTMs to learn contextual dependencies for emotion recognition. For instance, Subbaiah et al. [16] proposed the EMRA-Net model, which enhances the concatenated features us-ing a multi-scale residual attention network, followed by  
+
+> ⋆
+
+Our code is available at https://github.com/liuying2023912/ReDiFu. 
+
+> ∗
+
+Corresponding author 
+
+> ORCID
+
+(s): 
+
+temporal modeling using LSTM. However, this method is limited by its simple stacking of modality features, which fails to effectively capture emotional interactions between modalities. Subsequently, Transformer-based fusion meth-ods have become a research hotspot. For example, the JMT model proposed by Waligora et al. [17] employs a cross-modal self-attention mechanism to model the correlation weights between modalities. The weighted fused features are then passed through a feedforward neural network for processing. However, the self-attention mechanism may in-troduce redundant information when capturing global de-pendencies, which could hinder the recognition of fine-grained emotions. In addition, the semantic gap between modalities may lead to biased attention weights, thereby suppressing information from secondary modalities. GCNs have gradually been adopted in MCER due to their strengths in modeling relationships in non-Euclidean space. The DER-GCN model proposed by Ai et al. [18] constructs a weighted multi-relational graph to simultaneously capture interactions between speakers and events. Compared to Transformer-based models, GCNs perform better in handling unstruc-tured multimodal interactions, particularly in scenarios with uneven modality distributions. Although existing methods have achieved remarkable progress in MCER, they still face the following challenges: 
+
+(i) Neglect of noise interference in audio-visual modal-ities. In real-world scenarios, noise interference in au-dio and visual modalities is often far more severe than in the textual modality. For instance, audio signals are 
+
+Liu et al.: Preprint submitted to Elsevier Page 1 of 19  
+
+> arXiv:2603.25752v1 [cs.CL] 22 Mar 2026 Ying Liu et al. Neurocomputing
+> Figure 1: Performance comparison of various models on the IEMOCAP dataset using unimodal features. T, V, and A de-note the textual, visual, and acoustic modalities, respectively.
+
+frequently disrupted by environmental noise, resulting in blurred prosody, while visual inputs are prone to illumi-nation changes and motion artifacts, which degrade the clarity of facial expressions. Direct fusion of these modal-ities without noise mitigation introduces interference that makes it difficult for models to accurately capture true emotional variations. However, existing models generally lack explicit mechanisms to handle noise in audio and visual modalities [19, 20, 21]. For example, Jin et al. [22] proposed a Multimodal Graph Transformer that constructs graphs directly using raw audio spectrograms and visual frame data without denoising, which results in node features being derived from noisy inputs. The presence of such noise can lead to spurious connections in the computed adjacency ma-trix, distorting inter-modal dependencies and consequently degrading recognition performance. Since the impact of noise on audio-visual features is inevitable, and current models lack effective noise-handling mechanisms, signifi-cant performance disparities often emerge among different modalities in emotion recognition. Moreover, numerous empirical studies confirm this issue [23, 24]. For example, as shown in Figure 1, in the M2FNet model proposed by Chudasama et al. [25], the accuracy of text-based unimodal emotion recognition reaches 66.20%, while the accuracy of the visual and audio modalities drops to 13.10% and 21.79%, respectively. Therefore, effectively addressing the noise in the audio and visual modalities remains a key challenge in improving the overall emotion recognition performance of multimodal systems. 
+
+(ii) Neglect of the dominant role of the textual modal-ity. Most existing multimodal fusion methods model the importance of each modality implicitly through attention weights, often overlooking the dominant role of the textual modality in emotion analysis. For example, Cai et al. [26] proposed a multimodal sentiment analysis approach that adjusts the contributions of each modality via parameter sharing, but this approach still essentially relies on implicit modeling. However, studies have shown that modality im-balance is an inherent phenomenon in multimodal learning [27, 28, 29]. As the core carrier of emotional semantics, the textual modality can serve as a guiding modality in the fusion process. Explicitly leveraging text to guide the fusion of other modalities can help mitigate noise interference and enhance overall performance. For instance, in multimodal image fusion, Zhang et al. [30] proposed a text-modulated diffusion framework in which text guides image fusion, significantly improving image quality and reducing noise. In the field of multimodal fake review detection, Du et al. [31] introduced a co-attention-based model that emphasizes the dominance of text, thereby enhancing the detection perfor-mance. These studies demonstrate that explicitly modeling the dominant role of the textual modality is crucial for op-timizing multimodal fusion. Therefore, how to incorporate explicit textual guidance into the fusion process remains another major challenge in MCER. Based on the above analysis, this paper proposes a novel relation graph-based differential denoising and diffusion at-tention fusion model for Multimodal Emotion Recognition in Conversations. Our model effectively performs denois-ing on audio and visual modalities while allowing the text modality to explicitly guide cross-modal fusion, resulting in improved emotion recognition performance. Specifically, we design a differential Transformer module that explicitly computes the differences between two attention maps, ef-fectively enhancing temporally consistent information and thereby suppressing time-irrelevant noise, enabling efficient denoising of the audio and visual modalities. For the text modality, we represent conversations as two subgraphs cap-turing inter-speaker and intra-speaker emotional dependen-cies, and assign learnable embeddings to the relation edges. Through incremental interactive learning, the model first captures inter-speaker emotional interactions, followed by intra-speaker emotional dynamics, enabling precise mod-eling of individual emotional fluctuations. During the fu-sion stage, we introduce a text-dominant diffusion atten-tion fusion mechanism. First, intra-modal dependencies are captured via self-attention; then, a cross-modal diffusion attention mechanism based on modality similarity allows the text to unidirectionally absorb information from the visual and audio modalities, thereby alleviating the modality gap. The fused representation is then refined via a feedforward network and residual connections, ultimately used for emo-tion classification. Experimental results demonstrate that our model consistently outperforms existing methods. The key contributions of this study are encapsulated in the following points: 
+
+• We propose a differential denoising mechanism that enhances dynamic modeling while effectively sup-pressing noise, significantly improving recognition accuracy. 
+
+• To address modality imbalance in multimodal fusion, we design a text-dominant diffusion attention fusion mechanism. By explicitly modeling the dominance of the textual modality, our method alleviates the imbalance problem and achieves notable performance gains.   
+
+> Liu et al.: Preprint submitted to Elsevier Page 2 of 19 Ying Liu et al. Neurocomputing
+
+• Extensive experiments on the IEMOCAP and MELD datasets show that our approach consistently outper-forms state-of-the-art baselines. 
+
+## 2. Related Works 
+
+MCER is a critical task in affective dialogue systems, aiming to identify emotional states from interactions involv-ing multiple speakers and modalities. This paper reviews and analyzes relevant research from three core perspectives: context-aware modeling, dynamic modeling of emotional dependencies, and Transformer-based multimodal fusion. 
+
+2.1. Context-Aware Modeling 
+
+Context-aware modeling within modalities plays a foun-dational role in MCER. DialogueRNN [32], as a pioneering work, first proposed a dedicated recurrent neural architec-ture to explicitly track speaker-specific emotional states. In recent years, various methods have been proposed to capture dynamic changes within modal sequences. For instance, Self-MM [33] enhances intra-modal context representations through self-supervised learning but lacks explicit modeling of fine-grained frame-level emotional changes. CH-SIMS [34]introduces modality alignment to improve cross-modal consistency, yet its audio and visual modalities rely on static feature extraction, limiting its ability to model continuous temporal variations. CoMPM [35] designs a collaborative memory module to integrate contextual information, but exhibits limited capability in modeling local emotional fluc-tuations. EmoCaps [36] employs capsule networks for mul-timodal representation but does not explicitly address intra-modal dynamic variations. Recently, MutiEMO [37] mainly performs weighted aggregation of historical information via standard self-attention, with a stronger emphasis on context-aggregative representation enhancement. However, it lacks a dedicated explicit constraint on abrupt temporal fluctuations in the attention distribution matrix. In contrast, we introduce a differential attention mechanism that explicitly compares the current attention distribution with a temporally shifted reference attention distribution, and further suppresses tem-porally inconsistent pseudo-relations through gated filtering. This design allows the model to produce a relational change response while performing context aggregation, thereby suppressing perceptual noise and more accurately capturing emotion-related transient dynamics. 
+
+2.2. Modeling Dynamic Emotional Dependencies 
+
+Graph-structured temporal modeling has been widely used to characterize complex dynamic dependencies and has been validated across various sequential prediction tasks [38, 39, 40, 41, 42]. In MCER, speaker interactions likewise exhibit pronounced relational structural properties; there-fore, graph-based modeling has become a common approach for capturing inter-speaker emotional dependencies. Dia-logueGCN [43] introduces graph convolutional networks and defines multiple relation types (e.g., self, inter-speaker, and temporal relations) to model conversational structure. However, such single-conversation graph methods typically perform message passing in a unified graph, without explic-itly separating inter-speaker interactions and intra-speaker emotional inertia into independent subgraphs. As a result, it is difficult to clearly distinguish the contributions of these two types of dependencies at the structural level. COG-MEN [44] enhances emotional reasoning through cognitive graphs but does not distinguish between self-dependency and inter-speaker influence, resulting in coarse structural granularity. AGF-IB [45] employs adversarial alignment and graph contrastive learning to fuse multimodal features, yet its graph focuses solely on cross-modal interactions without explicitly modeling the coupling between speaker identity and contextual information. MKE-IGN [46] introduces a multi-knowledge enhanced interaction graph network by encoding the relations between utterances and commonsense knowledge via edge representations, but it fails to differenti-ate speaker-to-speaker interactions from intra-speaker emo-tional inertia, leading to ambiguous emotion propagation paths. Although SAM+GCN [47] demonstrates the potential of GCNs for static visual recognition, it primarily empha-sizes spatial correlations rather than the dynamic temporal evolution in conversations. DGODE [48] proposes a dy-namic graph neural ODE network that leverages continuous-time modeling and mixed-hop mechanisms to characterize emotion dynamics as context evolves, effectively alleviating the over-smoothing problem in GCNs. In contrast, we construct independent inter-speaker (In-terGAT) and intra-speaker (IntraGAT) interaction subgraphs, decoupling the two types of dependencies into separe and controllable propagation paths. We further employ graph at-tention to adaptively learn the importance of edges, enabling finer-grained modeling of dynamic emotional dependen-cies. Therefore, while preserving the interpretability of the graph structure, our method is better suited to characterize complex speaker interaction patterns and emotion evolution processes. 
+
+2.3. Multimodal Fusion Transformer 
+
+The key challenge in multimodal fusion lies in effec-tively harmonizing heterogeneous information across differ-ent modalities [49, 50, 51, 52, 53, 52, 54]. Recently, MulT [55] proposed a cross-modal Transformer that achieves tem-poral alignment via cross-attention but lacks sufficient mod-eling of modality structural dependencies. MISA [56] dis-tinguishes between shared and private modality represen-tations to reduce redundancy. However, its fusion mainly relies on feature concatenation without structural guidance. MAG-BERT [57] introduces modality augmentation based on textual features to enhance non-verbal modalities, yet it does not explicitly model cross-modal interaction structures. Self-MM optimizes fusion consistency through contrastive learning, but the fused representations remain susceptible to modality conflicts and instability. MM-DFN [58] proposes a dynamic fusion network, yet it essentially remains an im-plicit fusion paradigm. Moreover, although DialogueTRM [59] exhibits strong temporal modeling capability, it does not   
+
+> Liu et al.: Preprint submitted to Elsevier Page 3 of 19 Ying Liu et al. Neurocomputing
+
+incorporate a reliable modality (e.g., text) as a semantic an-chor, and thus its cross-modal alignment can be insufficiently stable under noisy conditions. In contrast, we first suppress temporally inconsistent noise at the interaction level via a differential mechanism; we then introduce text-dominant diffusion fusion, where the semantically reliable textual modality serves as an anchor to explicitly guide semantic alignment. Different from con-ventional weighted fusion schemes, our design structurally integrates noise blocking with semantic synergy, thereby substantially improving the robustness of the fused repre-sentations. Despite the progress made by existing methods in mod-eling the dynamic nature and structural consistency of multi-modal emotions, there remains a lack of effective denoising strategies for the audio and visual modalities. Moreover, current fusion approaches typically rely on weight-based implicit modeling, which limits their ability to capture col-laborative relationships among modalities. We propose a differential denoising mechanism and incorporate a text-dominant cross-modal diffusion strategy at the fusion stage to enhance the robustness and semantic consistency of the fused representation. 
+
+## 3. Methodology 
+
+The core objective of MCER is to allocate suitable emotion labels to every individual utterance contained in a dialogue. To address the challenges of noise interference in the audio and visual modalities, as well as information fusion bias caused by modality imbalance, this paper proposes a novel framework: Relational Graph-Driven Differential Denoising and Diffusion Attention Fusion. Specifically, a differential Transformer is employed to dynamically model the audio and visual modalities while effectively suppress-ing noise. In parallel, intra-speaker and inter-speaker rela-tional graphs are constructed to capture emotional depen-dencies within the textual modality. Furthermore, a text-guided cross-modal diffusion attention fusion mechanism is introduced to enable effective integration of multimodal emotional information. Figure 2 shows the proposed frame-work. 
+
+3.1. Task Definition 
+
+In the MCER task, a conversation consists of a sequence of utterances 𝑈 = { 𝑢 1, 𝑢 2, ⋯ , 𝑢 𝑁 } and a sequence of speak-ers 𝑆 = { 𝑠 1, 𝑠 2, ⋯ , 𝑠 𝑀 }, where 𝑁 is the utterance count and 𝑀 is the speaker count. Each utterance 𝑢 𝑖 contains three modalities of information: text ( 𝑡 ), audio ( 𝑎 ), and visual ( 𝑣 ). The goal of this paper is to predict the emotion category of the speaker at the current time step 𝑞 based on the speaker’s text, audio, and visual features. The emotion prediction task is defined as follows: 
+
+𝑦 𝑖 = prediction ({ 𝑢 1, 𝑢 2, ⋯ , 𝑢 𝑖 }) , 𝑖 ∈ [ 𝑞 − 𝑘, 𝑞 − 1] , (1) where 𝑦 𝑖 refers to the emotional annotation of utterance 
+
+𝑖 , and 𝑘 determines the length of the preceding context considered. 
+
+3.2. Feature Extraction 
+
+Text Feature Extraction: Following previous studies [60, 61], we employ the RoBERTa model to obtain contex-tual representations of the input text. Specifically, the input sequence is tokenized and augmented with special tokens [CLS] and [SEP], then fed into the RoBERTa model. The feature representation for the text modality is derived from the output associated with the [CLS] token in the final layer. 
+
+Visual and Audio Feature Extraction: In line with prior work [62, 60], we utilize a pre-trained DenseNet model and the openSMILE toolkit to extract visual and audio features, respectively. Due to the inconsistency in the original feature dimen-sions across the text, audio, and visual modalities, we intro-duce independent linear projection layers for each modality to map them into a common feature space for subsequent alignment processing: 
+
+𝑍 𝑚 = 𝑊 𝑚 ⋅ 𝐻 𝑚 + 𝑏 𝑚 , 𝑚 ∈ { 𝑡, 𝑎, 𝑣 }, (2) where 𝐻 𝑚 represents the original modality features, and 
+
+𝑊 𝑚 , 𝑏 𝑚 are trainable weights and biases corresponding to modality 𝑚 ∈ { 𝑡, 𝑎, 𝑣 }.
+
+3.3. Speaker and Position Embeddings 
+
+To distinguish speakers in a conversation and model their individual features, we encode identity information into learnable vector representations through speaker em-beddings. Specifically, for the 𝑖 -th utterance 𝑢 𝑖 spoken by speaker 𝑠 𝑗 , its identity is first represented as a one-hot vector 𝑂 (𝑠 𝑗 ), and then transformed into an embedding vector 
+
+𝑠𝑝𝑘 𝑖 = 𝐸 𝑠𝑝𝑘 ⋅𝑂 (𝑠 𝑗 ) ∈ ℝ𝑑 via a learnable speaker embedding matrix 𝐸 𝑠𝑝𝑘 ∈ ℝ𝑀 ×𝑑 , where 𝑀 represents the total count of speakers and 𝑑 specifies the dimension of the embedding space. The speaker embedding vectors of all utterances form a sequence: 
+
+𝑆𝐸 = [ 𝑠𝑝𝑘 1, 𝑠𝑝𝑘 2, ⋯ , 𝑠𝑝𝑘 𝑁 ] ∈ ℝ𝑁 ×𝑑 . (3) To model the temporal structure of utterances, we adopt sinusoidal positional encoding to provide temporal position information. For an utterance at position 𝑝𝑜𝑠 in the sequence, its positional encoding is calculated as follows: 
+
+𝑃 𝐸 (𝑝𝑜𝑠, 2𝑖 ) = sin 
+
+( 𝑝𝑜𝑠 
+
+10000 2𝑖 ∕𝑑 
+
+)
+
+, (4) 
+
+𝑃 𝐸 (𝑝𝑜𝑠, 2𝑖 + 1) = cos 
+
+( 𝑝𝑜𝑠 
+
+10000 2𝑖 ∕𝑑 
+
+)
+
+, (5) where 𝑖 is the index of the feature dimension, 𝑑 is the embedding dimension, and 𝑃 𝐸 ∈ ℝ𝑁 ×𝑑 is the positional encoding matrix for all utterances. Finally, we obtain the fused representation through element-wise summation: ̂𝑍 𝑚 𝑖𝑛 = 𝑍 𝑚 + 𝑆𝐸 + 𝑃 𝐸 ∈ ℝ𝑁 ×𝑑 , 𝑚 ∈ { 𝑎, 𝑣 }. (6)    
+
+> Liu et al.: Preprint submitted to Elsevier Page 4 of 19 Ying Liu et al. Neurocomputing
+> Figure 2: The overall framework is as follows: first, extract utterance-level unimodal features from audio, video, and text; then, apply a differential Transformer to audio and video features for dynamic extraction and denoising, while modeling emotional dependencies of textual features through a relational subgraph module comprising InterGAT and IntraGAT; finally, perform emotion classification by fusing multimodal features with text as the core using cross-modal diffusion attention.
+
+3.4. Differential Denoising 
+
+During audio and visual acquisition and encoding, back-ground noise, static scene components, and speaker-/scene-related biases are often unavoidable, which introduces emotion-irrelevant redundancy into the extracted features. From the perspective of attention-based relations, we posit that emotion-discriminative cues are more likely reflected in the variations of relational patterns over a local temporal span, whereas stationary or slowly varying disturbances tend to keep the attention distributions at adjacent time steps similar. Based on this assumption, we perform the differencing operation in the relation attention domain rather than di-rectly applying temporal differencing to feature values. This design attenuates stationary relational redundancy while preserving the original semantic information, and yields stronger responses to more discriminative dynamic changes. Meanwhile, the differential mechanism is also sensitive to abrupt perturbations; therefore, we further introduce gated filtering to reduce the influence of random jumps caused by non-stationary noise, thereby improving overall robustness. 
+
+3.4.1. Differential Transformer 
+
+Given the input sequence representation of modality 
+
+𝑚 ∈ { 𝑎, 𝑣 }, denoted as ̂ 𝑍 𝑚 𝑖𝑛 ∈ ℝ𝑁 ×𝑑 , we first apply linear projections to obtain the query, key, and value: 
+
+𝑄 =̂ 𝑍 𝑚 𝑖𝑛 𝑊 𝑄 , 𝐾 =̂ 𝑍 𝑚 𝑖𝑛 𝑊 𝐾 , 𝑉 =̂ 𝑍 𝑚 𝑖𝑛 𝑊 𝑉 , (7) where 𝑊 𝑄 , 𝑊 𝐾 , 𝑊 𝑉 ∈ ℝ𝑑 ×𝑑 are learnable parameter matri-ces. To construct a temporal reference view within the same sequence, we build a reference key via a first-order temporal shift. Specifically, we set 𝐾 𝑟𝑒𝑓 𝑡 = 𝐾 𝑡 −1 (𝑡 > 1) and adopt a replication strategy at the boundary 𝑡 = 1 , i.e., 𝐾 𝑟𝑒𝑓  
+
+> 1
+
+= 𝐾 1.We then compute attention distributions using the current key and the reference key, respectively: 
+
+𝛼 = softmax 
+
+(
+
+𝑄𝐾 ⊤
+
+√𝑑 
+
+)
+
+, 𝛼 𝑟𝑒𝑓 = softmax 
+
+(
+
+𝑄 (𝐾 𝑟𝑒𝑓 )⊤
+
+√𝑑 
+
+)
+
+,
+
+(8) where softmax (⋅) normalizes along the key dimension, such that 𝛼 and 𝛼 𝑟𝑒𝑓 provide, for each query, an association distribution over all time steps; √𝑑 is a scaling factor used to stabilize dot-product magnitudes and gradients. Based on the two distributions, we take their difference to characterize relational changes, and introduce a learnable scalar 𝜆 to adjust the contrast strength: DiffAttn (̂𝑍 𝑚 𝑖𝑛 ) = ( 𝛼 − 𝜆𝛼 𝑟𝑒𝑓 )𝑉 , (9) where 𝜆 is a learnable scalar that adaptively controls the cancellation strength of the reference view; the term (𝛼 −
+
+𝜆 𝛼 𝑟𝑒𝑓 ) is no longer a probability distribution, but serves as a response weight to relational changes. To enhance representation capability, we adopt a multi-head mechanism. The input is projected into ℎ subspaces and differential attention is computed independently in each, all sharing the same 𝜆 . Outputs from each head are normalized via GroupNorm, concatenated, and fused via a linear trans-formation: 
+
+head 𝑖 = Dif fAttn( ̂𝑍 𝑚 𝑖𝑛 ; 𝑊 𝑄 𝑖 , 𝑊 𝐾 𝑖 , 𝑊 𝑉 𝑖 , 𝜆 ), (10) ̌𝑍 𝑚 𝑎𝑡𝑡𝑛 = Concat(head 1, ..., head ℎ)𝑊 𝑂 , (11) where 𝑊 𝑄 𝑖 , 𝑊 𝐾 𝑖 , 𝑊 𝑉 𝑖 are the projection matrices for the 𝑖 -th head, and 𝑊 𝑂 is the output fusion matrix.   
+
+> Liu et al.: Preprint submitted to Elsevier Page 5 of 19 Ying Liu et al. Neurocomputing
+
+To avoid damaging stationary yet useful semantic com-ponents during filtering, we retain a residual path to stabilize the representation learning process: ̃𝑍 𝑚 𝑟𝑒𝑠 =̂ 𝑍 𝑚 𝑖𝑛 +̌ 𝑍 𝑚 𝑎𝑡𝑡𝑛 . (12) Compared with the commonly used temporal differenc-ing in the feature-value domain, e.g., 𝑍 𝑡 − 𝑍 𝑡 −1 , this module directly models changes in relational patterns at the level of attention distributions and can thus more directly suppress stationary relational redundancy. Moreover, it does not rely on an additional contrastive-learning objective; instead, it constructs an explicit contrast through a temporal reference within the same sequence. Compared with generic delta-attention incremental update formulations, the relational change signal in our design is realized by directly differ-encing two attention distributions, which admits a clear interpretation as a relational change response. 
+
+3.4.2. Gated Filtering 
+
+The differential mechanism responds to relational changes; such responses may arise from emotion-relevant dynamics or be triggered by instantaneous perturbations of non-stationary noise. To mitigate the instability introduced by the latter, we introduce element-wise gating on the residual output: 
+
+𝐹 = 𝜎 (𝑍 𝑚 𝑟𝑒𝑠 ̃ 𝑊 𝑔 + 𝑏 𝑔 ), (13) where 𝑊 𝑔 and 𝑏 𝑔 are learnable parameters, and 𝜎 denotes the Sigmoid function ensuring the gating weights lie in the range [0 , 1] .Finally, the gated feature is obtained by element-wise multiplication between the residual output and the gate: 
+
+𝑍 ′ 
+
+> 𝑚
+
+=̃ 𝑍 𝑚 𝑟𝑒𝑠 ⊙ 𝐹 , (14) where ⊙ denotes element-wise multiplication. 
+
+3.5. Relation Interaction Subgraph 
+
+3.5.1. Graph Construction 
+
+To capture the dynamic emotional dependencies both be-tween speakers and within individual speakers in multi-party dialogues, this paper constructs two subgraphs: the inter-speaker emotional interaction subgraph 𝐺 𝑖𝑛𝑡𝑒𝑟 and the intra-speaker emotional interaction subgraph 𝐺 𝑖𝑛𝑡𝑟𝑎 . The dialogue consists of 𝑁 ordered utterances, each corresponding to a node 𝑣 𝑖 with temporal index 𝑖 and initial features represented by the textual feature vector 𝑧 𝑡 𝑖 ∈ ℝ𝑑 .Edges in these two subgraphs are constructed based on a time-window mechanism, connecting only nodes whose temporal index difference does not exceed the window size 
+
+𝑘 , in order to reduce noise interference from long-range contexts. Under this rule, the edge topology of the two subgraphs is predefined and static, and the presence of an edge is determined solely by the time indices and speaker identities. In the inter-speaker subgraph, edges are estab-lished only when the temporal index difference between two nodes is at most 𝑘 and the utterances come from different speakers. In the intra-speaker subgraph, edges are created only when the temporal index difference is at most 𝑘 and the utterances originate from the same speaker. Formally, the edge definitions are: 
+
+𝑒 𝑖𝑛𝑡𝑒𝑟 𝑖𝑗 =
+
+{1, |𝑖 − 𝑗 | ≤ 𝑘, and speaker (𝑖 ) ≠ speaker (𝑗 ),
+
+0, otherwise ,
+
+(15) 
+
+𝑒 𝑖𝑛𝑡𝑟𝑎 𝑖𝑗 =
+
+{1, |𝑖 − 𝑗 | ≤ 𝑘, and speaker (𝑖 ) = speaker (𝑗 ),
+
+0, otherwise .
+
+(16) Edges in both subgraphs include three types: self-loops (when 𝑖 = 𝑗 ) indicating a node’s dependence on its own emotional state; forward edges (when 𝑖 < 𝑗 ) representing the influence of past utterances on future ones; and backward edges (when 𝑖 > 𝑗 ) reflecting the reverse emotional feedback from future utterances to past ones. To systematically model the temporal emotional dynamics, we introduce a relation type label 𝑟 𝑖𝑗 ∈ {1 , 2, 3} corresponding to self-loop, for-ward, and backward edges respectively. To facilitate learning of edge weights, a relation embed-ding matrix 𝑅 𝑒 ∈ ℝ𝑁 𝑟 ×𝑑 𝑟 is designed, where 𝑁 𝑟 is the num-ber of relation types and 𝑑 𝑟 is the dimension of the relation embedding. Edge features are obtained by multiplying the one-hot encoded vector of the relation type 𝑂 (𝑟 𝑖𝑗 ) with the relation embedding matrix: 
+
+𝑒 𝑖𝑗 = 𝑅 𝑒 ⋅ 𝑂 (𝑟 𝑖𝑗 ) ∈ ℝ𝑑 𝑟 . (17) 
+
+3.5.2. Graph Interaction 
+
+We use a Graph Attention Network (GAT) for message passing on each subgraph, where the edge attention weights 
+
+𝛼 𝑖𝑗 are learned during training to adaptively aggregate neigh-borhood information. We further incorporate relation-type embeddings 𝑒 𝑖𝑗 into the attention computation, allowing the model to distinguish different conversational relations (e.g., self-loop, forward, and backward edges). The edge attention weight is computed as follows: 
+
+𝛼 𝑖𝑗 = softmax (LeakyReLU (𝑎 ⊤[𝑊 𝑧 𝑖 ‖𝑊 𝑧 𝑗 ‖𝑒 𝑖𝑗 ])) , (18) where 𝑧 𝑖 and 𝑧 𝑗 denote the feature representations of nodes 
+
+𝑣 𝑖 and 𝑣 𝑗 at time step 𝑡 , 𝑊 is a learnable weight matrix, 𝑒 𝑖𝑗 
+
+is the edge feature, ‖ denotes vector concatenation, and 𝑎 is a learnable attention vector. Based on the computed attention weights, the hidden feature of node 𝑣 𝑖 is updated as: 
+
+𝑧 𝑡 𝑖, out = 𝜎 
+
+⎛⎜⎜⎝∑
+
+> 𝑗 ∈𝑖
+
+𝛼 𝑖𝑗 𝑊 𝑧 𝑡 𝑗 
+
+⎞⎟⎟⎠
+
+, (19) where 𝑖 represents the neighbor set of node 𝑣 𝑖 , 𝜎 is a nonlinear activation function, and 𝑧 𝑡 𝑗 represents the features of neighbor node 𝑣 𝑗 at time 𝑡 .  
+
+> Liu et al.: Preprint submitted to Elsevier Page 6 of 19 Ying Liu et al. Neurocomputing
+
+Finally, the textual modality feature representation is formed by concatenating the updated feature vectors of all nodes: 
+
+𝑍 𝑡  
+
+> out
+
+= [ 𝑧 𝑡 
+
+> 1,out
+
+, 𝑧 𝑡 
+
+> 2,out
+
+, … , 𝑧 𝑡 𝑁, out ] ∈ ℝ𝑁 ×𝑑 . (20) 
+
+3.6. Diffusion Attention Fusion 
+
+To address the impact of modality imbalance on the performance of multimodal fusion, this paper proposes a text-centric cross-modal diffusion attention fusion mecha-nism. This mechanism leverages the dominant role of the text modality in sentiment analysis by explicitly construct-ing an interaction framework between the text and other modalities. Information transfer is achieved through cross-modal correlations, and a gating strategy is incorporated to dynamically fuse multi-source features, thereby enhancing the effectiveness of multimodal fusion. First, the features of the audio, text, and visual modalities are each linearly transformed and projected into a unified representation space, obtaining the query ( 𝑄 ), key ( 𝐾 ), and value ( 𝑉 ) matrices. Then, the self-attention matrix is computed to capture intra-modal feature correlations: 
+
+𝑆 𝑚 = Sof tmax 
+
+( 𝑄 𝑚 𝐾 ⊤𝑚 
+
+𝑑 
+
+)
+
+, 𝑚 ∈ { 𝑎, 𝑡, 𝑣 }, (21) where 𝑑 is a scaling factor that prevents the dot product values from becoming too large, thus avoiding gradient vanishing. Since the attention matrices of different modalities have distinct value distributions, directly computing cross-modal correlations may cause weight bias or information loss in certain modalities. To ensure the stability and symmetry of cross-modal correlations, the self-attention matrix is nor-malized by the degree matrix: ̂𝑆 𝑚 = 𝐷 − 12 
+
+> 𝑚
+
+𝑆 𝑚 𝐷 − 12 
+
+> 𝑚
+
+, (22) where 𝐷 𝑚 denotes the degree matrix of 𝑆 𝑚 .To enable the text modality to learn useful information from the audio and visual modalities, the cross-modal at-tention matrix is constructed by combining the normalized correlations with the original self-attention matrices: 
+
+𝑆 𝑡 →𝑚 = 𝛾 ⋅ (̂𝑆 𝑡 ̂ 𝑆 ⊤𝑚 
+
+) + (1 − 𝛾 ) ⋅ 𝐽 𝑚 , 𝑚 ∈ { 𝑎, 𝑣 }, (23) where 𝛾 ∈ [0 , 1] is a balancing coefficient that weighs the contribution of the two types of correlation information, and 
+
+𝐽 𝑚 = 𝑆 𝑡 +𝑆 𝑚 represents the sum of the original self-attention matrices. Based on the cross-modal attention matrix, the value matrix of the other modality is mapped into the text space to enable information transfer and fusion: 
+
+𝑈 𝑡 →𝑚 = 𝑆 𝑡 →𝑚 𝑉 𝑚 , 𝑚 ∈ { 𝑎, 𝑣 }. (24) To adaptively adjust the fusion ratio of different modal information, a gating mechanism is designed to dynamically compute the fusion weights based on the transferred fea-tures: 
+
+𝑇 𝑡 = 𝜎 (𝑊 𝑔 
+
+[𝑈 𝑡 →𝑎 ∥ 𝑈 𝑡 →𝑣 
+
+]) , (25) where 𝜎 is the Sigmoid activation function with output range 
+
+[0 , 1] , representing the weight of information received from the audio modality; 1 − 𝑇 𝑡 corresponds to the weight from the visual modality; ∥ denotes vector concatenation; and 𝑊 𝑔 
+
+is a learnable weight matrix. Finally, the fused text feature is composed of the original text output and the weighted audio and visual features: 
+
+𝑍 ′ 
+
+> 𝑡
+
+= 𝑍 𝑡 𝑜𝑢𝑡 + 𝑇 𝑡 ⊙ 𝑈 𝑡 →𝑎 + (1 − 𝑇 𝑡 ) ⊙ 𝑈 𝑡 →𝑣 , (26) where ⊙ denotes element-wise multiplication. 
+
+3.7. Emotion Classifier 
+
+In emotion classification, the classification scores for each modality are first computed through a linear transfor-mation: 
+
+𝐿 𝑚 = Linear 𝑚 (𝑍 ′
+
+> 𝑚
+
+) ∈ ℝ𝑁 ×𝑐 , 𝑚 ∈ { 𝑎, 𝑡, 𝑣 }, (27) where 𝑐 denotes the number of emotion categories. Then, to integrate information from different modalities, the scores from the three modalities are combined by a weighted summation to obtain the final score: 
+
+𝑍 𝑓 = 𝛼 𝑎 𝐿 𝑎 + 𝛼 𝑡 𝐿 𝑡 + 𝛼 𝑣 𝐿 𝑣 ∈ ℝ𝑁 ×𝑐 , (28) where 𝛼 𝑡 , 𝛼 𝑎 , and 𝛼 𝑣 are the weighting coefficients control-ling the influence of each modality on the final prediction. Finally, to obtain the emotion classification probabilities for each sample, the final scores are normalized by a softmax function: ̂𝑌 = sof tmax( 𝑍 𝑓 ) ∈ ℝ𝑁 ×𝑐 , (29) where ̂ 𝑌 represents the probability distribution over emotion categories for each sample. To improve the consistency of multimodal feature repre-sentation and the stability of training, we introduce a multi-constraint joint loss function, which consists of two parts: the emotion fusion loss 𝐿 𝑓 and the modality self-supervised loss 𝐿 𝑢 .
+
+𝐿 𝑓 = − 1
+
+𝑁 
+
+> 𝑁
+
+∑
+
+> 𝑖 =1
+> 𝐶
+
+∑
+
+> 𝑗 =1
+
+𝑦 𝑖,𝑗 log( ̂𝑦 𝑓 𝑖,𝑗 ), (30) where 𝑁 is the total number of samples and 𝐶 is the total emotion categories, 𝑦 𝑖,𝑗 ∈ {0 , 1} is the one-hot encoded true label, and ̂𝑦 𝑓 𝑖,𝑗 ∈ [0 , 1] denotes the predicted probability that the 𝑖 -th sample belongs to the 𝑗 -th category based on the fused multimodal features. 
+
+𝐿 𝑢 = − 1
+
+𝑁 
+
+∑
+
+> 𝑚 ∈{ 𝑎,𝑣,𝑡 }
+
+𝜆 𝑚 𝑁 ∑
+
+> 𝑖 =1
+> 𝐶
+
+∑
+
+> 𝑗 =1
+
+𝑦 𝑖,𝑗 log( ̂𝑦 𝑚 𝑖,𝑗 ), (31)                   
+
+> Liu et al.: Preprint submitted to Elsevier Page 7 of 19 Ying Liu et al. Neurocomputing
+> Table 1
+> The statistics of IEMOCAP and MELD. Dataset Dialogues Utterances Classes Train&Valid Test Train&Valid Test IEMOCAP 120 31 5810 1623 6MELD 1152 280 11098 2610 7
+
+where ̂ 𝑦 𝑚 𝑖,𝑗 represents the predicted probability that the 𝑖 -th sample belongs to the 𝑗 -th category based on modality 
+
+𝑚 (audio, visual, or text) features, and 𝜆 𝑚 is the learning weight factor for modality 𝑚 , dynamically set to 0.1 times the current classification loss for that modality, in order to prioritize learning the modality with poorer classification performance. Finally, the total loss 𝐿 𝑠 is the sum of the emotion fusion loss and modality self-supervised loss: 
+
+𝐿 𝑠 = 𝐿 𝑓 + 𝐿 𝑢 . (32) 
+
+## 4. EXPERIMENTAL SETTINGS 
+
+In this section, we first provide a comprehensive de-scription of the two public datasets used in the experiments and the two key evaluation metrics for model performance. Next, we introduce the baseline models and technical details. Finally, we detail the implementation specifics of the exper-iments. 
+
+4.1. Datasets 
+
+To evaluate our model, we conduct experiments on the IEMOCAP and MELD datasets, and Table 1 lists their key statistics. 
+
+IEMOCAP [63] is a multimodal emotional dataset re-leased by the University of Southern California in 2008, focusing on dyadic interaction scenarios. It contains 553 dialogue segments performed by 10 actors (5 male-female pairs), covering both scripted and improvised dialogues. The dataset includes speech, video, and text transcription modalities, annotated with six core emotions: happy, sad, angry, frustrated, excited, and neutral, as well as some emo-tional intensity. It has high data quality and strong annotation consistency, making it suitable for cross-modal emotion recognition research in natural interactions. 
+
+MELD [64], based on the TV show Friends , was re-leased in 2018 and focuses on multi-party dialogue scenar-ios. It includes 1433 dialogue segments and 13708 dialogue units, involving 3-4 person interactions. The dataset provides text, speech, and video modalities (with some versions con-taining only text and audio) and is annotated with seven emotions: joy, sadness, anger, fear, surprise, disgust, and neutral, along with sentiment polarity. The dataset is large in scale, has complex scenes, and strong context dependencies, making it suitable for multimodal emotion recognition tasks involving long context dependencies. 
+
+4.2. Evaluation Metrics 
+
+We select the weighted accuracy (w-Acc) and weighted F1-score (w-F1) to evaluate model performance. The w-Acc provides an intuitive representation of the model’s overall performance and is easy to compute, making it suitable for comprehensive evaluation when the dataset is balanced. It is calculated as follows: 
+
+𝑤 -𝐴𝑐𝑐 =
+
+> 𝐶
+
+∑
+
+> 𝑖 =1
+
+𝑁 𝑖 
+
+𝑁 × 𝐴𝑐𝑐 𝑖 , (33) where 𝐶 is the total number of emotion categories, 𝑁 𝑖 is the number of samples in the 𝑖 -th class, 𝑁 is the total number of samples across all classes, and 𝐴𝑐𝑐 𝑖 denotes the prediction accuracy for the 𝑖 -th class. The w-F1, on the other hand, balances the class imbal-ance problem and reflects the model’s accuracy and coverage of each emotion, especially being more sensitive to rare emotions. The calculation formula is: 
+
+𝑤 -𝐹 1 = 
+
+> 𝐶
+
+∑
+
+> 𝑖 =1
+
+( 𝑁 𝑖 
+
+𝑁 × 𝐹 1𝑖 
+
+)
+
+, (34) where 𝐹 1𝑖 is the F1-score for the 𝑖 -th class, defined as: 
+
+𝐹 1𝑖 = 2 × 𝑃 𝑖 × 𝑅 𝑖 
+
+𝑃 𝑖 + 𝑅 𝑖 
+
+, (35) where 𝑃 𝑖 and 𝑅 𝑖 represent the Precision and Recall for the 
+
+𝑖 -th class, respectively. By integrating precision and recall while accounting for the weight of each class, w-F1 provides a more objective assessment for imbalanced datasets. 
+
+4.3. Baseline Models 
+
+We conducted a comparative evaluation of multiple baseline models on the IEMOCAP and MELD datasets, in-cluding DialogueRNN [32], MMGCN [65], DialogueTRM [59], MM-DFN [58], DialogueGCN [43], TS-GCL [66], GraphCFC [67], MultiEMO [37], SDT [68] and DEDNet [69]. 
+
+4.4. Implementation Details 
+
+The proposed model is implemented in PyTorch and trained with the Adam optimizer using a cosine-annealing learning-rate schedule. All hyperparameters are selected on the validation set via a restricted grid search with weighted-F1 as the primary criterion, while fixing the encoder depth and batch size to ensure fair comparisons. To address the di-mensional discrepancies among textual, acoustic, and visual features on IEMOCAP and MELD, we linearly project each modality into a unified hidden space. The hidden size is set to 512 for IEMOCAP and 256 for MELD; accordingly, the Transformer uses 64 attention heads on IEMOCAP and 16 on MELD to keep the per-head dimension 𝑑 ℎ = 𝑑 ∕ℎ within a stable range. The context window length is set to 20 for IEMOCAP and 25 for MELD, with initial learning rates of 
+
+1 × 10 −4 and 5 × 10 −5 , respectively. The architecture integrates a Transformer encoder and a graph attention network. The graph branch uses two at-tention heads and introduces a 10-dimensional relation em-bedding to model speaker-dependent relations; the relation   
+
+> Liu et al.: Preprint submitted to Elsevier Page 8 of 19 Ying Liu et al. Neurocomputing
+
+embedding dimension is also selected on the validation set. The learnable coefficient 𝜆 in the differential attention is initialized to 0.5 and updated during training to balance denoising strength and semantic preservation. Multimodal fusion is implemented with MutualFormer, which serves as a mutual-attention-based cross-modal interaction module that enables each modality to learn complementary information from the other modalities and adaptively combines features through a gating mechanism. We set an MLP expansion factor of 4 and a DropPath rate of 0.1 (i.e., stochastic-depth regularization, which randomly drops residual paths during training to mitigate overfitting and improve generalization). To mitigate overfitting, we apply dropout at multiple lev-els of the network, along with L2 weight decay and layer normalization. The training objective is a class-weighted masked negative log-likelihood loss, where masking is used to exclude padded positions from loss computation, and class weights are used to mitigate training bias caused by class imbalance. At the feature level, cross-modal complementarity is adaptively modeled by the proposed diffusion and gat-ing modules; at inference time, we further calibrate the modality-specific classification scores via a fixed, validation-tuned weighted fusion. The fusion weights are set to 1.0/1.0/0.4 for IEMOCAP and 3.0/1.0/0.3 for MELD (text/audio/visual). 
+
+## 5. EXPERIMENTAL RESULTS 
+
+In this section, we present and analyze the findings from comparative experiments and ablation studies. 
+
+5.1. Main Results 
+
+As shown in Tables 2 and 3, we compare the perfor-mance of our model with baseline methods on the IEMO-CAP and MELD datasets. On IEMOCAP, our model achieves a w-Acc of 75.17% and a w-F1 of 74.87% ; on MELD, it attains a w-Acc of 66.52% and a w-F1 of 66.62% . All results are averaged over five independent runs using different random seeds. Compared to state-of-the-art baselines, our model demonstrates significant improvements, validating the effectiveness of the proposed differential denoising mod-ule and text-dominant cross-modal diffusion attention fusion module. Our approach effectively reduces noise interference and enhances feature purity, while the text-guided fusion strategy strengthens the complementarity and consistency of multimodal information, significantly improving emotion recognition accuracy and robustness. 
+
+5.2. Modality Importance Analysis 
+
+As shown in Table 4, the comparison of emotion recog-nition performance among unimodal, bimodal, and trimodal systems indicates that the contribution of the text modality is significantly higher than that of the audio and visual modali-ties. This not only reflects the susceptibility of the latter two to noise interference but also highlights the dominant role of the text modality, thereby validating the effectiveness of the proposed fusion module.  
+
+> Figure 3: Effect of varying window sizes on model performance across two datasets.
+
+5.3. Sliding Window Effect 
+
+In multimodal emotion recognition tasks, the window size determines the length of contextual information consid-ered by the model when processing temporal data. A smaller window may fail to capture sufficient information, while a larger window may introduce noise and increase com-putational complexity. Therefore, selecting an appropriate window size helps to achieve a balance between information capture and computational efficiency. As shown in Figure 3, we varied the window size from 0 to 30 in our experiments and observed that the optimal window size is 20 for the IEMOCAP dataset and 25 for the MELD dataset. This may be attributed to the nature of the datasets: utterances in IEMOCAP tend to be longer with slower emotional transitions, making a larger window beneficial for capturing complete contextual cues. In con-trast, MELD features faster-paced conversations and more frequent emotional shifts, where a larger window helps the model to capture emotional dynamics across multiple utter-ances. These findings indicate that the optimal window size is closely tied to the structural characteristics of each dataset. Moreover, using a fixed sliding window yields approxi-mately linear inference complexity with respect to dialogue length, and the performance gains generally saturate beyond a moderate window size, which is favorable for scaling to longer conversational streams. In addition, we further evaluate the impact of inference-time temporal segmentation on performance. As shown in Table 5, under no segmentation, 50% overlapping segmenta-tion, and non-overlapping segmentation settings, the perfor-mance on both datasets exhibits a smooth degradation trend, indicating that the model maintains good stability under sequence segmentation. Meanwhile, overlapping segmenta-tion performs slightly better than non-overlapping segmen-tation, suggesting that overlapping windows help mitigate the impact of boundary information fragmentation. Moreover, the relation-subgraph construction still has certain limitations. Our method explicitly distinguishes intra-speaker and inter-speaker relations, and therefore relies on reliable speaker annotations. The comparison results in Table 6 show that when speaker identity is not used during graph construction or when speaker noise is introduced, per-formance on both datasets degrades smoothly. This indicates that speaker priors provide gains, while the method still retains a certain level of stability when speaker information   
+
+> Liu et al.: Preprint submitted to Elsevier Page 9 of 19
+
+Ying Liu et al. Neurocomputing 
+
+Table 2 
+
+Performance on the IEMOCAP dataset. * indicates baseline models re-implemented using our extracted features. Bold values indicate the best performance. Models IEMOCAP w-Acc w-F1 happy sad neutral angry excited frustrated ACC F1 ACC F1 ACC F1 ACC F1 ACC F1 ACC F1 DialogueRNN 25.00 34.95 82.86 84.58 54.43 57.66 61.76 64.42 90.97 76.30 62.20 59.55 65.43 64.29 MMGCN 32.64 39.66 72.65 76.89 65.10 62.81 73.53 71.43 77.93 75.40 65.09 63.43 66.62 66.25 DialogueTRM 61.11 57.89 84.90 81.25 69.27 68.56 76.47 75.99 76.25 76.13 53.39 58.09 68.51 68.20 MM-DFN 44.44 44.44 77.55 80.00 71.35 66.99 75.88 70.88 74.25 76.42 58.27 61.67 67.84 67.85 TS-GCL 71.20 70.00 81.30 81.70 67.40 64.20 60.50 61.40 74.60 76.50 62.00 64.60 70.30 70.20 DialogueGCN 64.29 29.03 80.86 64.37 43.14 50.96 68.49 63.29 71.85 68.19 57.68 62.41 62.07 58.19 GraphCFC* 41.52 45.08 87.12 84.94 65.19 63.27 68.31 70.82 77.16 75.85 62.86 63.19 68.39 68.02 MultiEMO* 53.80 56.29 83.33 83.50 75.60 70.11 68.29 67.07 79.70 7579 64.82 70.35 72.29 71.69 SDT* 55.06 57.62 80.58 80.08 65.73 69.14 67.88 66.87 82.50 73.47 66.58 67.53 70.54 69.95 DEDNet* 56.32 64.07 81.15 80.98 73.92 74.97 67.37 71.11 84.38 77.84 72.99 69.68 74.47 73.79 
+
+Ours 59.35 61.54 84.08 84.08 70.91 73.75 69.73 72.68 84.73 81.18 74.64 67.98 75.17 74.87 
+
+Table 3 
+
+Results on the MELD dataset. Models MELD w-Acc w-F1 neutral surprise fear sadness joy disgust anger ACC F1 ACC F1 ACC F1 ACC F1 ACC F1 ACC F1 ACC F1 DialogueRNN 82.17 76.56 46.62 47.64 0.00 0.00 21.15 24.65 49.50 51.49 0.00 0.00 48.41 46.01 60.27 57.95 MMGCN 84.32 76.96 47.33 49.63 2.00 3.64 14.90 20.39 56.97 53.76 1.47 2.82 42.61 45.23 61.34 58.41 DialogueTRM 83.20 79.41 56.94 55.27 12.00 17.39 27.88 36.48 60.45 60.30 16.18 20.18 51.01 49.79 65.10 63.80 MM-DFN 79.06 75.80 53.02 50.42 0.00 0.00 17.79 23.72 59.20 55.48 0.00 0.00 50.43 48.27 60.96 58.72 TS-GCL 78.10 80.60 56.70 56.40 6.80 5.20 42.30 43.70 68.30 66.30 2.30 2.60 43.80 48.50 64.40 64.10 GraphCFC* 71.26 75.17 46.18 45.68 9.09 3.28 30.43 11.02 50.26 49.49 0.00 0.00 35.88 41.93 54.34 55.20 MultiEMO* 76.44 79.42 55.92 58.12 25.71 21.18 51.05 41.60 62.23 63.07 45.71 31.07 55.28 53.37 65.45 65.77 SDT* 75.99 79.65 59.21 58.78 24.44 23.16 59.22 39.23 64.40 62.76 40.00 31.86 52.27 54.44 66.00 65.92 DEDNet* 76.51 79.97 56.77 58.90 21.88 17.07 50.38 39.30 64.97 62.63 40.54 28.57 53.65 54.49 65.52 65.88 
+
+Ours 77.59 79.92 59.43 59.43 26.09 16.44 49.10 43.73 65.31 64.48 40.00 21.51 51.29 54.30 66.52 66.62 
+
+Table 4 
+
+Performance under different modal settings across datasets. Modality Setting IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 V 40.11 31.25 23.16 31.27 A 54.75 51.17 36.15 39.01 T 69.86 69.34 65.05 65.11 V+T 69.52 68.92 65.81 65.93 A+T 74.05 72.98 65.67 65.8 A+V+T 75.17 74.87 66.52 66.62 
+
+> A, V, and T represent the acoustic, visual, and textual modalities, respectively.
+
+Table 5 
+
+Performance under different temporal segmentation settings at inference time. Temporal Segmentation Setting IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 No-overlap 72.86 72.21 66.22 66.35 50% overlap 72.92 72.28 66.41 66.55 Baseline 75.17 74.87 66.52 66.62            
+
+> Temporal segmentation is applied only at inference time. Baseline denotes no temporal segmentation.
+
+is imperfect. For more complex conversational settings, generalization may be further improved by incorporating 
+
+Table 6 
+
+Robustness of relation-subgraph construction under missing or noisy speaker information (w-F1). Dataset No-speaker Noisy-speaker ( 𝑝 = 0 .3) Ours IEMOCAP 70.02 71.19 74.87 
+
+MELD 66.15 66.32 66.62 
+
+pseudo-speaker annotations, lightweight edge gating, and sparse long-range connections. 
+
+5.4. Self-Supervised Loss Effect 
+
+As shown in Table 7, the introduction of the modality self-supervised loss significantly improves the model’s per-formance. For each unimodal loss, the weight factor 𝜆 is set to one-tenth of its corresponding loss value. This strategy dynamically adjusts the weight factors, enabling the model to focus more on tasks with larger losses, thereby enhancing the performance of weaker modalities while maintaining the dominance of the multimodal fusion loss. We set the weight factor 𝜆 𝑚 for the modality-specific losses to range from 1∕5 to 1∕30 , in order to balance uni-modal and fusion effects. As shown in Figure 4, when 𝜆 𝑚 =
+
+Liu et al.: Preprint submitted to Elsevier Page 10 of 19 Ying Liu et al. Neurocomputing 
+
+Table 7 
+
+Performance of the model under different loss strategies. Interaction IEMOCAP MELD Strategy w-Acc w-F1 w-Acc w-F1 w/o MSL 72.58 72.52 65.78 66.05 w MSL 75.17 74.87 66.52 66.62 
+
+MSL represents Modality-Specific Loss. 
+
+Figure 4: The impact of different 𝜆 𝑚 values on the model performance. Note that a horizontal coordinate of 0 means that only fusion loss is used as the total loss. 
+
+1∕10 , the model achieves the best performance on both the MELD and IEMOCAP datasets, demonstrating the model’s adaptability to different datasets. 
+
+5.5. Denoising Effect Analysis 
+
+We evaluated the effectiveness of the Differential Trans-former in denoising and performance enhancement for audio and visual modalities. As shown in Figure 5, when both modalities employ the Differential Transformer, the model accurately captures dynamic emotional cues and effectively reduces noise, significantly improving recognition perfor-mance. When neither modality uses the Differential Trans-former, the model maintains good performance by relying on static feature consistency. However, applying the Dif-ferential Transformer to only one modality disrupts feature homogeneity and lacks collaborative validation, resulting in poor denoising and potential interference, with performance worse than when it is not used. These results demonstrate the effectiveness of the Differential Transformer in denoising and collaborative modeling of multimodal dynamic features. 
+
+5.6. Subgraph Interaction Analysis 
+
+To validate the performance enhancement of the de-signed InterGAT and IntraGAT, ablation experiments were conducted. As shown in Figure 6, the model performs op-timally on both datasets when the dual graph structures are used in parallel (w, w). While using a single graph structure also improves performance, the complementary nature of the dual graph structures allows for more comprehensive 
+
+Figure 5: Performance comparison of differential strategies on the IEMOCAP and MELD datasets. 
+
+Figure 6: Effect of relational subgraph modules on the overall model performance (I denotes InterGAT, A denotes IntraGAT). 
+
+Table 8 
+
+Performance under different interaction strategies evaluated across datasets.                                   
+
+> Strategy IEMOCAP MELD w-Acc w-F1 w-Acc w-F1
+> SingleGraph 70.98 70.64 66.13 66.17 SubGraphs PIS (Sum) 74.04 73.52 65.65 65.97 PIC (Concat) 73.27 72.81 65.97 66.12 Relncremental 74.35 73.77 65.87 66.19 Incremental 75.17 74.87 66.52 66.62
+> SingleGraph: Merge subgraphs into one graph. SubGraphs strategies: PIS = Parallel Interaction+Sum; PIC =Parallel Interaction+Concat; Relncremental =Relncremental Interaction; Incremental =Incremental Interaction.
+
+exploration of the textual feature relationships. This con-firms the necessity of the dual graph structure design to enhance the model’s emotional recognition capability and provides key support for the effectiveness of the model’s feature interaction mechanism. To verify the impact of the interaction order between the cross-speaker graph and the speaker-specific graph on fea-ture extraction, we compared four strategies: Single Graph, Parallel Interaction, Relational Incremental Interaction, and Incremental Interaction. As shown in Table 8, the Single Graph performed poorly on the IEMOCAP dataset, likely due to the loss of hierarchical features. However, on the MELD dataset, its performance was comparable to some parallel interaction strategies, indicating that the advantage of the dual graph structure depends on dataset characteris-tics. Parallel and relational incremental interactions showed similar performance, while incremental interaction achieved the best results on both datasets, confirming the rationality of the hierarchical design that first models global associations across speakers and then extracts individual features. 
+
+Liu et al.: Preprint submitted to Elsevier Page 11 of 19 Ying Liu et al. Neurocomputing 
+
+5.7. Emotion Dependency Analysis 
+
+Dynamic emotion dependency recognition aims to un-cover emotional dependency relationships induced by speaker interactions in consecutive utterances, which is a critical issue in sentiment analysis. To validate the performance ad-vantages of our proposed model on this task, we conducted comparative experiments against four representative base-line models: MM-DFN, SDT, MultiEMO and GraphCFC. Regarding sample definition, consecutive utterances with the same emotion label were categorized as inter-speaker dependency samples if uttered by different speakers, and as intra-speaker dependency samples if uttered by the same speaker. All dependency samples were extracted from the original test set to construct a dedicated evaluation set, ensuring the training set remained unchanged and focusing the assessment on test performance. As shown in Figure 7, compared to the baseline mod-els, our model demonstrates a larger coverage area across all metrics, which fully attests to the efficacy of both the Differential Denoising Module and the Text-Guided Cross-Modal Diffusion Attention Fusion Module. Specifically, the Differential Denoising Module effectively suppresses noise interference in the audio and visual modalities, enhanc-ing the purity of dynamic features and thus improving the model’s sensitivity to emotional changes and recognition accuracy. Meanwhile, the text-guided cross-modal diffusion attention fusion module strengthens the guidance of textual information over multimodal features, enabling deep inter-action and complementary enhancement among modalities, thereby promoting consistency and complementarity of mul-timodal features. The synergistic effect of these two mod-ules allows the model to more accurately capture emotional dependencies in complex dialogues, significantly boosting the performance and robustness of dynamic emotion depen-dency recognition. 
+
+5.8. Emotion Shift Analysis 
+
+Identifying dialogues with emotional shifts is a signifi-cant challenge in sentiment analysis, requiring the model not only to accurately recognize emotion categories but also to effectively capture dynamic emotional changes. To evaluate the performance of the proposed model on this task, we extracted samples containing emotional shifts from the test set of the original dataset, keeping the training set unchanged and focusing on this specific test set. As shown in Table 9 and Figure 8, the model achieves significant improvements across all metrics. The performance gains mainly result from the syner-gistic effect of two core modules. The differential denois-ing module effectively removes noise from audio and vi-sual data, highlighting key dynamic features at moments of emotional shift, making the signals clearer. Meanwhile, the text-guided cross-modal diffusion attention fusion module strengthens the correlation between audio, visual, and tex-tual features, enabling more accurate identification of the timing and intensity of emotional shifts. Together, these modules improve the model’s sensitivity and discriminative 
+
+Table 9 
+
+Performance of the model on emotion shift samples. Models IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 MM-DFN 53.77 53.34 59.62 58.19 SDT 53.41 52.9 60.61 58.67     
+
+> Ours 63.93 64.05 63.02 63.21
+
+Table 10 
+
+Model complexity and inference time comparison on IEMO-CAP and MELD. Model # Params. IEMOCAP MELD Inference Time Inference Time MMGCN 5.63M 53.7s 75.3s RGAT 15.28M 68.5s 146.3s DER-GCN 78.59M 125.5s 189.7s M3Net 7.88M 57.0s 87.6s    
+
+> Ours 11.48M 61.2s 98.5s
+> Inference time denotes the forward-pass-only runtime on the full test set (in seconds). All timing results were measured under the same server environment and timing protocol (NVIDIA A800 80GB PCIe GPU, AMD EPYC 7763 64-Core Processor, and approximately 503 GB RAM; CUDA 12.4) with a unified inference batch size of 16 for both IEMOCAP and MELD.
+
+ability to emotional changes, significantly enhancing recog-nition accuracy and robustness. 
+
+5.9. Computational Efficiency Analysis 
+
+To evaluate the computational cost and runtime effi-ciency of our model, we conduct analyses from both theoret-ical complexity and empirical measurements. For a standard Transformer self-attention layer, the dominant computations consist of linear projections and attention operations: the 
+
+𝐐 ∕𝐊 ∕𝐕 projections have complexity 𝑂 (𝐵𝐿𝑑 2), and the attention scoring with weighted summation has complexity 
+
+𝑂 (𝐵𝐿 2𝑑 ), where 𝐵 denotes the batch size, 𝐿 the dialogue window length, and 𝑑 the hidden dimension. Our differential attention preserves the same leading term 𝑂 (𝐵𝐿 2𝑑 ), while introducing an additional time-referenced attention map and a differencing operation; this incurs only constant-factor overhead and does not change the asymptotic order. Under a fixed number of layers and attention heads, the relation-graph branch scales linearly with the number of edges and can be written as 𝑂 (𝐵 |𝐸 |𝑑 ). The additional cost of the fusion branch mainly arises from cross-modal attention and gating computations, which are likewise implemented by a small number of matrix operations. Since we adopt a fixed sliding-window setting (IEMOCAP: 𝐿 = 20 ; MELD: 𝐿 = 25 ), these overheads remain well controlled within the windowed modeling framework. Empirically, we report the parameter size and inference time on the full test set (forward pass only, seconds per full test set) and compare them with representative methods (see Table 10). We further report the peak GPU memory usage during inference to characterize the upper bound of resource consumption: approximately 57.6 MB on MELD and 259.3 MB on IEMOCAP. Overall, while achieving leading performance, our method maintains a controllable parameter budget and demonstrates competitive inference efficiency and memory footprint on both datasets. 
+
+Liu et al.: Preprint submitted to Elsevier Page 12 of 19 Ying Liu et al. Neurocomputing 
+
+Figure 7: The figure illustrates the performance comparison between our model and five baseline models on inter-speaker emotion dependency samples and intra-speaker emotion dependency samples in the IEMOCAP testing set. 
+
+Figure 8: The figure shows the confusion matrices for our model evaluated on emotion shift samples from the IEMOCAP and MELD datasets, with rows representing the actual labels and columns representing the predicted labels. 
+
+5.10. Ablation Study 
+
+This section quantitatively evaluates the effectiveness of the key design choices from three perspectives: component contributions, sensitivity to the cross-modal diffusion fusion coefficient, and comparison with conventional denoising strategies. 
+
+Component-wise Ablation Study To quantify the inde-pendent contribution of each module, we conduct ablations by removing the differential, gating, relation-graph, and diffusion-fusion components one at a time while keeping the training settings and evaluation protocol unchanged. The results are reported in Table 11. Removing any component 
+
+Table 11 
+
+Results of component-wise ablation study. Setting IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 w/o Differential 73.84 73.19 65.93 66.05 w/o Gating 74.01 74.83 66.15 66.33 w/o Graph 69.30 69.00 65.56 65.81 w/o Diffusion 72.92 72.41 65.88 66.08     
+
+> Full Model 75.17 74.87 66.52 66.62
+
+leads to performance degradation, indicating that the over-all improvement arises from complementary cooperation among modules. Removing the differential module consistently degrades performance on both datasets, suggesting that the first-order differencing in the relation domain effectively suppresses relation redundancy that remains consistent across adjacent time steps. Removing the gating module also causes a con-sistent drop, demonstrating that the gate performs context-aware filtering over the differential responses after resid-ual fusion and further mitigates random jumps induced by abrupt perturbations. The largest decrease is observed when removing the relation-graph module, highlighting the im-portance of structured interactions for modeling emotional dependencies. Removing the diffusion fusion module also yields notable degradation, confirming its independent gains in alleviating modality imbalance and facilitating informa-tion transfer. 
+
+Liu et al.: Preprint submitted to Elsevier Page 13 of 19 Ying Liu et al. Neurocomputing 
+
+Table 12 
+
+Sensitivity analysis of the diffusion fusion coefficient 𝛾 .
+
+𝛾 IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 0.0 73.47 72.88 65.88 66.08 0.2 74.45 74.06 66.35 66.20 0.4 74.63 74.25 66.27 66.39 0.6 74.79 74.44 66.49 66.60 0.8 74.64 74.35 66.42 66.51 
+
+1.0 75.17 74.87 66.52 66.62 Table 13 
+
+Comparison with conventional denoising strategies. Method IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 MA 73.44 73.15 64.28 64.25 EMA 74.20 73.86 65.87 65.78 Median 73.73 73.54 66.14 65.92     
+
+> Ours 75.17 74.87 66.52 66.62
+
+Sensitivity to the Diffusion Fusion Coefficient We further analyze the sensitivity to the coefficient 𝛾 ∈ [0 , 1] 
+
+in the cross-modal diffusion-attention fusion, as summarized in Table 12. According to (23), 𝛾 balances the contribution between the normalized diffusion correlation term (̂𝐒 𝑡 ̂ 𝐒 ⊤𝑚 )
+
+and the original correlation term 𝐉 𝑚 . When 𝛾 = 0, the fusion degenerates to using only 𝐉 𝑚 ; when 𝛾 = 1, only the diffusion correlation term is retained. The results show an overall improvement as 𝛾 increases, with performance saturating in the mid-to-high range. This suggests that the diffusion correlation term is crucial for stable cross-modal correlation estimation, while the model remains reasonably robust over a wide range of 𝛾 .
+
+Comparison with Denoising Baselines To rule out the possibility that the gains mainly come from simple smooth-ing, we compare our method with moving average (MA), exponential moving average (EMA), and median filtering (Median). The results are shown in Table 13. While these conventional methods can reduce noise to some extent, they consistently underperform our approach on both datasets. A key reason is that value-domain smoothing tends to attenuate emotion-relevant transient dynamics together with noise. In contrast, our method cancels steady relation redundancy in the relation domain and suppresses random jumps via gating, achieving a better trade-off between noise reduction and preservation of discriminative dynamics. 
+
+Comparison with Representative Attention Variants 
+
+To further clarify the differences between our method and existing difference-based attention mechanisms in terms of modeling formulation and underlying mechanism, we con-duct controlled comparisons in which the overall architec-ture is kept unchanged and only the relation-domain differ-ential operator is replaced with three representative variants, namely temporal difference attention, contrastive attention, and delta-attention. The results are reported in Table 14. Our 
+
+Table 14 
+
+Comparison with representative difference-based attention variants under controlled settings. Method IEMOCAP MELD w-Acc w-F1 w-Acc w-F1 Temporal diff attn 72.18 72.12 65.55 65.76 Contrastive attn 74.42 73.48 65.69 65.77 Delta-attention 74.18 73.41 65.63 65.68     
+
+> Ours 75.17 74.87 66.52 66.62
+
+Table 15 
+
+w-F1 comparison of fixed-prior and learnable fusion strategies under different text conditions on MELD and IEMOCAP. Dataset Text condition Fixed LSF ADF MELD 
+
+T0 66.62 65.19 66.03 
+
+T0 .6 46.28 43.51 43.96 
+
+T∅ 34.73 33.55 33.26 IEMOCAP 
+
+T0 74.87 73.24 72.79 
+
+T0 .6 68.61 67.39 67.57 
+
+T∅ 27.22 35.68 32.71       
+
+> Note: T0 denotes clean text with no degradation; T0 .6denotes text masking at evaluation with a masking ratio of 0.6; T∅ denotes the text-removed setting at evaluation, where textual inputs are entirely removed.
+
+model consistently achieves better performance across met-rics, suggesting that the proposed relation-domain differenc-ing and gating mechanism can suppress non-stationary noise while better preserving emotion-discriminative dynamics, thereby yielding a more favorable trade-off. 
+
+Comparison of Fusion Weighting Strategies We com-pare the fixed-prior fusion strategy with two learnable fusion alternatives, LSF and ADF, under three text conditions: Nor-mal, Mask 0.6, and Missing text. Table 15 reports w-F1. The results show that the fixed-prior fusion performs best under all settings on MELD, and remains optimal under Normal and Mask 0.6 on IEMOCAP; however, under the Missing text setting on IEMOCAP, LSF and ADF achieve higher scores. This trend is consistent with our design motivation: during inference, the fixed fusion uses dataset-level weights to provide global calibration for the overall output magnitude of different modality branches, while sample-level comple-mentary information is mainly modeled and captured by the feature-level cross-modal diffusion and gating modules. 
+
+Higher-order Reference Ablation To further assess the practical sufficiency of the adjacent reference ( Δ = 1)in differential attention, we extend the reference shift to 
+
+Δ ∈ {1 , 2, 3} while keeping all other training settings unchanged. As shown in Table 16, Δ = 1 achieves the best results on both IEMOCAP and MELD, whereas Δ = 2
+
+and Δ = 3 do not bring consistent gains and instead show slight performance drops. This phenomenon suggests that more distant temporal references are more likely to cross true emotion transition points, thereby weakening useful short-term discriminative dynamics. Therefore, using two 
+
+Liu et al.: Preprint submitted to Elsevier Page 14 of 19 Ying Liu et al. Neurocomputing 
+
+Table 16 
+
+Ablation on the temporal reference shift Δ in differential attention. Reference shift Δ IEMOCAP MELD w-Acc (%) w-F1 (%) w-Acc (%) w-F1 (%)               
+
+> Δ = 1 (default) 75.17 74.87 66.52 66.62
+> Δ = 2 74.30 74.14 66.36 66.50
+> Δ = 3 74.62 74.35 66.46 66.57
+> Δ = 1 uses the adjacent (one-step) reference; other settings only change the reference shift.
+
+Figure 9: Illustration of the case dialogue window, including speaker turns, ground-truth emotion labels, and the target utterance position. 
+
+attention maps and constructing a first-order contrast with 
+
+Δ = 1 is a more robust and efficient choice. 
+
+5.11. Case Study 
+
+As shown in Figure 9, we provide a qualitative visual-ization on an illustrative two-speaker window sampled from the MELD test set. Taking the final utterance in the window (local index 𝑖 = 7 ) as the prediction target, we visualize the behaviors of the differential denoising, relational graph interaction, and text-guided diffusion fusion modules under the same context. 
+
+Differential Denoising Figure 10 visualizes the acous-tic relational-domain differential response produced by the differential denoising module. Most entries are close to zero, while a small set of locations exhibit pronounced responses, suggesting that relational differencing tends to suppress relatively stationary attention patterns and retain salient relational variations that are more likely correlated with emotion-discriminative dynamics. 
+
+Relational Graph Interaction Figure 11 shows the edge-weight heatmaps of the inter-speaker and intra-speaker subgraphs (self-loops removed for clarity). The inter-speaker 
+
+Figure 10: Heatmap of the acoustic relational-domain differen-tial response ( 𝛼 − 𝜆𝛼 𝑟𝑒𝑓 ). Rows and columns correspond to the query position 𝑖 and the attended position 𝑗 within the local window, respectively; color intensity indicates the strength of relational variation relative to the temporal reference view. 
+
+(a) inter-speaker (b) intra-speaker 
+
+Figure 11: Graph connectivity patterns on a two-speaker window from MELD. In each heatmap, row 𝑖 denotes the query utterance and column 𝑗 denotes the source utterance; darker colors indicate larger normalized weights. 
+
+subgraph highlights influence pathways associated with the interlocutor’s utterances, whereas the intra-speaker sub-graph captures continuity within the same speaker’s history, indicating a structured separation of inter- and intra-speaker dependencies. 
+
+Text-guided Diffusion Attention Fusion Figure 12 re-ports the incremental trends of prediction confidence and class margins for the target utterance relative to 𝛾 = 0 as the diffusion intensity 𝛾 varies. As 𝛾 increases, Δ𝑃 (GT) ,
+
+Δprobability margin, and Δlogit margin exhibit an over-all upward trend, indicating that text-guided diffusion fu-sion progressively injects acoustic and visual evidence into the text-dominant representation with controllable strength, thereby improving confidence and widening the separation from competing classes. 
+
+Liu et al.: Preprint submitted to Elsevier Page 15 of 19 Ying Liu et al. Neurocomputing         
+
+> Figure 12: Incremental trajectories of target-utterance predic-tions under varying diffusion intensities 𝛾 (relative to 𝛾 = 0 ).
+> Δ𝑃 (GT) denotes the increment of the ground-truth probability;
+> Δprobability margin denotes the increment of the probability difference between the ground-truth class and the strongest non-ground-truth class; Δlogit margin denotes the increment of the corresponding logit difference.
+
+5.12. Selective Denoising Analysis 
+
+To more directly demonstrate the selective behavior of the differential denoising module, we visualize the differen-tial responses at the target time step before and after gating in the visual modality. As shown in Figure 13, we present the pre-gating response Δbefore , the post-gating response 
+
+Δafter , the suppression map denoted as Suppress, and the retain-ratio map denoted as Retain. The two cases (emotion-rich and noisy-like) are determined automatically using a unified rule based on differential-response strength and local concentration statistics. A comparison of the response row corresponding to the target time step shows that the gating operation does not apply a uniform scaling to all differential responses. Instead, it exhibits position-dependent filtering behavior across key positions. In emotion-rich segments, some salient responses remain with relatively high retain ratios after gating, whereas in noisy-like segments, multiple strong responses are clearly suppressed. Furthermore, under the same analysis setting, we compute retain-ratio statistics on 30 emotion-rich seg-ments and 30 noisy-like segments in the visual modality. A two-sided Mann–Whitney U test shows a significant differ-ence in retain ratio between the two groups, with 𝑝 = 0 .0119 
+
+and Cliff’s 𝛿 = 0 .378 . Specifically, the mean retain ratio of emotion-rich segments is 0.352 (standard deviation 0.107), which is higher than the mean retain ratio of noisy-like segments, 0.253 (standard deviation 0.085). These results indicate that the differential responses after gating exhibit differential retention patterns, which is consistent with the design goal of selective denoising. 
+
+## 6. Conclusion 
+
+In this study, we propose a multimodal emotion recog-nition framework that integrates a Differential Transformer, Relational Sub, and Cross-modal Diffusion Attention Fu-sion to address key challenges in conversational scenar-ios, including dynamic emotion tracking, noise interference in audio-visual modalities, and modality imbalance. The proposed framework employs a differential mechanism to effectively suppress noise in audio and visual features, lever-ages relational subgraphs to model both inter- and intra-speaker emotional dependencies, and performs fine-grained feature interactions through a text-guided cross-modal diffu-sion process. This approach fills the gap in existing research regarding modality denoising and text-centric interaction modeling, thereby significantly enhancing the robustness and expressive power of multimodal emotion recognition systems. Future work will explore approaches to model temporal dependencies in long conversations and further investigate the intrinsic correlations between multimodal signals and emotional states. 
+
+## CRediT authorship contribution statement 
+
+Ying Liu : Conceptualization, Methodology, Investiga-tion, Data curation, Writing - Original Draft. Yuntao Shou :Supervision, Investigation & Review. Wei Ai : Supervision, Investigation, Writing - Review & Editing. Tao Meng : Su-pervision, Investigation, Writing - Review & Editing. Keqin Li : Supervision, Investigation, Writing - Review & Editing. 
+
+## Declaration of Competing Interest 
+
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper. 
+
+## Data availability 
+
+Data will be made available on request. 
+
+## Acknowledgements 
+
+The authors deepest gratitude goes to the anonymous reviewers and AE for their careful work and thoughtful sug-gestions that have helped improve this paper substantially. This work is supported by National Natural Science Foun-dation of China (Grant No. 69189338), Excellent Young Scholars of Hunan Province of China (Grant No. 22B0275), and program of Research on Local Community Structure Detection Algorithms in Complex Networks (Grant No. 2020YJ009).   
+
+> Liu et al.: Preprint submitted to Elsevier Page 16 of 19
+
+Ying Liu et al. Neurocomputing 
+
+(a) Emotion-rich case (b) Noisy-like case 
+
+Figure 13: Visualization of differential responses before and after gating at the target time step in the visual modality for an emotion-rich case (a) and a noisy-like case (b). In each panel, the four rows (top to bottom) show Δbefore , Δafter , Suppress, and Retain. The dashed line marks the target key position, and the blue shaded region marks temporally neighboring key positions. 
+
+## References 
+
+[1] Ateeque Ahmed and Saima Aleem. Enhancing human-robot collab-oration through multimodal emotion and context-aware. Available at SSRN 5237859 , 2025. [2] Yuntao Shou, Tao Meng, Wei Ai, Fangze Fu, Nan Yin, and Keqin Li. A comprehensive survey on multi-modal conversational emotion recognition with deep learning. ACM Transactions on Information Systems , 44(2):1–48, 2026. [3] Yuntao Shou, Tao Meng, Wei Ai, Sihan Yang, and Keqin Li. Con-versational emotion recognition studies based on graph convolutional neural networks and a dependent syntactic analysis. Neurocomputing ,501:629–639, 2022. [4] Duan Chen, Huang Zhengwei, Tan Yiting, Min Jintao, and Ribesh Khanal. Emotion and sentiment analysis for intelligent customer service conversation using a multi-task ensemble framework. Cluster Computing , 27(2):2099–2115, 2024. [5] Yuntao Shou, Tao Meng, Wei Ai, Fuchen Zhang, Nan Yin, and Keqin Li. Adversarial alignment and graph fusion via information bottleneck for multimodal emotion recognition in conversations. Information Fusion , 112:102590, 2024. [6] Yuntao Shou, Huan Liu, Xiangyong Cao, Deyu Meng, and Bo Dong. A low-rank matching attention based cross-modal feature fusion method for conversational emotion recognition. IEEE Transactions on Affective Computing , 16(2):1177–1189, 2024. [7] Dongchan Lee. Reinforcement learning techniques for autonomous robots in virtual environments with llm-based multimodal data in-tegration and virtual embodiment. Clinical Research and Clinical Trials , 12:1, 04 2025. doi: 10.31579/2693-4779/263. [8] Tao Meng, Yuntao Shou, Wei Ai, Nan Yin, and Keqin Li. Deep imbal-anced learning for multimodal emotion recognition in conversations. 
+
+IEEE Transactions on Artificial Intelligence , 5(12):6472–6487, 2024. [9] Yuntao Shou, Xiangyong Cao, Huan Liu, and Deyu Meng. Masked contrastive graph representation learning for age estimation. Pattern Recognition , 158:110974, 2025. [10] Rohan Shankar. A multimodal approach for real-time engagement monitoring in e-learning using machine learning. In 2024 IEEE Frontiers in Education Conference (FIE) , pages 1–8, 2024. doi: 10.1109/FIE61694.2024.10892967. [11] Tao Meng, Yuntao Shou, Wei Ai, Jiayi Du, Haiyan Liu, and Keqin Li. A multi-message passing framework based on heterogeneous graphs in conversational emotion recognition. Neurocomputing , 569:127109, 2024. [12] Yuntao Shou, Wei Ai, Tao Meng, and Keqin Li. Graph diffusion mod-els: A comprehensive survey of methods and applications. Computer Science Review , 59:100854, 2026. [13] Ravi Prasad Thati, Abhishek Singh Dhadwal, Praveen Kumar, and Sainaba P. A novel multi-modal depression detection approach based on mobile crowd sensing and task-based mechanisms. Multimedia Tools and Applications , 82(4):4787–4820, 2023. [14] Yuntao Shou, Wei Ai, Jiayi Du, Tao Meng, Haiyan Liu, and Nan Yin. Efficient long-distance latent relation-aware graph neural network for multi-modal emotion recognition in conversations. arXiv preprint arXiv:2407.00119 , 2024. [15] Yuntao Shou, Xiangyong Cao, and Deyu Meng. Spegcl: Self-supervised graph spectrum contrastive learning without positive sam-ples. IEEE Transactions on Neural Networks and Learning Systems ,2025. [16] Bairavel Subbaiah, Kanipriya Murugesan, Prabakeran Saravanan, and Krishnamurthy Marudhamuthu. An efficient multimodal sentiment analysis in social media using hybrid optimal multi-scale residual attention network. Artificial Intelligence Review , 57(2):34, 2024. [17] Paul Waligora, Muhammad Haseeb Aslam, Muhammad Osama Zee-shan, Soufiane Belharbi, Alessandro Lameiras Koerich, Marco Ped-ersoli, Simon Bacon, and Eric Granger. Joint multimodal transformer for emotion recognition in the wild. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 4625–4635, 2024. [18] Wei Ai, Yuntao Shou, Tao Meng, and Keqin Li. Der-gcn: Dialog and event relation-aware graph convolutional neural network for multimodal dialog emotion recognition. IEEE Transactions on Neural Networks and Learning Systems , 36(3):4908–4921, 2024. 
+
+Liu et al.: Preprint submitted to Elsevier Page 17 of 19 Ying Liu et al. Neurocomputing 
+
+[19] Ye Wang, Wei Zhang, Ke Liu, Wei Wu, Feng Hu, Hong Yu, and Guoyin Wang. Dynamic emotion-dependent network with relational subgraph interaction for multimodal emotion recognition. IEEE Transactions on Affective Computing , 2024. [20] Yusong Wang, Xuanye Fang, Huifeng Yin, Dongyuan Li, Guoqi Li, Qi Xu, Yi Xu, Shuai Zhong, and Mingkun Xu. Big-fusion: Brain-inspired global-local context fusion framework for multimodal emotion recognition in conversations. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 1574–1582, 2025. [21] Yan-Kai Liu, Jinyu Cai, Bao-Liang Lu, and Wei-Long Zheng. Multi-to-single: Reducing multimodal dependency in emotion recognition through contrastive learning. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 1438–1446, 2025. [22] Yijie Jin, Junjie Peng, Xuanchao Lin, Haochen Yuan, Lan Wang, and Cangzhi Zheng. Multimodal transformers are hierarchical modal-wise heterogeneous graphs. arXiv preprint arXiv:2505.01068 , 2025. [23] Yuntao Shou, Huan Liu, Xiangyong Cao, Deyu Meng, and Bo Dong. A low-rank matching attention based cross-modal feature fusion method for conversational emotion recognition. IEEE Transactions on Affective Computing , 2024. [24] Yuntao Shou, Tao Meng, Fuchen Zhang, Nan Yin, and Keqin Li. Re-visiting multi-modal emotion learning with broad state space models and probability-guidance fusion. arXiv preprint arXiv:2404.17858 ,2024. [25] Vishal Chudasama, Purbayan Kar, Ashish Gudmalwar, Nirmesh Shah, Pankaj Wasnik, and Naoyuki Onoe. M2fnet: Multi-modal fusion network for emotion recognition in conversation. In Proceed-ings of the IEEE/CVF conference on computer vision and pattern recognition , pages 4652–4661, 2022. [26] Yujian Cai, Xingguang Li, Yingyu Zhang, Jinsong Li, Fazheng Zhu, and Lin Rao. Multimodal sentiment analysis based on multi-layer feature fusion and multi-task learning. Scientific Reports , 15(1):2126, 2025. [27] Yuehan Jin, Xiaoqing Liu, Yiyuan Yang, Zhiwen Yu, Tong Zhang, and Kaixiang Yang. Rohydr: Robust hybrid diffusion recovery for incomplete multimodal emotion recognition. arXiv preprint arXiv:2505.17501 , 2025. [28] Rui Liu, Haolin Zuo, Zheng Lian, Björn W Schuller, and Haizhou Li. Contrastive learning based modality-invariant feature acquisition for robust multimodal emotion recognition with missing modalities. 
+
+IEEE Transactions on Affective Computing , 15(4):1856–1873, 2024. [29] Fangze Fu, Wei Ai, Fan Yang, Yuntao Shou, Tao Meng, and Keqin Li. Sdr-gnn: spectral domain reconstruction graph neural network for in-complete multimodal learning in conversational emotion recognition. 
+
+Knowledge-Based Systems , 309:112825, 2025. [30] Hao Zhang, Lei Cao, and Jiayi Ma. Text-difuse: An interactive multi-modal image fusion framework based on text-modulated diffusion model. Advances in Neural Information Processing Systems , 37: 39552–39572, 2024. [31] Wei Du, Jianlan Li, Jilei Zhou, Qi Lu, and Yue Sun. Mitigating the proliferation of fake image-text reviews: A two-tier intra-and inter-modal fusion framework. International Journal of Electronic Commerce , 29(2):304–332, 2025. [32] Navonil Majumder, Soujanya Poria, Devamanyu Hazarika, Rada Mi-halcea, Alexander Gelbukh, and Erik Cambria. Dialoguernn: An attentive rnn for emotion detection in conversations. In Proceedings of the AAAI conference on artificial intelligence , volume 33, pages 6818–6825, 2019. [33] Wenmeng Yu, Hua Xu, Ziqi Yuan, and Jiele Wu. Learning modality-specific representations with self-supervised multi-task learning for multimodal sentiment analysis. In Proceedings of the AAAI confer-ence on artificial intelligence , volume 35, pages 10790–10797, 2021. [34] Wenmeng Yu, Hua Xu, Fanyang Meng, Yilin Zhu, Yixiao Ma, Jiele Wu, Jiyun Zou, and Kaicheng Yang. Ch-sims: A chinese multimodal sentiment analysis dataset with fine-grained annotation of modality. In Proceedings of the 58th annual meeting of the association for computational linguistics , pages 3718–3727, 2020. [35] Joosung Lee and Wooin Lee. CoMPM: Context modeling with speaker’s pre-trained memory tracking for emotion recognition in conversation. In Marine Carpuat, Marie-Catherine de Marneffe, and Ivan Vladimir Meza Ruiz, editors, Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies , pages 5669–5679, Seattle, United States, July 2022. Association for Com-putational Linguistics. doi: 10.18653/v1/2022.naacl-main.416. [36] Zaijing Li, Fengxiao Tang, Ming Zhao, and Yusen Zhu. Emocaps: Emotion capsule based model for conversational emotion recognition. 
+
+arXiv preprint arXiv:2203.13504 , 2022. [37] Tao Shi and Shao-Lun Huang. Multiemo: An attention-based correlation-aware multimodal fusion framework for emotion recog-nition in conversations. In Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 14752–14766, 2023. [38] Yasin Uygun and Emre Sefer. Financial asset price prediction with graph neural network-based temporal deep learning models. Neural Computing and Applications , 37(30):25445–25471, 2025. [39] Peker Celik and Emre Sefer. Analyzing transaction graphs via motif-based graph representation learning for cryptocurrency price prediction. Computational Economics , pages 1–22, 2025. [40] Wei Ai, Yilong Tan, Yuntao Shou, Tao Meng, Haowen Chen, Zhix-iong He, and Keqin Li. The paradigm shift: A comprehensive survey on large vision language models for multimodal fake news detection. 
+
+Computer Science Review , 60:100893, 2026. [41] Yuntao Shou, Haozhi Lan, and Xiangyong Cao. Contrastive graph representation learning with adversarial cross-view reconstruction and information bottleneck. Neural Networks , 184:107094, 2025. [42] Yuntao Shou, Tao Meng, Wei Ai, and Keqin Li. Revisiting multi-modal emotion learning with broad state space models and probability-guidance fusion. In Joint European Conference on Ma-chine Learning and Knowledge Discovery in Databases , pages 509– 525. Springer, 2025. [43] Deepanway Ghosal, Navonil Majumder, Soujanya Poria, Niyati Chhaya, and Alexander Gelbukh. Dialoguegcn: A graph convolu-tional neural network for emotion recognition in conversation. arXiv preprint arXiv:1908.11540 , 2019. [44] Abhinav Joshi, Ashwani Bhat, Ayush Jain, Atin Vikram Singh, and Ashutosh Modi. Cogmen: Contextualized gnn based multimodal emotion recognition. arXiv preprint arXiv:2205.02455 , 2022. [45] Yuntao Shou, Tao Meng, Wei Ai, Fuchen Zhang, Nan Yin, and Keqin Li. Adversarial alignment and graph fusion via information bottleneck for multimodal emotion recognition in conversations. Information Fusion , 112:102590, 2024. [46] Zhenyu Yang, Zhibo Zhang, Yuhu Cheng, Tong Zhang, and Xuesong Wang. Semantic and emotional dual channel for emotion recognition in conversation. IEEE Transactions on Affective Computing , 2025. [47] Vincenzo Mariano Scarrica and Antonino Staiano. Unveiling graph power: Segmentanything and gcn synergy for instance segmentation and classification. In 2024 IEEE International Conference on Evolv-ing and Adaptive Intelligent Systems (EAIS) , pages 1–7. IEEE, 2024. [48] Yuntao Shou, Tao Meng, Wei Ai, and Keqin Li. Dynamic graph neural ODE network for multi-modal emotion recognition in conver-sation. In Owen Rambow, Leo Wanner, Marianna Apidianaki, Hend Al-Khalifa, Barbara Di Eugenio, and Steven Schockaert, editors, 
+
+Proceedings of the 31st International Conference on Computational Linguistics , pages 256–268, Abu Dhabi, UAE, January 2025. Associ-ation for Computational Linguistics. URL https://aclanthology.org/ 2025.coling-main.18/ .[49] Yuntao Shou, Tao Meng, Wei Ai, and Keqin Li. Dynamic graph neural ode network for multi-modal emotion recognition in conver-sation. In Proceedings of the 31st International Conference on Computational Linguistics , pages 256–268, 2025. [50] Yuntao Shou, Jun Yao, Tao Meng, Wei Ai, Cen Chen, and Keqin Li. Gsdnet: Revisiting incomplete multimodality-diffusion emotion recognition from the perspective of graph spectrum. In Proceedings of the Thirty-Fourth International Joint Conference on Artificial 
+
+Liu et al.: Preprint submitted to Elsevier Page 18 of 19 Ying Liu et al. Neurocomputing 
+
+Intelligence, IJCAI-25. International Joint Conferences on Artificial Intelligence Organization , pages 6182–6190, 2025. [51] YunTao Shou, Wei Ai, Tao Meng, FuChen Zhang, and KeQin Li. Graphunet: Graph make strong encoders for remote sensing segmen-tation. In 2023 IEEE 29th International Conference on Parallel and Distributed Systems (ICPADS) , pages 2734–2737. IEEE, 2023. [52] Yuntao Shou, Xiangyong Cao, Peiqiang Yan, Qiao Hui, Qian Zhao, and Deyu Meng. Graph domain adaptation with dual-branch encoder and two-level alignment for whole slide image-based survival predic-tion. In Proceedings of the IEEE/CVF International Conference on Computer Vision , pages 19925–19935, 2025. [53] Yuntao Shou, Tao Meng, Wei Ai, and Keqin Li. Multimodal large lan-guage models meet multimodal emotion recognition and reasoning: A survey. arXiv preprint arXiv:2509.24322 , 2025. [54] Yuntao Shou, Tao Meng, Wei Ai, Nan Yin, and Keqin Li. Cilf-ciae: Clip-driven image–language fusion for correcting inverse age estimation. Neural Networks , page 108518, 2025. [55] Yao-Hung Hubert Tsai, Shaojie Bai, Paul Pu Liang, J Zico Kolter, Louis-Philippe Morency, and Ruslan Salakhutdinov. Multimodal transformer for unaligned multimodal language sequences. In Pro-ceedings of the conference. Association for computational linguistics. Meeting , volume 2019, page 6558, 2019. [56] Devamanyu Hazarika, Roger Zimmermann, and Soujanya Poria. Misa: Modality-invariant and-specific representations for multimodal sentiment analysis. In Proceedings of the 28th ACM international conference on multimedia , pages 1122–1131, 2020. [57] Wasifur Rahman, Md Kamrul Hasan, Sangwu Lee, Amir Zadeh, Chengfeng Mao, Louis-Philippe Morency, and Ehsan Hoque. In-tegrating multimodal information in large pretrained transformers. In Proceedings of the conference. Association for computational linguistics. Meeting , volume 2020, page 2359, 2020. [58] Dou Hu, Xiaolong Hou, Lingwei Wei, Lianxin Jiang, and Yang Mo. Mm-dfn: Multimodal dynamic fusion network for emotion recogni-tion in conversations. In ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) ,pages 7037–7041. IEEE, 2022. [59] Yuzhao Mao, Qi Sun, Guang Liu, Xiaojie Wang, Weiguo Gao, Xuan Li, and Jianping Shen. Dialoguetrm: Exploring the intra-and inter-modal emotional behaviors in the conversation. arXiv preprint arXiv:2010.07637 , 2020. [60] Bobo Li, Hao Fei, Lizi Liao, Yu Zhao, Chong Teng, Tat-Seng Chua, Donghong Ji, and Fei Li. Revisiting disentanglement and fusion on modality and context in conversational multimodal emotion recogni-tion. In Proceedings of the 31st ACM International Conference on Multimedia , pages 5923–5934, 2023. [61] Hui Ma, Jian Wang, Hongfei Lin, Bo Zhang, Yijia Zhang, and Bo Xu. A transformer-based model with self-distillation for multimodal emo-tion recognition in conversations. IEEE Transactions on Multimedia ,26:776–788, 2023. [62] Weiquan Fan, Xiaofen Xing, Bolun Cai, and Xiangmin Xu. Mgat: Multi-granularity attention based transformers for multi-modal emo-tion recognition. In ICASSP 2023-2023 IEEE International Confer-ence on Acoustics, Speech and Signal Processing (ICASSP) , pages 1–5. IEEE, 2023. [63] Carlos Busso, Murtaza Bulut, Chi-Chun Lee, Abe Kazemzadeh, Emily Mower, Samuel Kim, Jeannette N Chang, Sungbok Lee, and Shrikanth S Narayanan. Iemocap: Interactive emotional dyadic motion capture database. Language resources and evaluation , 42(4): 335–359, 2008. [64] Soujanya Poria, Devamanyu Hazarika, Navonil Majumder, Gautam Naik, Erik Cambria, and Rada Mihalcea. Meld: A multimodal multi-party dataset for emotion recognition in conversations. arXiv preprint arXiv:1810.02508 , 2018. [65] Jingwen Hu, Yuchen Liu, Jinming Zhao, and Qin Jin. Mmgcn: Multimodal fusion via deep graph convolution network for emotion recognition in conversation. arXiv preprint arXiv:2107.06779 , 2021. [66] Wei Ai, FuChen Zhang, Tao Meng, YunTao Shou, HongEn Shao, and Keqin Li. A two-stage multimodal emotion recognition model based on graph contrastive learning. In 2023 IEEE 29th International Conference on Parallel and Distributed Systems (ICPADS) , pages 397–404. IEEE, 2023. [67] Jiang Li, Xiaoping Wang, Guoqing Lv, and Zhigang Zeng. Graphcfc: A directed graph based cross-modal feature complementation ap-proach for multimodal conversational emotion recognition. IEEE Transactions on Multimedia , 26:77–89, 2023. [68] Hui Ma, Jian Wang, Hongfei Lin, Bo Zhang, Yijia Zhang, and Bo Xu. A transformer-based model with self-distillation for multimodal emo-tion recognition in conversations. IEEE Transactions on Multimedia ,26:776–788, 2023. [69] Ye Wang, Wei Zhang, Ke Liu, Wei Wu, Feng Hu, Hong Yu, and Guoyin Wang. Dynamic emotion-dependent network with relational subgraph interaction for multimodal emotion recognition. IEEE Transactions on Affective Computing , 2024. 
+
+Liu et al.: Preprint submitted to Elsevier Page 19 of 19

@@ -1,0 +1,134 @@
+Title: EnTaCs: Analyzing the Relationship Between Sentiment and Language Choice in English-Tamil Code-Switching
+
+URL Source: https://arxiv.org/pdf/2603.26587v1
+
+Published Time: Mon, 30 Mar 2026 01:15:15 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+# EnTaCs: Analyzing the Relationship Between Sentiment and Language Choice in English-Tamil Code-Switching 
+
+# Paul Bontempo 
+
+University of Colorado, Boulder Depts. of Computer Science and Linguistics paul.bontempo@colorado.edu 
+
+Abstract 
+
+This paper investigates the relationship between utterance sentiment and language choice in English-Tamil code-switched text, using methods from machine learning and statistical modelling. We apply a fine-tuned XLM-RoBERTa model for token-level language identification on 35,650 romanized YouTube comments from the DravidianCodeMix dataset, producing per-utterance measurements of English proportion and language switch frequency. Linear regression analysis reveals that positive utterances exhibit significantly greater English proportion (34.3%) than negative utterances (24.8%), and mixed-sentiment utterances show the highest language switch frequency when controlling for utterance length. These findings support the hypothesis that emotional content demonstrably influences language choice in multilingual code-switching settings, due to socio-linguistic associations of prestige and identity with embedded and matrix languages. 
+
+Keywords: code-switching, sentiment analysis, Tamil, language identification, XLM-RoBERTa 
+
+# 1. Introduction 
+
+Code-switching is the phenomenon wherein bilin-gual speakers alternate between languages, di-alects, or registers within a conversation or utterance (Poplack, 1980). Research distin-guishes two varieties by granularity of alter-nation. Inter-discursive code-switching occurs only at utterance or discourse boundaries, often in response to changes in interlocutor, setting, or topic. Intra-discursive code-switching—also termed code-mixing—involves alternation at sub-utterance boundaries (sentence, word, morpheme, or character level) and is typically an unconscious process reflecting speaker-internal attitudes rather than external pressures (Muysken, 2000). In code-switching, the normative or privileged language is the matrix language , while the marked or minority language is the embedded language 
+
+(Myers-Scotton, 2002). The acceptability of utter-ances in a code-switching context is bound by mor-phosyntactic and phonotactic constraints as rig-orously as in any monolingual utterance, though the constraints themselves are not simply a com-bination of the constituent languages’ grammars (Sankoff and Poplack, 1981); code-switching is a form of linguistic expression as complex and valid as any single language (although it is often stig-matized), and code-switching speakers follow in-ternally consistent rules of grammaticality which govern where and how language switches can oc-cur in an utterance. In southern Indian states such as Tamil Nadu, English functions as a lingua franca and carries as-sociations of academic and professional prestige, while Tamil carries emotional and identity-marking associations for native speakers (Eldho and Ku-mar, 2023). Bilingualism is widespread in India, with approximately 12% of the population reporting L2 English proficiency alongside a native Indian language (Sarma, 2025). This sociolinguistic asymmetry motivates our line of inquiry: if bilingual speakers associate English with prestige and positive affect while associating Tamil with emotional weight and intimate expres-sion, does the sentiment of an utterance predict the speaker’s language choice when producing that utterance? From this premise, our two specific re-search questions follow naturally: 
+
+RQ1: Does overall utterance sentiment predict the proportion of English (embedded language) rela-tive to Tamil (matrix language) in code-switched utterances? 
+
+RQ2: Does overall utterance sentiment predict the frequency of language switches (alternation be-tween English and Tamil) within an utterance? 
+
+# 2. Related Work 
+
+Code-mixed NLP for South Asian languages. 
+
+The DravidianCodeMix dataset (Chakravarthi et al., 2022) provides manually annotated YouTube comments in Tamil-English, Kannada-English, and Malayalam-English, with automatically-applied but manually-verified labels for both sentiment and of-fensive language. It constitutes the largest publicly available resource for Dravidian code-mixed NLP and forms the basis for our analysis. Subsequent shared-task work on this corpus has focused pri-marily on classifying sentiment in code-mixed text; Babu and Rajagopal (2021) achieved state-of-the-art performance on Tamil-English sentiment classi-fication in a shared task using a paraphrase-tuned 
+
+> arXiv:2603.26587v1 [cs.CL] 27 Mar 2026
+
+XLM-RoBERTa model. Our work departs from this line by instead treating sentiment as a predictor of linguistic behavior rather than as a target label, shift-ing the research question from classification accu-racy towards sociolinguistic analysis. Broader sur-veys of NLP methods for code-switching (Sitaram et al., 2019) point towards token-level language identification as a critical enabling task, since most downstream analysis requires knowing which lan-guage each token belongs to. 
+
+Language identification in code-switched text. Token-level language identification in code-switched text is a challenging task unto itself, because romanized Tamil text shares script with English, preventing traditional language models from discriminating between the languages at the character level. Multilingual pre-trained models such as XLM-RoBERTa (Conneau et al., 2020) have shown strong performance on cross-lingual token classification, making them well-suited for fine-tuning on this task. The LinCE benchmark (Aguilar et al., 2020) provides standardized evaluation for code-switching tasks including language identification. 
+
+Code-switching and sentiment. Prior work has noted that code-switching can be used metalin-guistically to signal speaker attitude, group identity, and emotional stance (Yoder et al., 2017). The discursive asymmetry between prestige and her-itage languages, with colonial languages signaling authority as evidence of wealth and foreign edu-cation while native languages carry emotional or personal influence, provides a sociolinguistic basis for our hypothesis that sentiment predicts language choice. 
+
+# 3. Dataset 
+
+3.1. Source and Preprocessing 
+
+We use the Tamil-English split of the Dravidian-CodeMix corpus (Chakravarthi et al., 2022), which contains 44 , 161 YouTube comments annotated with five utterance-level sentiment categories: Positive ,
+
+Negative , Mixed_feelings , unknown_state , and not-Tamil . Sentiment labels were assigned by the origi-nal corpus creators using human annotators; this work does not re-annotate sentiment. Our primary contribution to this dataset is a set of token-level language identification tags, generated by the su-perivsed fine-tuned model described in Section 4, which we apply to the romanized subset and which we make available as a resource for future research and downstream tasks. Of the 44,161 utterances in the original dataset, 8,370 (19.0%) contained Tamil Unicode charac-ters. Since our language identification model is pre-trained on romanized (Latin-alphabet) text only, including Tamil-script data would drastically reduce the signal-to-noise ratio of the data and make train-ing difficult. We therefore restrict analysis to the 35,650 (81.0%) romanized utterances. 
+
+3.2. Analysis Subset 
+
+For the main statistical analysis, we further restrict to the three clearly delineated sentiment categories, excluding unknown_state (5,366) and not-Tamil 
+
+(2,079), yielding 28,205 utterances. Table 1 reports descriptive statistics for this subset.                 
+
+> Sentiment nEN% TA% Switches
+> Positive 19,871 34.3 61.7 1.99 Mixed_feelings 3,855 28.5 67.4 2.50 Negative 4,479 24.8 72.1 2.00
+
+Table 1: Dataset statistics by sentiment. Overall, Tamil is the matrix language (mean 62.8% of tokens), with English as the embedded language (mean 30.2%). Purely Tamil utterances account for the majority of the original dataset, con-firming the matrix language assessment. 
+
+# 4. Methods 
+
+4.1. Token-Level Language Identification 
+
+To obtain per-utterance language measurements, we require reliable token-level language identifica-tion labels for the entire dataset. No existing an-notated resource covers romanized English-Tamil code-mixed text, so we produced our own via su-pervised deep learning. 1
+
+One author manually annotated approximately 3,500 tokens (across ∼500 utterances) with one of three labels: en (English), ta (romanized Tamil), or na (numerals, ambiguous tokens, and punctu-ation). Ambiguous tokens constitute words like ’mass ’, which exists with the same spelling in both English and romanized Tamil, and could not always be readily disambiguated from sentence context during manual annotation. We include the option for na -labeled tokens to account for this ambiguity, providing the model with a way to acknowledge to-kens of uncertain language identity; this results in greater confidence in the en and ta labels. Anno-tation followed CoNLL format (one token per line, tab-separated label). We fine-tuned xlm-roberta-base (Conneau et al., 2020) for this token classification task. Train-ing used a 80/20 train/validation split (approxi-
+
+> 1Code and model parameters are available in sec-tion 9
+
+mately 1,789 / 221 training sentences) and the fol-lowing hyperparameters: learning rate 2 × 10 −5,batch size 16, 5 epochs, linear warmup over 10% of steps, weight decay 0.01. Only the first sub-word token receives a label for multi-subword words. We experimented with including Tamil-script code-mixed text alongside the romanized data during fine-tuning; we found that validation-split perfor-mance decreased, likely due to the model’s learned over-reliance on Tamil script as the sole indicator of Tamil language, preventing the model from learn-ing to attend to morphosyntactic indicators of lan-guage identification. Therefore, we consider only the romanized code-switching data in the following analysis. After training, the model achieved an overall token-level accuracy of 93.3% on the validation set, with a macro-averaged F1 of 0.844. Table 2 re-ports per-class F1 scores. English and N/A tokens are classified with high accuracy; romanized Tamil is harder to distinguish from English at the token level, yielding a lower but still useful F1 of 0.638.       
+
+> Class F1
+> English ( en )0.932 Tamil ( ta )0.638 Ambiguous ( na )0.963 Macro avg 0.844 Accuracy 0.933
+
+Table 2: Token-level language identification results on the validation set (epoch 5). The lower Tamil F1 (0.638) is expected due to our data filtering: transliterated Tamil words share the Latin script with English, so the model relies on learned spelling patterns and context rather than script identity to distinguish them. This ambiguity is present in our training data, since a single an-notator without Tamil proficiency labeled tokens by lexical knowledge and limited document context, complicating borderline cases. Despite this, the model’s high accuracy and English F1 indicate that the large majority of English tokens are identified correctly, which is the primary driver of our down-stream proportion measurements. We ran language-identification inference with our fine-tuned XLM-R model on all 35,650 Latin-script utterances in the subset, computing per-utterance English proportion, Tamil proportion, N/A proportion, and language switch count. Language switches are identified when consecutive tokens belong to different labels. 
+
+4.2. Statistical Analysis 
+
+We modeled two outcome variables using ordinary least-squares linear regression, with Positive as the reference sentiment level (most frequent in the subset). First, we explore whether sentiment is a significant predictor of English proportion in code-switching. We produced a linear model which pre-dicts english proportion as a function of sentiment (Model 1a), and compared it against an extended model which accounts for interaction effects with sentence length (Model 1b). Next, to investigate the effect of utterance senti-ment on language switch frequency (rate of alter-nation between matrix and embedded language), we compare another set of linear models. We mod-elled the number of switches per utterance as a function of sentiment (Model 2a), and compared against an interaction model which normalizes by sentence length (Model 2b). Models were com-pared using ANOVA, and residual normality was confirmed via Q-Q plots. 
+
+# 5. Results 
+
+5.1. RQ1: Sentiment and English Proportion 
+
+Model 1a demonstrates that both Mixed_feelings 
+
+( ˆβ = −0.057 , p < 0.001 ) and Negative ( ˆβ = −0.094 ,
+
+p < 0.001 ) utterances have significantly lower En-glish proportion than Positive utterances, confirm-ing a monotonic decrease in English use from pos-itive to negative sentiment. However, the model’s 
+
+R2 = 0 .01 is low, indicating that sentiment alone explains only a small fraction of variance in English proportion, consistent with the high intra-group vari-ability in the data (SD ≈ 24 –26% for all groups). Model 1b, which accounts for interaction with sentence length, improves R2 to 0.02. However, the interaction terms are not significant ( p > 0.05 ), indicating that utterance length does not moder-ate the sentiment effect on English proportion. An ANOVA comparison confirms that the interaction model provides a significantly better fit ( p < 0.05 ), but the added complexity is modest. The effect of sentiment on English proportion is clear: posi-tive utterances use 9.4 percent more English than negative utterances (34.3% vs. 24.8%). 
+
+5.2. RQ2: Sentiment and Switch Frequency 
+
+To quantify frequency of language alternation, we count a switch as a whitespace-separated token boundary where the language ID labels of the left and right tokens are not the same, and neither label is na . This measures the number of times in an utterance when the speaker switches from English to Tamil or vice-versa, ignoring na tokens which are of ambiguous language, numerals, or punctu-ation. In Model 2a, only Mixed_feelings shows a 0.00 0.25 0.50 0.75 1.00   
+
+> Positive Mixed Negative
+> Sentiment
+> English Proportion
+
+Figure 1: Distribution of English proportion by senti-ment class. White diamonds indicate group means. significant positive effect on switch frequency rel-ative to Positive ( ˆβ = +0 .51 , p < 0.05 ). However, the Negative coefficient ( ˆβ ≈ 0.01 ) is not significant (p > 0.05 ), so it should not be considered. Ad-ditionally, the R2 = 0 .008 is very low and plotted residuals deviate from normality, suggesting Model 2a is underspecified. Adding the interaction with sentence length in Model 2b dramatically improves fit: R2 increases from 0.008 to 0.30, and residual normality improves. All terms are significant ( p < 0.05 ), including the interaction term for Mixed_feelings . This means the positive effect of mixed sentiment on switch frequency decreases slightly, but significantly, as utterance length increases. The Negative coef-ficient becomes significant only in the interaction model, indicating that controlling for length is essen-tial for detecting the negative sentiment effect on switch frequency. These results confirm that mixed-sentiment utterances cause speakers to switch lan-guage more frequently than in entirely positive or negative ones, though the effect is slight. 010 20 30   
+
+> Positive Mixed Negative
+> Sentiment
+> Language Switches per Utterance
+
+Figure 2: Distribution of language switch count per utterance by sentiment class. White diamonds indicate group means. 
+
+# 6. Discussion and Conclusion 
+
+Our findings provide quantitative support for the sociolinguistic hypothesis that emotional content influences language choice in English-Tamil code-switched speech. Positive utterances show signifi-cantly greater English proportion, consistent with English carrying academic and professional pres-tige as a colonial legacy in southern India. Negative utterances show greater Tamil use, consistent with Tamil serving as the language of emotional expres-sion and intimacy for native speakers. Moreover, the findings support our intuition that, if English and Tamil are associated with opposite sentiments, then mixed-sentiment code-switching utterances demonstrate the highest frequency of language switches. The finding that mixed-sentiment utterances hold the highest switching rate aligns with the charac-terization of intra-discursive code-mixing as an un-conscious process tied to internal states (Muysken, 2000). When a speaker holds ambivalent or con-flicting feelings, navigation between emotional reg-isters may trigger more frequent, unplanned lan-guage alternation than a uniformly negative affect, which could instead produce sustained Tamil use without switching. Despite these clear findings, the low R2 values for both proportion models ( ∼0.01–0.02) indicate the sociolinguistic complexity of code-switching: sentiment is one factor among many (domain, reg-ister, audience, platform) that influence a speaker’s language of expression, and more work remains to fully understand the often subconscious practice of code-switching. 
+
+# 7. Limitations and Future Work 
+
+Several limitations apply: First, restricting analy-sis to romanized text excludes 19% of the corpus, so Tamil-script utterances may exhibit different pat-terns. Second, there is substantial class imbalance (Positive is ∼70% of the analysis set), which may inflate the apparent significance of the reference-level effect. Third, the manual language ID training set we produced is small ( ∼3,500 tokens), and an-notation was performed by a single annotator with imperfect grasp of Tamil. Future work should extend this analysis to other prestige-heritage language pairs with compara-ble sociolinguistic dynamics (e.g., French-Arabic, Spanish-Tagalog), and apply character-level or script-aware models to handle Tamil-script data. 
+
+# 8. Ethics Statement 
+
+The YouTube comment data used in this work was collected and annotated by Chakravarthi et al. (2022) and is publicly available. We use only the pre-existing text and sentiment annotations. No new user data was collected, and no individuals are identified or targeted in our analysis. We acknowl-edge that social media text may contain offensive or sensitive content, but this work analyzes data at the corpus level and does not present or reproduce individual harmful utterances. Manual annotation was performed by a single annotator and reflects one individual’s linguistic knowledge and implicit bias. Downstream analyses should account for the resulting uncertainty, particularly for Tamil token classification. 
+
+# 9. Data and Code Availability 
+
+The full DravidianCodeMix dataset used in this work is available via the original authors’ publica-tion (Chakravarthi et al., 2022). Our fine-tuned XLM-RoBERTa language identification model, its associated training code, our manually-annotated training data, and the resulting token-level annota-tions for the romanized subset are available at the following GitHub repository: en-ta-cs repo. 
+
+# 10. References 
+
+Gustavo Aguilar, Fahad AlGhamdi, Victor Soto, Thamar Solorio, Mona Diab, and Vasileios Ghaz-aleh. 2020. LinCE: A centralized benchmark for linguistic code-switching evaluation. In Proceed-ings of the 12th Language Resources and Evalu-ation Conference , pages 1803–1812. European Language Resources Association. Yandrapati Prakash Babu and Eswari Rajagopal. 2021. Sentiment analysis on Dravidian code-mixed YouTube comments using paraphrase XLM-RoBERTa model. In Proceedings of the Fo-rum for Information Retrieval Evaluation (FIRE) .Bharathi Raja Chakravarthi, Ruba Priyadharshini, Vigneshwaran Muralidaran, Navya Jose, Shardul Suryawanshi, Elizabeth Sherly, and John P. Mc-Crae. 2022. DravidianCodeMix: Sentiment anal-ysis and offensive language identification dataset for Dravidian languages in code-mixed text. Lan-guage Resources and Evaluation .Alexis Conneau, Kartikay Khandelwal, Naman Goyal, Vishrav Chaudhary, Guillaume Wenzek, Francisco Guzmán, Edouard Grave, Myle Ott, Luke Zettlemoyer, and Veselin Stoyanov. 2020. Unsupervised cross-lingual representation learn-ing at scale. In Proceedings of the 58th Annual Meeting of the Association for Computational Lin-guistics , pages 8440–8451. Association for Com-putational Linguistics. Elizabeth Eldho and Rajesh Kumar. 2023. Choice of language in the construction of cultural identity by tamil speakers in india. International Journal of Language and Culture , 10(1):54–86. Pieter Muysken. 2000. Bilingual Speech: A Ty-pology of Code-Mixing . Cambridge University Press, Cambridge. Carol Myers-Scotton. 2002. Contact Linguistics .Oxford University Press. Shana Poplack. 1980. Sometimes I’ll start a sen-tence in Spanish Y termino en Español: Toward a typology of code-switching. Linguistics , 18:581– 618. David Sankoff and Shana Poplack. 1981. A formal grammar for code-switching. Paper in Linguistics ,14(1):3–45. Vaijayanthi M. Sarma. 2025. Intersections between heritage, multilingualism, and education: lan-guage acquisition in india. Frontiers in Human Neuroscience , 19. Sunayana Sitaram, Khyathi Raghavi Chandu, SaiKrishna Rallabandi, and Alan W. Black. 2019. A survey of code-switched speech and language processing. In Proceedings of the 57th Annual Meeting of the Association for Computational Lin-guistics . ArXiv:1904.00784. Michael Yoder, Shruti Rijhwani, Carolyn Rosé, and Lori Levin. 2017. Code-switching as a social act: The case of Arabic Wikipedia talk pages. In 
+
+Proceedings of the Second Workshop on Natural Language Processing and Computational Social Science , pages 73–82.
