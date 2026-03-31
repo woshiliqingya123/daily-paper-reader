@@ -1,0 +1,211 @@
+Title: Can Hierarchical Cross-Modal Fusion Predict Human Perception of AI Dubbed Content?
+
+URL Source: https://arxiv.org/pdf/2603.28717v1
+
+Published Time: Tue, 31 Mar 2026 02:28:58 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+## CAN HIERARCHICAL CROSS-MODAL FUSION PREDICT HUMAN PERCEPTION OF AI DUBBED CONTENT? 
+
+## Ashwini Dasare, Nirmesh Shah, Ashishkumar Gudmalwar, Pankaj Wasnik 
+
+## Sony Research India Email: {nirmesh.shah,ashish.gudmalwar1,pankaj.wasnik }@sony.com 
+
+ABSTRACT 
+
+Evaluating AI generated dubbed content is inherently multi-dimensional, shaped by synchronization, intelligibility, speaker consistency, emotional alignment, and semantic context. Hu-man Mean Opinion Scores (MOS) remain the gold standard but are costly and impractical at scale. We present a hierar-chical multimodal architecture for perceptually meaningful dubbing evaluation, integrating complementary cues from au-dio, video, and text. The model captures fine-grained features such as speaker identity, prosody, and content from audio, fa-cial expressions and scene-level cues from video and seman-tic context from text, which are progressively fused through intra and inter-modal layers. Lightweight LoRA adapters enable parameter-efficient fine-tuning across modalities. To overcome limited subjective labels, we derive proxy MOS by aggregating objective metrics with weights optimized via active learning. The proposed architecture was trained on 12k Hindi–English bidirectional dubbed clips, followed by fine-tuning with human MOS. Our approach achieves strong perceptual alignment (PCC > 0.75), providing a scalable solution for automatic evaluation of AI-dubbed content. 
+
+Index Terms — AI Dubbing evaluation, Active learning, hierarchical fusion, multimodal, proxy MOS, MOS 
+
+1. INTRODUCTION 
+
+AI-based dubbing has advanced rapidly with progress in neu-ral machine translation (NMT), text-to-speech (TTS), and audio-visual (AV) synchronization [1, 2]. Despite these de-velopments, assessing the quality of dubbed content remains an open problem [3]. Current evaluation methods focus on isolated dimensions such as, speech naturalness, intelligibil-ity, or AV synchrony, but these do not capture the overall perceptual quality [4]. In practice, human evaluators judge dubbed content in a multifaceted way [5–7], simultaneously considering prosody, speaker identity, semantic consistency, emotional congruence, and temporal alignment. The overall quality of AI-dubbed content from this holistic perspective is still not well characterized, making it difficult to compare systems or optimize toward natural and coherent dubbing [8]. A key challenge is the lack of scalable human ratings. Mean Opinion Scores (MOS) remain the gold standard, but collecting them is costly, time-consuming, and infea-sible at the scale required for modern dubbing systems [9]. To overcome this bottleneck, we introduce Proxy MOS, a weak-supervision strategy that aggregates multiple objective metrics into pseudo-perceptual labels. Unlike simple averag-ing, weights are adaptively learned through an active learning scheme guided by a small subset of human ratings, improving alignment between proxy labels and human perception. To model the multifaceted nature of dubbing quality, we design a hierarchical multimodal architecture that integrates audio, video, and text features through progressive intra and inter-modal fusion. Fine-grained cues from audio (speaker identity, prosody), text (semantic intent), and video (charac-ter and affective context) jointly influence perceived dubbing quality, motivating multimodal modeling. Pre-trained models serve as encoders for each modality, and lightweight LoRA adapters are employed to project representations into a shared space, enabling parameter efficient adaptation across modal-ities. Intra-modal fusion aligns complementary cues within each modality, while inter-modal fusion captures dependen-cies across modalities, ensuring a holistic representation of dubbing quality. In this paper, we propose a two-stage training pipeline. In the first stage, the model is pre-trained on Proxy MOS la-bels derived from over 12,000 dubbed clips, generated using state-of-the-art NMT, TTS, and audio-visual synchronization pipelines applied to the publicly available MELD [10] and M2H2 [11] datasets. In the second stage, the model is fine-tuned on a smaller set of human MOS ratings to refine percep-tual alignment. Our contributions are summarized as follows: • Propose a hierarchical multimodal framework that fuses audio, visual, and textual features through intra and inter-modal fusion layers for automatic perceptual evaluation of AI dubbed content. • Incorporate lightweight LoRA adapter layers for parameter-efficient adaptation across modalities. • Propose two-stage training pipeline (1) an active learn-ing–based weak supervision framework that derives Proxy MOS from multiple objective metrics and (2) finetuning by human-rated MOS for stronger percep-tual alignment.           
+
+> arXiv:2603.28717v1 [eess.AS] 30 Mar 2026 Content
+> Encoder
+> Speaker
+> Encoder
+> Emotion
+> Encoder
+> Temporal Encoder
+> FER
+> Encoder
+> Video Content Audio Content
+> Intra-modal Fusion Intra-modal Fusion
+> Inter-modal Fusion
+> Input Video
+> Trainable Layers  Frozen Layer
+> Regression Head
+> Text Content
+> Semantic
+> Encoder
+> DubScore Prediction
+> LoRa LoRa LoRa LoRa LoRa LoRa
+
+Fig. 1 : Block diagram of Proposed hierarchical cross-modal fusion architecture. 
+
+2. PROPOSED METHOD 2.1. Propose Hierarchical Multimodal Architecture 
+
+We propose a hierarchical multimodal network designed to capture both modality-specific cues and cross-modal depen-dencies critical for perceptual dubbing evaluation, as shown in Figure 1. The architecture leverages state-of-the-art pre-trained encoders for audio, video, and text, each selected for their demonstrated ability to extract semantically and percep-tually rich representations. For video encoders, we extract visual embeddings using the TimeSformer transformer-based video representation model [12], which captures long-range spatio-temporal dependencies through divided space-time at-tention. The output embeddings are 768-dimensional. In ad-dition, to incorporate facial affective cues, we also employ a Facial Expression Recognition (FER) encoder [13,14], which maps cropped face sequences into 512-dimensional emotion-related features. For audio encoders, we use Wav2Vec2.0 [15], which outputs 768-dimensional frame-level embed-dings that are temporally pooled and linearly projected to 256 dimensions before fusion. To capture speaker traits and paralinguistic cues, we adopt ECAPA-TDNN [16], yielding 192-dimensional speaker embeddings. Moreover, we include Emo2Vec [17], a deep emotional embedding extractor for speech, producing 256-dimensional representations. Finally, for the text encoder, we use the Sentence-BERT encoder [18], producing 768-dimensional embeddings that capture seman-tic similarity at the sentence level. To efficiently adapt these encoders, we employ Low-Rank Adaptation (LoRA) [19], which introduces lightweight trainable matrices into atten-tion and projection layers while keeping pretrained weights frozen. This reduces the number of trainable parameters while maintaining flexibility. The hierarchical design reflects how human evaluators perceive dubbed content, first by consolidating heteroge-neous cues within each modality, and then integrating them across modalities. For instance, audio encoders provide speech content, speaker identity, and prosodic cues, while video encoders capture both global context and fine-grained facial expressions. Fusing these directly risks information loss or modality dominance, hence the need for staged fu-sion. Formally, given embeddings {h(i) 
+
+> m
+
+}Nm 
+
+> i=1
+
+for modality 
+
+m ∈ { audio , video , text }, we adapt them via: 
+
+˜h(i) 
+
+> m
+
+= Pm(h(i) 
+
+> m
+
+) + Am(h(i) 
+
+> m
+
+), (1) where Pm is a linear projection and Am is a LoRA adapter. 
+
+Intra-modal fusion aggregates modality-specific cues using attention-based gating, 
+
+zm =
+
+> Nm
+
+X
+
+> i=1
+
+α(i) 
+
+> m
+
+˜h(i) 
+
+> m
+
+, α(i) 
+
+> m
+
+= exp( w⊤ ˜h(i) 
+
+> m
+
+)
+
+P 
+
+> j
+
+exp( w⊤ ˜h(j) 
+
+> m
+
+) . (2) 
+
+Inter-modal fusion: To account for modality reliability, we apply gating before cross-modal modeling: 
+
+ˆzm = gm(zm) zm, gm(zm) = exp( ϕ(zm)) 
+
+P 
+
+> m′
+
+exp( ϕ(zm′ )) . (3) The gated modality-level vectors are concatenated and pro-cessed by a 3-layer, 4-head transformer encoder: 
+
+H = TransformerEncoder ([ˆ zaudio ; ˆ zvideo ; ˆ ztext ]) . (4) Finally, a regression head predicts a single perceptual dubbing score (DubScore) using an L2 (MSE) loss. This hier-archical strategy consolidates intra-modal cues before cross-modal fusion, ensuring both modality-specific refinement and robust interaction aligned with perceptual judgments. 
+
+2.2. Active Learning for Proxy MOS 
+
+Human MOS annotations are limited and costly to obtain, making it infeasible to label the entire dataset. To overcome this, we generate Proxy MOS labels by aggregating multiple objective metrics, including PEAVS [20] for audio–visual synchrony, EmoSync [21] for visual emotion alignment, LogF0RMSE for speaker consistency, UTMOS [22] for speech quality, and SpeechBERT Score [23] for semantic alignment. The aggregated Proxy MOS is defined as: Proxy MOS = X
+
+> i
+
+wi · Oi, (5) where Oi denotes the i-th objective metric and wi its learnable weight. The challenge is to estimate wi using only a limited set of human MOS labels. To this end, we employ an active learning (AL) strategy that incrementally refines the weights in three stages. Importantly, the reported percentages (33%, 66%, 100%) refer to fractions of the labeled training subset ,not the entire corpus, consistent with standard AL practice where human annotations are scarce. 
+
+Stage I: Initialization. A small labeled subset (33% of available MOS annotations) is used to estimate initial weights by maximizing the correlation between Proxy MOS and hu-man MOS. This provides a first approximation of perceptual alignment. 
+
+Stage II: Uncertainty- and Diversity-Based Sampling. 
+
+To expand the labeled pool, we query the most informative samples from the remaining unlabeled subset. Samples are ranked by prediction uncertainty (entropy of Proxy MOS) and then filtered to maximize diversity across dubbing conditions (e.g., clip length, acoustic background, speaker identity). This hybrid uncertainty–diversity criterion ensures that anno-tations are both informative and representative. An additional 33% of labeled data is added in this stage (total 66%). 
+
+Stage III: Refinement. The process is repeated to reach 100% of the labeled subset. We then optimize the weights wi
+
+by maximizing Pearson correlation with the expanded human MOS set: 
+
+max  
+
+> w
+
+ρ ProxyMOS (w), HumanMOS , (6) where ρ denotes Pearson correlation. Proxy-MOS weights are learned by maximizing Pearson correlation with human MOS (Eq. 6), while active learning selects informative clips based on uncertainty and diversity. The learned weights are used to compute Proxy MOS labels for the full 12k dubbed clips, which provide weak supervision for training the hierarchical multimodal network at scale. The model is then fine-tuned on a limited set of human MOS annotations, yielding a percep-tually aligned predictor. 
+
+3. EXPERIMENTAL RESULTS AND DISCUSSION 3.1. Datasets and Experimental Setup 
+
+We perform our evaluation on two publicly available datasets, namely MELD [10] and M2H2 [11]. MELD (English) was dubbed into Hindi, and M2H2 (Hindi) into English. Both datasets contain video clips, along with speaker tags, emo-tion tags and transcripts. For creative translation, we used the Gemini-9B model, prompting it with speaker attributes and emotion tags to preserve both semantic and affective con-text. Translated utterances were synthesized into the target language using the F5-TTS system for the generation of ex-pressive speech. Finally, to ensure audio-visual synchrony, we applied a global time-stretching algorithm that aligns syn-thesized audio with the original video. This pipeline pro-duced approximately 6k dubbed clips from MELD and 4k from M2H2, covering diverse speakers and emotions. Ad-ditionally, we included 2k original ground-truth clips to sta-bilize Proxy MOS training, resulting in a total of 12k clips Details of pre-trained encoders are provided in Section 2.1. For adaptation, LoRA modules were attached to each encoder with a rank of r = 16 , empirically chosen to balance per-formance and parameter efficiency. Training was performed using the Adam optimizer with a learning rate of 1e-4, batch size 64, dropout 0.2, for 50 epochs. All results are reported using 4-fold cross-validation to ensure robustness.. 
+
+3.2. Subjective Evaluation 
+
+For subjective evaluation, we recruited 30 participants (aged 25–40, no reported hearing or vision impairments). A total of 1350 ratings were collected, with each participant evaluating 45 dubbed video clips. In addition to overall dubbing qual-ity, participants rated six rubric-based aspects aligned with established dubbing evaluation standards [24]: audio–visual synchrony, speaker consistency, voice clarity, emotional ex-pressiveness, prosody in speech, and overall dubbing qual-ity. The human-rated MOS set was divided into an 80%–20% train–test split for fine-tuning the proposed network. To fur-ther assess reliability of human-rated MOS, we conducted an inter-listener agreement analysis (as shown in Table 1). The results show good internal consistency (Cronbach’s α =0.82 ). The intraclass correlation coefficients indicate moder-ate reliability, with ICC1 = 0.69 (individual ratings) and ICC2 = 0.59 (aggregated MOS). 
+
+Table 1 : Inter-listener agreement metrics. 
+
+Metric Value 
+
+Cronbach’s Alpha 0.82 ICC1 (One-way random) 0.69 ICC2 (Two-way random) 0.59 
+
+3.3. Experimental Results 
+
+We evaluate models using Pearson’s correlation coefficient (PCC), Spearman’s rank correlation coefficient (SRCC), and mean squared error (MSE) between the predicted DubScore and the human-rated MOS. MOS labels ([1,5]) are normalized during training and rescaled at inference. Table 2 reports the performance of the proposed network under different modal-ity configurations, including unimodal, bimodal, and the full multi-modal setting. This ablation highlights the individual and complementary contributions of each modality. Among single modalities, audio provides the strongest predictive sig-nal, text offers moderate performance, and video contributes little when used alone, especially in complex scenes with limited visual identity cues. Bimodal fusion improves results, with audio–text outperforming other pairs. The proposed full multi-modal system achieves the best alignment with human perception, confirming that hierarchical integration of all modalities provides complementary benefits beyond unimodal or bimodal systems. Table 2 : Performance comparison of the proposed network under different modality configurations. Here, Audio (A), Video (V) and Text (T) represents considered modalities. Modality PCC ↑ SRCC ↑ MSE ↓
+
+A 0.68 0.60 4.30 V 0.05 0.01 3.84 T 0.34 0.43 3.84 A+V 0.71 0.65 3.88 A+T 0.73 0.76 4.39 V+T 0.50 0.54 3.77 
+
+A+V+T 0.76 0.77 3.88 Since Proxy MOS relies on learning weights for objective measures, we employ active learning (AL) to make this pro-cess data-efficient. A random-sampling baseline is used for comparison to isolate the benefit of AL. We adopt a three-stage setup, where labeled data is incrementally expanded from 33% to 100% of the training set, with the most infor-mative samples selected at each step. Table 3 shows that cal-ibration steadily improves as label budgets grow. For exam-ple, Average Predictive Variance (APV) decreases, Prediction Interval Coverage Probability (PICP) increases, Mean Predic-tion Interval Width (MPIW) tightens, and Expected Calibra-tion Error (ECE) reduces together indicating more reliable weight estimation. In addition, Table 4 compares AL with random sampling, showing consistent gains in PCC, SRCC, predictive accuracy (Mean Squared Error (MSE)), and ex-plained variance ( R2), with significant improvements at full budget. These results justify the use of AL for Proxy MOS weight learning, which then serves as weak supervision for our hierarchical multimodal network. 
+
+Table 3 : Uncertainty calibration metrics at different label pro-portions. #Labeled APV ↓. PICP% ↑ MPIW% ↓ ECE ↓
+
+33% 0.51 78% 0.82 0.14 66% 0.26 82% 0.65 0.09 100% 0.16 86% 0.58 0.06 
+
+Table 4 : Performance comparison of Active Learning (AL) vs. Random (Ra) sampling. P-values indicate the statistical significance of improvements of AL over the corresponding Random baseline at the same label budget. Baseline rows (Ra) are not applicable. Strategy PCC ↑ SRCC ↑ R2 ↑ p-value Ra (33%) 0.68 0.67 0.46 –AL (S0, 33%) 0.71 0.69 0.50 0.18 Ra(66%) 0.73 0.71 0.55 –AL (S1, 66%) 0.77 0.75 0.61 0.07 Ra (100%) 0.76 0.74 0.62 –AL (S2, 100%) 0.82 0.81 0.69 0.03 We also considered equal-weights strategy as a base-line in proxy mos calculation. Table 5 reports the results. While equal weighting provides a reasonable baseline, AL-based weak supervision consistently yields higher corre-lations (PCC, SRCC) and lower errors (MSE). Moreover, when combined with fine-tuning on human-rated MOS, AL achieves the overall best performance. These findings con-firm that AL-based proposed Proxy MOS is more effective than simple averaging and that its combination with human supervision provides the most reliable perceptual predictions. 
+
+Table 5 : Performance comparison across different training strategies. Here, EW = equal weight, WS = weak supervision with Proxy Mos, and FT = fine-tuning with human MOS. Proxy MOS Strategies PCC ↑ SRCC ↑ MSE ↓
+
+EW: WS 0.22 0.25 8.14 EW: WS + FT 0.35 0.33 5.14 AL: WS 0.68 0.67 2.96 AL: WS + FT 0.76 0.77 2.70 
+
+The radar chart (Fig. 2) shows that individual objective metrics yield low PCC and SRCC scores when predicting overall dubbing quality. In contrast, the proposed architec-ture achieves consistently higher correlations, demonstrating its effectiveness as a unified perceptual evaluation metric. AVSync 
+
+> EmoSync
+> UTMOS
+> AutoPCP
+> LogF0RMSE
+> SpeechBERT
+> Proposed-Method
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> PCC
+> SPCC
+
+Fig. 2 : Effectiveness in predicting overall dubbing quality scores of different objective metrics 
+
+4. CONCLUSION 
+
+This paper presents a hierarchical multimodal architecture for dubbing quality assessment that fuses audio, video, and text cues through intra- and inter-modal layers, achieving strong alignment with human perception. An adaptive active learn-ing strategy with parameter-efficient LoRA fine-tuning en-ables scalable training using proxy MOS with limited hu-man annotations. Experimental results demonstrate scalable, perceptually aligned dubbing quality prediction and establish a foundation for future work in automated, human-centered audio-visual quality assessment. 5. REFERENCES 
+
+[1] Yihan Wu et al., “Videodubber: Machine translation with speech-aware length control for video dubbing,” in 
+
+AAAI , 2023, vol. 37, pp. 13772–13779. [2] Neha Sahipjohn, Ashishkumar Gudmalwar, Nirmesh Shah, Pankaj Wasnik, and Rajiv Ratn Shah, “Dub-wise: Video-guided speech duration control in multi-modal llm-based text-to-speech for dubbing,” in INTER-SPEECH , Kos Island, Greece, 2024. [3] Giselle Spiteri Miggiani, “Rethinking creativity in dub-bing: Potential impact of ai dubbing technologies on creative practices, roles and viewer perceptions,” Trans-lation Spaces , 2025. [4] Chaoyi Wang et al., “Towards film-making production dialogue, narration, monologue adaptive moving dub-bing benchmarks,” arXiv arXiv:2505.01450 , 2025. [5] Huriye Atilgan et al., “Integration of visual informa-tion in auditory cortex promotes auditory scene analysis through multisensory binding,” Neuron , vol. 97, no. 3, pp. 640–655, 2018. [6] Zahid Akhtar and Tiago H Falk, “Audio-visual multime-dia quality assessment: A comprehensive survey,” IEEE access , vol. 5, pp. 21090–21117, 2017. [7] Chuanji Gao et al., “Audiovisual integration in the hu-man brain: a coordinate-based meta-analysis,” Cerebral Cortex , vol. 33, no. 9, pp. 5574–5584, 2023. [8] Laurena Bernabo, “How, when, and why to use ai: Strategic uses of professional perceptions and industry lore in the dubbing industry,” International Journal of Communication , vol. 19, pp. 18, 2025. [9] G´ erard Bailly, Elisabeth Andr´ e, Erica Cooper, Benjamin Cowan, Jens Edlund, Naomi Harte, Simon King, Es-ther Klabbers, S´ ebastien Le Maguer, Zofia Malisz, et al., “Hot topics in speech synthesis evaluation,” in Proc. SSW 2025 , 2025, pp. 1–7. [10] Soujanya Poria, Devamanyu Hazarika, Navonil Ma-jumder, Gautam Naik, Erik Cambria, and Rada Mihal-cea, “Meld: A multimodal multi-party dataset for emo-tion recognition in conversations,” in ACL , 2019, pp. 527–536. [11] Dushyant Singh Chauhan et al., “M2h2: A multimodal multiparty hindi dataset for humor recognition in con-versations,” in ACM ICMI , 2021. [12] Gedas Bertasius, Heng Wang, and Lorenzo Torresani, “Is space-time attention all you need for video under-standing?,” in ICML , 2021. [13] Jiankang Deng, Jia Guo, Niannan Xue, and Stefanos Zafeiriou, “Arcface: Additive angular margin loss for deep face recognition,” in CVPR , 2019. [14] Shan Li and Weihong Deng, “Deep facial expression recognition: A survey,” IEEE Transactions on Affective Computing , 2023. [15] Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli, “wav2vec 2.0: A framework for self-supervised learning of speech representations,” in Ad-vances in Neural Information Processing Systems , 2020, vol. 33, pp. 12449–12460. [16] Brecht Desplanques, Jenthe Thienpondt, and Kris De-muynck, “Ecapa-tdnn: Emphasized channel attention, propagation and aggregation in tdnn-based speaker ver-ification,” in Interspeech , 2020. [17] Ziyang Ma, Zhisheng Zheng, Jiaxin Ye, Jinchao Li, Zhifu Gao, Shiliang Zhang, and Xie Chen, “emo-tion2vec: Self-supervised pre-training for speech emo-tion representation,” in Findings of the ACL , 2024, pp. 15747–15760. [18] Nils Reimers and Iryna Gurevych, “Sentence-bert: Sen-tence embeddings using siamese bert-networks,” in 
+
+EMNLP , 2019. [19] Edward J. Hu, Yelong Shen, Phillip Wallis, et al., “Lora: Low-rank adaptation of large language models,” arXiv preprint arXiv:2106.09685 , 2021. [20] Lucas Goncalves, Prashant Mathur, Chandrashekhar La-vania, Metehan Cekic, Marcello Federico, and Kyu J Han, “Perceptual evaluation of audio-visual synchrony grounded in viewers’ opinion scores,” in European Con-ference on Computer Vision . Springer, 2024, pp. 288– 305. [21] Elena Ryumina, Maxim Markitantov, Dmitry Ryumin, Heysem Kaya, and Alexey Karpov, “Zero-shot audio-visual compound expression recognition method based on emotion probability fusion,” in CVPR Workshops ,2024, pp. 4752–4760. [22] Takaaki Saeki, Detai Xin, Wataru Nakata, Tomoki Ko-riyama, Shinnosuke Takamichi, and Hiroshi Saruwatari, “Utmos: Utokyo-sarulab system for voicemos challenge 2022,” in Interspeech , 2022, pp. 4521–4525. [23] Takaaki Saeki, Soumi Maiti, Shinnosuke Takamichi, Shinji Watanabe, and Hiroshi Saruwatari, “Speech-BERTScore: Reference-aware automatic evaluation of speech generation leveraging nlp evaluation metrics,” in 
+
+Interspeech 2024 , 2024, pp. 4943–4947. [24] Giselle Spiteri Miggiani, “Quality assessment tools for studio and ai-generated dubs and voice-overs,” 2024.

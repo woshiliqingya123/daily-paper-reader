@@ -1,0 +1,231 @@
+Title: Beyond Cosine Similarity: Zero-Initialized Residual Complex Projection for Aspect-Based Sentiment Analysis
+
+URL Source: https://arxiv.org/pdf/2603.28205v1
+
+Published Time: Tue, 31 Mar 2026 02:35:04 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# BEYOND COSINE SIMILARITY : Z ERO -I NITIALIZED RESIDUAL 
+
+# COMPLEX PROJECTION FOR ASPECT -B ASED SENTIMENT 
+
+# ANALYSIS 
+
+Yijin Wang 1 and Fandi Sun 11School of Economics and Management, Xidian University, Xi’an, China March 31, 2026 
+
+# ABSTRACT 
+
+Aspect-Based Sentiment Analysis (ABSA) is fundamentally challenged by representation entangle-ment, where aspect semantics and sentiment polarities are often conflated in real-valued embedding spaces. Furthermore, standard contrastive learning suffers from false-negative collisions, severely degrading performance on high-frequency aspects. In this paper, we propose a novel framework featuring a Zero-Initialized Residual Complex Projection (ZRCP) and an Anti-collision Masked Angle Loss,inspired by quantum projection and entanglement ideas. Our approach projects textual features into a complex semantic space, systematically utilizing the phase to disentangle sentiment polarities while allowing the amplitude to encode the semantic intensity and lexical richness of subjective descriptions. To tackle the collision bottleneck, we introduce an anti-collision mask that elegantly preserves intra-polarity aspect cohesion while expanding the inter-polarity discriminative margin by over 50%. Experimental results demonstrate that our framework achieves a state-of-the-art Macro-F1 score of 0.8851. Deep geometric analyses further reveal that explicitly penalizing the complex amplitude catastrophically over-regularizes subjective representations, proving that our unconstrained-amplitude and phase-driven objective is crucial for robust, fine-grained sentiment disentanglement. 
+
+Keywords Aspect-Based Sentiment Analysis · Contrastive Learning · Complex-Valued Representations ·
+
+Representation Disentanglement · Quantum-Inspired NLP 
+
+# 1 Introduction 
+
+Aspect-Based Sentiment Analysis (ABSA) is a fundamental yet highly challenging task in Natural Language Processing (NLP), aiming to extract specific aspect categories and their corresponding sentiment polarities from unstructured reviews. In real-world scenarios, a single sentence often contains complex semantic structures and multiple aspect-sentiment pairs. Consequently, mapping these diverse expressions into standard real-valued embedding spaces frequently leads to representation entanglement , where the objective aspect semantics and the subjective sentiment polarities are heavily conflated [1][2]. Recent advancements have leveraged contrastive learning, such as InfoNCE, to carve out better discriminative margins in the feature space[3]. However, we observe that applying standard contrastive learning directly to fine-grained ABSA tasks paradoxically induces severe false-negative collisions . Standard contrastive objectives predominantly rely on instance discrimination, which erroneously repels different sentences even if they share the exact same aspect and sentiment polarity. For instance, two distinct positive reviews about "Taste" are forcefully pushed apart in the vector space, catastrophically destroying the essential intra-aspect cohesion and blurring the decision boundary. To understand why complex-valued geometry offers a natural fit for ABSA, consider the intrinsic properties of aspect-level sentiments. Sentiment polarities—positive, negative, and neutral—are inherently directional and oppositional, making them well-suited to be represented by angles in a vector space. In contrast, the intensity or richness of a 
+
+> arXiv:2603.28205v1 [cs.CL] 30 Mar 2026
+
+A PREPRINT - M ARCH 31, 2026 subjective description—such as "very good" versus "somewhat good"—is a magnitude property, better captured by the length of a vector[4]. Real-valued embeddings conflate these two orthogonal attributes into a single scalar dimension. Complex numbers, however, naturally decouple them: the phase can encode polarity, while the amplitude can encode intensity. This geometric intuition motivates us to design a projection module that maps real-valued features into a complex space, where sentiment and semantics can be disentangled at the representation level. To resolve this representation bottleneck, we propose a novel framework that systematically decouples aspect and senti-ment using complex-valued geometry. Specifically, we introduce the Zero-Initialized Residual Complex Projection (ZRCP) , which smoothly maps pre-trained real-valued features into a complex semantic space[5]. In this complex plane, we hypothesize and empirically prove a profound geometric property: the phase (angle) effectively isolates the subjective sentiment polarity, while the amplitude (magnitude) naturally encodes the semantic intensity and lexical richness of the description. Building upon this complex representation, we design an Anti-collision Masked Angle Loss . By introducing a dynamic mask matrix, our loss function strategically prevents the erroneous repulsion of same-polarity instances within the same aspect cluster. This enables the model to maximize the inter-polarity angular margin without sacrificing the global aspect cohesion. The main contributions of this paper are summarized as follows: • We propose a novel ZRCP module that elegantly projects textual embeddings into a complex space, providing a mathematical foundation for disentangling objective aspects and subjective polarities. • We introduce an Anti-collision Masked Angle Loss that solves the false-negative collision problem inherent in standard contrastive learning, expanding the inter-polarity discriminative margin by over 50% without destroying structural cohesion. • We conduct deep geometric failure analyses, revealing that explicitly penalizing the complex amplitude catastrophically over-regularizes the vector space. We prove that preserving natural amplitude variance is critical for modeling the intensity of subjective sentiments. • Extensive experiments demonstrate that our framework achieves a state-of-the-art Macro-F1 score of 0.8851, significantly outperforming robust baselines on high-frequency aspects. 
+
+Figure 1: The overall architecture of our Phase-Driven Disentanglement framework. Textual inputs are encoded by a pre-trained backbone and projected into a complex space via the ZRCP module. The framework is optimized using a joint objective featuring an Anti-collision Masked Angle Loss to elegantly decouple objective aspects and subjective polarities. 2A PREPRINT - M ARCH 31, 2026 
+
+# 2 Related Work 
+
+2.1 Aspect-Based Sentiment Analysis 
+
+Aspect-Based Sentiment Analysis (ABSA) is a fine-grained sentiment classification task that requires the model to identify the sentiment polarity towards specific aspect terms or categories within a sentence [6]. Early approaches heavily relied on syntactic parsing and rule-based feature engineering [7]. With the advent of deep learning, neural architectures such as Convolutional Neural Networks (CNNs), Recurrent Neural Networks (RNNs), and Attention mechanisms became the dominant paradigms, significantly improving contextual modeling [8]. Recently, Pre-trained Language Models (PLMs) like BERT and RoBERTa have achieved remarkable success in ABSA by leveraging massive amounts of pre-training data [9, 10]. Despite their strong performance, these models inherently map textual inputs into a continuous, real-valued high-dimensional space. In such spaces, objective aspect semantics (e.g., "Taste", "Decoration") and subjective sentiment polarities (e.g., "Positive", "Negative") are often heavily conflated. This representation entanglement restricts the model’s capacity to draw crisp decision boundaries for highly subjective expressions. 
+
+2.2 Contrastive Learning in NLP 
+
+Contrastive learning has emerged as a powerful technique for learning discriminative sentence representations. Methods like SimCSE [11] and its supervised variants have demonstrated that optimizing the InfoNCE loss can effectively pull semantically similar sentences together while pushing apart dissimilar ones, creating a more uniform and aligned embedding space. However, directly applying standard contrastive learning to fine-grained ABSA introduces a critical bottleneck: the 
+
+false-negative collision problem. In aspect-level datasets, sentences frequently share the exact same aspect category and sentiment polarity. Standard contrastive objectives, which are primarily designed for instance discrimination, erroneously treat these same-class samples in a batch as negative pairs, forcing them apart [12]. This aggressive repulsion destroys intra-aspect cohesion and causes spatial collapse. Unlike previous works that attempt to re-weight negative samples, our framework introduces a dynamic Anti-collision Mask that structurally preserves essential semantic cohesion while expanding the inter-polarity margin. 
+
+2.3 Complex-Valued Representations 
+
+Complex-valued neural networks and quantum-inspired representations have recently gained traction in NLP due to their superior capacity to model uncertainties and complex feature interactions [13, 14]. Complex numbers inherently possess two degrees of freedom: the real part and the imaginary part (or alternatively, amplitude and phase). Prior works have explored complex-valued word embeddings to capture polysemy and order dependency [5]. Recent advancements have demonstrated the efficacy of mapping embeddings into a complex space for angle opti-mization. Notably, AnglE [15] introduced a framework that optimizes angular margins in complex space for general text embedding tasks, achieving significant improvements in semantic textual similarity. However, AnglE employs a direct hard chunking strategy that bisects the hidden state into real and imaginary parts, which can disrupt pre-trained semantic continuity when applied to fine-grained ABSA tasks. However, the geometric properties of complex spaces have rarely been exploited for fine-grained sentiment disen-tanglement. While previous efforts focused on complex-valued transformations, they often overlooked the explicit semantic roles of amplitude and phase[16]. In this paper, we propose a Zero-Initialized Residual Complex Projection (ZRCP) module. We move beyond simply projecting features into a complex space by empirically proving a profound geometric intuition: the phase acts as an ideal differentiator for sentiment polarity, while the amplitude naturally captures the lexical richness and intensity of subjective descriptions. This fundamental geometric decoupling fundamentally mitigates the entanglement issue in traditional real-valued spaces. While prior works have explored complex-valued embeddings for capturing polysemy and word order[17], they largely treat the complex domain as a black-box feature augmentation. The geometric properties of complex num-bers—particularly the distinct roles of phase and amplitude—remain underexplored for fine-grained sentiment disentan-glement[18]. In this paper, we go beyond merely projecting features into a complex space. We explicitly assign semantic roles to the two geometric components: the phase is dedicated to modeling sentiment polarity, while the amplitude captures the lexical richness and intensity of subjective expressions. This explicit geometric decoupling is, to our knowledge, the 3A PREPRINT - M ARCH 31, 2026 first attempt to systematically exploit the phase-amplitude dichotomy for ABSA, and it proves crucial for mitigating the entanglement issue inherent in real-valued representations. 
+
+# 3 Task Formulation & Data Construction 
+
+3.1 Context-Aware Aspect Extraction 
+
+Fine-grained Aspect-Based Sentiment Analysis (ABSA) faces a critical challenge known as feature entanglement .In real-world reviews, a single lengthy text often contains multiple aspects with conflicting polarities (e.g., praising the food taste while complaining about the parking). To prevent the pre-trained language model from conflating these distinct sentiments, we perform a data-level disentanglement prior to representation learning[19]. Specifically, we utilize a combination of TF-IDF scored keywords and an extended expert lexicon to precisely locate aspect-specific anchors within the raw reviews. To isolate the pure sentiment associated with a specific aspect, we propose a Dynamic Window Size algorithm[20]. Instead of feeding the entire review to the model, we extract a local context block surrounding the anchor word. The window size is dynamically adjusted based on the length of the targeted segment (ranging from 2 to 4 surrounding sentences) to ensure high-recall semantic completeness while strictly excluding extraneous aspect sentiments. 
+
+3.2 Hybrid Contrastive Triplet Generation 
+
+To construct robust training signals for contrastive learning, we map the extracted context blocks into semantic triplets consisting of an anchor query ( xq ), a positive sample ( x+), and a negative sample ( x−). All samples within a triplet share the exact same objective aspect (e.g., “Transportation”) to control the variables. To enrich the diversity of the contrastive gradient signals, we implement a hybrid triplet generation strategy: • Standard Pairs: Mining one positive and one negative sample corresponding to the query’s polarity. • Multi-Positive/Negative Augmentation: Fusing multiple text blocks of the same polarity into a single augmented target to increase the density of the semantic space. • Hard Contrastive Mining: Selecting positive samples that share the same sentiment but exhibit high lexical variance, coercing the model to capture deep semantic alignment rather than superficial word overlap[21]. 
+
+# 4 Methodology 
+
+In this section, we introduce our proposed hybrid contrastive learning framework. We detail the contextual encoding process, the integration of the Zero-Initialized Residual Complex Projection (ZRCP), and the joint optimization objective designed to mitigate false negative collisions and spatial collapse. 
+
+4.1 Contextual Encoding Backbone 
+
+To capture the deep syntactic and semantic representations of Chinese aspect-polarity pairs, we employ the pre-trained 
+
+chinese-roberta-wwm-ext [22] model as our foundational encoder. Given an input text x, we map the token sequence to a high-dimensional continuous space and extract the hidden state of the [CLS] token from the final transformer layer as the aggregated sentence embedding, denoted as h ∈ Rd, where d represents the hidden dimension. 
+
+4.2 Zero-Initialized Residual Complex Projection (ZRCP) 
+
+Recent advancements in textual similarity have demonstrated the efficacy of mapping embeddings into a complex space for angle optimization. However, standard implementations typically employ a hard chunking strategy (i.e., directly bisecting the hidden state h into real and imaginary parts). In the context of ABSA, where the model must represent 18 distinct aspect categories simultaneously, such forced bisection inherently destroys the pre-trained semantic continuity and leads to catastrophic feature entanglement. To address this limitation, we propose the Zero-Initialized Residual Complex Projection (ZRCP) module. Instead of direct bisection, we introduce two parameterized linear projections to independently model the objective aspect (mapped to the real part) and the subjective polarity (mapped to the imaginary part). Crucially, to preserve the robust representation capability of the pre-trained RoBERTa backbone, these projection layers are strictly zero-initialized and 4A PREPRINT - M ARCH 31, 2026 incorporated via residual connections: 
+
+hre = chunk (h)re + Wre (chunk (h)re + bre )
+
+him = chunk (h)im + Wim (chunk (h)im + bim )
+
+where W ∈ R d   
+
+> 2×d
+> 2
+
+and b ∈ R d 
+
+> 2
+
+are initialized to 0. At the start of the training ( Step = 0 ), the ZRCP acts as an identity mapping, ensuring a safe lower-bound performance. As training progresses, the model slowly learns the feature disentanglement delta, smoothly pulling aspects and polarities into their respective complex subspaces without spatial collapse. 
+
+4.3 Joint Optimization Objective 
+
+Our final loss function combines three distinct contrastive mechanisms to simultaneously align general semantic similarity, push apart conflicting polarities, and prevent false-negative collisions. 
+
+Masked In-Batch Negative Objective: Standard contrastive learning treats all other samples within a mini-batch as negative samples. In fine-grained ABSA, this naive assumption leads to “False Negative Collisions”—samples sharing the same aspect and polarity are erroneously repelled. To counter this, we unroll our generated triplets into pairs and apply an anti-collision mask matrix M based on their polarity labels. The masked in-batch negative loss is formulated as: 
+
+Libn = −
+
+> N
+
+X
+
+> i=1
+
+log esim (hi,h + 
+
+> i)×τibn
+
+PNj=1 esim (hi,h j )×τibn · (1 − Mij )
+
+!
+
+where sim (·, ·) is the dot product similarity, τibn is the temperature, and Mij = 1 if sample i and j share the same semantic label, zeroing out the penalty for false negatives. 
+
+Angle-Optimized Objective While the masked in-batch negative loss provides a robust foundation for pulling positive pairs together and pushing negative pairs apart, standard cosine similarity calculations are prone to vanishing gradients in saturation zones (i.e., when vectors are nearly identical or strictly orthogonal). To generate a distinct, non-saturating gradient specifically for separating opposing sentiments, we explicitly optimize the angle difference mapped within the complex space. Given the outputs from our ZRCP module, the representations are expressed as complex numbers. Let a query representation be z = a + bi and a target representation be w = c + di , where the real parts a, c ∈ Rd/ 2 encode the objective aspect, and the imaginary parts b, d ∈ Rd/ 2 encode the subjective polarity. To compute the angular difference between two representations, we utilize complex division: 
+
+zw = (a + bi )( c − di )(c + di )( c − di ) = ac + bd c2 + d2 + i bc − ad c2 + d2
+
+In the realm of complex numbers, the result of this division inherently couples both the phase difference (angular divergence) and the amplitude ratio (magnitude scaling). Within our ABSA framework, the phase governs the sentiment polarity, while the amplitude intuitively correlates with the intensity or the physical embedding of the aspect itself. To strictly isolate the polarity disentanglement from the aspect representation, we perform a crucial Amplitude Normalization step. We eliminate the amplitude scaling factor by dividing the real and imaginary components by the magnitude ratio of the original vectors, |z||w| . This forced normalization ensures that the angle loss focuses purely on maximizing the phase divergence ∆θzw between contrasting polarities, without inadvertently distorting the magnitude of the embedding space during this specific optimization step. The normalized absolute angular difference is then scaled by a temperature hyper-parameter τangle and optimized via a contrastive log-sum-exp formulation. Langle aggressively maximizes the angular divergence between contrasting polarities: 
+
+Langle = log 1 + X
+
+> n∈N
+
+exp (∆ θzn · τangle − ∆θzw · τangle )
+
+!
+
+(Note: We deliberately normalize the amplitude here to stabilize the angle optimization. Whether an explicit structural constraint—such as an absolute Amplitude Penalty—should be further enforced to coerce identical magnitudes for identical aspects is a non-trivial geometric question. We will systematically investigate the effects of over-regularizing the amplitude and its impact on subjective semantics in 5.6.) 5A PREPRINT - M ARCH 31, 2026 
+
+Figure 2: Gradient Analysis of Fine-grained Contrastive Learning. (a) Modern pre-trained language models inherently initialize aspect-matched sentences into highly dense clusters ( θ → 0). In this high-density zone, the cosine gradient (| sin θ|) catastrophically vanishes. (b) Our phase-driven angle objective maintains a constant gradient, providing the necessary driving force to disentangle hard negatives regardless of their initial proximity. Furthermore, it is crucial to recognize a paradoxical challenge introduced by modern powerful pre-trained language models (PLMs). Because current PLMs (such as RoBERTa) possess exceptionally strong semantic alignment capa-bilities, they inherently map sentences sharing the same aspect (e.g., “Taste”) into highly dense, localized clusters. Consequently, during the initial fine-tuning phase of ABSA, the angular distance θ between hard negatives (i.e., identical aspect but opposing polarities) is already extremely small ( θ → 0◦). As illustrated in Figure 2(a), optimizing such densely packed initial embeddings with standard cosine similarity leads to a critical bottleneck. The gradient magnitude of the cosine objective strictly follows | ∂∂θ (1 − cos θ)| = | sin θ|. In the pre-trained initialization zone ( θ → 0◦), this tangential force collapses to near zero. The model effectively loses the optimization driving force required to push conflicting polarities apart, trapping the fine-grained representations in an entangled state. In stark contrast, Figure 2(b) demonstrates that our phase-driven angle objective bypasses this geometric trap. By utilizing the normalized angular divergence directly as the penalty term, the angle loss provides a constant, non-vanishing gradient ( |∂θ | = Constant ). This ensures a robust and continuous repulsive force, successfully breaking the high-density entanglement and cleanly separating opposing sentiments into distinct complex subspaces. 
+
+Final Combined Objective: Our empirical investigations demonstrate that while angle optimization dominates the polarity separation, maintaining a robust cosine optimization stabilizes the global aspect clustering. Therefore, our model is trained using a linear combination of the masked in-batch negative loss, the angle loss, and a scaled cosine loss: 
+
+Ltotal = wibn Libn + wangle Langle + wcos Lcos 
+
+In our final optimal configuration, the weights are symmetrically balanced at wibn = 1 .0, wangle = 1 .0, and wcos = 1 .0.This equal-weight distribution strikes a perfect balance between aggressive fine-grained polarity disentanglement in the complex space and fundamental semantic stability in the real space. 
+
+# 5 Experiments 
+
+In this section, we systematically evaluate our proposed framework against strong baselines. We detail the experimental setup, present the main results across 18 fine-grained aspects, and conduct deep ablation studies to analyze the mechanism of the Zero-Initialized Residual Complex Projection (ZRCP) and the effects of amplitude regularization. 6A PREPRINT - M ARCH 31, 2026 Table 1: Main experimental results on the ASAP dataset across 18 fine-grained aspects. "Format C" represents standard triplet contrastive learning without anti-collision masks. "Ours (ZRCP)" denotes our full model with masked in-batch negatives and residual complex projection. Best results are in bold , second-best are underlined with dots.                                                                                                                                                                                                             
+
+> Aspect Category RoBERTa (Zero-shot) CoSENT SimCSE AnglE (Format C) Ours (ZRCP + Mask)
+> F1 Acc F1 Acc F1 Acc F1 Acc F1 Acc Transportation 0.6291 0.8400 0.7972 0.9356 ........ 0.8517 ........ 0.9549 0.8409 0.9549 0.8790 0.9635
+> Downtown 0.5715 0.9257 0.6890 0.9575 ........ 0.7663 ........ 0.9729 0.8171 0.9800 0.7372 0.9717 Easy to find 0.6787 0.7362 0.8525 0.8906 ........ 0.9189 ........ 0.9435 0.9100 0.9366 0.9382 0.9574
+> Queue 0.7332 0.7340 0.7523 0.7532 ........ 0.8206 ........ 0.8213 0.8118 0.8128 0.8413 0.8426
+> Hospitality 0.8607 0.8984 0.8807 0.9134 0.9393 0.9583 ........ 0.9405 ........ 0.9592 0.9429 0.9610
+> Parking 0.6156 0.6693 0.7704 0.8132 ........ 0.8798 ........ 0.9026 0.8674 0.8912 0.8908 0.9106
+> Timely 0.7413 0.7508 0.8678 0.8723 0.9172 0.9210 0.9366 0.9392 ........ 0.9330 ........ 0.9362 Price Level 0.7427 0.7433 0.8049 0.8056 0.9193 0.9199 ........ 0.9194 ........ 0.9199 0.9223 0.9228
+> Cost-effective 0.7439 0.8461 0.8117 0.8981 ........ 0.9431 ........ 0.9734 0.9223 0.9628 0.9459 0.9745
+> Discount 0.7012 0.8252 0.6993 0.8365 0.7251 0.8692 ........ 0.7744 ........ 0.9006 0.7893 0.9094
+> Decoration 0.6815 0.8727 0.7004 0.8975 0.8181 0.9487 ........ 0.8281 ........ 0.9539 0.8494 0.9608
+> Noise 0.7272 0.8385 0.7990 0.8884 0.9084 0.9550 0.9306 0.9667 ........ 0.9294 ........ 0.9650 Space 0.7431 0.8003 0.8104 0.8638 0.8563 0.9001 ........ 0.8774 ........ 0.9160 0.8941 0.9266
+> Sanitary 0.7705 0.8535 0.8094 0.8803 0.8694 0.9254 ........ 0.8744 ........ 0.9296 0.8857 0.9359
+> Portion 0.7220 0.7617 0.8170 0.8487 0.8719 0.8968 ........ 0.8776 ........ 0.9020 0.8990 0.9194
+> Taste 0.8486 0.9504 0.8651 0.9566 0.8966 0.9682 ........ 0.8973 ........ 0.9685 0.9139 0.9747
+> Appearance 0.7234 0.8373 0.7426 0.8532 0.8171 0.9069 0.8366 0.9182 ........ 0.8327 ........ 0.9144 Recommend 0.6695 0.8023 0.7814 0.8941 ........ 0.8882 ........ 0.9515 0.8825 0.9490 0.9079 0.9605 Macro-Average 0.7169 0.8437 0.7917 0.8755 0.8671 0.9272 ........ 0.8756 ........ 0.9315 0.8851 0.9393
+
+5.1 Experimental Setup Datasets We conduct our experiments on the ASAP (Aspect-based Sentiment Analysis of Restaurant Reviews) dataset. It contains highly contextualized Chinese restaurant reviews annotated with 18 fine-grained aspects, covering categories such as Location, Service, Price, Ambience, and Food. Each aspect is annotated with a sentiment polarity (Positive, Negative, or Neutral/Not-mentioned). Through our Context-Aware Aspect Extraction pipeline (Section 3.1), we generated a highly purified dataset of aspect-polarity triplets. 
+
+Implementation Details Our model is implemented using PyTorch and the HuggingFace Transformers library. We adopt the pre-trained chinese-roberta-wwm-ext as our encoding backbone. The maximum sequence length is set to 192. We train the model for 5 epochs using the AdamW optimizer with a learning rate of 2e-5 and a linear warmup of 500 steps. The effective batch size is set to 128 (batch size 32 with 4 gradient accumulation steps) to ensure sufficient in-batch negative sampling. For the loss function, we empirically set the weights to wibn = 1 .0, wangle = 1 .0, and 
+
+wcos = 0 .1, with temperatures τibn = τangle = 20 . All experiments are conducted on NVIDIA GPUs with FP16 mixed precision enabled. 
+
+Evaluation Metrics We evaluate the performance of aspect-polarity representation using Macro-F1 and Accuracy (Acc). Since fine-grained ABSA datasets typically suffer from class imbalance across aspects, Macro-F1 serves as our primary evaluation metric to ensure robust evaluation on long-tail categories. 
+
+5.2 Baselines 
+
+We compare our proposed framework with several strong representation learning and contrastive learning baselines: • RoBERTa (Zero-shot) : The standard pre-trained Chinese RoBERTa without fine-tuning, serving as the lower bound. • CoSENT : A classic cosine-based sentence embedding method designed to optimize the rank of sentence pairs. • SimCSE : A state-of-the-art contrastive learning framework using dropout as minimal data augmentation. • Standard AnglE (Format C) : The original Angle-optimized text embeddings using direct hard chunking and standard Format C triplets without anti-collision masks. 7A PREPRINT - M ARCH 31, 2026 
+
+5.3 Main Results 
+
+Table 1 presents the performance of all models across the 18 specific aspects. Our proposed model consistently outperforms all strong baselines, achieving a state-of-the-art Macro-F1 score of 0.8851 and an Accuracy of 0.9393. Notably, compared to the Standard AnglE (Format C) model which indiscriminately pushes apart all in-batch negatives, our model with the anti-collision mask significantly rescues and boosts the performance of core, high-frequency aspects. For instance, in crucial restaurant evaluation metrics such as Taste and Cost-effective , our framework achieves impressive F1 scores of 0.9139 and 0.9459, respectively, vastly surpassing the unmasked Format C baseline. Furthermore, the data elegantly perfectly visualizes the "Seesaw Effect" hypothesized in Section 4. While the unmasked Format C excels at separating extremely long-tail or confusing aspects like Downtown (achieving the highest F1 of 0.8171 by aggressively forcing negative pairs apart), it inevitably suffers from spatial collapse on broader semantic dimensions due to false negative collisions. Our framework, leveraging the geometrical equilibrium of ZRCP and mask regularization, gracefully mitigates this trade-off, achieving a much superior and stable global optimum. Although baseline models marginally lead in a few specific aspects (e.g., Timely , Noise ), our method demonstrates absolute dominance in the vast majority of categories, proving its robust generalization. 
+
+Figure 3: Model performance relative to RoBERTa across 18 fine-grained aspects. Bars represent the Macro-F1 score difference of each model (CoSENT, SimCSE, AnglE, Ours) compared to the RoBERTa baseline. Symbols above bars indicate the best-performing model for each aspect: ⋆ for Ours, ▲ for CoSENT, ■ for SimCSE, and ♦ for AnglE. Our model achieves the highest F1 score on most aspects, demonstrating its superior disentanglement capability. 
+
+5.4 Ablation Study 
+
+To verify the effectiveness of our proposed modules, we conducted an ablation study by systematically removing key components from our full framework. The results are summarized in Table 2. Table 2: Ablation study on the core components. Metrics reported are the Macro-average F1 and Accuracy. 
+
+Model Variations Macro-F1 Acc Ours (Full Model) 0.8851 0.9393 
+
+w/o ZRCP (Hard Chunking) 0.8739 0.9319 
+
+w/o Anti-collision Mask 0.8749 0.9308 
+
+w/o Angle Loss ( wangle = 0 ) 0.8843 0.9389 • w/o ZRCP : Replacing our zero-initialized residual layer with direct tensor chunking results in a drop in performance, proving that hard bisection destroys pre-trained semantic integrity. 8A PREPRINT - M ARCH 31, 2026 • w/o Anti-collision Mask : Reverting to standard triplet formatting leads to feature entanglement among high-frequency aspects. • w/o Angle Loss : Relying purely on cosine similarity fails to create a distinct decision boundary for opposite polarities within the same aspect. 
+
+5.5 Representation Space Analysis 
+
+While global metrics like Macro-F1 demonstrate quantitative improvements (Section 5.3), the true geometric advantage of our framework is best visualized through batch-level similarity structures. To gain deeper insights into how our joint objective refines the discriminative margin, we visualize both the pairwise cosine similarity heatmaps and the aggregated mean similarities for an aspect-matched batch (e.g., 5 positive and 5 negative sentences sharing the “Taste” aspect). 
+
+Figure 4: Similarity Matrix Analysis. (a) The baseline model without masks suffers from false negative collisions, resulting in a chaotic semantic space. (b) Our ZRCP+Mask framework delineates clear block-diagonal structures. (c) 
+
+Model comparison on aggregated similarities shows that our model safely expands the inter-polarity discriminative margin ( −7.3% ) with only a marginal trade-off in intra-polarity cohesion. As illustrated in Figure 4(a), in the baseline model trained without anti-collision masks (Format C), the semantic space is chaotic. False negative collisions erroneously repel sentences with identical sentiments, destroying intra-class cohesion and blurring the decision boundary. In stark contrast, our ZRCP+Mask framework (Figure 4b) presents perfectly delineated block-diagonal structures. Quantitative analysis of the aggregated similarities (Figure 4c) confirms that our method slightly reduces the ’Pos-Pos’ and ’Neg-Neg’ intra-polarity cohesion from 0.954 to 0.937 (-1.7%) and from 0.948 to 0.935 (-1.2%) respectively. In fine-grained ABSA, this slight reduction acts as a vital geometric trade-off. Sentences sharing the same aspect naturally exhibit high baseline similarities; forcing them closer would lead to spatial collapse. Instead, sacrificing a fraction of this cohesion enables the network to significantly suppress the false similarities between opposing polarities. 9A PREPRINT - M ARCH 31, 2026 This trade-off aligns with the fundamental distinction between fine-grained sentiment analysis and general semantic similarity tasks: what matters most is not how similar identical polarities are, but how distinct opposing polarities become. Specifically, the mean ’Pos-Neg’ inter-polarity similarity is dramatically reduced from 0.856 to 0.783, achieving a notable 7.3% distinction. This empirical evidence confirms that our framework expands the discriminative margin to a healthy level, effectively mitigating the information hallucination observed in the baseline, where opposing sentiments are erroneously rendered almost as similar as identical sentiments. 
+
+5.6 Deep Analysis: The Over-regularization of Amplitude Penalty 
+
+In Section 4.3, we explicitly normalized the amplitude during the angle loss computation to ensure the optimization focuses purely on phase divergence (polarity disentanglement). However, a geometric hypothesis naturally arises: 
+
+Since the complex phase represents the subjective Polarity, should the amplitude be strictly penalized to represent the objective Aspect? 
+
+To investigate this, we conducted a failure analysis by introducing an explicit Amplitude Penalty ( AmpLoss ) measured via Mean Squared Error (MSE). This loss forces the magnitude of vectors sharing the same aspect to be strictly identical (wamp = 1 .0) upon our strongest baseline configuration ( wcos = 1 .0, w ibn = 1 .0, w angle = 1 .0). Table 3: The divergent impact of Amplitude Penalty ( AmpLoss ) on Objective vs. Subjective aspects. 
+
+Aspect Category w/o AmpLoss (Ours) with AmpLoss ∆
+
+Objective / Fact-based Aspects 
+
+Discount 0.7893 0.7983 +0.90% Price Level 0.9223 0.9261 +0.38% Timely 0.9330 0.9346 +0.16% 
+
+Subjective / Descriptive Aspects 
+
+Decoration 0.8494 0.8403 -0.91% Taste 0.9139 0.9095 -0.44% Appearance 0.8327 0.8286 -0.41% 
+
+Macro-Average F1 0.8851 0.8829 -0.22% As demonstrated in Table 3, introducing the strict Amplitude Penalty leads to a fascinating divergent phenomenon .For highly objective and factual aspects with limited expression variance (e.g., Discount , Price Level ), restricting the amplitude acts as an effective regularizer, yielding minor performance gains. Factual statements typically require less semantic volume, making them suitable for strict magnitude constraints. However, for highly subjective dimensions with vast descriptive diversity (e.g., Decoration , Taste ), enforcing identical magnitudes artificially compresses the multi-modal semantic space, causing notable performance drops. Because subjective evaluations heavily dominate restaurant reviews, the overall Macro-F1 slightly decreases. To rigorously investigate this over-regularization, we analyzed the actual L2 norm distribution of sentences from our test set evaluating the Decoration aspect. As visualized in Figure 5(a), although the absolute amplitude variance is bounded by the pre-trained LayerNorms (resulting in standard deviations as small as σ ≈ 0.15 ), the relative differences represent significant semantic shifts spanning over 6σ.A deep probe into the extreme cases reveals a mathematically profound behavior of our Zero-Initialized Residual Complex Projection (ZRCP) module. We extracted the test instances yielding the minimum and maximum amplitudes, whose geometric projections are visualized in Figure 5(b) and highlighted as stars in Figure 5(c): • Minimum Amplitude ( Z ≈ − 3.0σ): “...the decoration is bar-style, with booths and a bar counter, so there can’t be too many people at each table.” 
+
+• Maximum Amplitude ( Z ≈ +3 .2σ): “...the environment in the store is very OK, the music and decoration are very comfortable.” 
+
+Counter-intuitively, the geometrical amplitude does not correlate with the physical length of the text, but rather with the 
+
+semantic density and signal purity . As depicted in Figure 5(b), the instance with the shortest amplitude is physically longer (226 characters) but represents a purely objective description devoid of strong emotional polarity. Consequently, 10 A PREPRINT - M ARCH 31, 2026 
+
+Figure 5: Deep geometric analysis of complex amplitudes demonstrating the decoupling of subjective intensity from physical text length. (a) The amplitude distribution (Kernel Density Estimation) of the Decoration aspect, contrasting our model’s natural variance against the collapsed space caused by an explicit Amplitude Penalty ( AmpLoss ). (b) Min-Max scaled geometric mapping of the extreme amplitude vectors. It visually illustrates how intense subjective evaluation strongly activates the imaginary subspace (polarity), thereby stretching the overall complex magnitude. (c) Scatter plot verifying the geometric decoupling between the L2 norm and physical text length. The near-zero Pearson correlation ( r = 0 .130 ) statistically proves that the amplitude captures semantic subjectivity rather than trivial physical length. Highlighted star markers correspond to the specific case studies discussed in Section 5.6. its projection onto the imaginary subspace (which captures polarity) remains small, leading to a shorter overall vector magnitude. Conversely, the instance with the largest amplitude is physically short (109 characters) but represents a direct, explicit, and strong subjective evaluation (“very comfortable” ). This intense sentiment highly activates the imaginary subspace, significantly stretching the complex amplitude. To definitively validate that this geometric behavior is a global property rather than an isolated phenomenon, we plot the physical character length against the vector magnitude for the entire test set in Figure 5(c). The Pearson correlation reveals a nearly negligible linear relationship ( r = 0 .130 ). While the p-value ( < 0.001 ) indicates statistical significance due to the large sample size ( N = 769 ), the physical length explains merely 1.69% ( R2 ≈ 0.017 ) of the amplitude variance. Furthermore, sentences with average amplitudes (green markers) range drastically from short to extremely long contexts. This strictly proves that the vast majority of the amplitude variance operates independently of superficial text length. This compelling empirical evidence confirms that our model naturally utilizes the geometrical amplitude to encode the intensity of subjective polarity . Therefore, applying a rigid Amplitude Penalty ( AmpLoss ) catastrophically erases the boundary between neutral factual descriptions and intense emotional expressions. To preserve the full expressive capacity for complex human sentiments, our final robust framework discards explicit amplitude constraints. 
+
+# References 
+
+[1] Ambreen Nazir et al. “Issues and challenges of aspect-based sentiment analysis: A comprehensive survey”. In: 
+
+IEEE Transactions on Affective Computing 13.2 (2020), pp. 845–863. [2] Kim Schouten and Flavius Frasincar. “Survey on aspect-level sentiment analysis”. In: IEEE transactions on knowledge and data engineering 28.3 (2015), pp. 813–830. [3] Lingling Xu et al. “Contrastive sentence representation learning with adaptive false negative cancellation”. In: 
+
+Information Fusion 102 (2024), p. 102065. [4] Xingqiang Zhao, Hai Wan, and Kunxun Qi. “QPEN: quantum projection and quantum entanglement enhanced network for cross-lingual aspect-based sentiment analysis”. In: Proceedings of the AAAI Conference on Artificial Intelligence . Vol. 38. 17. 2024, pp. 19670–19678. 11 A PREPRINT - M ARCH 31, 2026 [5] Benyou Wang et al. “Encoding word order in complex embeddings”. In: arXiv preprint arXiv:1912.12333 (2019). [6] Wen Zhang et al. “A survey on aspect-based sentiment analysis: Tasks, methods, and challenges”. In: IEEE Transactions on Knowledge and Data Engineering 35.11 (2022), pp. 11019–11038. [7] T. C. Chinsha and S. Joseph. “A syntactic approach for aspect based opinion mining”. In: Proceedings of the 2015 IEEE 9th International Conference on Semantic Computing (IEEE ICSC 2015) . IEEE, 2015, pp. 24–31. [8] G. S. Chauhan, R. Nahta, Y. K. Meena, et al. “Aspect based sentiment analysis using deep learning approaches: A survey”. In: Computer Science Review 49 (2023), p. 100576. [9] Hu Xu et al. “BERT post-training for review reading comprehension and aspect-based sentiment analysis”. In: Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) . Association for Computational Linguistics, 2019, pp. 2324–2335. [10] U. Sirisha and S. C. Bolem. “Aspect based sentiment & emotion analysis with ROBERTa, LSTM”. In: Interna-tional Journal of Advanced Computer Science and Applications 13.11 (2022). [11] Tianyu Gao, Xingcheng Yao, and Danqi Chen. “SimCSE: Simple contrastive learning of sentence embeddings”. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing (EMNLP) .Association for Computational Linguistics, 2021, pp. 6894–6910. [12] Xing Wei et al. “Consistent positive correlation sample distribution: Alleviating the negative sample noise issue in contrastive adaptation”. In: Expert Systems with Applications 263 (2025), p. 125669. [13] Chiyan Lee, Hideyuki Hasegawa, and Shangce Gao. “Complex-valued neural networks: A comprehensive survey”. In: IEEE/CAA Journal of Automatica Sinica 9.8 (2022), pp. 1406–1426. [14] Peng Zhang et al. “Quantum-inspired neural language representation, matching and understanding”. In: Founda-tions and Trends in Information Retrieval 16.4-5 (2023), pp. 318–509. [15] Xianming Li and Jing Li. AnglE-optimized Text Embeddings . 2024. arXiv: 2309.12871 [cs.CL] . URL : https: //arxiv.org/abs/2309.12871 .[16] Qin Zhao, Chenguang Hou, and Ruifeng Xu. “Quantum-inspired complex-valued language models for aspect-based sentiment classification”. In: Entropy 24.5 (2022), p. 621. [17] Guangcheng Liu and Yuexian Hou. “Complex-Valued Vectors for Word Representation”. In: 2021 4th Interna-tional Conference on Artificial Intelligence and Big Data (ICAIBD) . IEEE. 2021, pp. 242–246. [18] Sicheng Zhao et al. “SDRS: Sentiment-aware disentangled representation shifting for multimodal sentiment analysis”. In: IEEE Transactions on Affective Computing 16.3 (2025), pp. 1802–1813. [19] Xin Wang et al. “Disentangled representation learning”. In: IEEE Transactions on Pattern Analysis and Machine Intelligence 46.12 (2024), pp. 9677–9696. [20] SM Rafiuddin et al. “Exploiting adaptive contextual masking for aspect-based sentiment analysis”. In: Pacific-Asia Conference on Knowledge Discovery and Data Mining . Springer. 2024, pp. 147–159. [21] Bin Liang et al. “Enhancing aspect-based sentiment analysis with supervised contrastive learning”. In: Pro-ceedings of the 30th ACM international conference on information & knowledge management . 2021, pp. 3242– 3247. [22] Yinhan Liu et al. “RoBERTa: A Robustly Optimized BERT Pretraining Approach”. In: (2019). 12
