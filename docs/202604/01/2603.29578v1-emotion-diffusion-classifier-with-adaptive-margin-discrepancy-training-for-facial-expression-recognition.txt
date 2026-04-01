@@ -1,0 +1,960 @@
+Title: Emotion Diffusion Classifier with Adaptive Margin Discrepancy Training for Facial Expression Recognition
+
+URL Source: https://arxiv.org/pdf/2603.29578v1
+
+Published Time: Wed, 01 Apr 2026 00:53:24 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+> JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+
+# Emotion Diffusion Classifier with Adaptive Margin Discrepancy Training for Facial Expression Recognition 
+
+Rongkang Dong, Cuixin Yang, Cong Zhang, Yushen Zuo, and Kin-Man Lam Senior Member, IEEE, 
+
+Abstract —Facial Expression Recognition (FER) is essential for human-machine interaction, as it enables machines to interpret human emotions and internal states from facial affective behav-iors. Although deep learning has significantly advanced FER performance, most existing deep-learning-based FER methods rely heavily on discriminative classifiers for fast predictions. These models tend to learn shortcuts and are vulnerable to even minor distribution shifts. To address this issue, we adopt a conditional generative diffusion model and introduce the Emotion Diffusion Classifier (EmoDC) for FER, which demonstrates enhanced adversarial robustness. However, retraining EmoDC using standard strategies fails to penalize incorrect categorical descriptions, leading to suboptimal recognition performance. To improve EmoDC, we propose margin-based discrepancy training, which encourages accurate predictions when conditioned on correct categorical descriptions and penalizes predictions con-ditioned on mismatched ones. This method enforces a minimum margin between noise-prediction errors for correct and incor-rect categories, thereby enhancing the model’s discriminative capability. Nevertheless, using a fixed margin fails to account for the varying difficulty of noise prediction across different images, limiting its effectiveness. To overcome this limitation, we propose Adaptive Margin Discrepancy Training (AMDiT), which dynamically adjusts the margin for each sample. Exten-sive experiments show that AMDiT significantly improves the accuracy of EmoDC, achieving improvements of 6.45%, 16.29%, 8.03%, and 4.86% over the Base model with standard denoising diffusion training on RAF-DB basic subset, RAF-DB compound subset, SFEW-2.0 dataset, and AffectNet dataset, respectively, in 100-step evaluations. Additionally, EmoDC outperforms state-of-the-art discriminative classifiers in terms of robustness against noise and blur. 
+
+Index Terms —Facial Expression Recognition, Diffusion Model, Diffusion Classifier. 
+
+I. I NTRODUCTION 
+
+Facial expressions serve as a primary mechanism for con-veying emotional states and are crucial for human non-verbal communication. Automatic facial expression recog-nition (FER) enables machines to interpret and respond to human emotions during human-computer interactions. The remarkable success of modern deep learning techniques has significantly boosted FER performance [1], [2]. Contempo-rary deep learning approaches for FER predominantly rely 
+
+Rongkang Dong, Cuixin Yang, Yushen Zuo, and Kin-Man Lam are with the Department of Electrical and Electronic Engineering, The Hong Kong Polytechnic University, Kowloon, Hong Kong (e-mail: rongkang97.dong@connect.polyu.hk, cuixin.yang@connect.polyu.hk, zuoyushen12@gmail.com, enkmlam@polyu.edu.hk). Cong Zhang is with the School of Control Science and Engineering, Shandong University (e-mail: congzhang@sdu.edu.cn) Add 
+
+> Noise
+> Happy
+> Sad
+> Discriminative
+> classifier
+> Sad
+> Happy
+> Discriminative
+> classifier
+> Happy
+> Diffusion classifier Diffusion classifier
+
+Fig. 1: An example comparing classifications of discriminative and diffusion classifiers on clean and noisy images. on discriminative classifiers [3]–[7]. Given an input sample 
+
+x, discriminative classifiers output a categorical probability distribution p(c|x) over facial expression classes using asoftmax function, where c is the category label. While these models excel at efficiently recognizing images, they are prone to over-confident predictions [8], shortcut learning [9]–[11], and vulnerabilities to adversarial attacks [12] (an example is shown in Fig. 1). Recently, Li et al. [11] demonstrated that discriminative classifiers tend to learn shortcuts by over-relying on spurious features rather than core, task-relevant features, leading to failures under even minor distribution shifts. Despite the predominance of discriminative approaches in FER, the potential of generative classifiers remains largely underexplored, motivating our investigation into their appli-cability to FER. In contrast to discriminative models, which are prone to shortcut learning, conditional generative models avoid this pitfall by generating complete images, thereby jointly considering both core and spurious features [11]. As a result, these models inherently reduce reliance on non-essential features. A conditional generative model focuses on modeling the likelihood p(x|c), where x and c denote the sample and its categorical description. For classifica-tion tasks, Bayes’ theorem is used to compute p(c|x) [13]: 
+
+p(c|x) = p(x|c)p(c)/p (x). Diffusion models [14]–[16], a class of state-of-the-art generative models, have demonstrated their powerful generative capacities across a wide range of tasks [15], [17]–[20]. Conditional diffusion models, such as Stable Diffusion [15], incorporate auxiliary text inputs to guide the generation. Recent research has adapted these models into classifiers, known as diffusion classifiers, which have demonstrated strong zero-shot classification capacities [21], [22] and inherent adversarial robustness [23], [24]. The dif- 
+
+> arXiv:2603.29578v1 [cs.CV] 31 Mar 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+
+fusion classifier introduced in [21] assumes a uniform prior 
+
+p(c), making the posterior probability proportional to the likelihood: p(c|x) ∝ p(x|c). It computes noise-prediction errors conditioned on categorical descriptions and estimates expectations across timesteps and noises for each category. These expectations are inversely proportional to p(x|c), with the classification result corresponding to the category with the lowest expected error. Although the diffusion classifier demonstrates impressive zero-shot classification performance, it performs poorly on zero-shot FER remains limited because Stable Diffusion is trained on image-text pairs that are not tailored to facial be-havior analysis. More importantly, diffusion classifiers require computing noise-prediction errors across all timesteps and classes, resulting in prohibitively high inference times that hin-der real-world deployment. Even with efficiency-oriented tech-niques, such as progressively discarding implausible classes or sharing noise estimate at the same timestep [21], [22], slow inference remains a persistent challenge. For instance, although a 100-step evaluation improves accuracy, it is nearly 200 times slower than a 1-step evaluation. These limitations in both accuracy and inference speed highlight the need for further advancements in diffusion-based classifiers for FER. 
+
+A straightforward approach to improving the FER accuracy of diffusion classifiers is to fine-tune them on facial expression datasets, leading to the development of the Emotion Diffusion Classifier (EmoDC). To achieve efficient fine-tuning, low-rank adaptation (LoRA) [25] is employed, which significantly reduces the number of trainable parameters. A basic training strategy for EmoDC involves minimizing noise-prediction errors conditioned on correct categorical descriptions (positive prompts) [14], [15]. However, this objective overlooks the importance of encouraging higher noise-prediction errors for incorrect categorical descriptions (negative prompts), limiting EmoDC’s capability to discriminate among different facial expressions. Moreover, a substantial accuracy gap remains between 1-step and multi-step evaluations. To address these limitations, we introduce discrepancy training, which amplifies noise-prediction errors on negative prompts while minimizing errors on positive prompts for every timestep. To further increase the discriminative capability of EmoDC, we propose margin-based discrepancy training, which enforces a minimum separation between noise-prediction errors of positive and neg-ative prompts. This ensures the model not only distinguishes facial expressions but does so with a clear margin. However, using a fixed margin fails to account for the varying noise-prediction difficulty across different inputs. Small margins should be adopted for inputs where noise prediction is easy (i.e., with low noise-prediction errors), while large margins are needed for those inputs where noise prediction is difficult (i.e., with high noise-prediction errors). To this end, we introduce Adaptive Margin Discrepancy Training (AMDiT), which dynamically adjusts the margin based on sample-wise difficulties. Specifically, AMDiT utilizes the noise-prediction error conditioned on a non-negative description as an adaptive margin, allowing it to reflect the varying noise-prediction difficulty across different noisy images. Extensive experi-ments validate the effectiveness of AMDiT in improving FER accuracy and significantly narrowing the performance gap between 1-step and multi-step evaluations. By achieving more accurate recognition at each timestep, AMDiT enables faster inference with fewer timesteps, without substantial degradation in accuracy. Moreover, AMDiT exhibits enhanced robustness against noisy and blurry facial images, outperforming state-of-the-art discriminative classifiers under challenging conditions. The main contributions of this paper are summarized as follows:  
+
+> •
+
+We develop an Emotion Diffusion Classifier (EmoDC) that adopts the generative diffusion model for FER. To the best of our knowledge, this is the first work to explore the diffusion classifier for FER.  
+
+> •
+
+We introduce a novel Adaptive Margin Discrepancy Training method that dynamically adjusts the noise-prediction error margin between positive and negative prompts based on the sample-wise noise-prediction dif-ficulty, effectively enhancing EmoDC’s discriminative capability and improving its FER performance.  
+
+> •
+
+Extensive experiments demonstrate AMDiT’s effective-ness in boosting accuracy, significantly reducing the accuracy gap between 1-step and multi-step evaluations, and enhancing robustness against noisy and blurry images of EmoDC. The remainder of this paper is organized as follows. Section II reviews related works. Section III provides a brief introduc-tion to the preliminaries and presents the proposed AMDiT in detail. Section IV describes the experimental setup and discusses the results. Section V gives a summary of this work. II. R ELATED WORKS 
+
+A. Deep Learning for FER 
+
+Automatic facial affective analysis has been an active re-search topic for several decades. Recent advancements in deep learning have significantly accelerated the progress in FER, achieving state-of-the-art performance. CNN-based FER approaches employ convolutional neural networks (CNNs) [7], [26]–[28] to extract spatial features that encode facial expression information [29], [30]. For example, Kim et al. [27] proposed the CVGG-19 network, an improved variant of VGG [26], achieving significantly higher performance while reducing computational cost. In [3], [31], human faces were represented using graphs, and FER performance was enhanced by combining CNNs and graph convolutional networks. At-tention mechanisms [32], [33], including channel, spatial, and temporal attention, have also been adopted to enable models to focus on salient channels, regions, and frames, respectively. Transformer-based FER approaches, such as TransFER [34] and VTFF [35], leverage the Vision Transformer (ViT) [36] architecture to extract global-interactive facial features through the self-attention mechanism. Given the high computational overhead of ViT, APViT [37] introduced an attentive pooling mechanism to discard patches and tokens with less useful information. This mechanism effectively reduces computation costs while enabling models to focus on more informative patches and tokens. Multi-modal-based FER approaches utilize multiple modalities, such as speech and text descriptions. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3
+
+Image-text FER models [6], [38], [39] often rely on CLIP [40], which uses natural language supervision for visual feature extraction. Additionally, audio information has been integrated to enhance emotion recognition [41], [42]. While most studies primarily focus on basic facial expressions, humans often display multiple emotions simultaneously through a single expression. Compound FER [4], [5], [43] therefore aims to recognize more complex facial expressions, for example, happy surprise and angry disgust. Despite substantial progress in FER, prior research significantly focuses on discriminative classifiers, leaving generative classifiers largely unexplored. Furthermore, a persistent challenge remains the degraded performance of discriminative FER methods when faced with samples affected by distribution shifts. This work addresses these gaps by investigating the utility of diffusion classifiers for FER, leveraging their generative nature to enhance infer-ence reliability under shifted data distributions. 
+
+B. Diffusion Classifiers 
+
+Generative models estimate the data likelihood p(x|c) and can be converted into classifiers to predict the class probability 
+
+p(c|x) using Naive Bayes [13]. Generative classifiers are generally more robust than discriminative classifiers [23], [24], [44], [45]. Diffusion models, a type of powerful generative model, have demonstrated remarkable performance across various generative tasks [15], [17]–[19]. To enhance their clas-sification capabilities, Mukhopadhyay et al. [46] extracted fea-tures from intermediate layers of the guidance diffusion model [47] and fed them into classification heads. They compared four types of classification heads evaluated, the attention-based head achieved the best performance. This classification approach essentially mirrors that of discriminative classifiers, where the model outputs the class probability p(c|x). CARD [48] applied a diffusion process to the logit space for both classification and regression tasks. Current conditional dif-fusion models, like Stable Diffusion [15], generate images conditioned on textual inputs. Due to extensive training on image-text pairs, Stable Diffusion has demonstrated strong zero-shot classification performance on natural images [21], [22]. Jaini et al. [49] analyzed the diffusion classifier proposed in [22] and revealed that its object recognition behavior closely resembles that of humans, particularly in exhibiting shape bias. Robust diffusion classifiers [23], [24] were proposed to enhance robustness against adversarial attacks and input per-turbations. However, as Stable Diffusion was trained primarily on image-text pairs that are not tailored for facial behavior analysis, its ability to interpret nuanced facial affective be-havior is inherently limited, leading to poor zero-shot FER performance. To address this limitation, we incorporate LoRA to efficiently fine-tune the diffusion model on facial expression datasets, equipping the model with domain-specific knowledge for facial expression analysis. To further enhance performance, we introduce a novel AMDiT method, which significantly enhances the EmoDC model by simultaneously improving accuracy, inference speed, and robustness under distribution shifts. 
+
+C. Triplet loss 
+
+Triplet loss is a widely used function in machine learning [50], [51]. It aims to learn an embedding space where the distance between an anchor and a positive example from the same class is minimized, while the distance between the anchor and a negative example from a different class is maximized. FaceNet [51] was the first to introduce the triplet loss for deep face recognition, along with a triplet selection strategy to mine hard samples within each mini-batch. Wu et al. [52] incorporated a distance-weighted margin to select more informative and stable samples for triplet-loss training. To facilitate faster convergence, several generalizations of triplet-based learning have been proposed. The multi-class 
+
+N-pair loss [53] incorporates multiple negative samples for each anchor, while Magnet loss [54] groups embeddings into class-specific clusters to reduce overlap among local distributions. However, the triplet concept has so far been employed only in recognition tasks that rely on discriminative classifiers. Building upon this concept, we propose a novel training method, AMDiT, for a generative diffusion classifier. AMDiT minimizes noise-prediction errors for positive text descriptions while maximizing those for negative ones, and dynamically adjusts error margins across samples according to their respective noise-prediction difficulties. III. E MOTION DIFFUSION CLASSIFIER 
+
+In this section, we first provide a preliminary introduction to EmoDC and then describe four training approaches, through which the novel AMDiT method is progressively developed. 
+
+A. Preliminary 1) Diffusion Models: Diffusion models [14], [55] are gener-ative models that learn to generate data by iteratively adding and removing noise. This involves two main processes: the forward process and the reverse process. Given an observation 
+
+x0 from an unknown real distribution q(x) and the total number of diffusion steps T , the forward process progressively adds Gaussian noise ϵ ∼ N (0 , I) to generate a sequence of noisy samples {xt}Tt=1 , following a predetermined variance schedule {βt}Tt=1 . The forward process can be expressed as follows: 
+
+q(x1: T |x0) = 
+
+> T
+
+Y
+
+> t=1
+
+q(xt|xt−1), (1) where q(xt|xt−1) = N  xt; √1 − βtxt−1, β tI. A property of the forward process is that a noisy image xt at an arbitrary timestep t can be simply obtained as follows: 
+
+q(xt|x0) = N  xt; √αtx0, (1 − αt)I , (2) where αt = 1 − βt and αt = Qts=1 αs.The reverse process gradually removes noises from a Gaus-sian distribution p(xT ) = N (xT ; 0 , I) through a learned Gaussian transition. This process is defined as follows: 
+
+pθ (x0: T ) = p(xT ) ·
+
+> T
+
+Y
+
+> t=1
+
+pθ (xt−1|xt), (3) JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4Input data   
+
+> Random Noise
+> Noisy data
+> V K Q
+> V K Q
+> Diffusion model
+> : A photo of a disgusted facial expression.
+> :A photo of a happy facial expression.
+> ...
+> :A photo of a sad facial expression.
+> Text descriptions of each class
+> Timestep
+
+Fig. 2: Inference pipeline of the diffusion classifier [21] for FER. Nc denotes the total number of categories. where pθ (xt−1|xt) = N (xt−1; μθ (xt, t ), Σθ (xt, t )) . The goal is to train a model to learn the functions μθ (xt, t ) and 
+
+Σθ (xt, t ) with parameters θ. Ho et al. [14] derived a denoising diffusion model whose objective is to predict the noise. This model optimizes the approximate evidence lower bound on the log-likelihood as follows: 
+
+log pθ (x0) ≥ − Eϵ,t [wt|| ϵθ (xt, t ) − ϵ|| 22] + A, (4) where ϵθ (xt, t ) denotes the predicted noise at timestep t by a trainable model, wt is the weight of the noise-prediction error for timestep t, and A is a constant. They simplified Equation (4) by setting wt = 1 for t ∈ [1 , 1000] , resulting in: 
+
+−Eϵ,t [|| ϵθ (xt, t ) − ϵ|| 22] + A. (5) A standard training objective of diffusion models, denoted as 
+
+Lbase , is to minimize the noise-prediction errors, which is written as follows: 
+
+Lbase = Ex0,ϵ,t [|| ϵθ (xt, t ) − ϵ|| 22], (6) where the constant A is ignored since it does not depend on the model parameters θ.
+
+2) Diffusion Classifier: This section provides a brief overview of the diffusion classifier [21]. The diffusion clas-sifier utilizes a conditional diffusion model, such as Stable Diffusion [15], where categorical text descriptions serve as conditional inputs. With this conditional input, Equations (4) and (5) are reformulated as follows [21]: 
+
+log pθ (x0|c) ≥ − Eϵ,t [|| ϵθ (xt, t, c ) − ϵ|| 22] + A, (7) where c denotes the categorical conditions, i.e., text descrip-tions of the images. Fig. 2 illustrates the classification process in diffusion clas-sifiers. The model generates the predicted noises for the input image x0 at timestep t, conditioned on all class descriptions. By evaluating multiple timesteps and noises, the classification result is derived as follows: 
+
+cpred = argmin c{Eϵ,t [|| ϵθ (xt, t, c ) − ϵ|| 22]}. (8) Previous works [21], [22] have highlighted the exceptional zero-shot classification performance of diffusion classifiers, which typically exhibit low noise-prediction errors for correct class descriptions and high errors for incorrect ones. However, the inference was notably slow because noise predictions must be computed for (a) every class description, (b) every timestep, and (c) numerous sampled noises (as indicated in Equation (8)). To improve efficiency, a candidate-class pruning method [21], [22] was adopted, which progressively eliminates unlikely categories by averaging errors over a small number of timesteps. Additionally, shared noise was employed in [22], where the same noise sample is evaluated across all classes at a given timestep t. In our experiment, we adopt the shared noise method for efficient inference. 
+
+B. EmoDC 
+
+Diffusion classifiers have demonstrated strong zero-shot performance on natural images. However, their zero-shot FER performance is poor, achieving an accuracy below 27% (See Table III). This limitation stems from the insufficient facial affective analysis data in the training process. In this study, we employ a diffusion classifier for FER, which we term the Emotion Diffusion Classifier (EmoDC). To equip the model with facial expression knowledge, we fine-tune the diffusion model using LoRA [25], an efficient training method. However, Stable Diffusion [15] was trained only on positive image-text pairs, without explicitly amplifying the noise-prediction errors for negative pairs, which limits the model’s discriminative power. To address this issue, we propose increasing the noise-prediction errors for negative image-text pairs. 
+
+1) Contrastive Noise Discrepancy Training (CoDiT): Asimple and intuitive approach to achieve the goal is to adopt CoDiT, whose objective function is defined as follows: 
+
+LCoDiT = Ex0,t,ϵ 
+
+|| ϵθ (xt, t, c p) − ϵ|| 22 − λ1|| ϵθ (xt, t, c n) − ϵ|| 22
+
+,
+
+(9) where cp and cn denote the positive and negative prompts, respectively, and λ1 represents the weight for errors associated with negative image-text pairs. The negative prompts cn are incorrect text descriptions, for example, a description like “A photo of a disgusted facial expression” for an image showing a happy facial expression (as illustrated in Fig. 3(a)). In the experiments, cn is randomly chosen. CoDiT explicitly maximizes the discrepancy in noise-prediction error between positive and negative pairs. Although the LCoDiT loss benefits classification, challenges arise when tuning the hyperparameter 
+
+λ1. On the one hand, large values of λ1, such as 0.5 or 1, lead to instability during training - prediction errors for both positive and negative pairs severely increase as training proceeds, even though their discrepancy also grows. This contradicts the goal of diffusion models, which is to minimize errors for positive descriptions, and deteriorates the model’s ability to estimate real data distribution. On the other hand, small values of λ1, such as 0.01 or 0.005, limit the contri-bution of negative image-text pairs, reducing the emphasis on increasing noise-prediction errors for negative descriptions. Consequently, the model is less effectively encouraged to distinguish between positive and negative pairs, limiting the performance improvement of EmoDC. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5Input data  
+
+> Random Noise
+> Noisy data
+> V K Q
+> V K Q
+> Diffusion model
+> Timestep
+> : "A photo of a happy facial expression." Text descriptions
+> : e.g., or "A photo of a facial expression."
+> : "A photo of a disgusted facial expression."
+
+(a) The proposed AMDiT framework 
+
+> LoRA
+> Random sampling
+
+(b) Fixed margin ( )
+
+> "Easy" "Hard"
+
+(c) Adaptive margin ( ) 
+
+> Pull
+> Push
+> "Easy" "Hard"
+> Text descriptions
+> : "A photo of a disgusted facial expression."
+> : "A photo of a fearful facial expression."
+> ... Negative descriptions
+
+Fig. 3: Illustration of: (a) The proposed AMDiT framework, where d∗ denotes the noise-prediction error || ϵθ (xt, t, c ∗) − ϵ|| 22
+
+and * represents p, n, or nn. Specifically, dp, dn, and dnn represent the noise-prediction errors of a positive image-text pair, a negative image-text pair, and a pair consisting of a facial image and a non-negative text prompt respectively. These prediction errors are used to compute the LAMDiT training objective (Eq. (11)). A negative prompt cn for an image is randomly sampled from a pool of negative descriptions (i.e., all categorical descriptions except the positive one). (b) Analysis of training with a fixed margin mf . (c) Analysis of training with an adaptive margin αd nn . A larger circle radius indicates higher noise-prediction difficulty and therefore a higher error (e.g., a “hard” sample), and vice versa. 
+
+2) Margin-based Discrepancy Training: Inspired by the triplet loss [51], we introduce a margin-based discrepancy loss to enhance model training, formally expressed as follows: 
+
+Lmargin =Ex0,t,ϵ 
+
+max || ϵθ (xt, t, c p) − ϵ|| 22−|| ϵθ (xt, t, c n) − ϵ|| 22 + m, 0  , (10) where m represents the margin. 
+
+Fixed Margin Discrepancy Training (FMDiT): In this train-ing strategy, the margin parameter “ m” is typically fixed throughout training (denoted as mf ). A large, fixed margin may cause instability (similar to the effect of a large λ1
+
+in CoDiT), which degrades the model’s noise-prediction ca-pability and amplifies errors for positive pairs. Conversely, a smaller margin stabilizes training but fails to account for varying noise-prediction difficulty. For instance, assigning a large margin to easy samples may impair the model’s noise-prediction ability, because excessively increasing noise-prediction errors on negative prompts can also increase noise-prediction errors on positive ones. On the other hand, using a small margin for hard samples has a limited impact on the model’s discriminative ability. Consequently, FMDiT lacks adaptability, constraining its potential performance gains. 
+
+Adaptive Margin Discrepancy Training (AMDiT): To ad-dress the limitations of using a fixed margin, we propose AMDiT, a novel framework designed to enhance the perfor-mance of EmoDC. Fig. 3(a) illustrates the proposed AMDiT pipeline. We introduce the use of noise-prediction errors, conditioned on non-negative text prompts cnn , as the adaptive margin. This non-negative description can be the positive prompt cp (cnn = cp), a text description without class informa-tion (denoted as cnc , e.g., “A photo of a facial expression.”), or a null text ( cnn = ∅). The objective function for the proposed AMDiT is formulated as follows: 
+
+LAMDiT =Ex0,t,ϵ 
+
+max || ϵθ (xt, t, c p) − ϵ|| 22−|| ϵθ (xt, t, c n) − ϵ|| 22 + α|| ϵθ (xt, t, c nn ) − ϵ|| 22, 0  ,
+
+(11) where α controls the weight of the adaptive margin. We set α
+
+to a small value to ensure training stability. The adoption of this adaptive margin is motivated by two key considerations: First, a fixed margin lacks adaptability to samples with dif-ferent noise-prediction difficulties. Figs. 3(b) and 3(c) compare training under fixed and adaptive margin schemes. The fixed margin scheme employs a static, predefined margin uniformly across all samples, ignoring differences in noise-prediction difficulty. In contrast, the adaptive margin scheme dynamically adjusts the margin based on sample-specific difficulty. Second, denoising diffusion models [14], [15] are trained to predict noise from noisy images or latent representations. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 60.050 0.075 0.100 0.125 0.150 0.175 
+
+> Error - Positive prompt
+> 0.050
+> 0.075
+> 0.100
+> 0.125
+> 0.150
+> 0.175
+> Error - Null prompt
+
+(a) 0.050 0.075 0.100 0.125 0.150 0.175  
+
+> Error - Positive prompt
+> 0.050
+> 0.075
+> 0.100
+> 0.125
+> 0.150
+> 0.175
+> Error - Non-class prompt
+
+(b) 0.050 0.075 0.100 0.125 0.150 0.175  
+
+> Error - Positive prompt
+> 0.050
+> 0.075
+> 0.100
+> 0.125
+> 0.150
+> 0.175
+> 0.200
+> Error - Negative prompt  Base
+> AMDiT
+
+(c) 
+
+Fig. 4: Correlations of noise-prediction errors between the positive prompt cp and the null prompt ∅, non-class prompt cnc , and negative prompt cn. For each sample, the final error for negative prompts is calculated by averaging the errors across all incorrect categorical descriptions. The red line represents a linear reference with a slope of 1. The “Base” model is EmoDC trained using vanilla fine-tuning without negative image-text pairs, with its training objective defined in Equation (6). Experiments were conducted on 300 samples from RAF-DB B. While noise prediction performance varies with the predic-tion difficulty of different samples, prediction errors show minimal variance when conditioned on different non-negative descriptions for the same image. This observation is supported by Figs. 4(a) and 4(b), which illustrate the correlation be-tween noise-prediction errors for positive prompts versus null prompts and non-class prompts. Intuitively, noise-prediction error serves as an indicator for noise-prediction difficulty: a smaller error corresponds to lower prediction difficulty, while a larger error signifies greater difficulty. The strong linear correlation with a slope of 1 between non-negative prompts (e.g., null prompt vs. positive prompt) is evident in Figs. 4(a) and 4(b). This implies that noise-prediction difficulty is primarily determined by the characteristics of the noisy latent (in Stable Diffusion), with minimal influence from the text prompts. Consequently, noise-prediction errors associated with non-negative prompts can be leveraged as adaptive margins, reflecting sample-specific prediction difficulty. This ensures smaller margins are assigned to easier samples and larger mar-gins to harder ones. Fig. 4(c) depicts the correlation between errors for positive prompts and negative prompts. Notably, most data points lie above the red reference line (with a slope of 1), indicating that errors for negative prompts consistently exceed those for positive prompts. This disparity highlights the effectiveness of adopting diffusion models for FER tasks. Additionally, the proposed EmoDC with AMDiT ( cnn = cp)exhibits higher errors for negative prompts compared to the EmoDC Base model, suggesting that AMDiT enhances the discriminative capacity of diffusion models in distinguishing facial expressions. IV. E XPERIMENTS 
+
+A. Datasets 
+
+To demonstrate the effectiveness of the proposed method, we evaluate it on four in-the-wild facial expression datasets, including both basic and compound facial expressions: the RAF-DB basic set (denoted as RAF-DB B), the RAF-DB compound set (denoted as RAF-DB C) [29], SFEW-2.0 [56], and AffectNet [57]. In addition, we also employ FER2013Plus [58] for cross-dataset evaluation. 
+
+RAF-DB [29] is a large-scale dataset containing nearly 30,000 image samples, divided into two subsets: a basic set and a compound set. Most prior studies have focused on the basic set. The basic set contains 12,271 training images and 3,068 testing images, categorized into seven classes: one neutral facial expression (Ne) and six basic facial expressions, i.e., happiness (Ha), anger (An), sadness (Sa), disgust (Di), surprise (Su), and fear (Fe). The compound set, on the other hand, contains 3,162 training samples and 792 testing samples, comprising eleven compound facial expressions: HaDi (i.e., Happy Disgust), HaSu, SaFe, FeAn, FeSu, SaAn, SaSu, SaDi, AnSu, AnDi, and DiSu. These two subsets are adopted to demonstrate the effectiveness of the proposed method in analyzing both simple and complex facial expressions. 
+
+SFEW-2.0 [56] is a challenging FER benchmark, com-prising over 1,500 facial images extracted from movies. The dataset is divided into three sets: a training set with 958 samples, a validation set with 436 samples, and a test set with 372 samples. We follow previous studies [3], [37], [59] that use the validation set for evaluation. SFEW 2.0 includes seven categories, identical to those in RAF-DB B. 
+
+AffectNet [57] is a large-scale FER database, containing more than 290,000 facial expression images. In this study, we employ the seven classes of standard facial expressions. The dataset is divided into two subsets: a training set with 283,900 samples and a validation set with 3,500 samples. The validation set is balanced, with an equal number of samples for each class. 
+
+FER2013Plus [58] is a re-annotated version of FER2013 [60]. The dataset is divided into three subsets: a training set with 28,558 samples, a validation set with 3,579 samples, and a test set with 3,573 samples. We adopt the seven basic expressions from the test set for cross-dataset evaluations. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+
+TABLE I: Accuracy (%) on RAF-DB B with different hyper-parameter values of λ1, mf , and α for EmoDC variants tuned with CoDiT, FMDiT, and AMDiT, respectively.                                                        
+
+> Method Hyperparam. 1-step 10-step 100-step Avg. Base -55.74 76.27 83.67 71.89 CoDiT
+> λ1= 0 .001 56.71 77.71 84.45 72.96
+> λ1= 0 .005 58.47 77.97 85.17 73.87
+> λ1= 0 .01 56.71 77.90 84.45 73.02 FMDiT
+> mf= 0 .0001 78.85 86.44 86.83 84.04
+> mf= 0 .0005 87.35 87.03 87.22 87.20
+> mf= 0 .001 86.96 86.99 87.19 87.05 AMDiT
+> α= 0 .005 88.72 89.28 89.41 89.14
+> α= 0 .01 89.18 89.83 90.12 89.71
+> α= 0 .05 88.23 88.66 88.62 88.50
+
+B. Implementation Details 
+
+We employ Stable Diffusion v2.1 1 [15] as the conditional diffusion model to evaluate the performance of the proposed training methods. For efficient training, we adopt LoRA with a rank of 16. The AdamW [61] optimizer is employed with a learning rate of 0.0001 and a weight decay of 0.01. Gradients are clipped to a maximum value of 1, with a gradient accumu-lation step of 1. The number of training steps is set to 30,000 for RAF-DB B, 10,000 for RAF-DB C, and 2,000 for SFEW 2.0. Experiments are conducted on RTX4090 GPUs with a total batch size of 64. The model is trained on images with a resolution of 256 × 256 . Images are aligned and cropped to a resolution of 512 × 512 using MTCNN [62], then resized to 
+
+256 × 256 . Random horizontal flipping is applied as the only data augmentation technique. 
+
+C. Experimental Results 1) Hyperparameter Investigation: We investigate the im-pact of different hyperparameter values - λ1, mf , and α -for CoDiT, FMDiT, and AMDiT, respectively. EmoDC Base serves as the baseline method, using the vanilla training approach without discrepancy training (Equation (6)). Eval-uations are conducted using different numbers of timesteps, including 1-step evaluation, and uniformly spaced 10-step and 100-step evaluations. Final performance is assessed by averaging accuracies across the 1-step, 10-step, and 100-step evaluations. For the 1-step evaluation, the 400th timestep is used for Base and CoDiT, while the 100th timestep is used for FMDiT and AMDiT (see analysis in Section IV-C4). For AMDiT, we adopt cnn = cp in this experiment. The experimental results, listed in Table I, demonstrate that model performance varies with different hyperparameter settings. Large values for these hyperparameters may lead to unstable training and suboptimal accuracy across all methods. In the case of CoDiT, a small λ1 fails to adequately emphasize negative image-text pairs, leading to marginal improvements over EmoDC Base. For margin-based methods, small values of mf or α weaken EmoDC’s discriminative capability due to insufficient separation margins. The optimal hyperparameter settings are empirically determined as follows: λ1 = 0 .005 for CoDiT, mf = 0 .0005 for FMDiT, and α = 0 .01 for AMDiT. These settings are used in all subsequent experiments. 
+
+> 1We leverage Stable Diffusion v2.1 from Hugging Face
+
+TABLE II: Accuracy (%) of AMDiT with different non-negative prompts on RAF-DB B. Here, the non-class prompt 
+
+cnc =“A photo of a facial expression.”        
+
+> cnn =cnc cp∅
+> Acc. 89.08 90.12 87.74
+
+TABLE III: Accuracy (%) of different training methods for Stable Diffusion in 100-step evaluations.                                   
+
+> Method \Dataset RAF-DB B RAF-DB C SFEW-2.0 AffectNet Zero-shot 26.34 17.68 24.31 28.14 EmoDC Base 83.67 51.89 48.39 59.63 CoDiT 85.17 53.54 49.77 60.26 FMDiT 87.22 63.38 52.98 61.63 AMDiT ( cnn =cnc )89.08 63.51 56.42 64.49
+> AMDiT ( cnn =cp)90.12 68.18 56.19 63.89
+
+2) Non-negative Prompt Analysis: FMDiT fails to accom-modate sample-wise noise-prediction difficulty. To address this, we propose AMDiT, which uses an adaptive margin derived from the noise-prediction error conditioned on a non-negative prompt. This error reflects the noise-prediction diffi-culty of each sample. To analyze the impact of different non-negative prompts cnn , we conduct experiments on RAF-DB B using cnn =“A photo of a facial expression.” ( cnc ), cnn = cp,and cnn = ∅. The results of the 100-step evaluation are used in this experiment and the subsequent ones, except those in Section IV-C4. As shown in Table II, all three adaptive margin methods outperform Base, CoDiT, and FMDiT (from Table I). This demonstrates the effectiveness of the proposed AMDiT method. Among three adaptive margin methods, AMDiT with 
+
+cnn = cp achieves the best results. 
+
+3) Incremental Analysis: To validate the effectiveness of the proposed method, experiments are conducted across the four datasets. This evaluation comprises six approaches, in-cluding zero-shot classification, baseline EmoDC (Base), and four enhanced variants incorporating discrepancy training techniques: CoDiT, FMDiT, AMDiT ( cnn = cnc ), and AMDiT (cnn = cp). Zero-shot classification evaluates images at a resolution of 512 × 512 , consistent with its original train-ing configuration, while other methods adopt images at the 
+
+256 × 256 resolution. As shown in Table III, methods trained on facial expression datasets significantly improve FER performance compared to zero-shot classification. Discrepancy-based training methods, including CoDiT, FMDiT, and AMDiT, outperform EmoDC Base by suppressing accurate noise predictions for negative image-text pairs. Specifically, CoDiT improves accuracy over the Base model by 1.50%, 1.65%, 1.38%, and 0.63% on RAF-DB B, RAF-DB C, SFEW-2.0, and AffectNet, respectively. Further performance gains are achieved by the margin-based discrepancy training methods, i.e., FMDiT and AMDiT. For instance, on RAF-DB B, FMDiT yields a notable 3.55% improvement, reaching 87.22%. However, FMDiT struggles to adapt the margin to varying levels of noise-prediction difficulty. In contrast, AMDiT, which leverages adaptive mar-gins, demonstrates superior performance across all datasets. Specifically, the AMDiT ( cnn = cnc ) variant yields accuracy improvements of 5.41% on RAF-DB B, 11.62% on RAF-DB C, 8.03% on SFEW-2.0, and 4.86% on AffectNet relative JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8Su Fe Di Ha Sa An Ne 
+
+Prediction 
+
+Su 
+
+Fe 
+
+Di 
+
+Ha 
+
+Sa 
+
+An 
+
+Ne 
+
+> Ground-truth
+
+79.33 6.69 3.04 1.82 0.91 3.34 4.86 
+
+5.41 81.08 4.05 2.70 1.35 5.41 0.00 
+
+1.88 1.88 73.12 1.25 3.12 8.75 10.00 
+
+1.52 0.84 2.03 89.37 0.84 1.52 3.88 
+
+1.67 4.18 7.53 1.46 76.99 0.84 7.32 
+
+0.00 0.00 9.88 0.00 0.62 86.42 3.09 
+
+3.82 0.29 4.41 3.38 4.71 0.74 82.65 
+
+Base: 81.28 Su Fe Di Ha Sa An Ne 
+
+Prediction 
+
+Su 
+
+Fe 
+
+Di 
+
+Ha 
+
+Sa 
+
+An 
+
+Ne 
+
+> Ground-truth
+
+82.98 5.17 2.43 1.52 2.43 1.52 3.95 
+
+2.70 77.03 4.05 2.70 5.41 5.41 2.70 
+
+3.75 2.50 71.88 1.88 6.88 3.12 10.00 
+
+2.11 0.25 1.43 91.22 0.51 0.59 3.88 
+
+1.26 2.30 6.28 2.72 79.08 0.63 7.74 
+
+1.85 1.23 11.11 0.00 0.62 82.72 2.47 
+
+2.94 0.00 3.53 3.53 4.85 0.59 84.56 
+
+CoDiT: 81.35 Su Fe Di Ha Sa An Ne 
+
+Prediction 
+
+Su 
+
+Fe 
+
+Di 
+
+Ha 
+
+Sa 
+
+An 
+
+Ne 
+
+> Ground-truth
+
+82.37 3.04 1.82 3.95 1.52 3.65 3.65 
+
+16.22 59.46 2.70 6.76 9.46 2.70 2.70 
+
+1.25 0.00 75.62 9.38 5.00 5.62 3.12 
+
+0.34 0.08 1.01 95.61 0.51 0.51 1.94 
+
+0.21 0.42 3.77 2.30 86.19 0.42 6.69 
+
+1.23 1.23 4.94 4.94 0.62 84.57 2.47 
+
+1.18 0.00 3.09 5.15 7.94 0.59 82.06 
+
+FMDiT: 80.84 Su Fe Di Ha Sa An Ne 
+
+Prediction 
+
+Su 
+
+Fe 
+
+Di 
+
+Ha 
+
+Sa 
+
+An 
+
+Ne 
+
+> Ground-truth
+
+86.63 1.52 3.65 1.22 1.52 1.52 3.95 
+
+13.51 62.16 1.35 5.41 8.11 8.11 1.35 
+
+0.62 0.00 78.75 5.62 6.25 3.75 5.00 
+
+0.34 0.00 0.68 96.79 0.34 0.25 1.60 
+
+0.21 0.00 2.09 2.93 89.12 0.84 4.81 
+
+1.23 0.62 8.64 3.70 0.00 83.33 2.47 
+
+1.18 0.00 1.62 2.94 5.74 0.29 88.24 
+
+AMDiT: 83.57 
+
+RAF-DB B Ne An Di Fe Ha Sa Su 
+
+Prediction 
+
+Ne 
+
+An 
+
+Di 
+
+Fe 
+
+Ha 
+
+Sa 
+
+Su 
+
+> Ground-truth
+
+55.81 2.33 19.77 6.98 2.33 2.33 10.47 
+
+6.49 33.77 42.86 1.30 3.90 1.30 10.39 
+
+17.39 4.35 30.43 0.00 13.04 13.04 21.74 
+
+14.89 12.77 23.40 19.15 0.00 2.13 27.66 
+
+2.74 0.00 5.48 0.00 87.67 1.37 2.74 
+
+10.96 0.00 13.70 13.70 5.48 38.36 17.81 
+
+19.30 0.00 12.28 7.02 8.77 1.75 50.88 
+
+Base: 45.15 Ne An Di Fe Ha Sa Su 
+
+Prediction 
+
+Ne 
+
+An 
+
+Di 
+
+Fe 
+
+Ha 
+
+Sa 
+
+Su 
+
+> Ground-truth
+
+55.81 0.00 15.12 6.98 4.65 3.49 13.95 
+
+7.79 36.36 33.77 6.49 3.90 1.30 10.39 
+
+21.74 17.39 21.74 0.00 13.04 17.39 8.70 
+
+17.02 12.77 14.89 19.15 0.00 14.89 21.28 
+
+4.11 0.00 0.00 1.37 90.41 2.74 1.37 
+
+8.22 0.00 10.96 17.81 6.85 39.73 16.44 
+
+15.79 3.51 8.77 5.26 7.02 3.51 56.14 
+
+CoDiT: 45.62 Ne An Di Fe Ha Sa Su 
+
+Prediction 
+
+Ne 
+
+An 
+
+Di 
+
+Fe 
+
+Ha 
+
+Sa 
+
+Su 
+
+> Ground-truth
+
+65.12 4.65 5.81 4.65 6.98 9.30 3.49 
+
+9.09 61.04 9.09 3.90 2.60 1.30 12.99 
+
+17.39 8.70 13.04 0.00 17.39 34.78 8.70 
+
+14.89 27.66 2.13 14.89 8.51 17.02 14.89 
+
+4.11 5.48 0.00 0.00 83.56 6.85 0.00 
+
+17.81 1.37 2.74 8.22 8.22 53.42 8.22 
+
+24.56 17.54 1.75 10.53 7.02 7.02 31.58 
+
+FMDiT: 46.09 Ne An Di Fe Ha Sa Su 
+
+Prediction 
+
+Ne 
+
+An 
+
+Di 
+
+Fe 
+
+Ha 
+
+Sa 
+
+Su 
+
+> Ground-truth
+
+63.95 2.33 3.49 3.49 1.16 23.26 2.33 
+
+7.79 64.94 11.69 0.00 0.00 11.69 3.90 
+
+13.04 8.70 26.09 0.00 4.35 43.48 4.35 
+
+12.77 21.28 6.38 12.77 2.13 36.17 8.51 
+
+4.11 1.37 2.74 0.00 82.19 9.59 0.00 
+
+10.96 0.00 0.00 6.85 0.00 73.97 8.22 
+
+15.79 19.30 1.75 15.79 7.02 15.79 24.56 
+
+AMDiT: 49.78 
+
+SFEW-2.0 HaSu HaDi SaFe SaAn SaSu SaDi FeAn FeSu AnSu AnDi DiSu 
+
+Prediction 
+
+HaSu 
+
+HaDi 
+
+SaFe 
+
+SaAn 
+
+SaSu 
+
+SaDi 
+
+FeAn 
+
+FeSu 
+
+AnSu 
+
+AnDi 
+
+DiSu 
+
+> Ground-truth
+
+65.93 4.44 2.96 0.00 5.93 0.74 1.48 4.44 6.67 0.74 6.67 
+
+6.38 51.06 2.13 2.13 4.26 4.26 0.00 0.00 2.13 12.77 14.89 
+
+0.00 0.00 36.36 9.09 27.27 13.64 4.55 4.55 0.00 0.00 4.55 
+
+3.03 3.03 3.03 48.48 0.00 9.09 9.09 3.03 0.00 18.18 3.03 
+
+5.56 0.00 22.22 0.00 44.44 16.67 0.00 5.56 0.00 0.00 5.56 
+
+0.00 17.73 2.84 11.35 2.13 43.97 0.71 0.71 0.00 9.93 10.64 
+
+6.06 3.03 6.06 15.15 0.00 0.00 51.52 6.06 9.09 3.03 0.00 
+
+12.93 0.00 12.93 0.00 7.76 0.00 2.59 49.14 5.17 0.00 9.48 
+
+13.16 5.26 0.00 2.63 2.63 2.63 13.16 0.00 39.47 5.26 15.79 
+
+0.57 11.49 0.57 6.90 2.30 5.75 1.15 0.57 4.02 62.07 4.60 
+
+2.86 11.43 5.71 5.71 11.43 5.71 5.71 0.00 22.86 8.57 20.00 
+
+Base: 46.59 HaSu HaDi SaFe SaAn SaSu SaDi FeAn FeSu AnSu AnDi DiSu 
+
+Prediction 
+
+HaSu 
+
+HaDi 
+
+SaFe 
+
+SaAn 
+
+SaSu 
+
+SaDi 
+
+FeAn 
+
+FeSu 
+
+AnSu 
+
+AnDi 
+
+DiSu 
+
+> Ground-truth
+
+69.63 5.19 0.74 0.00 5.93 1.48 2.22 5.19 5.19 0.74 3.70 
+
+6.38 51.06 2.13 2.13 4.26 6.38 0.00 0.00 2.13 14.89 10.64 
+
+0.00 0.00 36.36 4.55 27.27 18.18 4.55 4.55 0.00 0.00 4.55 
+
+3.03 0.00 6.06 54.55 0.00 9.09 6.06 0.00 0.00 21.21 0.00 
+
+5.56 0.00 22.22 0.00 55.56 11.11 0.00 0.00 0.00 0.00 5.56 
+
+0.71 12.77 4.96 10.64 1.42 50.35 0.71 0.00 0.00 9.93 8.51 
+
+0.00 3.03 6.06 15.15 0.00 0.00 57.58 12.12 3.03 3.03 0.00 
+
+16.38 0.86 9.48 0.00 7.76 0.00 2.59 47.41 7.76 0.00 7.76 
+
+7.89 2.63 0.00 5.26 5.26 2.63 18.42 0.00 39.47 7.89 10.53 
+
+0.00 8.62 0.57 8.62 1.72 6.90 2.30 0.57 6.90 59.77 4.02 
+
+2.86 8.57 2.86 8.57 17.14 2.86 0.00 2.86 11.43 25.71 17.14 
+
+CoDiT: 48.99 HaSu HaDi SaFe SaAn SaSu SaDi FeAn FeSu AnSu AnDi DiSu 
+
+Prediction 
+
+HaSu 
+
+HaDi 
+
+SaFe 
+
+SaAn 
+
+SaSu 
+
+SaDi 
+
+FeAn 
+
+FeSu 
+
+AnSu 
+
+AnDi 
+
+DiSu 
+
+> Ground-truth
+
+80.00 1.48 1.48 0.74 0.00 1.48 0.00 8.15 0.74 5.93 0.00 
+
+19.15 25.53 2.13 0.00 0.00 6.38 0.00 2.13 2.13 42.55 0.00 
+
+18.18 0.00 40.91 0.00 4.55 22.73 0.00 9.09 0.00 4.55 0.00 
+
+3.03 0.00 6.06 27.27 0.00 9.09 15.15 0.00 0.00 39.39 0.00 
+
+16.67 0.00 16.67 0.00 11.11 22.22 0.00 33.33 0.00 0.00 0.00 
+
+1.42 2.84 2.84 2.84 0.00 63.12 0.00 2.13 0.00 24.82 0.00 
+
+3.03 0.00 3.03 3.03 0.00 0.00 69.70 12.12 0.00 9.09 0.00 
+
+8.62 0.00 2.59 0.86 0.86 0.00 2.59 79.31 0.86 4.31 0.00 
+
+21.05 0.00 0.00 0.00 0.00 0.00 10.53 7.89 23.68 36.84 0.00 
+
+1.15 0.57 0.00 1.15 0.00 8.62 0.57 1.15 0.57 85.63 0.57 
+
+5.71 0.00 2.86 0.00 2.86 8.57 0.00 20.00 11.43 48.57 0.00 
+
+FMDiT: 46.02 HaSu HaDi SaFe SaAn SaSu SaDi FeAn FeSu AnSu AnDi DiSu 
+
+Prediction 
+
+HaSu 
+
+HaDi 
+
+SaFe 
+
+SaAn 
+
+SaSu 
+
+SaDi 
+
+FeAn 
+
+FeSu 
+
+AnSu 
+
+AnDi 
+
+DiSu 
+
+> Ground-truth
+
+82.96 2.22 0.00 0.74 0.74 2.22 0.00 7.41 0.74 2.96 0.00 
+
+12.77 51.06 2.13 0.00 0.00 8.51 0.00 0.00 2.13 21.28 2.13 
+
+13.64 0.00 36.36 4.55 9.09 27.27 0.00 4.55 0.00 4.55 0.00 
+
+3.03 3.03 9.09 33.33 0.00 15.15 0.00 0.00 0.00 36.36 0.00 
+
+5.56 0.00 16.67 5.56 22.22 16.67 0.00 33.33 0.00 0.00 0.00 
+
+0.71 2.84 0.00 1.42 0.00 80.14 0.00 0.71 0.00 13.48 0.71 
+
+3.03 0.00 9.09 15.15 0.00 0.00 51.52 6.06 3.03 12.12 0.00 
+
+11.21 0.00 0.86 0.00 0.00 1.72 3.45 80.17 0.00 2.59 0.00 
+
+21.05 0.00 0.00 2.63 0.00 2.63 2.63 10.53 36.84 23.68 0.00 
+
+1.15 1.72 0.00 1.72 0.00 14.37 0.00 0.57 0.00 79.89 0.57 
+
+11.43 2.86 2.86 0.00 5.71 20.00 0.00 11.43 11.43 20.00 14.29 
+
+AMDiT: 51.71 
+
+RAF-DB C 
+
+Fig. 5: Confusion matrices of four EmoDC variants across three datasets in 100-step evaluations. The mean class accuracy (%) is shown above each matrix. For AMDiT, results of cnn = cp are presented. to EmoDC Base, reaching accuracies of 89.08%, 63.51%, 56.42%, and 64.49%, respectively. Notably, AMDiT ( cnn = cp)achieves accuracy improvements of 6.45% and 16.29% on RAF-DB B and RAF-DB C, respectively, outperforming all other methods. Given the class imbalance inherent in the datasets, both class accuracy and mean class accuracy are evaluated to ensure reliable results for real-world applications. Fig. 5 compares four EmoDC variants using 100-step evaluations. The results indicate that CoDiT improves mean class accuracy compared to the Base method. While FMDiT enhances overall accuracy, it can reduce mean class accuracy. One contributing factor to this performance drop is the challenge of using a fixed margin that is not large enough to effectively handle difficult samples in some classes, such as “happy disgust” in RAF-DB C. In contrast, the AMDiT method alleviates this issue and notably outperforms the other three EmoDC variants with a large margin in terms of mean class accuracy. This demonstrates its effectiveness in enhancing FER performance with respect to both overall and mean class accuracies. 
+
+4) Evaluation of Different Timesteps: In this section, we analyze both the 1-step and multi-step evaluations. 1-step evaluation utilizes a single timestep to obtain classification results, whereas multi-step evaluations utilize multiple evenly spaced timesteps (e.g., 10, 100, 200) to obtain the results. Evaluations were conducted on all four datasets. 
+
+1-step evaluation. To elucidate the efficacy and efficiency of our proposed method, we analyze the 1-step evaluation per-formance of EmoDC across different timesteps. The evaluation spans 11 timesteps: {1, 100 , 200 , ..., 900 , 1000 }. Figs. 6(a)-(d) depict the 1-step evaluation results for the four EmoDC variants, leading to three key observations. First, discrepancy-JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 90 200 400 600 800 1000                                    
+
+> Timestep
+> 20
+> 30
+> 40
+> 50
+> 60
+> 70
+> 80
+> 90
+> Accuracy
+> (a) 1-step evaluation on RAF-DB_B 0200 400 600 800 1000
+> Timestep
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Accuracy
+> (b) 1-step evaluation on RAF-DB_C 0200 400 600 800 1000
+> Timestep
+> 15
+> 20
+> 25
+> 30
+> 35
+> 40
+> 45
+> 50
+> 55
+> Accuracy
+> (c) 1-step evaluation on SFEW-2.0 0200 400 600 800 1000
+> Timestep
+> 20
+> 30
+> 40
+> 50
+> 60
+> Accuracy
+> (d) 1-step evaluation on AffectNet 110 100 200 500 1000
+> #. Timesteps
+> 55
+> 60
+> 65
+> 70
+> 75
+> 80
+> 85
+> 90
+> Accuracy
+> (e) Multi-step evaluation on RAF-DB_B 110 100 200 500 1000
+> #. Timesteps
+> 30
+> 35
+> 40
+> 45
+> 50
+> 55
+> 60
+> 65
+> 70
+> Accuracy
+> (f) Multi-step evaluation on RAF-DB_C 110 100 200 500 1000
+> #. Timesteps
+> 35
+> 40
+> 45
+> 50
+> 55
+> Accuracy
+> (g) Multi-step evaluation on SFEW-2.0
+> Base
+> CoDiT
+> FMDiT
+> AMDiT 110 100 200 500 1000
+> #. Timesteps
+> 40
+> 45
+> 50
+> 55
+> 60
+> 65
+> Accuracy
+> (h) Multi-step evaluation on AffectNet
+> Base
+> CoDiT
+> FMDiT
+> AMDiT
+
+Fig. 6: 1-step and multi-step evaluations of the four EmoDC variants across four datasets. For AMDiT, results with cnn = cp
+
+are presented. based training enhances EmoDC performance compared to the baseline EmoDC Base in 1-step evaluations. While CoDiT produces only modest accuracy improvements, margin-based methods yield significant accuracy gains over both EmoDC Base and CoDiT. Second, margin-based methods alter the timestep at which EmoDC achieves peak accuracy. Specif-ically, both EmoDC Base and CoDiT reach their highest accuracy around the 400th timestep, consistent with findings previously reported for diffusion classifiers in [21]. At this timestep, EmoDC Base achieves accuracies of 55.74% on RAF-DB B, 31.19% on RAF-DB C, 32.11% on SFEW-2.0, and 39.11% on AffectNet, while CoDiT reaches 58.47%, 33.08%, 35.78%, and 39.71% on the respective datasets. In contrast, margin-based methods almost reach their highest accuracies much earlier, around the 100th timestep. At this timestep, FMDiT achieves 87.35% on RAF-DB B, 61.36% on RAF-DB C, 50.23% on SFEW-2.0, and 61.00% on Af-fectNet, while AMDiT further improves performance, reaching 89.18%, 65.53%, 53.21%, and 63.46% on the same datasets, respectively. Third, the peak accuracies of FMDiT and AMDiT in 1-step evaluations notably surpass those of EmoDC Base. These findings underscore the exceptional efficacy and effi-ciency of the proposed margin-based methods, highlighting their superior capability to optimize the EmoDC’s single-step performance. 
+
+Multi-step evaluation. Computing mean noise-prediction errors across multiple timesteps yields higher accuracy than relying on a single timestep. Therefore, we conduct evaluations with different numbers of timesteps to assess the potential of the four EmoDC variants. The experiments employ the 1-step evaluation and uniformly spaced 10-, 100-, 200-, 500-, and 1,000-step evaluations. For the 1-step evaluation, the 400th timestep is utilized for EmoDC Base and CoDiT, while the 100th timestep is adopted for FMDiT and AMDiT, based on results from the previous 1-step evaluation. Figs. 6(e)-(h) present the multi-step evaluation results, revealing two key insights. On the one hand, discrepancy training enhances performance compared to EmoDC Base across different multi-step evaluations. Although CoDiT delivers only marginal improvements, margin-based methods, FMDiT and AMDiT, substantially outperform both EmoDC Base and CoDiT by a broad variance. This observation substantiates the significant advantage of margin-based discrepancy training in enhancing the performance of EmoDC. On the other hand, margin-based methods substantially reduce the accuracy disparity between 1-step and multi-step evaluations. Typically, the diffusion classifier requires more timesteps to achieve higher recogni-tion accuracy [21]. For instance, on the RAF-DB B dataset, EmoDC Base needs 500 timesteps to obtain a 30% higher accuracy over 1 timestep, but requires approximately 500 × the computational cost. Margin-based methods effectively mitigate this problem. While the accuracy of EmoDC Base and CoDiT stabilizes beyond 100 timesteps without significant gains, FMDiT and AMDiT stabilize using more than 10 timesteps. Moreover, the performance gap between 1-step and multi-step evaluations for FMDiT and AMDiT remains minimal. This indicates that the proposed margin-based methods can accelerate inference speed without significantly compromis-ing accuracy by using fewer timesteps. Notably, the 1-step accuracy of the margin-based methods surpasses the peak multi-step performance of EmoDC Base and CoDiT across all four datasets. This performance gain can be attributed to the ability of margin-based methods to consistently elevate noise-prediction errors on negative pairs across different timesteps, JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 10 
+
+TABLE IV: Accuracy (%) of state-of-the-art discriminative classifiers and EmoDC on RAF-DB B, SFEW-2.0, and Af-fectNet. “FP” indicates whether the models were pretrained on a facial image dataset before fine-tuning.                                                                             
+
+> Discriminative classifiers Methods FP RAF-DB B SFEW-2.0 AffectNet DLP-CNN [29] No 84.13 51.05 -Island loss [63] No -52.52 -LBAN-IL [64] No 85.89 55.28 -IPA2LT (LTNet) [65] No 86.77 58.29 57.31 RAN [59] Yes 86.90 56.40 59.50 GA-FER [3] Yes 87.52 57.11 -DACL [66] Yes 87.78 -65.20 VTFF [35] Yes 88.14 -61.85 EfficientFace [67] Yes 88.36 -63.70 Meta-Face2Exp [68] Yes 88.76 -64.23 T-VPT-M [6] No 89.70 58.49 -APViT [37] Yes 91.98 61.92 66.91 POSTER [69] Yes 92.05 57.34 67.31 POSTER++ [70] Yes 92.21 57.57 67.49
+> Emotion Diffusion Classifier (EmoDC, ours) Base No 83.67 48.39 59.63 AMDiT ( cnn =cnc )No 89.08 56.42 64.49
+> AMDiT ( cnn =cp)No 90.12 56.19 63.86
+
+TABLE V: Accuracy (%) of state-of-the-art discriminative classifiers and EmoDC on RAF-DB C. “FP” indicates whether the models were pretrained on a facial image dataset before tuning.                         
+
+> Discriminative classifiers Methods FP RAF-DB C DLP-CNN [29] No 57.95 Separate loss [71] No 58.84 ESG-Net [72] Yes 61.90 CDNet [73] Yes 63.03 Bi-center loss [4] Yes 66.16 T-VPT-M [6] No 67.17 Emotion Diffusion Classifier (EmoDC, ours) Base No 51.89 AMDiT ( cnn =cnc )No 63.51 AMDiT ( cnn =cp)No 68.18
+
+thereby enhancing EmoDC’s ability to discriminate different facial expressions. AMDiT consistently outperforms FMDiT across all datasets and multi-step evaluations, highlighting the efficacy and efficiency of the adaptive margin approach employed in EmoDC training. 
+
+5) Comparison to Discriminative Classifiers: This section evaluates EmoDC trained with the proposed AMDiT method across four in-the-wild facial expression datasets. For compar-ison, EmoDC is benchmarked against state-of-the-art (SOTA) discriminative classifiers. The results, presented in Tables IV and V, also indicate whether the models were pretrained on a facial dataset prior to re-training. Pretraining on facial images typically enhances a model’s ability for facial attribute analysis and improves its FER performance. The EmoDC Base method does not outperform any SOTA methods across the three facial expression datasets (excluding AffectNet). However, incorpo-rating the proposed AMDiT enables EmoDC to outperform several prior SOTA methods on RAF-DB B and AffectNet, such as LBAN-IL [35], RAN [59], VTFF [35], and Meta-Face2Exp [68]. Nevertheless, EmoDC still falls short of the strongest SOTA models on RAF-DB B, such as APViT [37], POSTER [69], and POSTER++ [70], although the accuracy gap is relatively small. For the compound facial expression dataset RAF-DB C, Table V shows that EmoDC with AMDiT achieves an SOTA accuracy of 68.18%. Although the proposed EmoDC with AMDiT does not yet surpass the top SOTA discriminative classifiers on basic facial expression datasets, it introduces a pioneering FER paradigm by harnessing the generative capabilities of diffusion models. Although it has not yet achieved benchmark superiority, this approach establishes an innovative foundation that broadens the scope of FER research and its practical applications. 
+
+6) Robustness Evaluations: While discriminative classifiers are vulnerable to shortcut learning and adversarial samples, generative diffusion classifiers demonstrate superior robustness [23], [24]. In this section, we evaluate EmoDC’s robustness un-der noisy and blurry conditions. EmoDC is fine-tuned on clean images and evaluated on adversarial ones. Specifically, Gaus-sian noise ϵimg ∼ (μ, σ 2
+
+> n
+
+) is added to the original test images at varying noise levels, with μ = 0 and σn = {10 , 20 , 30 , 40 , 50 }.It is worth noting that while Gaussian noise is added directly to the original images, Stable Diffusion inherently introduces and removes noise in the latent space [15]. Blurry images are synthesized through a Gaussian kernel with a kernel size of 15 and standard deviations σb = {2, 5, 10 , 15 }. To assess performance, we compare EmoDC with three open-sourced SOTA models: APViT [37], POSTER [69], and POSTER++ [70]. The experimental results, presented in Tables VI and VII, show that APViT exhibits stronger robustness to noisy sam-ples than POSTER and POSTER++, whereas POSTER and POSTER++ excel at handling blurry facial expression images compared with APViT. Although POSTER and POSTER++ achieve higher accuracy on clean images, their performance significantly deteriorates as noise levels increase. This decline may be attributed to the reduced effectiveness of landmark detection under noisy conditions. In contrast, APViT is more resilient to noise, but experiences a sharp performance drop at higher blur levels ( σb). Conversely, POSTER and POSTER++ are more resilient to blur than APViT. The proposed EmoDC variants demonstrate strong performance under both noise and blur conditions. EmoDC Base initially lags behind SOTA methods on clean images, but maintains relatively stable performance as noise or blur levels increase. Enhanced variants incorporating discrepancy training further improve the base model. AMDiT variants exhibit high resilience to both noise and blur, surpassing all other methods as the noise level exceeds σn = 20 or the blur level exceeds σb = 5 . While the three strong SOTA discriminative classifiers demonstrate lim-ited robustness to either noise or blur, EmoDC with AMDiT delivers consistently strong and robust performance under both conditions. These findings highlight EmoDC’s ability to effectively mitigate performance degradation through AMDiT under both noisy and blurry conditions, positioning it as a robust and practical solution for real-world facial expression recognition without the need for additional image restoration models. 
+
+7) Cross-dataset evaluations: We conduct cross-dataset evaluations by training the models on RAF-DB B and testing JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 11 
+
+TABLE VI: Evaluation of EmoDC’s robustness to noise on RAF-DB B and SFEW-2.0 with Gaussian noises ( μ = 0 , σn = {10 , 20 , 30 , 40 , 50 }). “clean” denotes images without noise.                                                                                                               
+
+> Methods RAF-DB B SFEW-2.0 *
+> clean 10 20 30 40 50 clean 10 20 30 40 50 APViT [37] 91.98 90.74 87.71 84.55 78.94 70.70 57.34 54.82 45.41 42.43 33.49 26.15 POSTER [69] 92.05 90.55 87.16 79.53 66.23 46.22 57.34 50.00 45.18 35.32 27.98 25.23 POSTER++ [70] 92.21 89.67 85.66 73.24 54.79 35.72 57.57 46.56 36.24 25.00 20.18 19.73 Base 83.67 79.47 79.04 76.86 73.99 70.93 48.39 49.08 48.62 46.56 45.18 43.35
+> CoDiT 85.17 80.08 80.15 77.71 75.39 72.16 49.77 49.31 46.10 44.27 43.35 37.84 FMDiT 87.22 86.08 85.37 83.47 82.66 80.41 52.98 50.69 46.33 40.83 37.16 33.26 AMDiT ( cnc )89.08 88.62 87.94 86.51 83.31 80.44 56.42 55.05 52.98 49.54 46.33 41.28 AMDiT ( cp)90.12 89.86 88.46 86.99 85.37 84.19 56.12 54.82 49.77 46.56 44.27 41.28
+> *The APViT, POSTER, and POSTER++ models were re-trained on the same aligned images as our methods.
+
+TABLE VII: Evaluation of EmoDC’s robustness to blur on RAF-DB B and SFEW-2.0 using Gaussian blurring with a kernel size of 15 and standard deviations σb = {2, 5, 10 , 15 }.                                                                                            
+
+> Methods RAF-DB B SFEW-2.0 *
+> clean 2510 15 clean 2510 15 APViT [37] 91.98 78.94 42.37 38.79 38.56 57.34 52.52 25.92 24.08 23.39 POSTER [69] 92.05 90.65 82.17 78.68 78.10 57.34 56.65 49.54 45.64 44.72 POSTER++ [70] 92.21 90.35 81.06 78.52 78.06 57.57 55.05 47.48 43.12 41.92 Base 83.67 61.80 57.46 60.72 61.34 48.39 47.02 48.85 48.85 47.71 CoDiT 85.17 73.21 66.53 66.40 66.85 49.77 48.85 49.77 48.62 47.94 FMDiT 87.22 83.15 76.37 74.77 74.87 52.98 53.67 50.46 47.48 47.25 AMDiT ( cnc )89.08 88.85 82.14 80.22 79.76 56.42 56.42 56.88 56.42 55.96
+> AMDiT ( cp)90.12 87.74 78.68 76.92 76.50 56.12 53.67 50.92 47.94 47.94
+> *The APViT, POSTER, and POSTER++ models were re-trained on the same aligned images as our methods.
+
+An  Di  Ne Ha  Sa 
+
+cfg=3 
+
+cfg=5 
+
+Su  Fe 
+
+Fig. 7: Examples of facial expression generation using EmoDC with AMDiT ( cnn = cp), trained on RAF-DB B. Images are generated with classifier-free guidance scales (cfg) of 3 and 5. TABLE VIII: Cross-dataset evaluation results on SFEW-2.0, FER2013Plus, and RAF-DB C. All models are trained on the RAF-DB B training set.                      
+
+> Method SFEW-2.0 FER2013Plus RAF-DB C APViT [37] 51.83 72.71 -POSTER [69] 44.95 63.52 -POSTER++ [70] 48.85 66.50 -Base 48.17 64.99 43.94 AMDiT ( cnc )51.72 77.13 48.48 AMDiT ( cp)52.06 78.35 53.91
+
+them on three datasets: SFEW-2.0, FER2013Plus, and RAF-DB C. Notably, the three advanced discriminative classifiers exhibit limited cross-dataset generalization, particularly when transitioning from basic to compound facial expressions. In contrast, EmoDC demonstrates robust performance in such evaluations. This advantage stems from the fact that discrim-inative classifiers are constrained to predefined categories, whereas diffusion-based classifiers can generalize more effec-tively to unseen categories. The results, presented in Table VIII, show that AMDiT enhances EmoDC’s cross-dataset performance, outperforming both the EmoDC base model and the three strong discriminative classifiers. These findings underscore the efficacy of AMDiT in improving generalization across datasets. 
+
+8) Generation Analysis: A key advantage of generative diffusion classifiers lies in their capacity to generate visual images, allowing for a clearer understanding of the knowledge acquired by the model. This capacity offers an enhancement in interpretability compared to discriminative classifiers. Dif-fusion models generate images through an iterative denoising process, starting from random noise sampled from a Gaussian distribution [14], [15], [55]. For this study, facial expression images were generated using the EmoDC variant with AMDiT (cnn = cp). As depicted in Fig. 7, the images showcase seven basic facial expressions synthesized under two classifier-free guidance scales (cfg), 3 and 5. This generative capability underscores the model’s deep understanding of the underlying data distribution of facial expressions. The cfg scale controls the balance between generation diversity and fidelity [74]: higher cfg values enhance fidelity at the expense of diversity, and vice versa. In this case, a larger cfg value results in more pronounced facial expressions characterized by exaggerated facial muscle movements. Specifically, images generated with cfg = 5 exhibit more distinct shapes—key indicators for identifying emotional states in facial expressions. This finding aligns with [49], which highlights a human-like shape bias in diffusion classifiers. The precise generation of facial expres-sions arises from the accurate modeling of real data distri-bution by the generative diffusion model, which contributes to the high accuracy of EmoDC. Training on well-defined and diverse facial expressions enhances the model’s ability to discern subtle inter-class differences (e.g., distinguishing “surprise” from “fear”) and intra-class variations (e.g., degrees of “sad”). However, EmoDC trained with AMDiT reveals two JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 12 
+
+TABLE IX: Comparison of training GPU hours and inference speed (including per-image inference time and frames per second (FPS)) for discriminative models and EmoDC variants. All evaluations were conducted on RTX 4090 GPUs.                   
+
+> Methods GPU hours Inference Time (ms/image) FPS APViT [37] 0.8 7.8 128 POSTER [69] 4.6 14.7 68 POSTER++ [70] 2.5 5.2 192 EmoDC (1-step) 8.6 29.5 34 EmoDC (10-step) 8.6 143.0 7
+
+notable limitations in generated facial expressions: unnatural color tones and anomalous patterns that reduce visual co-herence. Despite these limitations, the primary focus of this study remains on facial expression recognition. Concurrent improvement of both generation and recognition performance is a direction for future research. V. C ONCLUSION AND DISCUSSION 
+
+A. Conclusion 
+
+In this paper, we explore the use of Stable Diffusion for facial expression recognition (FER) and introduce the Emotion Diffusion Classifier (EmoDC). To enhance its performance, we begin with discrepancy training, which encourages accurate noise prediction conditioned on positive class descriptions while amplifying noise-prediction errors for negative class descriptions. Building on this approach, we propose margin-based discrepancy training, which enforces a minimum margin between the noise-prediction errors for positive and negative image-text pairs. However, a fixed margin cannot adapt to sample-specific noise-prediction difficulty. To address this limitation, we develop adaptive margin discrepancy train-ing (AMDiT), which leverages dynamic margins for train-ing tailored to each sample. Experimental results demon-strate that AMDiT significantly improves accuracy across four FER datasets—RAF-DB B, RAF-DB C, SFEW-2.0, and AffectNet. AMDiT achieves superior accuracy and reduces the accuracy gap between 1-step and multi-step evaluations, accelerating the inference process. Moreover, it enhances the robustness of EmoDC under noise and blur conditions and improves cross-dataset performance, outperforming state-of-the-art discriminative classifiers. 
+
+B. Discussion 
+
+While AMDiT empowers EmoDC to achieve superior ro-bustness and cross-database generalization compared to state-of-the-art discriminative models, this improvement comes with increased computational overhead. As shown in Table IX, both the training and inference times are higher than those of discriminative models, primarily due to two factors: (i) the substantial model size and (ii) the requirement for multiple model passes across different classes and timesteps. Specifi-cally, EmoDC leverages the powerful, pre-trained Stable Diffu-sion model, which was originally designed for high-resolution image generation [15]. During inference, each image is en-coded by the VAE encoder to generate a latent representation, which is then processed multiple times by the UNet to evaluate different categorical prompts and timesteps. These processes collectively result in slower inference. Despite these con-straints, this study aims to validate the feasibility and potential of strong generative models for FER and introduces the novel AMDiT method to further improve EmoDC’s performance and robustness. We acknowledge that optimizing network size and inference speed remains a critical direction for future work. Importantly, EmoDC is already viable for practical deploy-ment. For instance, under 1-step evaluation setting, EmoDC achieves a throughput of 34 FPS, enabling real-time FER without a significant accuracy drop compared to EmoDC Base. Meanwhile, the 10-step evaluation offers a higher-accuracy alternative suitable for lower-FPS cameras or high-precision systems where speed is less critical. Furthermore, while this study focuses on static FER, extending generative classifiers to dynamic, video-based recognition represents an important direction for modeling temporal emotional transitions. REFERENCES [1] S. Li and W. Deng, “Deep facial expression recognition: A survey,”                                                      
+
+> IEEE Trans. Affect. Comput. , vol. 13, no. 3, pp. 1195–1215, 2022. [2] Y. Wang, W. Song, W. Tao, A. Liotta, D. Yang, X. Li, S. Gao, Y. Sun, W. Ge, W. Zhang et al. , “A systematic review on affective computing: Emotion models, databases, and recent advances,” Inf. Fusion , vol. 83, pp. 19–52, 2022. [3] R. Zhao, T. Liu, Z. Huang, D. P. Lun, and K.-M. Lam, “Geometry-aware facial expression recognition via attentive graph convolutional networks,” IEEE Trans. Affect. Comput. , vol. 14, no. 2, pp. 1159–1174, 2023. [4] R. Dong and K.-M. Lam, “Bi-center loss for compound facial expression recognition,” IEEE Signal Process. Lett. , pp. 641–645, 2024. [5] ——, “Semi-supervised learning for compound facial expression recog-nition with basic expression data,” in Int. Workshop Adv. Imaging Technol. , vol. 13164, 2024, pp. 314–319. [6] R. Dong, C. Yang, and K.-M. Lam, “Text-guided visual prompt tuning with masked images for facial expression recognition,” in Proc. Asia Pacific Signal Inf. Process. Assoc. Annu. Summit and Conf. , 2024, pp. 1–6. [7] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. , 2016, pp. 770–778. [8] C. Guo, G. Pleiss, Y. Sun, and K. Q. Weinberger, “On calibration of modern neural networks,” in Proc. Int. Conf. Mach. Learn. , 2017, pp. 1321–1330. [9] R. Geirhos, J.-H. Jacobsen, C. Michaelis, R. Zemel, W. Brendel, M. Bethge, and F. A. Wichmann, “Shortcut learning in deep neural networks,” Nature Mach. Intell. , vol. 2, no. 11, pp. 665–673, 2020. [10] J. Robinson, L. Sun, K. Yu, K. Batmanghelich, S. Jegelka, and S. Sra, “Can contrastive learning avoid shortcut solutions?” in Proc. Adv. Neural Inf. Process. Syst. , vol. 34, 2021, pp. 4974–4986. [11] A. C. Li, A. Kumar, and D. Pathak, “Generative classifiers avoid shortcut solutions,” in Proc. Int. Conf. Learn. Representations , 2025. [12] A. Nguyen, J. Yosinski, and J. Clune, “Deep neural networks are easily fooled: High confidence predictions for unrecognizable images,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. , 2015, pp. 427–436. [13] A. Ng and M. Jordan, “On discriminative vs. generative classifiers: A comparison of logistic regression and naive bayes,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 14, 2001. [14] J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 33, 2020, pp. 6840–6851. [15] R. Rombach, A. Blattmann, D. Lorenz, P. Esser, and B. Ommer, “High-resolution image synthesis with latent diffusion models,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2022, pp. 10 684– 10 695. [16] W. Peebles and S. Xie, “Scalable diffusion models with transformers,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , 2023, pp. 4195–4205. [17] L. Qu, W. Wang, Y. Li, H. Zhang, L. Nie, and T.-S. Chua, “Dis-criminative probing and tuning for text-to-image generation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2024, pp. 7434–7444. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 13
+
+[18] C. Yang, R. Dong, and K.-M. Lam, “Efficient adaptation for real-world omnidirectional image super-resolution,” in Asia Pacific Signal and Inf. Process. Assoc. Annu. Summit and Conf. , 2024, pp. 1–6. [19] Y. Zuo, J. Xiao, K.-C. Chan, R. Dong, C. Yang, Z. He, H. Xie, and K.-M. Lam, “Towards multi-view consistent style transfer with one-step diffusion via vision conditioning,” in Proc. Eur. Conf. Comput. Vis. Workshops , 2024. [20] C. Yang, R. Dong, and K.-M. Lam, “Vision-language model guided image restoration,” arXiv preprint arXiv:2512.17292 , 2025. [21] A. C. Li, M. Prabhudesai, S. Duggal, E. Brown, and D. Pathak, “Your diffusion model is secretly a zero-shot classifier,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , 2023, pp. 2206–2217. [22] K. Clark and P. Jaini, “Text-to-image diffusion models are zero shot classifiers,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 36, 2023, pp. 58 921–58 937. [23] H. Chen, Y. Dong, Z. Wang, X. Yang, C. Duan, H. Su, and J. Zhu, “Robust classification via a single diffusion model,” in Proc. Int. Conf. Mach. Learn. , no. 257, 2024, pp. 6643–6665. [24] H. Chen, Y. Dong, S. Shao, H. Zhongkai, X. Yang, H. Su, and J. Zhu, “Diffusion models are certifiably robust classifiers,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 37, 2024, pp. 50 062–50 097. [25] E. J. Hu, Y. Shen, P. Wallis, Z. Allen-Zhu, Y. Li, S. Wang, L. Wang, and W. Chen, “LoRA: Low-rank adaptation of large language models,” in Proc. Int. Conf. Learn. Representations , 2022. [26] K. Simonyan and A. Zisserman, “Very deep convolutional networks for large-scale image recognition,” in Proc. Int. Conf. Learn. Representa-tions , 2015, pp. 1–10. [27] J. H. Kim, A. Poulose, and D. S. Han, “Cvgg-19: customized visual ge-ometry group deep learning architecture for facial emotion recognition,” 
+
+IEEE Access , vol. 12, pp. 41 557–41 578, 2024. [28] ——, “The extensive usage of the facial image threshing machine for facial emotion recognition performance,” Sensors , vol. 21, no. 6, p. 2026, 2021. [29] S. Li, W. Deng, and J. Du, “Reliable crowdsourcing and deep locality-preserving learning for expression recognition in the wild,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2017, pp. 2852–2861. [30] Y. Li, J. Zeng, S. Shan, and X. Chen, “Occlusion aware facial expression recognition using cnn with attention mechanism,” IEEE Trans. Image Process. , vol. 28, no. 5, pp. 2439–2450, 2018. [31] R. Zhao, T. Liu, Z. Huang, D. P. Lun, and K.-M. Lam, “Spatial-temporal graphs plus transformers for geometry-guided facial expression recognition,” IEEE Trans. Affect. Comput. , vol. 14, no. 4, pp. 2751–2767, 2022. [32] W. Chen, D. Zhang, M. Li, and D.-J. Lee, “Stcam: Spatial-temporal and channel attention module for dynamic facial expression recognition,” 
+
+IEEE Trans. Affect. Comput. , vol. 14, no. 1, pp. 800–810, 2020. [33] C. Gan, J. Xiao, Z. Wang, Z. Zhang, and Q. Zhu, “Facial expression recognition using densely connected convolutional neural network and hierarchical spatial attention,” Image and Vis. Computing , vol. 117, p. 104342, 2022. [34] F. Xue, Q. Wang, and G. Guo, “Transfer: Learning relation-aware facial expression representations with transformers,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , 2021, pp. 3601–3610. [35] F. Ma, B. Sun, and S. Li, “Facial expression recognition with visual transformers and attentional selective fusion,” IEEE Trans. Affect. Com-put. , vol. 14, no. 2, pp. 1236–1248, 2021. [36] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly, J. Uszkoreit, and N. Houlsby, “An image is worth 16x16 words: Transformers for image recognition at scale,” in Proc. Int. Conf. Learn. Representations , 2021. [37] F. Xue, Q. Wang, Z. Tan, Z. Ma, and G. Guo, “Vision transformer with attentive pooling for robust facial expression recognition,” IEEE Trans. Affect. Comput. , vol. 14, no. 4, pp. 3244–3256, 2022. [38] Z. Zhao and I. Patras, “Prompting visual-language models for dynamic facial expression recognition,” in Proc. Brit. Mach. Vis. Conf. , 2023. [39] H. Zhou, S. Huang, F. Zhang, and C. Xu, “Ceprompt: Cross-modal emotion-aware prompting for facial expression recognition,” IEEE Trans. Circuits Syst. Video Technol. , 2024. [40] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in Proc. Int. Conf. Mach. Learn. , 2021, pp. 8748–8763. [41] Y. L. Bouali, O. B. Ahmed, and S. Mazouzi, “Cross-modal learning for audio-visual emotion recognition in acted speech,” in Proc. Int. Conf. Adv. Technol. Signal Image Process. , 2022, pp. 1–6. [42] E. Ryumina, M. Markitantov, D. Ryumin, H. Kaya, and A. Karpov, “Zero-shot audio-visual compound expression recognition method based on emotion probability fusion,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. Workshop , 2024, pp. 4752–4760. [43] S. Du, Y. Tao, and A. M. Martinez, “Compound facial expressions of emotion,” Natl. Acad. Sci. , vol. 111, no. 15, pp. E1454–E1462, 2014. [44] E. Fetaya, J.-H. Jacobsen, W. Grathwohl, and R. Zemel, “Understanding the limitations of conditional generative models,” in Proc. Int. Conf. Learn. Representations , 2020. [45] R. Mackowiak, L. Ardizzone, U. Kothe, and C. Rother, “Generative classifiers as a basis for trustworthy image classification,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2021, pp. 2971–2981. [46] S. Mukhopadhyay, M. Gwilliam, V. Agarwal, N. Padmanabhan, A. Swaminathan, S. Hegde, T. Zhou, and A. Shrivastava, “Dif-fusion models beat gans on image classification,” arXiv preprint arXiv:2307.08702 , 2023. [47] P. Dhariwal and A. Nichol, “Diffusion models beat gans on image synthesis,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 34, 2021, pp. 8780–8794. [48] X. Han, H. Zheng, and M. Zhou, “Card: Classification and regression diffusion models,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 35, 2022, pp. 18 100–18 115. [49] P. Jaini, K. Clark, and R. Geirhos, “Intriguing properties of generative classifiers,” in Proc. Int. Conf. Learn. Representations , 2024. [50] K. Q. Weinberger and L. K. Saul, “Distance metric learning for large margin nearest neighbor classification.” J. Mach. Learn. Res. , vol. 10, no. 2, 2009. [51] F. Schroff, D. Kalenichenko, and J. Philbin, “Facenet: A unified embed-ding for face recognition and clustering,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. , 2015, pp. 815–823. [52] C.-Y. Wu, R. Manmatha, A. J. Smola, and P. Krahenbuhl, “Sampling matters in deep embedding learning,” in Proc. IEEE Int. Conf. Comput. Vis. , 2017, pp. 2840–2848. [53] O. Rippel, M. Paluri, P. Dollar, and L. Bourdev, “Metric learning with adaptive density discrimination,” in Proc. Int. Conf. Learn. Representa-tions , 2015. [54] K. Sohn, “Improved deep metric learning with multi-class n-pair loss objective,” in Proc. Adv. Neural Inf. Process. Syst. , vol. 29, 2016. [55] J. Sohl-Dickstein, E. Weiss, N. Maheswaranathan, and S. Ganguli, “Deep unsupervised learning using nonequilibrium thermodynamics,” in Proc. Int. Conf. Mach. Learn. , 2015, pp. 2256–2265. [56] A. Dhall, R. Goecke, S. Lucey, and T. Gedeon, “Static facial expression analysis in tough conditions: Data, evaluation protocol and benchmark,” in IEEE Int. Conf. Comput. Vis. Workshops , 2011, pp. 2106–2112. [57] A. Mollahosseini, B. Hasani, and M. H. Mahoor, “Affectnet: A database for facial expression, valence, and arousal computing in the wild,” IEEE Trans. Affect. Comput. , vol. 10, no. 1, pp. 18–31, 2017. [58] E. Barsoum, C. Zhang, C. Canton Ferrer, and Z. Zhang, “Training deep networks for facial expression recognition with crowd-sourced label distribution,” in Proc. ACM Int. Conf. Multimodal Interaction , 2016. [59] K. Wang, X. Peng, J. Yang, D. Meng, and Y. Qiao, “Region attention networks for pose and occlusion robust facial expression recognition,” 
+
+IEEE Trans. Image Process. , vol. 29, pp. 4057–4069, 2020. [60] I. J. Goodfellow, D. Erhan, P. L. Carrier, A. Courville, M. Mirza, B. Hamner, W. Cukierski, Y. Tang, D. Thaler, D.-H. Lee et al. , “Chal-lenges in representation learning: A report on three machine learning contests,” in Proc. Int. Conf. Neural Inf. Process. Springer, 2013, pp. 117–124. [61] I. Loshchilov and F. Hutter, “Decoupled weight decay regularization,” in Proc. Int. Conf. Learn. Representations , 2019. [62] K. Zhang, Z. Zhang, Z. Li, and Y. Qiao, “Joint face detection and alignment using multitask cascaded convolutional networks,” IEEE Signal Process. Lett. , vol. 23, no. 10, pp. 1499–1503, 2016. [63] J. Cai, Z. Meng, A. S. Khan, Z. Li, J. O’Reilly, and Y. Tong, “Island loss for learning discriminative features in facial expression recognition,” in 
+
+Proc. IEEE Int. Conf. Autom. Face Gesture Recognit. IEEE, 2018, pp. 302–309. [64] H. Li, N. Wang, Y. Yu, X. Yang, and X. Gao, “Lban-il: A novel method of high discriminative representation for facial expression recognition,” 
+
+Neurocomputing , vol. 432, pp. 159–169, 2021. [65] J. Zeng, S. Shan, and X. Chen, “Facial expression recognition with inconsistently annotated datasets,” in Proc. Eur. Conf. Comput. Vis. ,2018, pp. 222–237. [66] A. H. Farzaneh and X. Qi, “Facial expression recognition in the wild via deep attentive center loss,” in Proc. IEEE/CVF Winter Conf. Appl. Comput. Vis. , 2021, pp. 2402–2411. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 14 
+
+[67] Z. Zhao, Q. Liu, and F. Zhou, “Robust lightweight facial expression recognition network with label distribution training,” in Proc. AAAI Conf. Artif. Intell. , vol. 35, no. 4, 2021, pp. 3510–3519. [68] D. Zeng, Z. Lin, X. Yan, Y. Liu, F. Wang, and B. Tang, “Face2exp: Combating data biases for facial expression recognition,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , 2022, pp. 20 291– 20 300. [69] C. Zheng, M. Mendieta, and C. Chen, “Poster: A pyramid cross-fusion transformer network for facial expression recognition,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. , 2023, pp. 3146–3155. [70] J. Mao, R. Xu, X. Yin, Y. Chang, B. Nie, A. Huang, and Y. Wang, “Poster++: A simpler and stronger facial expression recognition net-work,” Pattern Recognit. , vol. 157, p. 110951, 2025. [71] Y. Li, Y. Lu, J. Li, and G. Lu, “Separate loss for basic and compound facial expression recognition in the wild,” in Proc. Asian Conf. Mach. Learn. , 2019, pp. 897–911. [72] X. Zou, Y. Yan, J.-H. Xue, S. Chen, and H. Wang, “When facial expression recognition meets few-shot learning: A joint and alternate learning framework,” in Proc. AAAI Conf. Artif. Intell. , vol. 36, no. 5, 2022, pp. 5367–5375. [73] ——, “Learn-to-decompose: Cascaded decomposition network for cross-domain few-shot facial expression recognition,” in Proc. Eur. Conf. Comput. Vis. , 2022, pp. 683–700. [74] J. Ho and T. Salimans, “Classifier-free diffusion guidance,” in Proc. Adv. Neural Inf. Process. Syst. Workshop , 2021.

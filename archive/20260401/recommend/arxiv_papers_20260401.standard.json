@@ -1,0 +1,353 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-04-01T21:08:00.797261+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 7,
+    "quick_skim_target": 11,
+    "quick_selected": 7
+  },
+  "deep_dive": [
+    {
+      "id": "2603.29205v1",
+      "title": "BiMoE: Brain-Inspired Experts for EEG-Dominant Affective State Recognition",
+      "abstract": "Multimodal Sentiment Analysis (MSA) that integrates Electroencephalogram (EEG) with peripheral physiological signals (PPS) is crucial for the development of brain-computer interface (BCI) systems. However, existing methods encounter three major challenges: (1) overlooking the region-specific characteristics of affective processing by treating EEG signals as homogeneous; (2) treating EEG as a black-box input, which lacks interpretability into neural representations;(3) ineffective fusion of EEG features with complementary PPS features. To overcome these issues, we propose BiMoE, a novel brain-inspired mixture of experts framework. BiMoE partitions EEG signals in a brain-topology-aware manner, with each expert utilizing a dual-stream encoder to extract local and global spatiotemporal features. A dedicated expert handles PPS using multi-scale large-kernel convolutions. All experts are dynamically fused through adaptive routing and a joint loss function. Evaluated under strict subject-independent settings, BiMoE consistently surpasses state-of-the-art baselines across various affective dimensions. On the DEAP and DREAMER datasets, it yields average accuracy improvements of 0.87% to 5.19% in multimodal sentiment classification. The code is available at: https://github.com/HongyuZhu-s/BiMo.",
+      "authors": [
+        "Hongyu Zhu",
+        "Lin Chen",
+        "Mingsheng Shang"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-31T03:17:45+00:00",
+      "link": "https://arxiv.org/pdf/2603.29205v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "multimodal sentiment analysis integrating EEG and physiological signals",
+      "llm_evidence_cn": "整合脑电图和生理信号的多模态情感分析",
+      "llm_evidence": "整合脑电图和生理信号的多模态情感分析",
+      "canonical_evidence": "整合脑电图和生理信号的多模态情感分析",
+      "llm_tldr_en": "Proposes a brain-inspired mixture of experts for multimodal affective state recognition using EEG and PPS.",
+      "llm_tldr_cn": "提出一种受大脑启发的专家混合模型，用于脑电与生理信号的多模态情感识别。",
+      "llm_tldr": "提出一种受大脑启发的专家混合模型，用于脑电与生理信号的多模态情感识别。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.23938v1",
+      "title": "OmniACBench: A Benchmark for Evaluating Context-Grounded Acoustic Control in Omni-Modal Models",
+      "abstract": "Most testbeds for omni-modal models assess multimodal understanding via textual outputs, leaving it unclear whether these models can properly speak their answers. To study this, we introduce OmniACBench, a benchmark for evaluating context-grounded acoustic control in omni-modal models. Given a spoken instruction, a text script, and an image, a model must read the script aloud with an appropriate tone and manner. OmniACBench comprises 3,559 verified instances covering six acoustic features: speech rate, phonation, pronunciation, emotion, global accent, and timbre. Extensive experiments on eight models reveal their limitations in the proposed setting, despite their strong performance on prior textual-output evaluations. Our analyses show that the main bottleneck lies not in processing individual modalities, but in integrating multimodal context for faithful speech generation. Moreover, we identify three common failure modes-weak direct control, failed implicit inference, and failed multimodal grounding-providing insights for developing models that can verbalize responses effectively.",
+      "authors": [
+        "Seunghee Kim",
+        "Bumkyu Park",
+        "Kyudan Jung",
+        "Joosung Lee",
+        "Soyoon Kim",
+        "Jeonghoon Kim",
+        "Taeuk Kim",
+        "Hwiyeol Jo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-25T05:00:51+00:00",
+      "link": "https://arxiv.org/pdf/2603.23938v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark for emotion and acoustic control in omni-modal models",
+      "llm_evidence_cn": "全模态模型中情感和声学控制的基准",
+      "llm_evidence": "全模态模型中情感和声学控制的基准",
+      "canonical_evidence": "全模态模型中情感和声学控制的基准",
+      "llm_tldr_en": "Evaluates omni-modal models on their ability to generate speech with appropriate emotional tone and manner.",
+      "llm_tldr_cn": "评估全模态模型根据上下文生成具有适当情感语气和方式的语音的能力。",
+      "llm_tldr": "评估全模态模型根据上下文生成具有适当情感语气和方式的语音的能力。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.28913v1",
+      "title": "From Consensus to Split Decisions: ABC-Stratified Sentiment in Holocaust Oral Histories",
+      "abstract": "Polarity detection becomes substantially more challenging under domain shift, particularly in heterogeneous, long-form narratives with complex discourse structure, such as Holocaust oral histories. This paper presents a corpus-scale diagnostic study of off-the-shelf sentiment classifiers on long-form Holocaust oral histories, using three pretrained transformer-based polarity classifiers on a corpus of 107,305 utterances and 579,013 sentences. After assembling model outputs, we introduce an agreement-based stability taxonomy (ABC) to stratify inter-model output stability. We report pairwise percent agreement, Cohen kappa, Fleiss kappa, and row-normalized confusion matrices to localize systematic disagreement. As an auxiliary descriptive signal, a T5-based emotion classifier is applied to stratified samples from each agreement stratum to compare emotion distributions across strata. The combination of multi-model label triangulation and the ABC taxonomy provides a cautious, operational framework for characterizing where and how sentiment models diverge in sensitive historical narratives. Inter-model agreement is low to moderate overall and is driven primarily by boundary decisions around neutrality.",
+      "authors": [
+        "Daban Q. Jaff"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-30T18:44:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.28913v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "sentiment classifiers for long-form narratives and polarity detection",
+      "llm_evidence_cn": "用于长篇叙述和极性检测的情感分类器",
+      "llm_evidence": "用于长篇叙述和极性检测的情感分类器",
+      "canonical_evidence": "用于长篇叙述和极性检测的情感分类器",
+      "llm_tldr_en": "Evaluates sentiment classifiers on long-form oral histories to analyze stability and polarity under domain shift.",
+      "llm_tldr_cn": "在长篇口述历史语料上评估情感分类器，分析领域偏移下的极性检测稳定性。",
+      "llm_tldr": "在长篇口述历史语料上评估情感分类器，分析领域偏移下的极性检测稳定性。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.26349v1",
+      "title": "Generative Score Inference for Multimodal Data",
+      "abstract": "Accurate uncertainty quantification is crucial for making reliable decisions in various supervised learning scenarios, particularly when dealing with complex, multimodal data such as images and text. Current approaches often face notable limitations, including rigid assumptions and limited generalizability, constraining their effectiveness across diverse supervised learning tasks. To overcome these limitations, we introduce Generative Score Inference (GSI), a flexible inference framework capable of constructing statistically valid and informative prediction and confidence sets across a wide range of multimodal learning problems. GSI utilizes synthetic samples generated by deep generative models to approximate conditional score distributions, facilitating precise uncertainty quantification without imposing restrictive assumptions about the data or tasks. We empirically validate GSI's capabilities through two representative scenarios: hallucination detection in large language models and uncertainty estimation in image captioning. Our method achieves state-of-the-art performance in hallucination detection and robust predictive uncertainty in image captioning, and its performance is positively influenced by the quality of the underlying generative model. These findings underscore the potential of GSI as a versatile inference framework, significantly enhancing uncertainty quantification and trustworthiness in multimodal learning.",
+      "authors": [
+        "Xinyu Tian",
+        "Xiaotong Shen"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-03-27T12:24:12+00:00",
+      "link": "https://arxiv.org/pdf/2603.26349v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Methodological bridge for multimodal data processing and uncertainty quantification in supervised learning",
+      "llm_evidence_cn": "多模态数据处理和监督学习中不确定性量化的方法论桥梁",
+      "llm_evidence": "多模态数据处理和监督学习中不确定性量化的方法论桥梁",
+      "canonical_evidence": "多模态数据处理和监督学习中不确定性量化的方法论桥梁",
+      "llm_tldr_en": "Introduces a framework for uncertainty quantification in multimodal learning using generative models.",
+      "llm_tldr_cn": "提出了一种利用生成模型在多模态学习中进行不确定性量化的框架。",
+      "llm_tldr": "提出了一种利用生成模型在多模态学习中进行不确定性量化的框架。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.29077v1",
+      "title": "Dual Perspectives in Emotion Attribution: A Generator-Interpreter Framework for Cross-Cultural Analysis of Emotion in LLMs",
+      "abstract": "Large language models (LLMs) are increasingly used in cross-cultural systems to understand and adapt to human emotions, which are shaped by cultural norms of expression and interpretation. However, prior work on emotion attribution has focused mainly on interpretation, overlooking the cultural background of emotion generators. This assumption of universality neglects variation in how emotions are expressed and perceived across nations. To address this gap, we propose a Generator-Interpreter framework that captures dual perspectives of emotion attribution by considering both expression and interpretation. We systematically evaluate six LLMs on an emotion attribution task using data from 15 countries. Our analysis reveals that performance variations depend on the emotion type and cultural context. Generator-interpreter alignment effects are present; the generator's country of origin has a stronger impact on performance. We call for culturally sensitive emotion modeling in LLM-based systems to improve robustness and fairness in emotion understanding across diverse cultural contexts.",
+      "authors": [
+        "Aizirek Turdubaeva",
+        "Uichin Lee"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-03-30T23:32:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.29077v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Analysis of emotion attribution and expression in LLMs across cultures",
+      "llm_evidence_cn": "跨文化背景下大语言模型的情感归因与表达分析",
+      "llm_evidence": "跨文化背景下大语言模型的情感归因与表达分析",
+      "canonical_evidence": "跨文化背景下大语言模型的情感归因与表达分析",
+      "llm_tldr_en": "Proposes a framework to evaluate how LLMs generate and interpret emotions across different cultural contexts.",
+      "llm_tldr_cn": "提出一个生成器-解释器框架，用于评估大语言模型在不同文化背景下的情感生成与理解差异。",
+      "llm_tldr": "提出一个生成器-解释器框架，用于评估大语言模型在不同文化背景下的情感生成与理解差异。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.29162v1",
+      "title": "From Natural Alignment to Conditional Controllability in Multimodal Dialogue",
+      "abstract": "The recent advancement of Artificial Intelligence Generated Content (AIGC) has led to significant strides in modeling human interaction, particularly in the context of multimodal dialogue. While current methods impressively generate realistic dialogue in isolated modalities like speech or vision, challenges remain in controllable Multimodal Dialogue Generation (MDG). This paper focuses on the natural alignment between speech, vision, and text in human interaction, aiming for expressive dialogue generation through multimodal conditional control. To address the insufficient richness and diversity of dialogue expressiveness in existing datasets, we introduce a novel multimodal dialogue annotation pipeline to curate dialogues from movies and TV series with fine-grained annotations in interactional characteristics. The resulting MM-Dia dataset (360+ hours, 54,700 dialogues) facilitates explicitly controlled MDG, specifically through style-controllable dialogue speech synthesis. In parallel, MM-Dia-Bench (309 highly expressive dialogues with visible single-/dual-speaker scenes) serves as a rigorous testbed for implicit cross-modal MDG control, evaluating audio-visual style consistency across modalities. Extensive experiments demonstrate that training on MM-Dia significantly enhances fine-grained controllability, while evaluations on MM-Dia-Bench reveal limitations in current frameworks to replicate the nuanced expressiveness of human interaction. These findings provides new insights and challenges for multimodal conditional dialogue generation.",
+      "authors": [
+        "Zeyu Jin",
+        "Songtao Zhou",
+        "Haoyu Wang",
+        "Minghao Tian",
+        "Kaifeng Yun",
+        "Zhuo Chen",
+        "Xiaoyu Qin",
+        "Jia Jia"
+      ],
+      "primary_category": "cs.MM",
+      "categories": [
+        "cs.MM"
+      ],
+      "published": "2026-03-31T02:20:38+00:00",
+      "link": "https://arxiv.org/pdf/2603.29162v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multimodal alignment and expressive dialogue generation",
+      "llm_evidence_cn": "多模态对齐与表达性对话生成",
+      "llm_evidence": "多模态对齐与表达性对话生成",
+      "canonical_evidence": "多模态对齐与表达性对话生成",
+      "llm_tldr_en": "This paper explores multimodal alignment in dialogue to improve expressiveness and controllability in interactions.",
+      "llm_tldr_cn": "本文研究多模态对话中的自然对齐，旨在提升对话生成的表达丰富度与可控性。",
+      "llm_tldr": "本文研究多模态对话中的自然对齐，旨在提升对话生成的表达丰富度与可控性。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.29578v1",
+      "title": "Emotion Diffusion Classifier with Adaptive Margin Discrepancy Training for Facial Expression Recognition",
+      "abstract": "Facial Expression Recognition (FER) is essential for human-machine interaction, as it enables machines to interpret human emotions and internal states from facial affective behaviors. Although deep learning has significantly advanced FER performance, most existing deep-learning-based FER methods rely heavily on discriminative classifiers for fast predictions. These models tend to learn shortcuts and are vulnerable to even minor distribution shifts. To address this issue, we adopt a conditional generative diffusion model and introduce the Emotion Diffusion Classifier (EmoDC) for FER, which demonstrates enhanced adversarial robustness. However, retraining EmoDC using standard strategies fails to penalize incorrect categorical descriptions, leading to suboptimal recognition performance. To improve EmoDC, we propose margin-based discrepancy training, which encourages accurate predictions when conditioned on correct categorical descriptions and penalizes predictions conditioned on mismatched ones. This method enforces a minimum margin between noise-prediction errors for correct and incorrect categories, thereby enhancing the model's discriminative capability. Nevertheless, using a fixed margin fails to account for the varying difficulty of noise prediction across different images, limiting its effectiveness. To overcome this limitation, we propose Adaptive Margin Discrepancy Training (AMDiT), which dynamically adjusts the margin for each sample. Extensive experiments show that AMDiT significantly improves the accuracy of EmoDC over the Base model with standard denoising diffusion training on the RAF-DB basic subset, the RAF-DB compound subset, SFEW-2.0, and AffectNet, in 100-step evaluations. Additionally, EmoDC outperforms state-of-the-art discriminative classifiers in terms of robustness against noise and blur.",
+      "authors": [
+        "Rongkang Dong",
+        "Cuixin Yang",
+        "Cong Zhang",
+        "Yushen Zuo",
+        "Kin-Man Lam"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-31T10:57:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.29578v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "facial expression recognition for human emotion analysis",
+      "llm_evidence_cn": "用于人类情感分析的面部表情识别",
+      "llm_evidence": "用于人类情感分析的面部表情识别",
+      "canonical_evidence": "用于人类情感分析的面部表情识别",
+      "llm_tldr_en": "Introduces EmoDC, a diffusion-based classifier for robust facial expression recognition in human-machine interaction.",
+      "llm_tldr_cn": "引入了 EmoDC，一种基于扩散模型的分类器，用于增强人机交互中面部表情识别的鲁棒性。",
+      "llm_tldr": "引入了 EmoDC，一种基于扩散模型的分类器，用于增强人机交互中面部表情识别的鲁棒性。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.29677v1",
+      "title": "Mind the Gap: A Framework for Assessing Pitfalls in Multimodal Active Learning",
+      "abstract": "Multimodal learning enables neural networks to integrate information from heterogeneous sources, but active learning in this setting faces distinct challenges. These include missing modalities, differences in modality difficulty, and varying interaction structures. These are issues absent in the unimodal case. While the behavior of active learning strategies in unimodal settings is well characterized, their behavior under such multimodal conditions remains poorly understood. We introduce a new framework for benchmarking multimodal active learning that isolates these pitfalls using synthetic datasets, allowing systematic evaluation without confounding noise. Using this framework, we compare unimodal and multimodal query strategies and validate our findings on two real-world datasets. Our results show that models consistently develop imbalanced representations, relying primarily on one modality while neglecting others. Existing query methods do not mitigate this effect, and multimodal strategies do not consistently outperform unimodal ones. These findings highlight limitations of current active learning methods and underline the need for modality-aware query strategies that explicitly address these pitfalls. Code and benchmark resources will be made publicly available.",
+      "authors": [
+        "Dustin Eisenhardt",
+        "Yunhee Jeong",
+        "Florian Buettner"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-31T12:33:45+00:00",
+      "link": "https://arxiv.org/pdf/2603.29677v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Methodological framework for multimodal learning and query strategies",
+      "llm_evidence_cn": "多模态学习框架与查询策略的方法论研究",
+      "llm_evidence": "多模态学习框架与查询策略的方法论研究",
+      "canonical_evidence": "多模态学习框架与查询策略的方法论研究",
+      "llm_tldr_en": "Introduces a framework to benchmark multimodal active learning, addressing modality gaps and interaction structures.",
+      "llm_tldr_cn": "提出一个多模态主动学习基准框架，解决了模态缺失和交互结构差异等挑战。",
+      "llm_tldr": "提出一个多模态主动学习基准框架，解决了模态缺失和交互结构差异等挑战。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.29950v1",
+      "title": "Physiological and Semantic Patterns in Medical Teams Using an Intelligent Tutoring System",
+      "abstract": "Effective collaboration requires teams to manage complex cognitive and emotional states through Socially Shared Regulation of Learning (SSRL). Physiological synchrony (i.e., longitudinal alignment in physiological signals) can indicate these states, but is hard to interpret on its own. We investigate the physiological and conversational dynamics of four medical dyads diagnosing a virtual patient case using an intelligent tutoring system. Semantic shifts in dialogue were correlated with transient physiological synchrony peaks. We also coded utterance segments for SSRL and derived cosine similarity using sentence embeddings. The results showed that activating prior knowledge featured significantly lower semantic similarity than simpler task execution. High physiological synchrony was associated with lower semantic similarity, suggesting that such moments involve exploratory and varied language use. Qualitative analysis triangulated these synchrony peaks as ``pivotal moments'': successful teams synchronized during shared discovery, while unsuccessful teams peaked during shared uncertainty. This research advances human-centered AI by demonstrating how biological signals can be fused with dialogues to understand critical moments in problem solving.",
+      "authors": [
+        "Xiaoshan Huang",
+        "Conrad Borchers",
+        "Jiayi Zhang",
+        "Susanne P. Lajoie"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-03-31T16:18:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.29950v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "physiological and conversational dynamics for emotional states",
+      "llm_evidence_cn": "用于情感状态的生理和对话动态分析",
+      "llm_evidence": "用于情感状态的生理和对话动态分析",
+      "canonical_evidence": "用于情感状态的生理和对话动态分析",
+      "llm_tldr_en": "Investigates team collaboration by analyzing physiological synchrony and semantic patterns in dialogue.",
+      "llm_tldr_cn": "通过分析生理同步性和对话语义模式，研究团队协作中的认知与情感状态。",
+      "llm_tldr": "通过分析生理同步性和对话语义模式，研究团队协作中的认知与情感状态。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

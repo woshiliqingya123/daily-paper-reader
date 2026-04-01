@@ -1,0 +1,898 @@
+Title: From Natural Alignment to Conditional Controllability in Multimodal Dialogue
+
+URL Source: https://arxiv.org/pdf/2603.29162v1
+
+Published Time: Wed, 01 Apr 2026 00:28:39 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+Published as a conference paper at ICLR 2026 
+
+# FROM NATURAL ALIGNMENT TO CONDITIONAL CON -
+
+## TROLLABILITY IN MULTIMODAL DIALOGUE 
+
+Zeyu Jin 1,∗
+
+, Songtao Zhou 1,∗, Haoyu Wang 1, Minghao Tian 2, Kaifeng Yun 3, Zhuo Chen 4,Xiaoyu Qin 1,†
+
+, Jia Jia 1,5,†
+
+> 1
+
+Department of Computer Science and Technology, Tsinghua University, 2Rice University, 
+
+> 3
+
+Tsinghua Shenzhen International Graduate School, Tsinghua University, 4ByteDance, 
+
+> 5
+
+BNRist, Tsinghua University 
+
+{jinzeyu23, zst24 }@mails.tsinghua.edu.cn 
+
+{xyqin, jjia }@tsinghua.edu.cn 
+
+ABSTRACT 
+
+The recent advancement of Artificial Intelligence Generated Content (AIGC) has led to significant strides in modeling human interaction, particularly in the con-text of multimodal dialogue. While current methods impressively generate re-alistic dialogue in isolated modalities like speech or vision, challenges remain in controllable Multimodal Dialogue Generation (MDG). This paper focuses on the natural alignment between speech, vision, and text in human interaction, aiming for expressive dialogue generation through multimodal conditional con-trol. To address the insufficient richness and diversity of dialogue expressive-ness in existing datasets, we introduce a novel multimodal dialogue annotation pipeline to curate dialogues from movies and TV series with fine-grained annota-tions in interactional characteristics. The resulting MM-D IA dataset (360+ hours, 54,700 dialogues) facilitates explicitly controlled MDG, specifically through style-controllable dialogue speech synthesis. In parallel, MM-D IA -B ENCH (309 highly expressive dialogues with visible single-/dual-speaker scenes) serves as a rigorous testbed for implicit cross-modal MDG control, evaluating audio-visual style con-sistency across modalities. Extensive experiments demonstrate that training on MM-D IA significantly enhances fine-grained controllability, while evaluations on MM-D IA -B ENCH reveal limitations in current frameworks to replicate the nu-anced expressiveness of human interaction. These findings provides new insights and challenges for multimodal conditional dialogue generation. 1
+
+1 INTRODUCTION 
+
+Dialogue has long been considered one of the most natural forms of human interaction, involving multiple communication channels such as text, speech, vision, gestures, and etc. In the AIGC era, multimodal dialogue has become increasingly important for a wide range of applications in human-computer interaction , social computing , and film-making .Existing research in dialogue primarily falls into two directions: (1) Semantic generation, which emphasizes producing coherent and contextually appropriate responses, as exemplified by large-scale dialogue systems like ChatGPT (OpenAI et al., 2024). (2) Modality mapping, which projects the given semantics into output modalities such as speech (Zhu et al., 2025; Zhang et al., 2024) and motion (Kong et al., 2025b). However, both directions prioritize the realistic transmission of modality-isolated dialogue content, while neglecting the systematic modeling of cross-modal inter-actional style. This results in limited expressiveness and controllability in the generated outputs. Controllable multimodal dialogue generation presents several major challenges: (1) Lack of high-quality native multimodal dialogue data. Existing multimodal dialogue datasets, as shown in 
+
+> ∗
+
+Equal contribution 
+
+> †
+
+Corresponding author 
+
+> 1
+
+https://github.com/jessyjinzy/MM-Dia 
+
+1
+
+> arXiv:2603.29162v1 [cs.MM] 31 Mar 2026
+
+Published as a conference paper at ICLR 2026 
+
+Figure 1: An example dialogue clip from MM-D IA and MM-D IA -B ENCH with hierarchical (sentence- and dialogue-level) annotations, featuring rich multimodal dialogue interaction details. The right panel depicts three multimodal dialogue generation tasks involving text ( T ), audio ( A), vision ( V) and dialogue style ( D), demonstrating both explicit ( Task 1 ) & implicit control ( Task 2,3 ). Tab. 1, suffer from narrow sources and missing modalities, which restricts their expressiveness and ability to portray complex multimodal interactions. This is largely due to the difficulty of collect-ing synchronized text-audio-visual dialogue data. (2) Lack of scalable annotation methods for interaction-level semantics. Human categorically labeled datasets like MELD (Poria et al., 2019) and MC-EIU (Liu et al., 2024b) fail to capture the nuanced, continuous nature of human interaction, while remaining costly and difficult to scale. (3) Lack of systematic benchmarks and evaluation protocols. Current dialogue benchmarks (Poria et al., 2019; Liu et al., 2024b) primarily focus on local semantic coherence and modality-isolated fidelity, leaving a methodological gap in evaluating dialogue-level controllability and cross-modal style consistency. In this paper, we address these challenges by constructing a large-scale expressive multimodal di-alogue dataset, introducing new annotation paradigms, and establishing systematic benchmarks for controllable multimodal dialogue generation. Addressing the data scarcity, we develop an automatic data pipeline to curate synchronized mul-timodal dialogues and generate fine-grained interaction-level annotations from in-the-wild movies and TV series. To overcome the complex scene transitions and audio-visual asynchrony inherent in cinematic data, we propose specialized techniques for robust dialogue boundary segmentation and multimodal speaker identification. To facilitate versatile controllability across diverse scenarios, we formulate two complementary paradigms of dialogue expressiveness : (1) Affective Triplet , a structured schema of ⟨Relationship , Interaction Mode , and Emotional Tone ⟩ to jointly encapsulate role identity, social interplay, and emotion dynamics; and (2) Freestyle Description , capturing per-speaker, turn-level style trajectories. Extensive validation demonstrates that our pipeline achieves human-level quality in annotation consistency and reliability. Applying the proposed pipeline to over 700 hours of movies and TV series, we present MM-D IA , a multimodal dialogue dataset characterized by 360.26 hours, 54,700 clips of highly expressive, con-textually rich, and interaction-heavy dialogues. MM-D IA features fine-grained annotation across various dialogue dimensions, including non-verbal sound, speaker identity and emotional dynamics at both the individual (sentence-wide) and collective (dialogue-wide) levels. To our best knowledge, it is the first dataset to specifically center on dialogue expressiveness across multiple modalities. Leveraging MM-D IA , we formally introduce Multimodal Dialogue Generation (MDG) as a condi-tional generation paradigm. Given a multimodal conversational context (text, audio, vision), MDG task aims to synthesize multimodal dialogues that maintain rigorous cross-modal alignment while enabling fine-grained controllability over interaction-level variables. To operationalize this, we cat-egorize the conditional control into explicit control , where styles are specified via natural language prompts, and implicit control , where conditions are inferred via cross-modal cues. 2Published as a conference paper at ICLR 2026 Table 1: Comparison of the MM-D IA with dialogue-related datasets across domain, scale, modality, annotation, and open-source (OS). Modality includes text (T ), vision (V), and audio (A), with audio-visual details on speaker identity (S-ID), non-verbal cues (N-V), and speaker visibility (S-V).                                                                                                                                                          
+
+> Domain Dataset Scale Modality Audio-visual Details Annotation OS #Clip #Utt. #Dur.(h) TVAS-ID N-V S-V Granularity Label
+> Spoken Dia. OpenDialogue (Zhu et al., 2025) 1M 6.5M 6.8K ✓✗✓✓✗✗Dialogue None ✓
+> Textual Dia. OpenViDial 2.0 (Wang et al., 2021) -5.6M -✓✓✗✗✗✗Dialogue None ✓
+> YTD-18M (Han et al., 2023) 18M --✓✓✗✗✗✓Dialogue None ✓
+> Text-to-Video OpenVid-1M (Nan et al., 2025) 1M -2.1K ✓✓✗✗✗✗Scene Desc. ✓
+> Captain Cinema (Xiao et al., 2026) -300K 500.0 ✓✓✗✓✗✗Shot Desc. ✗
+> MM Dia. Und. MELD (Poria et al., 2019) 1.4K 14K 13.6 ✓✓✓✓✗✓Sentence Tag ✓
+> MC-EIU (Liu et al., 2024b) 5.0K 56K 53.0 ✓✓✓✓✗✓Sentence Tag ✓
+> Movie Gen. MovieBench (Wu et al., 2025) 16.0K 61K 69.2 ✓✓✓✓✗✗Shot/Scene Desc. ✓
+> MM Dia. Gen. MM-D IA (Ours) 54.7K 449K 360.3 ✓✓✓✓✓✓Dia./Sent. Desc./Tag ✓
+> MM Dia. Gen. MM-D IA -B ENCH (Ours) 309 1,851 1.7 ✓✓✓✓✓✓Dia./Sent. Desc./Tag ✓
+
+For the explicit prompt control, we introduce Style-controllable Dialogue Speech Synthesis (Fig. 1 
+
+Task 1 ) to generate conversational audio consistent with the freestyle descriptions. Through super-vised finetuning on MM-D IA , existing models produce high-quality outputs with enhanced intelli-gibility and turn-taking accuracy, while faithfully reflecting the instructed styles. For the implicit cross-modal control, we introduce two tasks: (1) Vision-conditioned Dialogue Speech (Fig. 1 Task 2 ) which synthesizes contextually accurate speech aligned with turn-taking visual sequences of a dialogue; (2) Speech-driven Dialogue Video Generation (Fig. 1 Task 3 ), which generates expressive video from conversational audio. Both tasks demand modeling implicit alignment in cross-modal interactions, which is difficult to quantify. To facilitate standardized eval-uation, we build MM-D IA -B ENCH , a diverse and balanced benchmark of 309 highly expressive dual-speaker dialogues with ensured speaker visibility. The benchmark evaluates audio-visual style consistency across dialogue turns, addressing a limitation of existing video evaluation protocols that overlook cross-modal stylistic alignment. Experiments results highlight the limitations of current frameworks in maintaining audio-visual consistency when replicating the expressiveness of human interaction, offering new insights and challenges in multimodal dialogue generation. 
+
+2 RELATED WORKS 
+
+2.1 MULTIMODAL DIALOGUE DATASETS 
+
+Table 2: Comparison between MM-D IA and existing TV/Movie-sourced datasets in the annotation framework.                                           
+
+> Dataset Source Segmentation Anno. Input Anno. Tool
+> MELD (Poria et al., 2019) TV Human V+A+THuman MC-EIU (Liu et al., 2024b) TV Human V+A+THuman MovieBench (Wu et al., 2025) Movie Vision-based I+A+TGPT-4o
+> MM-D IA (Ours) TV/Mov. Multimodal V+I+A+TGemini 2.5-pro
+
+Multimodal dialogue datasets have driven recent progress in multimodal AI systems. Large scale spoken dia-logue corpora (Zhu et al., 2025; Jin et al., 2024) support speech-based systems but remain limited to uni-modal settings, hindering multimodal alignment and cross-modal interac-tion. Web sourced video datasets (Ju et al., 2024; Nan et al., 2025) offer abundant audio-visual data, yet mostly consist of casual chitchat or predefined scenarios, limiting diversity for prompt-controlled dialogue generation. Movie-sourced video datasets (Han et al., 2024; Wu et al., 2025) offer expressive audio-visual content but typically lack clear dialogue boundary delineation. To address these limitations, we introduce a novel multimodal framework catering for dialogue-level style annotation, as shown in Tab. 2. Unlike prior approaches that rely on isolated key-frame im-age sequences ( I), we leverage synchronized audio-visual inputs to enable versatile datasets with fine-grained style annotations for advancing multimodal dialogue modeling. 2.2 DIALOGUE GENERATION FROM MULTIMODALITY 
+
+Dialogue serves as the smallest and most structured unit of human interaction. Recent progress in spoken dialogue generation (Nari Labs, 2025; Ju et al.; Zhu et al., 2025) has captured realistic turn-3Published as a conference paper at ICLR 2026 
+
+Figure 2: Framework of the Movie/TV-sourced in-the-wild data curation pipeline for multimodal dialogue extraction with fine-grained interaction-level annotations. taking and multi-speaker timbres (Boson AI, 2025; Zhou et al., 2024), enabling more natural verbal exchanges. In parallel, cinematic video generation (Xiao et al., 2026; Liu et al., 2024a; Blattmann et al., 2023) supports high-fidelity multi-shot scenes with consistent character appearances and im-mersive transitions, producing coherent visual narratives. Specialized systems further bridge these modalities through synchronized talking head generation (Cui et al., 2025; Wang et al., 2026) and vision-context-aware speech synthesis(Zhou et al., 2025b; Wang et al., 2025) to ensure expressive voice with coherence visual appearance. Although these advances establish the modality-specific foundations for conveying semantic information, achieving fine-grained cross-modal control across speech, vision, and text for expressive multi-speaker dialogue remains an open challenge. In this paper, we seek to address this gap by introducing the necessary infrastructure (dataset, pipeline, benchmark, and task formulation) for controllable multimodal dialogue generation. 
+
+3 MM-D IA : A L ARGE -SCALE EXPRESSIVE MULTIMODAL DIALOGUE 
+
+DATASET 
+
+Movies and TV series are two of the richest artistic forms that feature carefully crafted, context-sensitive performances, but their complex audio-visual asynchrony poses significant challenges in data processing. In this section, we describe our pipeline for movie/TV-sourced in-the-wild dia-logue extraction and fine-grained interaction-level annotations, followed by a statistical analysis and validation of the resulting data. 3.1 PIPELINE ORIENTATION WITH DATA PREPARATION 
+
+Cinematic dialogues exhibit stronger emotion, heightened tension, and greater resemblance to ev-eryday interactions. However, the pursuit of strong sensory effects introduce substantial noise. Fre-quent background sounds, dramatic bursts, or ambiguous murmurs hinder the accuracy of Automatic Speech Recognition (ASR), while artistic camera movements create voiceover and flashback, com-plicating dialogue boundary detection and speaker attribution. These factors call for a cautious and comprehensive multimodal processing strategy. In preparation of the dataset, we collect raw movie & TV data from public available sources, noting that official subtitle (.srt) files are often unavailable. Although ASR can generate time-stamped transcriptions, its high word error rates limit reliability. To ensure high-quality subtitles and further 4Published as a conference paper at ICLR 2026 enlarge the dataset while balancing temporal accuracy and textual fidelity, we additionally adopt multi-sourced uncalibrated subtitles and align them with ASR outputs (Fig. 2 Step 1 , details in Appendix A.1). With the corrected timestamps from the calibrated subtitles, we extract a keyframe sequence from each subtitle line as representatives for dialogue boundary detection. 3.2 MULTIMODAL -BASED DIALOGUE EXTRACTION 
+
+Dialogue boundaries differ from shot or scene boundaries, as conversations may span multiple shots and topic shifts within a single long scene. To automatically extract continuous dialogue from movies & TVs, we introduce a tolerance-enhanced scene boundary detection method. It first ap-plies a Vision-Language Model (VLM) to identify scene continuity, followed by a Large Language Model (LLM) to refine in-scene dialogue boundaries. Unlike traditional frame-to-frame matching methods (Wu et al., 2025; Xiao et al., 2026), our approach incorporates a buffer mechanism with a dynamic keyframe pool (Fig. 2 Step 2 , details in Appendix A.2), allowing the model to bridge momentary visual disruptions such as rapid camera shifts, flashbacks, or perspective changes. This improves robustness in maintaining dialogue continuity across complex scenes. Based on the re-sulting scene-level segmentation, we further leverage subtitles and LLM-based semantic filtering to extract meaningful dialogue segments, particularly in long scenes exceeding 90 seconds. By com-bining visual and textual cues, the framework achieves coherent and accurate dialogue extraction, ensuring the integrity of multimodal context. 3.3 SENTENCE -LEVEL FINE -GRAINED ANNOTATION 
+
+Based on the identified boundaries, we segment the content into short dialogue clips. Next, we per-form speaker attribution to each dialogue segment. However, conventional automatic tools cannot reliably perform speaker attribution in this setting. Audio-based speaker diarization often suffers from limited accuracy due to noisy acoustic conditions, while visual-based active speaker detec-tion is unreliable because speakers are frequently not visible in cinematic content. To address this issue, we employ Gemini-2.5-flash to perform speaker attribution based on synchronized audio-visual segments and corresponding subtitles (Fig. 2 Step 3 ). The model is prompted with a prede-fined main character bank to recognize speakers; otherwise, it assigns speaker identities based on their on-screen personas. Additionally, we annotate non-verbal sounds and vocalizations to capture fine-grained expressive cues and contextual nuances in dialogue. To support downstream dialogue-related tasks such as talking head generation, we further use the Insightface toolkit to annotate the visibility of main speakers in the aligned keyframes. 3.4 DIALOGUE -LEVEL EXPRESSIVENESS ANNOTATION 
+
+Table 3: Detailed statistics for MM-D IA and MM-D IA -B ENCH . Scored from Gemini/Human.                               
+
+> Statistic MM-D IA MM-D IA -B ENCH
+> Total Dialogues 54,700 309 Total Turns 449,138 1,851 Total Duration (h) 360.26 1.69 Avg. Spk. / Dia. 2.29 2.00
+> Avg. Dur. / Dia. (s) 23.71 19.69 Avg. Turns / Dia. 8.21 5.99 Avg. Dur. / Turn (s) 2.89 3.29 Avg. Turns / Spk. / Dia. 3.59 3.00 Avg. Rounds of Speaker Changes / Dia. 4.28 4.09 Speaker Visibility Partial All
+> Avg. Score on Emotion Intensity 6.76 / 5.22 7.81 /5.74
+> Avg. Score on Volatility of Emotion Flow 5.32 / 4.36 7.45 /5.68
+
+To systematically study complex interaction-level behaviors, we define dialogue expressive-ness as cross-modal consistency in interaction that extends beyond semantic content. We pro-pose two complementary paradigms for model-ing dialogue expressiveness: (1) Affective Triplet Control , ⟨Relationship ,
+
+Interaction Mode , Emotional Tone ⟩, which jointly model role identity, social interplay, and emotional dynamics. It enables precise control over scenario-level dialogue behavior. (2) Description Control , which captures per-speaker, turn-level style trajectories. It enables the separate control over speakers, and the fine-grained modeling of emotion flow across turns within the same speaker. Together, these paradigms encompass both structured tag-based control and freestyle description-based natural language control. Given the speakers bank and synchronized audio-visual segments, we use Gemini-2.5-pro to annotate both paradigms of the dialogue expressiveness (Fig. 2 Step 4 ). Beyond qualitative annotation, we further introduce two complementary quantitative dimensions to 5Published as a conference paper at ICLR 2026 34% 
+
+25.4% 
+
+22.4% 
+
+18.2% 
+
+Speaker Gender Distribution Pie Chart 
+
+M × M 
+
+F × M 
+
+M × F 
+
+F × F 
+
+(a) Workplace 
+
+Friends 
+
+Intimate 
+
+Family 
+
+Adversarial 
+
+Social 
+
+Authority 
+
+Other 
+
+Individual 
+
+Conflict 
+
+Suggesting 
+
+Dynamic Cross-talk 
+
+Questioning 
+
+> Explanation
+> Other
+> Banter
+> Commands
+> Rejection
+> Performance
+> Narration
+> Authority Power
+> Sympathizing
+> Reflection
+> Emotion Release
+> Invitation
+> Conflict
+> Other
+> Suggesting
+> Banter
+> Dynamic Cross-talk
+> Narration
+> Questioning
+> Sympathizing
+> Explanation
+> Performance
+> Emotion Release
+> Reflection
+> Commands
+> Rejection
+> Authority Power
+> Invitation
+> Conflict
+
+Suggesting 
+
+Banter 
+
+Dynamic Cross-talk 
+
+Other 
+
+Questioning 
+
+Narration 
+
+Sympathizing 
+
+Emotion Release 
+
+Rejection 
+
+Performance 
+
+Explanation 
+
+Reflection 
+
+> Commands
+> Authority Power
+> Invitation
+
+Conflict 
+
+Suggesting 
+
+> Dynamic Cross-talk
+> Other
+> Narration
+> Questioning
+> Sympathizing
+> Banter
+> Performance
+> Emotion Release
+> Explanation
+> Commands
+> Reflection
+> Rejection
+> Authority Power
+> Invitation
+
+Conflict 
+
+> Suggesting
+> Questioning
+> Dynamic Cross-talk
+> Other
+> Banter
+> Narration
+> Rejection
+> Commands
+> Authority Power
+> Performance
+> Explanation
+> Reflection
+> Emotion Release
+> Sympathizing
+> Invitation
+> Other
+> Suggesting
+> Conflict
+> Questioning
+> Narration
+> Dynamic Cross-talk
+> Performance
+> Explanation
+> Banter
+
+Commands     
+
+> Sympathizing
+> Rejection Reflection Emotion Release Authority Power Invitation
+
+Suggesting  Conflict  Commands  Questioning 
+
+> Performance
+> Narration
+> Explanation
+> Other
+> Dynamic Cross-talk
+> Authority Power
+> Rejection
+> Sympathizing
+> Banter
+> Reflection
+> Emotion Release
+> Invitation
+> Conflict
+> Suggesting
+> Narration
+> Other
+> Explanation
+> Dynamic Cross-talk
+> Performance
+> Questioning
+> Commands
+> Banter
+> Sympathizing
+> Emotion Release
+> Reflection
+> Rejection
+> Authority Power
+> Invitation
+
+Narration 
+
+> Other
+> Conflict
+> Performance
+> Suggesting
+> Reflection
+> Explanation
+> Emotion Release
+> Dynamic Cross-talk
+> Questioning
+> Rejection
+> Sympathizing
+> Commands
+> Banter
+> Authority Power
+
+Relationship × Interaction Sunburst Chart  (b) Conflict 
+
+Suggesting 
+
+Other 
+
+Dynamic Cross-talk 
+
+Banter 
+
+Questioning 
+
+> Narration
+> Explanation
+> Performance
+> Commands
+> Sympathizing
+> Rejection
+
+Emotion Release 
+
+Reflection 
+
+Authority Power 
+
+> Invitation
+
+Adversarial 
+
+Workplace 
+
+Friends 
+
+> Intimate
+> Family
+> Social
+> Authority
+> Other
+> Individual
+> Workplace
+> Intimate
+> Friends
+> Adversarial
+> Family
+> Social
+> Authority
+> Other
+> Individual
+> Friends
+> Workplace
+> Social
+> Intimate
+> Family
+> Adversarial  Authority  Other  Individual
+
+Workplace 
+
+Intimate 
+
+Friends 
+
+Family 
+
+Social 
+
+Adversarial 
+
+> Authority
+> Other
+> Individual
+
+Intimate 
+
+Friends 
+
+Workplace 
+
+Family 
+
+Social 
+
+Adversarial 
+
+> Authority
+> Other
+> Individual
+
+Workplace 
+
+Intimate 
+
+Friends 
+
+> Social
+> Family
+> Adversarial
+> Authority
+> Other
+> Individual
+> Friends
+> Social
+> Family
+> Intimate
+> Workplace
+> Individual
+> Adversarial
+> Authority
+> Other
+> Workplace
+> Friends
+> Social
+> Intimate
+> Family
+> Adversarial
+> Authority
+> Other
+> Individual
+> Workplace
+> Social
+> Friends
+> Family
+> Intimate
+> Adversarial
+> Authority
+> Other
+> Individual
+> Workplace
+> Social
+> Friends
+> Family
+> Adversarial
+> Authority
+> Intimate
+> Other
+> Individual
+> Intimate
+> Family
+> Friends
+> Workplace
+> Social
+> Adversarial
+> Authority
+> Other
+> Individual
+> Workplace
+> Intimate  Family
+
+Adversarial  Friends  Social  Authority  Other  Individual 
+
+Intimate 
+
+Friends 
+
+Family 
+
+> Workplace
+> Social
+> Adversarial
+> Individual
+> Other
+> Authority
+
+Friends 
+
+Workplace 
+
+Family 
+
+Intimate 
+
+> Social
+> Adversarial
+> Individual
+> Other
+> Authority
+
+Workplace 
+
+> Adversarial
+> Family
+> Intimate
+> Social
+> Friends
+> Authority
+> Other
+> Individual
+> Intimate
+> Social
+> Family
+> Workplace
+> Friends
+> Other
+> Authority
+> Adversarial
+
+Interaction × Relationship Sunburst Chart  (c) Figure 3: Distributions of (a) Dual-speaker Gender, (b) Relationship, and (c) Interaction Mode in MM-D IA .measure dialogue expressiveness: global emotional intensity at the dialogue level and local emo-tional volatility at the speaker level. For instance, a consistently high-energy dialogue would be rated as high in emotional intensity but low in emotional volatility. 3.5 MM-D IA WITH MM-D IA -B ENCH 
+
+Applying our data curation pipeline to over 700 hours of raw content—including more than 200 movies and 9 TV series—we construct MM-D IA , a multimodal dialogue dataset comprising 360.26 hours, 54,700 clips of expressive, context-rich, and interaction-intensive dialogues. The dataset is accompanied by fine-grained annotations covering various dialogue aspects, such as non-verbal sounds, speaker identity and emotional dynamics at both individual and dialogue levels. To our knowledge, MM-D IA is the first dataset specifically centered on dialogue-level expressiveness across modalities. As illustrated in Fig. 3, MM-D IA exhibits a balanced distribution across af-fective triplet categories. Notably, exploratory analysis reveals meaningful associations between Relationships and Interaction Mode. For instance, Commands and Questioning are predominantly linked to Workplace settings, while Intimate relationships tend to involve Emotion Release and Ban-ter . Such patterns provide qualitative evidence of distributional consistency between the MM-D IA 
+
+and real-world social interactions. Subsequently, we construct MM-D IA -B ENCH , a diverse and balanced benchmark comprising 309 carefully selected instances of highly-expressive dual-speaker dialogues with ensured speaker vis-ibility. The benchmark is designed to support the evaluations of various downstream tasks in cross-modal dialogue generation. As shown in Tab. 3, both Gemini model and human raters con-sistently assign higher expressiveness scores to MM-D IA -B ENCH , validating its role as a high-expressiveness benchmark. 3.6 VALIDATION OF THE ANNOTATION SYSTEM AND DATASET 
+
+To validate the quality of the annotation system, we conduct a series of through evaluation (see Ap-pendix A.3) on each step component, demonstrating that our pipeline achieves human-level quality in annotation consistency and reliability. 
+
+4 MULTIMODAL DIALOGUE GENERATION TASKS 
+
+In this section, we first introduce a unified formulation of Multimodal Dialogue Generation 
+
+(MDG) . Subsequently, we present three representative tasks under different control conditions and output modalities, providing instantiations of the MDG framework. 6Published as a conference paper at ICLR 2026 4.1 PROBLEM FORMULATION 
+
+To enable systematic study of multimodal dialogue behaviors, we formalize MDG as a conditional generation problem. Given a multimodal context C = {Ctxt , C aud , C vis }, the goal is to generate multimodal dialogue behaviors Y = {Ytxt , Y aud , Y vis } that are (i) semantically coherent ,(ii) aligned across modalities , and (iii) controllable . Formally, MDG can be expressed as modeling a condi-tional distribution: P (Y | C , Z), where Z denotes explicit/implicit control variables for dialogue style. This formulation unifies diverse downstream tasks such as style-controllable dialogue speech synthesis, vision-conditioned speech synthesis, and speech-driven dialogue video generation, pro-viding a foundation for systematic benchmarking of controllable multimodal dialogue. 4.2 TASK 1: S TYLE -CONTROLLABLE DIALOGUE SPEECH SYNTHESIS 
+
+Definition. Conditioning purely on text, this task synthesizes multi-speaker dialogue audio stream 
+
+A from a transcript T = {u1, . . . , u N } (consisting of N utterances) and an explicit style condition 
+
+Zexp . The condition Zexp belongs to either a structured affective triplet space or free-form descrip-tions: Zexp ∈ S triplet ∪ L desc , where Striplet = VR × V I × V E . The synthesis process is modeled as sampling ˆA ∼ P (A | T, Z exp ). Unlike turn-based concatenation in standard TTS (Rong et al., 2025; Du et al., 2024), we directly model A as a continuous dialogue speech stream, naturally embedding speaker transitions and overlaps without explicit boundaries markers, similar to Zero-Shot Dialogue Generation (ZSDG) (Zhang et al., 2024). 
+
+Challenges. Compared with conventional Controllable Text-To-Speech (CTTS) and ZSDG, our task presents several unique challenges: (i) generating a continuous single-pass end-to-end dialogue au-dio stream that naturally encodes rich multi-speaker interactions beyond turn-level concatenation; (ii) maintaining coherence and consistency across successive speakers, such as preserving role iden-tity and interactional dynamics throughout multiple turns; and (iii) supporting multi-level control-lability, ranging from global conditions specified by structured triplets to fine-grained per-speaker expressive trajectories. 4.3 TASK 2: V ISION -CONDITIONED DIALOGUE SPEECH SYNTHESIS 
+
+Definition. This task operates under implicit controllability , where the control variable is inferred from visual cues.Let input C = {Vkey , T } consist of a temporally ordered keyframe sequence 
+
+Vkey = {v1, . . . , v K } and aligned transcripts T = {u1, . . . , u K }, the goal is to synthesize multi-speaker dialogue speech A that reflects the interaction-level conditions implied by the visual scene. Formally, the model infers a latent style representation Zimp = ψ(Vkey ) from the visual sequence and generates the audio conditioned on it: ˆA ∼ P (A | T, Z imp ) = P (A | T, ψ (Vkey )) .
+
+Challenges. Compared with explicit prompt-based control, this task requires the model to (i) reli-ably infer interactional variables from visual cues such as appearance, posture, and scene compo-sition; (ii) capture temporal dependencies across the keyframe sequence to reflect evolving interac-tional dynamics in generated speech; and (iii) align inferred styles with textual content T so that the synthesized audio remains both semantically faithful and contextually expressive. 4.4 TASK 3: S PEECH -DRIVEN DIALOGUE VIDEO GENERATION 
+
+Definition. This task instantiates MDG with C = {T, A } and Y = {V }. Given dialogue audio A and the corresponding transcript T , the objective is to synthesize a dialogue video ˆV
+
+that is temporally synchronized with speech and affectively consistent with dialogue semantics: 
+
+ˆV ∼ P (V | A, T, Z ), where Z represents the control variables. In explicit control, Z is provided by the user; in implicit control, Z is a latent representation inferred from A and T (prosody, turn-taking, and affective dynamics). 
+
+Challenges. Compared with text-to-video (T2V) tasks and single talking head generation, our task introduces three key challenges: (i) multi-speaker identity and scene continuity under rapid shot changes and partial visibility; (ii) multi-granularity audio-visual alignment—from lip-audio sync and utterance-level prosody/gesture to dialogue-level expressiveness (relationship, interaction mode, affective state), often under weak/implicit control; and (iii) long-range cinematic reasoning to 7Published as a conference paper at ICLR 2026 faithfully stage interactions (who, how, where), requiring shot planning and blocking beyond what standard quality or lip-sync metrics specify. 
+
+5 BENCHMARKING IN MULTIMODAL DIALOGUE GENERATION 
+
+In this section, we first conduct experiments to verify the effectiveness of MM-D IA in supporting the explicit style control in Dialogue Speech Synthesis (Sec. 5.1). We then leverage MM-D IA -BENCH to reveal key limitations in maintaining audio-visual consistency under implicit cross-modal control in Vision-conditioned Dialogue Speech Synthesis (Sec. 5.2) and Speech-driven Dialogue Video Generation (Sec. 5.3). 5.1 EXPERIMENTS ON EXPLICIT CONTROL IN DIALOGUE SPEECH SYNTHESIS 
+
+A. Evaluation Settings. 
+
+1. Test sets: We evaluate our model on three evaluation splits: Hard , Test , and Out-of-Domain (OOD) . The Hard set is a superset of MM-D IA -B ENCH containing 598 clips of highly-expressive data across MM-D IA . The remaining scope of MM-D IA is then randomly split into 
+
+Train , Valid and Test by 90 : 5 : 5. To further examine generalizability, we additionally construct an 
+
+OOD set with 60 human-refined dialogue clips from daily scenarios. All experimental inference is performed twice, with the Description and Affective Triplet serving as the style control respectively. 
+
+2. Metrics: To evaluate the performance of the synthesized dialogue speech intrigued by MM-D IA ,we established evaluation from the speech-, dialogue-, and controllability-level. 
+
+Speech Quality: We use word error rate ( WER ) and UTMOS (Takaaki et al., 2022) to access the intelligibility and the overall quality of speech. 
+
+Dialogue Quality: We adopt speaker turn-taking accuracy ( cp-WER ) and speaker aware similar-ity ( sa-SIM ) respectively to represent the intra-speaker similarity and inter-speaker timbre transition accuracy in spoken dialogue generation. 
+
+Expressiveness Controllability: Since there are no appropriate objective metric to reflect consistency between the text prompt and speech, we conduct Human-Mos evaluation on overall Quality and Instruction-Following capability. The Human-Mos score was conducted by 10 participants rating 80 audio samples on a 1-5 scale for both dimensions. Following MoonCast (Ju et al.), we further involve a Gemini-as-Judge protocol to enable large-scale nuanced evaluation across Spontaneity, Coherence, Intelligibility, Timbre Similarity, Quality, and Instruction Following. Additionally, we report the Mean Recall Accuracy on the label attributes of Relationship and Interaction Mode. 
+
+B. Baseline Models & Implementation Details. 
+
+To validate the effectiveness of MM-D IA , we perform supervised finetuning of pretrained backbones to enable controllability under both the Triplet and Description control. We select two state-of-the-art pretrained backbones: (1) Higgs-Audio-V2-Base (Boson AI, 2025) and (2) Dia-1.6B (Nari Labs, 2025). Both models support single-pass dialogue speech generation. Notably, Higgs-Audio-V2 allows flexible conditional inputs across multiple tasks, whereas Dia-1.6B is optimized for dialogue synthesis and lacks native support for conditional input. To enable controllability, we introduce a lightweight adapter module that projects explicit style embeddings into Dia-1.6B’s decoder. 
+
+C. Evaluation Results 
+
+Experimental results in Tab. 4 show that Higgs-Audio achieves superior performance in style-controllable dialogue generation after fine-tuning on MM-D IA . The fine-tuning significantly re-duces WER (31.3 → 4.5), and the substantial decrease in cp-WER (104.8 → 33.8) indicates marked improvement in its original capabilities like content accuracy and dialogue tone conversion. A slight reduction in sa-SIM is observed (0.48 → 0.45), suggesting a mild trade-off, where improved style controllability is accompanied by slightly reduced speaker timbre consistency, partially due to the increased speaker and style variability in movie-sourced data. While both backbones benefit from fine-tuning on MM-D IA , the stronger performance of Higgs-Audio demonstrates that MM-D IA ef-fectively enhances dialogue accuracy and controllability, particularly when paired with backbones designed for conditional generation. Results under the Affective Triplet control setting, including evaluations on Hard, Test, and OOD splits, are provided in Appendix A.5. 8Published as a conference paper at ICLR 2026 Table 4: Results of Dialogue Speech Synthesis with Description as style control on the Test set.                                                                
+
+> Model Speech-Quality Dialogue-Quality Human-MOS Gemini-as-Judge
+> WER ↓UTMOS ↑sa-SIM ↑cp-WER ↓Qual. ↑Instr. Follow. ↑Spont. ↑Coher. ↑Intellig. ↑Similar. ↑Qual. ↑Instr. Follow. ↑
+> Dia-Base 19.991 2.272 0.389 51.713 2.410 ±0.940 2.500 ±0.890 3.993 4.335 4.446 3.738 4.248 3.807
+> Dia-SFT 29.071 1.974 0.447 57.813 2.890 ±0.690 2.880 ±0.710 3.626 4.071 4.171 3.590 3.971 3.598
+> Higgs-Audio-V2-Base 31.251 3.093 0.475 104.867 3.580 ±0.560 3.110 ±0.600 3.313 3.96 4.276 4.021 3.874 4.012
+> Higgs-Audio-V2-SFT 4.450 3.280 0.447 33.765 4.440 ±0.290 4.130 ±0.520 4.277 4.881 4.965 4.640 4.851 4.707
+
+Table 5: Results of Vision-conditioned Dialogue Speech Synthesis on MM-D IA -B ENCH .                                                
+
+> Model Speech-Quality Dialogue-Quality Label-Recall Gemini-as-Judge
+> WER ↓UTMOS ↑sa-SIM ↑cp-WER ↓Mean Acc. ↑Spont. ↑Coher. ↑Intellig. ↑Similar. ↑Qual. ↑Instr. Follow. ↑
+> HarmoniVox 21.223 3.5704 0.62 30.981 40.47 1.790 3.390 4.238 1.657 1.895 2.410
+> Cascaded Gemini + Higgs 5.781 3.3245 0.499 16.267 42.33 3.081 4.129 4.927 2.605 3.21 3.347
+> Cascaded GPT + Higgs 5.793 3.4384 0.476 14.583 52.17 3.326 4.000 4.978 3.022 3.587 3.522
+
+5.2 EXPERIMENTS ON VISION -CONDITIONED DIALOGUE SPEECH SYNTHESIS 
+
+A. Evaluation Settings 
+
+1. Test sets: We use 133 clips from MM-D IA -B ENCH , which guarantee single speaker visibility in each keyframe for the model to facilitate accurate speaker attribution. The dialogues exhibit clear emotional contrasts through visual cues such as facial expressions or body gestures to guide style-consistent speech generation. 
+
+2. Metrics: Since Task 2 shares the same output paradigm as Task 1, we preserve most metrics while slightly modifying prompts in Gemini-as-Judge protocol to analyze the alignment in dialogue expressiveness between the speech and visual sequences. 
+
+B. Baseline Models & Implementation Details 
+
+We implement several representative baselines for comparison: (1) HarmoniVox (Zhou et al., 2025a). The model infers the avatar’s latent internal states from a visual image and projects it into a talking style representation to conditioned speech synthesis. We adopt sentence-level inference in our experiments and concatenate corresponding utterances into complete dialogue. (2) Cascaded VLM + Higgs-Audio-SFT . We employ a strong vision-language model (e.g., GPT-5, Gemini-2.5-pro) to first generate descriptive style prompts in human interaction from the visual dialogue context, which are then used to condition Higgs-Audio-V2-SFT for speech synthesis. 
+
+C. Evaluation Results 
+
+As shown in Tab. 5, the cascaded methods outperform the end-to-end HarmoniVox in most metrics. Comparing with the explicit style-prompt setting in in Tab. 4, although most objective results pre-served stable performance related to speech and dialogue quality, the subjective scores in Gemini-as-Judge exhibit a noticeable decline, especially in dimensions like Timbre Similarity and Instruction Following. This suggests that while basic speech synthesis performance is preserved, cross-modal style consistency degrades when cues are provided implicitly through visual interaction context. These results reveal an imbalance in existing approaches: they can produce fluent dialogue, yet struggle to maintain coherent interaction-level style alignment across modalities. 5.3 EXPERIMENTS ON SPEECH -DRIVEN DIALOGUE VIDEO GENERATION 
+
+A. Evaluation Settings 
+
+1. Test sets: We also use the 133 dialogues from MM-D IA -B ENCH , which ensures single-speaker visibility as introduced in Sec. 5.2. This set is curated to cover all annotated relationships and interaction modes in MM-D IA , ensuring broad semantic coverage for cross-modal alignment as-sessment. 
+
+2. Metrics: We evaluate along three axes: video quality (Fr´ echet Video Distance, FVD (Unterthiner et al., 2019)), lip-speech synchronization (LSE-C and LSE-D (Chung & Zisserman, 2016)), and 
+
+cross-modal semantics/alignment . We adopt the model-as-judge pipeline introduced in Sec. 5.1 to 9Published as a conference paper at ICLR 2026 Table 6: Results of Speech-driven Dialogue Video Synthesis.                                                                                             
+
+> Model Visual-Quality Lip-Sync Label-Recall Gemini-as-Judge
+> FVD ↓LSE-C ↑LSE-D ↓ACC-Rela. ↑ACC-Interact. ↑Spont. ↑Coher. ↑Intellig. ↑Similar. ↑Qual. ↑Instr. Follow. ↑
+> FLOAT (Ki et al., 2025) 572.187 4.805 9.502 --2.703 2.405 3.050 3.339 2.248 3.050 MultiTalk (Kong et al., 2025b) 124.543 5.305 8.795 --4.524 4.388 4.612 4.689 4.922 4.631 Sonic (Ji et al., 2025) 117.096 4.986 8.503 --4.592 4.583 4.750 4.800 4.833 4.750
+> Wan-2.2 S2V (Wan et al., 2025) 154.261 4.288 9.873 --4.205 4.116 4.357 4.589 4.652 4.384 HunyuanVideo (Kong et al., 2025a) 335.591 --47.97% 13.82% 2.089 4.553 4.049 2.968 4.309 2.293 Wan-2.2 T2V (Wan et al., 2025) 300.092 --53.66% 18.70% 3.114 4.634 4.602 3.732 4.423 3.268 Ground Truth -6.275 8.333 100.00% 100.00% 4.892 4.971 4.961 4.931 5.000 4.902
+
+score Spontaneity , Coherence , Intelligibility , Similarity , Overall Quality , and Instruction Following ,to quantify how well the generated dialogue videos align with the speech modality—from low-level timing (lip-speech sync) and utterance-level prosody/expressiveness to dialogue-level seman-tics (e.g., staging, flow, and instruction following). In addition, we report label accuracy/recall on 
+
+Relationship and Interaction Mode to test whether generated scenes faithfully reflect dialogue-level interpersonal semantics. 
+
+B. Baseline Models & Implementation Details 
+
+Because no system currently performs end-to-end dialogue-to-video generation, we evaluate two practical families: • SI2V (Speaker-Image-to-Video). We split dialogue-level movie clips into sentence-level segments and drive the corresponding speaker images with each utterance, then concatenate per-sentence clips into dialogue videos. Given that SI2V models use reference keyframes, we do not evaluate relationship/scene accuracy here; we focus on lip sync and expressiveness alignment. • T2V (Text-to-Video). Using sentence-level fine-grained and dialogue-level expressiveness anno-tations in MM-D IA , we construct rich text prompts to condition multi-speaker scene synthesis. Since audio is not explicitly input, we do not score lip sync for T2V; instead, we emphasize relationship/interaction and expressiveness alignment. During model-as-judge, we provide the corresponding audio for Gemini to evaluate the cross-modality alignment. 
+
+C. Evaluation Results 
+
+All experiments are conducted on MM-D IA -B ENCH dialogue clips with visible dyads and diverse expressiveness to ensure comparable shot complexity across systems. Results in Tab. 6 show that no current system adequately solves dialogue video generation. Despite rich prompts, T2V models capture only a portion of high-level dialogue semantics; accurate staging of interaction scenes and who-interacts-with-whom remains unreliable. SI2V systems attain higher 
+
+Coherence /Intelligibility /Quality on average, but Instruction Following and fine-grained Spontaneity 
+
+alignment fluctuate across long dialogues. To summarize, SI2V pipelines are complex and depend on keyframes; practical deployment will require coupling with keyframe generation to approach end-to-end usage. Additionally, small face extents and occlusions in natural dialogue shots make lip-sync brittle, often producing artifacts. Meanwhile, T2V systems lack explicit audio conditioning, making it difficult to synchronize with speech timing and match vocal expressiveness; they also underperform at faithfully reconstructing relationships and interaction patterns. Overall, neither family is yet adequate for dialogue video generation. The results validate our bench-mark design: quality and lip-sync alone are insufficient; cross-modal semantic alignment must be measured explicitly to drive progress. Future work should target: (1) End-to-end dialogue-to-video modeling that unifies keyframe planning, character visibility, lip/body sync, and scene continuity; (2) Multi-granularity alignment learning using sentence-level and dialogue-level expressiveness la-bels (relationship, interaction mode, affect); (3) Cross-modal semantic discriminators that penalize misalignment during training; and (4) Long-range dependence & shot planning for controllable staging in multi-speaker scenes, consistent with expressiveness schema in MM-D IA .10 Published as a conference paper at ICLR 2026 
+
+6 CONCLUSION 
+
+In this paper, we propose MM-D IA , the first large-scale highly-expressive multimodal dialogue dataset for the task of Multimodal Dialogue Generation, and the corresponding dual-speaker bench-mark MM-D IA -B ENCH for the evaluation of cross-modal conditional generation tasks. Experi-ments demonstrate that MM-D IA enhances the style controllability of dialogue generation model and MM-D IA -B ENCH reveals the limitation in current cross-modal style consistency. 
+
+7 ACKNOWLEDGEMENTS 
+
+This work is supported by the National Natural Science Foundation of China under Grant Nos. 62425604 and 62502256. 
+
+REFERENCES 
+
+Andreas Blattmann, Robin Rombach, Huan Ling, Tim Dockhorn, Seung Wook Kim, Sanja Fidler, and Karsten Kreis. Align your latents: High-resolution video synthesis with latent diffusion mod-els. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 22563–22575, June 2023. Boson AI. Higgs Audio V2: Redefining Expressiveness in Audio Generation. https:// github.com/boson-ai/higgs-audio , 2025. GitHub repository. Release blog available at https://www.boson.ai/blog/higgs-audio-v2 .Joon Son Chung and Andrew Zisserman. Out of time: automated lip sync in the wild. In Asian Conference on Computer Vision, pp. 251–263. Springer, 2016. Jiahao Cui, Hui Li, Yun Zhan, Hanlin Shang, Kaihui Cheng, Yuqi Ma, Shan Mu, Hang Zhou, Jingdong Wang, and Siyu Zhu. Hallo3: Highly dynamic and realistic portrait image animation with video diffusion transformer. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 21086–21095, 2025. Zhihao Du, Qian Chen, Shiliang Zhang, Kai Hu, Heng Lu, Yexin Yang, Hangrui Hu, Siqi Zheng, Yue Gu, Ziyang Ma, Zhifu Gao, and Zhijie Yan. CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens, July 2024. URL http: //arxiv.org/abs/2407.05407 . arXiv:2407.05407 [cs]. Seungju Han, Jack Hessel, Nouha Dziri, Yejin Choi, and Youngjae Yu. Champagne: Learning real-world conversation from large-scale web videos. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp. 15498–15509, October 2023. Tengda Han, Max Bain, Arsha Nagrani, G¨ ul Varol, Weidi Xie, and Andrew Zisserman. Autoad iii: The prequel - back to the pixels. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 18164–18174, June 2024. Xiaozhong Ji, Xiaobin Hu, Zhihong Xu, Junwei Zhu, Chuming Lin, Qingdong He, Jiangning Zhang, Donghao Luo, Yi Chen, Qin Lin, et al. Sonic: Shifting focus to global audio perception in portrait animation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp. 193–203, 2025. Zeyu Jin, Jia Jia, Qixin Wang, Kehan Li, Shuoyi Zhou, Songtao Zhou, Xiaoyu Qin, and Zhiyong Wu. Speechcraft: A fine-grained expressive speech dataset with natural language description. In Proceedings of the 32nd ACM International Conference on Multimedia, pp. 1255–1264, 2024. Xuan Ju, Yiming Gao, Zhaoyang Zhang, Ziyang Yuan, Xintao Wang, Ailing Zeng, Yu Xiong, Qiang Xu, and Ying Shan. Miradata: A large-scale video dataset with long durations and structured captions. In Advances in Neural Information Processing Systems, volume 37, pp. 48955–48970. Curran Associates, Inc., 2024. Zeqian Ju, Dongchao Yang, Kai Shen, Yichong Leng, Zhengtao Wang, Songxiang Liu, Xinyu Zhou, Tao Qin, Xiangyang Li, Jianwei Yu, et al. Mooncast: High-quality zero-shot podcast generation. In The Thirty-ninth Annual Conference on Neural Information Processing Systems. 11 Published as a conference paper at ICLR 2026 Taekyung Ki, Dongchan Min, and Gyeongsu Chae. Float: Generative motion latent flow matching for audio-driven talking portrait. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pp. 14699–14710, 2025. Weijie Kong, Qi Tian, Zijian Zhang, Rox Min, Zuozhuo Dai, Jin Zhou, Jiangfeng Xiong, Xin Li, Bo Wu, Jianwei Zhang, Kathrina Wu, Qin Lin, Junkun Yuan, Yanxin Long, Aladdin Wang, An-dong Wang, Changlin Li, Duojun Huang, Fang Yang, Hao Tan, Hongmei Wang, Jacob Song, Jiawang Bai, Jianbing Wu, Jinbao Xue, Joey Wang, Kai Wang, Mengyang Liu, Pengyu Li, Shuai Li, Weiyan Wang, Wenqing Yu, Xinchi Deng, Yang Li, Yi Chen, Yutao Cui, Yuanbo Peng, Zhen-tao Yu, Zhiyu He, Zhiyong Xu, Zixiang Zhou, Zunnan Xu, Yangyu Tao, Qinglin Lu, Song-tao Liu, Dax Zhou, Hongfa Wang, Yong Yang, Di Wang, Yuhong Liu, Jie Jiang, and Caesar Zhong. Hunyuanvideo: A systematic framework for large video generative models, 2025a. URL 
+
+https://arxiv.org/abs/2412.03603 .Zhe Kong, Feng Gao, Yong Zhang, Zhuoliang Kang, Xiaoming Wei, Xunliang Cai, Guanying Chen, and Wenhan Luo. Let them talk: Audio-driven multi-person conversational video generation. In The Thirty-ninth Annual Conference on Neural Information Processing Systems, 2025b. Chang Liu, Haoning Wu, Yujie Zhong, Xiaoyun Zhang, Yanfeng Wang, and Weidi Xie. Intelli-gent grimm - open-ended visual storytelling via latent diffusion models. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 6190–6200, June 2024a. Rui Liu, Haolin Zuo, Zheng Lian, Xiaofen Xing, Bj¨ orn W. Schuller, and Haizhou Li. Emotion and intent joint understanding in multimodal conversation: A benchmarking dataset, 2024b. URL 
+
+http://arxiv.org/abs/2407.02751 .Kepan Nan, Rui Xie, Penghao Zhou, Tiehan Fan, Zhenheng Yang, Zhijie Chen, Xiang Li, Jian Yang, and Ying Tai. Openvid-1m: A large-scale high-quality dataset for text-to-video generation. In Proceedings of the International Conference on Learning Representations (ICLR), 2025. URL 
+
+https://openreview.net/forum?id=j7kdXSrISM .Nari Labs. Dia: A tts model capable of generating ultra-realistic dialogue in one pass. https: //github.com/nari-labs/dia , 2025. Accessed: 2025-09-20. OpenAI, Josh Achiam, and Adler. GPT-4 technical report, 2024. URL http://arxiv.org/ abs/2303.08774 .Soujanya Poria, Devamanyu Hazarika, Navonil Majumder, Gautam Naik, Erik Cambria, and Rada Mihalcea. MELD: A multimodal multi-party dataset for emotion recognition in conversations. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics, pp. 527–536, Florence, Italy, July 2019. Association for Computational Linguistics. doi: 10.18653/ v1/P19-1050. Yan Rong, Shan Yang, Guangzhi Lei, and Li Liu. Dopamine Audiobook: A Training-free MLLM Agent for Emotional and Human-like Audiobook Generation, April 2025. URL http: //arxiv.org/abs/2504.11002 . arXiv:2504.11002 [cs]. Saeki Takaaki, Xin Detai, Nakata Wataru, Tomoki Koriyama, Shinnosuke Takamichi, and Hi-roshi Saruwatari. UTMOS: UTokyo-SaruLab System for VoiceMOS Challenge 2022. In Interspeech 2022, pp. 4521–4525, 2022. Thomas Unterthiner, Sjoerd van Steenkiste, Karol Kurach, Raphael Marinier, Marcin Michalski, and Sylvain Gelly. Towards accurate generative models of video: A new metric and challenges, 2019. URL https://arxiv.org/abs/1812.01717 .Team Wan, Ang Wang, Baole Ai, Bin Wen, Chaojie Mao, Chen-Wei Xie, Di Chen, Feiwu Yu, Haiming Zhao, Jianxiao Yang, Jianyuan Zeng, Jiayu Wang, Jingfeng Zhang, Jingren Zhou, Jinkai Wang, Jixuan Chen, Kai Zhu, Kang Zhao, Keyu Yan, Lianghua Huang, Mengyang Feng, Ningyi Zhang, Pandeng Li, Pingyu Wu, Ruihang Chu, Ruili Feng, Shiwei Zhang, Siyang Sun, Tao Fang, Tianxing Wang, Tianyi Gui, Tingyu Weng, Tong Shen, Wei Lin, Wei Wang, Wei Wang, Wenmeng Zhou, Wente Wang, Wenting Shen, Wenyuan Yu, Xianzhong Shi, Xiaoming Huang, Xin Xu, Yan 12 Published as a conference paper at ICLR 2026 Kou, Yangyu Lv, Yifei Li, Yijing Liu, Yiming Wang, Yingya Zhang, Yitong Huang, Yong Li, You Wu, Yu Liu, Yulin Pan, Yun Zheng, Yuntao Hong, Yupeng Shi, Yutong Feng, Zeyinzi Jiang, Zhen Han, Zhi-Fan Wu, and Ziyu Liu. Wan: Open and advanced large-scale video generative models, 2025. URL https://arxiv.org/abs/2503.20314 .Haoyu Wang, Xiaozhe Xin, Xiaoyu Qin, Meiguang Jin, Junfeng Ma, Dan Xu, and Jia Jia. Emotion-conditioned motion sub-spaces with flow matching for real-time audio-driven talking heads. In Proceedings of the 40th Annual AAAI Conference on Artificial Intelligence (AAAI-26), 2026. Qixin Wang, Songtao Zhou, Zeyu Jin, Chenglin Guo, Shikun Sun, and Xiaoyu Qin. V-cass: Vision-context-aware expressive speech synthesis for enhancing user understanding of videos. In 2025 International Joint Conference on Neural Networks (IJCNN), pp. 1–8, 2025. doi: 10.1109/IJCNN64981.2025.11228511. Shuhe Wang, Yuxian Meng, Xiaoya Li, Xiaofei Sun, Rongbin Ouyang, and Jiwei Li. OpenViDial 2.0: A larger-scale, open-domain dialogue generation dataset with visual contexts, 2021. URL 
+
+http://arxiv.org/abs/2109.12761 .Weijia Wu, Mingyu Liu, Zeyu Zhu, Xi Xia, Haoen Feng, Wen Wang, Kevin Qinghong Lin, Chun-hua Shen, and Mike Zheng Shou. Moviebench: A hierarchical movie level dataset for long video generation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 28984–28994, June 2025. Junfei Xiao, Ceyuan Yang, Lvmin Zhang, Shengqu Cai, Yang Zhao, Yuwei Guo, Gordon Wetzstein, Maneesh Agrawala, Alan Yuille, and Lu Jiang. Captain cinema: Towards short movie generation. In The Fourteenth International Conference on Learning Representations, 2026. URL https: //openreview.net/forum?id=zlNZBxQZIC .Leying Zhang, Yao Qian, Long Zhou, Shujie Liu, Dongmei Wang, Xiaofei Wang, Midia Yousefi, Yanmin Qian, Jinyu Li, Lei He, Sheng Zhao, and Michael Zeng. Covomix: Advancing zero-shot speech generation for human-like multi-talker conversations. In A. Globerson, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang (eds.), Advances in Neural Information Processing Systems, volume 37, pp. 100291–100317. Curran Associates, Inc., 2024. Songtao Zhou, Xiaoyu Qin, Yixuan Zhou, Qixin Wang, Zeyu Jin, Zixuan Wang, Zhiyong Wu, and Jia Jia. Harmonivox: Painting voices to match the avatar’s soul. In Proceedings of the 33rd ACM International Conference on Multimedia, MM ’25, 2025a. Songtao Zhou, Xiaoyu Qin, Yixuan Zhou, Qixin Wang, Zeyu Jin, Zixuan Wang, Zhiyong Wu, and Jia Jia. Harmonivox: Painting voices to match the avatar’s soul. In Proceedings of the 33rd ACM International Conference on Multimedia, pp. 6720–6729, 2025b. Yixuan Zhou, Xiaoyu Qin, Zeyu Jin, Shuoyi Zhou, Shun Lei, Songtao Zhou, Zhiyong Wu, and Jia Jia. Voxinstruct: Expressive human instruction-to-speech generation with unified multilin-gual codec language modelling. In Proceedings of the 32nd ACM International Conference on Multimedia, pp. 554–563, 2024. Han Zhu, Wei Kang, Liyong Guo, Zengwei Yao, Fangjun Kuang, Weiji Zhuang, Zhaoqing Li, Zhifeng Han, Dong Zhang, Xin Zhang, Xingchen Song, Long Lin, and Daniel Povey. ZipVoice-dialog: Non-autoregressive spoken dialogue generation with flow matching, 2025. URL http: //arxiv.org/abs/2507.09318 .13 Published as a conference paper at ICLR 2026 
+
+REPRODUCIBILITY STATEMENT 
+
+We provide the MM-D IA dataset, a large-scale multimodal dialogue corpus, and the MM-D IA -BENCH benchmark, both of which are integral to our research on style-controllable multimodal dia-logue generation. Our experimental code and data curation pipeline will be made publicly available upon acceptance of the paper. The models and algorithms used in this paper can be reproduced us-ing the provided dataset and benchmark, with all necessary details regarding model configurations, training procedures, and evaluation protocols included. 
+
+ETHICS STATEMENT 
+
+The MM-D IA and MM-D IA -B ENCH datasets include multimodal data sourced from movies and TV series, some of which may contain commercial content. We do not release the video or audio clips themselves; instead, we provide annotations (e.g., transcript, affective triplet, dialogue de-scription, speaker identity, keyframe with active speaker, etc.d) and the methods used to generate them. Researchers are encouraged to obtain the corresponding media content independently and align it with the provided timestamps. For any further queries or information, readers are welcome to contact us. We acknowledge the potential for biases inherent in the media content used and are committed to addressing these in future versions of the dataset by incorporating more diverse sources and refining our annotation methods. 
+
+LLM U SAGE DISCLOSURE 
+
+We used GPT-5 for grammar checking and improving the clarity of sections 1 through 6 in this manuscript. All technical content, experimental design, and analysis are original human work. The LLM suggestions were manually reviewed and modified to ensure that they align with the paper’s objectives and maintain technical accuracy. 14 Published as a conference paper at ICLR 2026 
+
+A APPENDIX 
+
+A.1 IMPLEMENTATION DETAILS FOR SUBTITLE CALIBRATION 
+
+We combine multi-sourced uncalibrated subtitles with ASR results to perform precise synchroniza-tion between the timestamps and content. Selecting the matched specific ASR segments and subtitle entries as anchor points, we perform translation operations to adjust time and duration differences in the uncalibrated subtitle timestamps with minimal discrepancies. Typical cases in multi-sourced movie subtile alignment are shown in Fig. 4. The qualified subtitle with low variance in discrep-ancy are double-checked by human to ensure usability. The alignment not only improves the overall synchronization of subtitles with the spoken content, but also mitigates errors introduced by ASR, enhancing the accuracy and reliability of the subtitle data in audio-visual applications. 
+
+(a) (b) (c) Figure 4: Three bad/good cases of subtitle alignment: (a) edited movie segments, (b) edited movie speed, and (c) potential usability with time translation. In each figure, the upper plot shows the start time discrepancy between anchor point start times in the subtitle and the ASR results, and the lower plot shows the duration discrepancy. A.2 IMPLEMENTATION DETAILS FOR DIALOGUE EXTRACTION 
+
+We introduce a buffer mechanism to dynamically update a keyframe pool of the current scene, with the pseudo-code illustrated in Algorithm 1. Let P = {p1, p 2, . . . , p m} represent the dynamic set of most representative keyframes from the current scene S = {st−n, . . . , s t−1, s t}, VLM uses the updated keyframes P to perform sparse comparisons of the similarity between the P and the frame after a certain buffer interval b, st+b.Whenever the match fails, it falls back to the subsequent frame st+1 through binary search. Once the match is successful, sparse comparisons will start from the new end frame, recognizing the passed frames within the same scene. Meanwhile, the keyframe pool P is updated the by replacing a most similar frame within the pool with the new st+b.
+
+S′ = {st−n, . . . , s t+b}, P ′ = P ∪ { st+b} \ { pmost similar }, if VLM (P, s t+b) = True. The buffer spanning multiple frames, together with the memory pool, enables the algorithm to “bridge” temporary interruptions instead of triggering incorrect scene boundaries. This allows the algorithm to maintain the continuity of dialogue scenes over longer periods, providing greater re-silience to the complex visual dynamics of movies. A.3 VALIDATION RESULTS OF THE ANNOTATION SYSTEM AND DATASET 
+
+1. Evaluation of the correctness in movie-subtitle synchronization. 
+
+As shown in Tab. 7, with the official version of subtitle stands for the ground truth of content and human judgment on correctness of timestamps boundaries, the calibrated subtitle performs balanced in low word error with high time accuracy. Notably, both ASR and official subtitle tend to present the line slightly earlier than the actual time, while the start time is usually correct. As a result, we slightly extend the audio up to the next starting time in the subsequent training. 
+
+2. Evaluation on the buffer mechanism in boundary detection. 
+
+15 Published as a conference paper at ICLR 2026 
+
+Algorithm 1 Subtitle Scene Segmentation with VLM 
+
+Require: Subtitle file srt, Video file video, Step size step, Buffer size buffer 
+
+Ensure: List of dialogue ranges 
+
+1: Load VLM model (Qwen2.5-VL-7B-Instruct) ParseScriptSrt 
+
+2: Extract subtitle blocks with index and timecode 
+
+3: return list of blocks ExtractFramevideo, timecode 
+
+4: Compute midpoint timestamp 
+
+5: Use ffmpeg to extract frame image 
+
+6: return image path IsContinuationframes 
+
+7: Prompt VLM with frames to check scene continuity 
+
+8: if last frame matches context then 
+
+9: return True 
+
+10: else 
+
+11: return False 
+
+12: end if 
+
+13: Initialize ranges list 
+
+14: for each block i do 
+
+15: Try to extend range by comparing future blocks using VLM 
+
+16: Allow up to step ahead, using up to buffer context frames 
+
+17: if continuation fails then 
+
+18: finalize current segment 
+
+19: end if 
+
+20: end for 
+
+21: return ranges 
+
+22: Save ranges to JSON output Table 7: TimeStamp accuracy and WER of different subtitle version.           
+
+> Data Source TimeStamp Acc. WER
+> ASR 0.871 0.34 SRT-Uncalibrated 0.179 0.43 SRT-Calibrated 0.857 0.03 SRT-Official 0.870 0.00
+
+Table 8: Completeness and Hallucination of Dialogue Annotation from Qwen-72B, GPT-5 & Gemini-2.5-pro.                        
+
+> Annotation Model Comp. ↑Hall. ↓
+> Non-verbal Sound
+> Qwen 1.25 2.12 GPT 1.18 1.00
+> Gemini 4.66 1.22
+> Affective Triplet
+> Qwen 3.45 2.56 GPT 3.66 2.20 Gemini 4.76 1.38 Description
+> Qwen 3.15 2.76 GPT 3.60 2.16 Gemini 4.72 1.44
+
+Firstly, we conduct human evaluation on a random sampled test set with six movies, with the re-ported boundary extraction accuracy to be 95.2%, comparing to 86.3% on the traditional frame-by-frame scene continuation detection methods. As to the ablation study on the proposed buffer mechanism, inspired by the Intersection over Union (IoU) metric commonly used in Object Detection , we introduce a new metric called F 1Overlap to represent the similarity between two continuous segmentation of a same sequence of clips, expressed as {A}, {B}:Table 9: Ablation study on the buffer b with Qwen 7B and Qwen 72B model as VLM.                  
+
+> F1Overlap b=1 2345Qwen 7B 0.771 0.866 0.841 0.839 0.836 Qwen 72B 0.947 0.975 0.977 0.978 0.979
+
+16 Published as a conference paper at ICLR 2026 Using A as the reference segmentation, for the n intervals in A, we take the corresponding in-terval in B that has the maximum overlap with it to calculate the percentage of the total overlap-ping duration of these n overlaps in A, denoted as P (A, B ). Formally, this can be written as: 
+
+P (A, B ) =    
+
+> Pni=1 Overlap (Ai,B max )
+> Pni=1 Duration (Ai)
+
+. Similarly, we reverse the roles of A and B to compute P (B, A ).The similarity between the two segmentation is then computed using the F1 score of P (A, B ) and 
+
+P (B, A ): F 1Overlap = 2 × P (A,B )×P (B,A )   
+
+> P(A,B )+ P(B,A )
+
+. The F 1Overlap metric prevents extreme segments, whether excessively dense or sparse, from receiving a high P score based on a single perspective. As shown in Tab. 9, we leverage Qwen 72B with b = 3 to balance the time and performance. 
+
+3. Quality evaluation on the dialogue annotation. 
+
+Following MovieBench Wu et al. (2025), we invite two human annotators to evaluate the perfor-mance of Gemini annotation in the data curation pipeline, from the perspective of Completeness 
+
+and Hallucination . Annotators are asked to score on a 1-5 scale for the three kinds of annotation of 100 randomly sampled movie/TV clips from MM-D IA . As indicated in Tab. 8, in comparison with Qwen 72B and GPT 5 (which instead takes sequential frames and audio as video input), Gemini-2.5-pro outperforms in most aspects with the best interpretation of the movie style. A.4 METRICS EXPLANATION IN TASK 1. 
+
+Speech Quality: WER , UTMOS .
+
+We use the official implementation from Zhu et al. (2025) to compute WER and UTMOS, accessing the intelligibility and the overall quality of speech. 
+
+Dialogue Quality: cp-WER , sa-SIM .
+
+Speaker Turn-Taking Accuracy (cp-WER) is computed by firstly concatenating all speech utter-ances by the same speaker after processing the speaker diarization to the generated spoken dialogue, then picking up the lowest WER among all the permutations of the generated transcripts with the concatenated ground truth. Speaker Aware Similarity (sa-SIM) is acquired by computing mean speaker similarity among the permutations of each speaker’s utterance after conducting the Montreal-Forced-Alignment. A.5 ADDITIONAL EXPERIMENTAL RESULTS OF DIALOGUE SPEECH SYNTHESIS UNDER 
+
+AFFECTIVE TRIPLET STYLE CONTROL .As illustrated in Tab. 10, the results under the Affective Triplet control setting exhibit trends highly consistent with those reported in Tab. 4 under the Description prompt. Across both Test and Hard 
+
+splits, Higgs-Audio-V2-SFT consistently achieves the best performance in speech quality, dialogue alignment, and controllability metrics. This consistency indicates that MM-D IA enables robust style control under both natural language and structured affective prompts. As expected, performance on the Hard split (Tab. 11) is generally lower than on the Test split (Tab. 10), particularly in WER and coherence-related metrics. This suggests that highly expres-sive multimodal dialogues introduce increased acoustic variability and emotional volatility, posing additional challenges for speech synthesis. Nevertheless, the relative ranking between models re-mains stable, and controllability metrics (e.g., label recall and Instruction Following) remain strong, indicating preserved control effectiveness under expressive conditions. Additionally, as introduced in Sec. 5.1, we manually created Out-of-Domain clips of dialogue con-tent and style annotations to enable variable control in dialogue generation. The dialogues are daily conversation that GPT-generated and human-refined. Specifically, data are categorized into every three pieces by the Affective Triplet, with two variables fixed in each group, and the third variable changing. Besides, the three dialogues share a same sentence to be presented in different cases. For instance, the sentence ’Please, listen, if you’d just give me a second, I can clear this up!’ could be acted with subtle difference under different speakers relationships, ranging from Lovers , Employer-employee , to Police-Criminal . Please refer to the audio samples on the Demo Page 2, which clearly 
+
+> 2https://mmdiaiclr26.github.io/mmdiaiclr26/
+
+17 Published as a conference paper at ICLR 2026 demonstrate the model’s ability to capture the subtle stylistic shifts corresponding to the controlled variable changes. Overall, these findings confirm that MM-D IA supports both robust style control and generalization across difficulty levels, while highlighting the intrinsic challenges of expressive dialogue speech synthesis. Table 10: Results of Dialogue Speech Synthesis with Affective Triplet as style control on the Test 
+
+set.                                                            
+
+> Model Speech-Quality Dialogue-Quality Label-Recall Gemini-as-Judge
+> WER ↓UTMOS ↑sa-SIM ↑cp-WER ↓Mean Acc. ↑Spont. ↑Coher. ↑Intellig. ↑Similar. ↑Qual. ↑Instr. Follow. ↑
+> Dia-Base 19.991 2.272 0.389 51.713 0.210 3.452 4.000 4.161 4.016 3.887 4.113
+> Dia-SFT 33.178 1.941 0.430 117.947 0.237 3.636 4.118 4.187 3.910 3.962 4.014
+> Higgs-Audio-V2-Base 39.684 3.066 0.461 75.847 0.352 3.169 3.816 4.075 3.843 3.704 3.850
+> Higgs-Audio-V2-SFT 5.265 3.286 0.459 33.134 0.428 4.031 4.820 4.967 4.610 4.636 4.809
+
+Table 11: Results of Dialogue Speech Synthesis with Affective Triplet as style control on the Hard 
+
+set.                                                            
+
+> Model Speech-Quality Dialogue-Quality Label-Recall Gemini-as-Judge
+> WER ↓UTMOS ↑sa-SIM ↑cp-WER ↓Mean Acc. ↑Spont. ↑Coher. ↑Intellig. ↑Similar. ↑Qual. ↑Instr. Follow. ↑
+> Dia-Base 20.266 2.164 0.406 71.956 0.224 4.093 4.407 4.481 3.981 4.381 4.003
+> Dia-SFT 28.940 1.855 0.409 68.893 0.246 3.719 4.179 4.258 4.018 4.111 4.030
+> Higgs-Audio-V2-Base 22.041 3.711 0.463 57.850 0.327 3.190 3.969 4.637 4.151 4.115 4.095
+> Higgs-Audio-V2-SFT 7.206 3.184 0.425 35.690 0.360 3.267 4.667 4.953 4.562 4.555 4.611
+
+A.6 EXPLANATION OF RELATIONSHIP AND INTERACTION MODE CATEGORIES 
+
+Table 12: Explanation of Relationship Categories with Typical Labels 
+
+Relationship Explanation and Example Workplace Refers to professional relationships and environments, including people within a work setting. Example: Colleague , Boss , Manager , Coworker , Client .
+
+Friends A relationship between individuals characterized by mutual af-fection, trust, and companionship outside of family and work. Example: Buddy , Pal , Companion , Mate , Peer .
+
+Intimate Relationships of a more personal and romantic nature, typically involving emotional and physical closeness. Example: Boyfriend , Girlfriend , Partner , Spouse , Fianc´ e.
+
+Family Relationships defined by blood ties or marriage, including ex-tended family members. Example: Mother , Father , Sibling , Uncle , Cousin .
+
+Adversarial Relationships characterized by opposition or conflict, often in-volving rivalry or animosity. Example: Enemy , Opponent , Rival , Antagonist , Competitor .
+
+Individual A relationship with oneself, or a solitary state where interaction with others is minimal or nonexistent. Example: Solo , Loner , Isolated , Monologue .
+
+Social Encompasses a wide range of social roles and interactions, from professional settings to casual encounters. Example: Teacher , Doctor , Neighbor , Stranger , Host , Cus-tomer .Continued on next page... 18 Published as a conference paper at ICLR 2026 
+
+Relationship Explanation and Example Authority Relationships based on power and control, typically involving leadership, governance, and decision-making. Example: King , Judge , Mayor , President , General .Table 13: Explanation of Interaction Mode Categories with Typical Labels 
+
+Interaction Mode Explanation and Example Suggesting The act of convincing someone to believe or do something through reasoning or emotional appeal. 
+
+Example: Persuasion, Convincing, Negotiation. 
+
+Conflict A state of disagreement or confrontation, often involving tension or hostility. 
+
+Example: Argument, Disagreement, Accusation. 
+
+Questioning Asking questions to gain information, clarify doubts, or provoke thought. 
+
+Example: Inquiry, Interrogation, Probing. 
+
+Narration The act of narrating a story or personal experience, often to en-tertain or inform. 
+
+Example: Storytelling, Flashback, Monologue. 
+
+Explanation Providing detailed information or clarification on a topic to en-sure understanding. 
+
+Example: Justification, Diagnosis, Clarification. 
+
+Commands Issuing direct orders or instructions to prompt action. 
+
+Example: Orders, Demands, Instruction. 
+
+Dynamic Cross-talk A back-and-forth exchange of dynamic dialogue, often with in-terruptions or interjections. 
+
+Example: Interjection, Interruption. 
+
+Sympathizing Offering comfort or support to someone, often to alleviate con-cerns or anxiety. 
+
+Example: Comfort, Support, Encouragement. 
+
+Rejection Dismissing or refusing a request, idea, or proposal. 
+
+Example: Refusal, Dismissal, Avoidance. 
+
+Banter Playful, often teasing, interaction intended to entertain or create rapport. 
+
+Example: Teasing, Flirting, Joke. 
+
+Authority Power The use of authority or control to direct others’ actions, often in a commanding or corrective manner. 
+
+Example: Domination, Criticism, Intervention. 
+
+Performance Delivering a structured or formal presentation, speech, or an-nouncement to an audience. 
+
+Example: Presentation, Speech, Announcement. 
+
+Reflection Reflecting on one’s thoughts, feelings, or experiences, often leading to a moment of realization. 
+
+Example: Introspection, Revelation, Discovery. 
+
+Emotion Release Expressing emotions, often related to frustration, anxiety, or re-lief. 
+
+Example: Venting, Confession. 
+
+Invitation Extending a request for someone to join an event or activity. 
+
+Example: Invitation, Offer. 
+
+19

@@ -1,0 +1,442 @@
+Title: BiMoE: Brain-Inspired Experts for EEG-Dominant Affective State Recognition
+
+URL Source: https://arxiv.org/pdf/2603.29205v1
+
+Published Time: Wed, 01 Apr 2026 00:27:11 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# BiMoE: Brain-Inspired Experts for EEG-Dominant Affective State Recognition 
+
+1st Hongyu Zhu, 2 nd Lin Chen ∗, 3 rd Mingsheng Shang 
+
+Chongqing Institute of Green Intelligent Technology, Chinese Academy of Sciences Chongqing School, University of Chinese Academy of Sciences 
+
+Chongqing, China 
+
+{zhuhongyu, chenlin, msshang }@cigit.ac.cn 
+
+Abstract —Multimodal Sentiment Analysis (MSA) that in-tegrates Electroencephalogram (EEG) with peripheral phys-iological signals (PPS) is crucial for the development of brain–computer interface (BCI) systems. However, existing meth-ods encounter three major challenges: (1) overlooking the region-specific characteristics of affective processing by treating EEG signals as homogeneous; (2) treating EEG as a black-box input, which lacks interpretability into neural representa-tions;(3) ineffective fusion of EEG features with complementary PPS features. To overcome these issues, we propose BiMoE, a novel brain-inspired mixture of experts framework. BiMoE partitions EEG signals in a brain-topology-aware manner, with each expert utilizing a dual-stream encoder to extract local and global spatiotemporal features. A dedicated expert handles PPS using multi-scale large-kernel convolutions. All experts are dynamically fused through adaptive routing and a joint loss function. Evaluated under strict subject-independent settings, BiMoE consistently surpasses state-of-the-art baselines across various affective dimensions. On the DEAP and DREAMER datasets, it yields average accuracy improvements of 0.87% to 5.19% in multimodal sentiment classification. The code is available at: https://github.com/HongyuZhu-s/BiMoE. 
+
+Index Terms —Multimodal sentiment analysis, EEG, Mixture of experts, BCI. 
+
+I. I NTRODUCTION 
+
+Emotions play a fundamental role in human cognition, decision-making, and social interaction [1], [2]. Accurate decoding of affective states from physiological signals is therefore essential for Brain-Computer Interfaces (BCIs), men-tal health monitoring, and human-centered AI systems [3]. Electroencephalography (EEG) provides direct, high-temporal-resolution access to neural emotional correlates [4], while Peripheral Physiological Signals (PPS) like Electrocardio-graph (ECG), Galvanic Skin Response (GSR), and Respiration (RESP) offer complementary autonomic readings. Capitalizing on this synergy, Multimodal Sentiment Analysis (MSA) based on EEG emerges as a promising paradigm for robust affective state recognition in real-world settings. Recent advances in modeling EEG signals have significantly advanced MSA. A prevalent strategy treats multi-channel EEG data as 2D pseudo-images and leverages convolutional neural 
+
+This work is supported by the Chongqing Key Project of Technological Innovation and Application (CSTB2023TIAD-STX0015, CSTB2025TIAD-STX0034, CSTB2023TIAD-STX0031, and CSTB2025TIAD-STX0023) and the National Natural Science Foundation of China (Grant No. 62506054). 
+
+∗ Lin Chen is the corresponding author. Fz                  
+
+> Cz
+> Pz
+> Oz
+> F3 F4
+> FC5 FC1 FC2 FC6
+> T7 C3 C4 T8
+> CP5 CP1 CP2 CP6
+> F7 F8
+> P7 P8
+> P3 P4
+> PO3 PO4
+> O1 O2
+> AF3 AF4
+> Fp1 Fp2
+> Prefrontal
+> Expert
+> Central
+> Expert
+> Temporal
+> Expert
+> Parietal
+> Expert
+> Occipital
+> Expert
+> T7
+> T8
+> Peripheral Expert
+
+GL-DNet 
+
+MS-LKC 
+
+or 
+
+Fig. 1. Expert structure diagram. EEG signals from different regions of the brain and the PPS are assigned to different expert networks for encoding. 
+
+networks (CNNs) for feature extraction. For example, [5] introduced a hierarchical CNN to capture spatial patterns from EEG-based pseudo-images, while [6] adopted similar pseudo-image representations for CNN-based encoding. Despite their effectiveness, these approaches often neglect the inherent non-Euclidean relationships among EEG channels [7]. To better model the topological features of EEG, several studies have turned to graph convolutional networks (GCNs). Wang et al. [8] introduced a GCN framework that models phase synchro-nization between EEG channels using Phase Locking Value (PLV). Building on this, [7] further incorporated dynamic-static graph topologies characterized by the Phase Lag Index (PLI). In contrast to PLV and PLI, the weighted PLI (wPLI) offers a more robust measure of functional connectivity by mitigating sensitivity to volume conduction and noise [9]. However, existing methods often fail to extract and integrate global features with local temporal dynamics efficiently. Be-yond unimodal, recent EEG-dominant multimodal frameworks have explored the integration of PPS to improve performance [10]–[14]. Nevertheless, how to effectively fuse EEG with PPS features remains an inadequately addressed problem. Neuroscientific evidence confirms that emotional processing is mediated by specialized regions of the brain rather than being distributed uniformly throughout [15]. For instance, the prefrontal cortex is linked to motivational valence and ap-praisal, while the central cortex contributes to somatosensory integration and arousal [16], [17]. Nevertheless, most current modeling of EEG and EEG-dominant MSA methods treat 
+
+> arXiv:2603.29205v1 [cs.HC] 31 Mar 2026
+
+multi-channel EEG as a generic spatiotemporal signal, pro-cessing it through black-box networks without incorporating these neuroanatomical priors. To address these issues, we proposed BiMoE, a novel mixture of experts (MoE) framework that incorporates neu-rophysiological knowledge into a neural network (Fig. 1). Our approach is structured as follows: First, EEG signals are partitioned according to brain physiological structure and processed by dedicated regional experts. Each expert employs a Global–Local Dual-Stream encoder (GL-DNet), where the multi-layer GCNs with wPLI-based adjacency matrices cap-ture global spatial interactions, and the parallel CNNs extract local temporal features. Simultaneously, PPS are processed by a separate expert utilizing Multi-Scale Large-Kernel CNNs (MS-LKC) to capture their temporal dependencies. Finally, an adaptive router dynamically integrates the outputs of all experts, and the entire model is optimized end-to-end with a joint loss function that balances expert utilization and enhances diversity. To further validate the neuroanatomical alignment, we employ Shapley Additive exPlanations (SHAP) [18] vi-sualization, which reveals that the model’s decision-making process is consistent with established brain region functions, thereby improving the interpretability of BiMoE. The main contributions are summarized as follows:  
+
+> •
+
+We propose BiMoE, a brain-inspired model whose struc-ture explicitly aligns with the neurophysiology of region-specific affective processing.  
+
+> •
+
+We introduce a MoE framework that employs specialized encoders, including GL-DNet for EEG and MS-LKC for PPS, and integrates a learnable router for dynamic feature fusion, optimized through a joint loss function.  
+
+> •
+
+Through extensive subject-independent experiments on the DEAP and DREAMER, BiMoE achieves state-of-the-art performance in both EEG-only and multimodal settings, validating its effectiveness and generalizability. II. M ETHODOLOGY 
+
+This section details the architecture of our proposed BiMoE framework, as illustrated in Fig. 2. 
+
+A. Task Definition 
+
+Given an MSA dataset comprising N subjects, let D =
+
+{(X , Y)}, where X = {X(s)}Ns=1 , Y = {Y(s)}Ns=1 , each pair comprises the multi-channel physiological recordings and the corresponding affective labels for subject s. For each subject, 
+
+X = ( X1, X2, . . . , Xn) consists of n samples of physiological signals, while Y = ( y1, y2, . . . , yn) represents the associated ground-truth labels, with each yi ∈ l corresponding to a multi-dimensional affective rating vector for the i-th sample. Where 
+
+l ⊆ R4 denotes the four affective dimensions: Valence (V), Arousal (A), Dominance (D), and Liking (L). Under the subject-independent setting for multimodal af-fective recognition, the objective is to learn a generalizable mapping function F : X → Y by training on data from N − 1
+
+subjects and evaluating on the remaining held-out subject. 
+
+B. Expert Structure 
+
+To align the model architecture with well-established neu-rophysiological principles, we divided the brain into multiple functional regions, with the EEG signals from each region being processed by its respective dedicated expert. Formally, let the raw multimodal input of each subject for a trial be 
+
+X ∈ RC×T , where C denotes the total number of physiological channels (EEG and PPS) and T is the sequence length. We define a set of brain-region experts, collectively denoted as EEEG ={prefrontal, central, parietal, occipital, temporal, EEG }, where the first five correspond to functionally distinct cortical areas and “ EEG ” processes full-head EEG signals. For each brain-region expert E1−6 ∈ E EEG , a channel index subset 
+
+Ie ⊆ { 1, 2, . . . , C } is predefined according to the international 10–20 electrode system [17], [19]. PPS data Xp are allocated to an additional expert E7 ∈ E P P S = {peripheral }. Thus, the complete set of experts is {E1, E 2, . . . , E 7}, where the subscript indicates the expert index. Fig. 1 illustrates the partition scheme of electrodes em-ployed by the experts. Note that some electrodes (e.g., T7 and T8) are shared across adjacent regions to reflect their dual functional roles. The multi-channel EEG data Xe is then split into region-specific sub-signals: 
+
+Xe = X [Ie, :] ∈ RCe×T , ∀e ∈ E EEG . (1) Where Ce is the number of channels assigned to that EEG expert, thus, the complete data for each subject is represented as X = {Xe, Xp}. These components are then fed into dedicated expert modules: the proposed GL-DNet for EEG regions and the MS-LKC network for the PPS expert. 
+
+C. Global–Local Dual-Stream EEG Feature Extraction 
+
+To capture both the global functional connectivity across brain regions and fine-grained local dynamics within EEG channels, we design the GL-DNet, illustrated in Fig. 2(b). For each EEG expert E1−6, we first compute the wPLI between all channel pairs within Xe to quantify region-specific functional connectivity. Formally, for two channels m and n with signals 
+
+xem = Xe[m, :] ∈ RT and xen = Xe[n, :] ∈ RT , we obtain their analytic representations via the Hilbert transform H[·] [20]: 
+
+zm[t] = xem[t] + j · H [xem[t]] = Aem[t] · ejΦm[t],zn[t] = xen[t] + j · H [xen[t]] = Aen[t] · ejΦn[t], (2) where t = 1 , 2, ..., T is the time step, Aem[t] and Φm denote the instantaneous amplitude and phase of channel m. j rep-resents the imaginary unit. Then, The cross-spectrum Cs [t] is expressed as: 
+
+Cs [t] = zm[t] · conj[ zm[t]] , (3) where conj( ·) represents the complex conjugate function. The wPLI between channels m and n is calculated by: 
+
+wP LI mn = [ 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+w[t]S[sin[∆Φ[ t]] − S[cos[∆Φ[ t]]]] , (4) ... 
+
+> ...
+> ...  ... ...
+
+EEG 
+
+PPS 
+
+> EOG
+> EMG
+> GSR
+> RESP
+> BVP
+> TEMP
+> Data Pre-processing
+
+Expert 
+
+Disgnation  
+
+> Brain-Inspired
+> Experts
+> PPS Expert
+> GL-DNet
+> MS-LKC
+> 01
+> E1:
+> E2:
+> E3:
+> E4:
+> E5:
+> E6:
+> E7:
+> Logit
+
+Router 
+
+Network 
+
+Vote 
+
+> Weight
+
+ℒ𝐀 𝐀 𝐀 
+
+ℒ𝐀 𝐀 
+
+ℒ𝐀 𝐀 𝐀 
+
+> Balance load
+> Learn diverse features
+> Learn discriminative features
+
+(b) GL-DNet 
+
+(a) Brain-Inspired Experts 
+
+> wPLI
+
+Conv block 
+
+> ...
+> ...  ... ...
+> Adjacency matrix
+> ...
+> ...
+> ...
+
+C × C
+
+> Glo bal-GCN
+> K
+> Q
+> V
+> Self-attention
+> MLP
+> Residual feature
+> Local feature
+> Concat
+
+(c) MS-LKC (d) Router Network      
+
+> PPS Expert
+> Large-kernel
+> Conv
+> C×512
+> ×2
+> Avg-pool
+> 32 ×512
+
+C × 512 
+
+1 × 128 
+
+> C
+
+× 64 EEG 
+
+> feature
+> PPS
+> feature
+> Concat
+> Softmax
+> MLP
+> Routing probabilities
+> Softmax
+> Global feature
+> 𝐀 𝐀
+
+FFN   
+
+> 𝐀 𝐀 𝐀 𝐀
+> 𝐀 1
+> 𝐀 𝐀 2
+> 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀 𝐀 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀 𝐀 𝐀 𝐀 𝐀 𝐀 𝐀 Fig. 2. (a) Overview of the BiMoE framework. BiMoE primarily comprises: (b) the Global-Local Dual-stream network for EEG processing, (c) the Multi-Scale Large-Kernel Convolutional module for PPS, (d) a Router Network for dynamic feature integration, and a specific joint loss function for optimization.
+
+where the ∆Φ[ t] = Φ m[t] − Φn[t] denotes the instantaneous phase difference between m and n, obtained via the Hilbert transform. S[·] represents the Sign function, and the weighting term w[t] = Im [Cs [t]] corresponds to the imaginary compo-nent of the cross-spectrum between the two channels. After obtaining the wPLI -based adjacency matrix Aw ∈
+
+[0 , 1] Ce×Ce for this batch of data, we construct a brain functional connectivity graph and apply the GCN layer to learn topology-aware representations: 
+
+He 
+
+> 1
+
+= ReLU(BN(GCN(( Xe)⊤, Aw))) , (5) where BN denotes Batch Normalization. To complement the features with channel-wise contextual refinement, we introduce a residual connection from the Xe:
+
+He 
+
+> 2
+
+= Concat( He 
+
+> 1
+
+, MLP( Xe)) . (6) We then apply a multi-head self-attention mechanism [21] on 
+
+He 
+
+> 2
+
+to dynamically reweight channel contributions and obtain the globally attentive features Heg :
+
+head i = Softmax He 
+
+> 2
+
+WQi · He 
+
+> 2
+
+(WKi )⊤
+
+√dk
+
+!
+
+He 
+
+> 2
+
+WVi , (7) 
+
+Heg = Concat( head 1, head 2, ..., head h)WO + He 
+
+> 2
+
+, (8) where W{Q,K,V,O } are learnable projection matrices, dk is the dimension of K, the number of heads h is set to 4. The fine-grained temporal dynamics of the EEG signals are preserved by applying a lightweight convolutional (Conv) block, comprising 1D Conv, BN layer, and ReLU activation, directly to Xe, thus producing the local features. For E1−6, the final output of GL-DNet OEEG is obtained by concatenating the global representation and the local features: 
+
+OEEG = Concat( Heg , FFN(Conv( Xe))) ∈ RC′ 
+
+> e×T
+
+, (9) where FFN(·) denotes the feed-forward network layer. 
+
+D. PPS Representation and Expert Coordination 
+
+For the PPS expert E7, we process its input signal Xp ∈
+
+RCp×T using a multi-scale large-kernel conv block, shown in Fig.2(c), where Cp = 8 denotes the number of periph-eral channels, e.g., ECG, GSR, RESP. This design captures long-range temporal dependencies in signals without relying on recurrent or attention-based mechanisms. Specifically, we employ 1D Convs with large kernel sizes (15 and 11) to extract multi-scale temporal patterns, and project them into a unified embedding space using an MLP layer: 
+
+OP P S = MLP(ReLU(BN(Conv( Xp))) ∈ RC′ 
+
+> p×T
+
+. (10) After obtaining the EEG expert representations OEEG and the peripheral feature OP P S , we define the output of each expert as OE1−7 and concatenate all expert logits into a unified feature vector Of :
+
+Of = Concat( OE1 , O E2 , ..., O E7 ). (11) This fused representation Of is then fed into a lightweight routing network, as shown in Fig.2(d), which consists of a two-layer MLP followed by a softmax function. This process yields expert-specific weights Wo ∈ R7×2:
+
+Wo = Softmax( W2 · ReLU( W1Of + b1) + b2). (12) The final prediction probability ypre is computed using Eq.(13), which is a weighted sum of all expert logits. 
+
+ypre =
+
+> 7
+
+X
+
+> i=1
+
+W io · (OE(i) ) ∈ R2×1. (13) 
+
+E. Joint Optimization 
+
+The total training objective consists classification loss 
+
+LCLS , expert load balancing loss LEL and expert disagree-ment regularization loss LEDR :
+
+Ltotal = LCLS + ξ1 · L EL + ξ2 · L EDR , (14) where ξ1 = 100 and ξ2 = 0.05 are hyperparameters used to balance the loss components onto a comparable scale. Specifically, to mitigate class imbalance and emphasize hard samples during training, we adopt Focal Loss [22] as the primary classification objective: 
+
+LCLS = − 1
+
+B
+
+> B
+
+X
+
+> i=1
+
+αi(1 − pti)γ log (pti). (15) Where pti = Softmax( ypre i )[ yi] is the predicted probability of the true class for sample i. We use the simplified configuration with γ = 2 .0 and α = 1 .0, allowing the loss to primarily focus on modulating the loss based on sample difficulty. α and γ are the class-balancing weight and the focusing parameter. To prevent certain experts from dominating while others remain underutilized, we introduce expert load loss LEL . First, we encourage all experts to minimize the mean square error 
+
+Limp between their utilization rate U = 1
+
+> B
+
+PBi=1 W io and the uniform distribution. 
+
+Limp = 17
+
+> 7
+
+X
+
+> i=1
+
+(U(i) − 17 )2. (16) Then, we calculate the variance of the utilization rate to prevent any single expert from being overused or ignored. These two parts make up the load loss LEL :
+
+LEL = 17
+
+> 7
+
+X
+
+> i=1
+
+(U(i) − ¯U )2 + Limp . (17) To enhance diversity among experts and discourage redun-dant learning, we further regularize the model with an expert disagreement loss LEDR . Specifically, we compute the sym-metric KL divergence [23] between the softmax-normalized logits Pi = Softmax( OE(i) ) of every pair of experts and maximize their pairwise divergence: 
+
+−L EDR = − 1
+
+ 72
+
+
+
+> 6
+
+X
+
+> i=1 7
+
+X
+
+> j=i+1
+
+KL sym (Pi ∥ Pj ), (18) where KL sym (Pi∥Pj ) = 12 [KL (Pi∥Pj ) + KL (Pj ∥Pi)] . By minimizing −L EDR (i.e., maximizing disagreement), each expert is encouraged to learn different features. III. E XPERIMENTS 
+
+A. Data Preprocessing 
+
+We evaluate our model on two widely used MSA datasets: DEAP [17] and DREAMER [19]. Our experiments encompass both EEG-only and multimodal (EEG+PPS) scenarios for comprehensive performance assessment. To ensure fair com-parison and reproducibility, we follow the same preprocessing pipeline as established in prior works [3], [7]. 
+
+a) DEAP : contains 32-channel EEG and 8-channel PPS recorded from 32 participants, with each subject watching 40 one-minute video clips. The PPS modalities include EOG, GSR, EMG, RESP, blood volume pressure (BVP), and tem-perature (TEMP), all sampled at 512 Hz. Participants rated affective responses on 9-point scales for Valence, Arousal, Dominance, and Liking. Following [13], we binarize ratings at threshold 5, classifying scores >5 as “high” and ≤5 as “low”. 
+
+b) DREAMER : comprises data from 23 participants viewing 18 videos, featuring 14-channel EEG (128 Hz) and 2-channel ECG (256 Hz) recordings. Participants rated Valence and Arousal on 5-point scales, which we binarize at threshold 3 ( ≥3 as ”high”, <3 as ”low”) following [7]. For both datasets, EEG signals are band-pass filtered (4-45 Hz) using a third-order Butterworth [24] filter to remove artifacts and preserve task-relevant frequencies. All signals are segmented into non-overlapping 1-second windows, followed by channel-wise Z-score normalization.                                                     
+
+> TABLE I ACC OF SUBJECT -I NDEPENDENT EXPERIMENTS ONDEAP.
+> Methods Published In, AVDLYear
+> EEG only CSP [25] ISMC, 2020 55.70 52.50 ––FBCSP [25] ISMC, 2020 55.31 55.23 ––TSception [3] TAFFC, 2023 63.75 62.27 64.68* 65.15* STRFLNet [7]* TAFFC, 2025 64.18 62.12 65.08 65.83 BiMoE (Ours) –65.84 62.96 67.05 67.67
+> EEG + PPS TACOFormer [10] †arXiv, 2023 63.07 59.12 62.74 63.62 LANet [11] †INF. FUS., 2024 63.22 61.94 64.85 65.72 AT-PMF [12]* PR, 2025 64.87 61.54 63.98 65.40 MoCERNet [13] †ACM MM, 2025 62.75 61.22 64.74 64.34 CMCLER [14] †MICCAI, 2025 64.36 62.11 66.81 67.02 BiMoE (Ours) –66.15 63.51 67.68 68.15
+
+B. Experiment Settings 
+
+Following a leave-one-subject-out cross-validation setting [7], we ensure that the training and test sets contain data from different participants. This process is repeated such that every participant serves as the test subject once, and the final result is reported as the average accuracy across all participants. Additionally, a sensitivity analysis on the hyperparameters (e.g., h, ξ 1, ξ 2) is provided in the Appendix II.A. All experiments were conducted on a high-performance server equipped with an NVIDIA 3090 Ti GPU, using Python 3.10.18 and PyTorch 2.7.1 with CUDA 12.6 support. To ensure High                               
+
+> Low
+> Feature value Fig. 3. SHAP summary plots for the DEAP (left) and DREAMER (right) datasets. TABLE II ACC OF SUBJECT -I NDEPENDENT EXPERIMENTS ONDREAMER
+> Methods Published In, Year Arousal Valence
+> EEG only BiSMSM [26] ICANN, 2022 63.28 60.86 AD-TCNs [27] CBM, 2022 63.69 66.56 FCPL [28] TCDS, 2024 65.60 67.90 STRFLNet [7]* TAFFC, 2025 65.76 63.25 BiMoE (Ours) –71.55 68.14
+> EEG + PPS CMCLER [14] †MICCAI, 2025 67.70 67.06 BiMoE (Ours) –72.89 68.78
+
+fair comparison, all methods employ identical preprocessing pipelines and data splits. Ours models are trained using the Adam optimizer with a learning rate of 0.002, weight decay of 5e-4, and a batch size of 128. Training proceeds for a maximum of 100 epochs, with early stopping (patience=25) applied based on validation loss to avoid overfitting. 
+
+C. Verification Performance of BiMoE 
+
+We evaluated BiMoE against comprehensive baselines, in-cluding classical [3], [10], [11], [25]–[28] and state-of-the-art models [7], [12]–[14]. Our experiments encompass both EEG-only and multimodal (EEG+PPS) scenarios and report average classification accuracy (ACC) for V, A, D, and L on DEAP, for V and A on DREAMER. The performance comparisons are summarized in Table I and Table II. Results marked with † are from our reproduction based on the original descriptions, while ∗ indicates results obtained by running the official code, and others are from the original papers. The best and second-best results have been emphasized. Experimental results show consistent gains by Bi-MoE. On DEAP (Table I), it improves EEG-only performance by 0.69% to 1.97% across A, V, D, and L dimensions, and further boosts multimodal performance by 0.87% to 1.40%. On DREAMER (Table II), notable EEG-only improvements of 5.79% ( A) and 0.24% ( V) are achieved, which increase to 5.19% and 1.72%, respectively, in the multimodal setting. BiMoE’s brain-inspired architecture uses specialized expert networks corresponding to brain functional regions, providing physiological interpretability. GL-DNet captures global and local EEG features, while MS-LKC extracts multi-scale PPS features with large receptive fields. An automated routing net-work dynamically allocates expert weights to fuse multimodal representations, optimized via a joint loss function.                                  
+
+> TABLE III ABLATION EXPERIMENT ON DEAP D ATASET
+> Methods Arousal Valence Dominance Liking
+> wPLI →PLI 65.40 62.03 66.76 68.00 w/o expert division 63.22 61.78 64.31 65.26 w/o self-attention 65.93 61.56 67.56 67.66 w/o LEL 64.42 60.85 64.28 67.61 w/o LEDR 65.75 62.33 67.45 67.94 BiMoE (Ours) 66.15 63.51 67.68 68.15
+
+To interpret the model decisions, we performed SHAP anal-ysis [18] on the best subjects for Arousal classification (sub 12 from DEAP and sub 18 from DREAMER). After winsorizing the top / bottom 5% of expert logits for clarity, summary plots were generated using KernelExplainer with 100 background samples and 400 test samples. The results are shown in Fig. 3, despite variations in feature contributions across subjects and datasets, signals from the central and prefrontal regions consistently dominate, which is fully consistent with the prior knowledge in neurophysiology [16]. D. Ablation Experiment 
+
+Ablation studies on DEAP validate the contribution of each component in BiMoE (Table III). Using GL-DNet with raw EEG as a single input instead of brain-region-based expert partitioning reduces performance by up to 3.37%, highlighting the importance of region-specific modeling. Replacing wPLI with PLI consistently lowers accuracy across all dimensions, highlighting wPLI’s robustness in functional connectivity es-timation. Without (w/o) the self-attention in the GL-DNet re-sults in a noticeable drop in Valence recognition, underscoring its role in capturing inter-channel dependencies. Disabling the expert load loss LEL causes a significant performance de-cline, particularly in Valence , highlighting the essential role of balanced expert utilization. Omitting the expert disagreement loss LEDR also reduces accuracy, verifying that encouraging diversity among experts enhances ensemble robustness. Col-lectively, these results show that expert structure, wPLI-guided graph learning, self-attention refinement, and multi-objective optimization are essential for effective expert collaboration. IV. C ONCLUSION 
+
+In this work, we proposed BiMoE, a brain-inspired mix-ture of experts framework designed to overcome critical challenges in EEG-based multimodal sentiment analysis. Ex-tensive subject-independent experiments on the DEAP and DREAMER show that BiMoE consistently outperforms state-of-the-art baselines with substantial accuracy improvements across multiple affective dimensions. SHAP analysis further demonstrates that its decisions align with neuroanatomical principles, providing greater interpretability than conventional black-box models. These advances not only elevate EEG-based MSA but also offer valuable insights for developing interpretable, neurophysiologically grounded architectures in affective computing and broader multimedia applications. REFERENCES [1] Soraia M Alarcao and Manuel J Fonseca, “Emotions recognition using eeg signals: A survey,” IEEE transactions on affective computing , vol. 10, no. 3, pp. 374–393, 2017. [2] Hongyu Zhu, Lin Chen, Mounim A El-Yacoubi, and Mingsheng Shang, “Ms-mix: Unveiling the power of mixup for multimodal sentiment analysis,” arXiv preprint arXiv:2510.11579 , 2025. [3] Yi Ding, Neethu Robinson, Su Zhang, Qiuhao Zeng, and Cuntai Guan, “Tsception: Capturing temporal dynamics and spatial asymmetry from eeg for emotion recognition,” IEEE Transactions on Affective Comput-ing , vol. 14, no. 3, pp. 2238–2250, 2022. [4] Yonghao Song, Qingqing Zheng, Bingchuan Liu, and Xiaorong Gao, “Eeg conformer: Convolutional transformer for eeg decoding and vi-sualization,” IEEE Transactions on Neural Systems and Rehabilitation Engineering , vol. 31, pp. 710–719, 2022. [5] Jinpeng Li, Zhaoxiang Zhang, and Huiguang He, “Hierarchical convo-lutional neural networks for eeg-based emotion recognition,” Cognitive Computation , vol. 10, no. 2, pp. 368–380, 2018. [6] Mustufa Haider Abidi, Khaja Moiduddin, Rashid Ayub, Muneer Khan Mohammed, Achyut Shankar, and Stavros Shiaeles, “Eegdepressionnet: A novel self attention-based gated densenet with hybrid heuristic adopted mental depression detection model using eeg signals,” IEEE Journal of Biomedical and Health Informatics , vol. 28, no. 9, pp. 5168–5179, 2024. [7] Fo Hu, Kailun He, Can Wang, Qinxu Zheng, Bin Zhou, Gang Li, and Yu Sun, “Strflnet: Spatio-temporal representation fusion learning network for eeg-based emotion recognition,” IEEE Transactions on Affective Computing , 2025. [8] Zhongmin Wang, Yue Tong, and Xia Heng, “Phase-locking value based graph convolutional neural networks for emotion recognition,” Ieee Access , vol. 7, pp. 93711–93722, 2019. [9] Laura Sophie Imperatori, Monica Betta, Luca Cecchetti, Andr´ es Canales-Johnson, Emiliano Ricciardi, Francesca Siclari, Pietro Pietrini, Srivas Chennu, and Giulio Bernardi, “Eeg functional connectivity metrics wpli and wsmi account for distinct types of brain functional interactions,” Scientific reports , vol. 9, no. 1, pp. 8894, 2019. [10] Xinda Li, “Tacoformer: Token-channel compounded cross attention for multimodal emotion recognition,” arXiv preprint arXiv:2306.13592 ,2023. [11] Jing Li, Ning Chen, Hongqing Zhu, Guangqiang Li, Zhangyong Xu, and Dingxin Chen, “Incongruity-aware multimodal physiology signals fusion for emotion recognition,” Information Fusion , p. 102220, 2024. [12] Dongdong Li, Shengyao Huang, and Zhe Wang, “At-pmf: Progressive multi-modal fusion with adversarial training for physiological emotion recognition,” Pattern Recognition , p. 112690, 2025. [13] Tianzuo Xin, Jing Wang, Xiyuan Jin, Xiaojun Ning, Zhiyang Feng, and Youfang Lin, “Mocernet: A modality-complete modeling framework for emotion recognition in physiological signals under imperfect modal matching,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5687–5696. [14] Yi Wu, Yuhang Chen, Jiahao Cui, Jiaji Liu, Lin Liang, and Shuai Li, “Cross-modal contrastive learning for emotion recognition: Aligning ecg with eeg-derived features,” in International Conference on Medical Image Computing and Computer-Assisted Intervention . Springer, 2025. [15] Philip A Kragel and Kevin S LaBar, “Decoding the nature of emotion in the brain,” Trends in cognitive sciences , pp. 444–455, 2016. [16] Antonio Damasio and Gil B Carvalho, “The nature of feelings: evolutionary and neurobiological origins,” Nature reviews neuroscience ,vol. 14, no. 2, pp. 143–152, 2013. [17] Sander Koelstra, Christian Muhl, Mohammad Soleymani, Jong-Seok Lee, Ashkan Yazdani, Touradj Ebrahimi, Thierry Pun, Anton Nijholt, and Ioannis Patras, “Deap: A database for emotion analysis; using physiological signals,” IEEE transactions on affective computing , vol. 3, no. 1, pp. 18–31, 2011. [18] Ziqi Li, “Extracting spatial effects from machine learning model using local interpretation method: An example of shap and xgboost,” 
+
+Computers, Environment and Urban Systems , vol. 96, pp. 101845, 2022. [19] Stamos Katsigiannis and Naeem Ramzan, “Dreamer: A database for emotion recognition through eeg and ecg signals from wireless low-cost off-the-shelf devices,” IEEE journal of biomedical and health informatics , vol. 22, no. 1, pp. 98–107, 2017. [20] Vaclav Cizek, “Discrete hilbert transform,” IEEE Transactions on Audio and Electroacoustics , vol. 18, no. 4, pp. 340–343, 1970. [21] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin, “Attention is all you need,” Advances in neural information processing systems ,vol. 30, 2017. [22] Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, and Piotr Doll´ ar, “Focal loss for dense object detection,” in Proceedings of the IEEE international conference on computer vision , 2017, pp. 2980– 2988. [23] Tim Van Erven and Peter Harremos, “R´ enyi divergence and kullback-leibler divergence,” IEEE Transactions on Information Theory , vol. 60, no. 7, 2014. [24] Ivan W Selesnick and C Sidney Burrus, “Generalized digital butterworth filter design,” IEEE Transactions on signal processing , vol. 46, no. 6, pp. 1688–1694, 2002. [25] Aur´ elien Appriou, Andrzej Cichocki, and Fabien Lotte, “Modern machine-learning algorithms: for classifying cognitive and affective states from electroencephalography signals,” IEEE Systems, Man, and Cybernetics Magazine , vol. 6, no. 3, pp. 29–38, 2020. [26] Wei Li, Ye Tian, Bowen Hou, Jianzhang Dong, and Shitong Shao, “Bismsm: A hybrid mlp-based model of global self-attention processes for eeg-based emotion recognition,” in International Conference on Artificial Neural Networks . Springer, 2022, pp. 37–48. [27] Zhipeng He, Yongshi Zhong, and Jiahui Pan, “An adversarial discrimina-tive temporal convolutional network for eeg-based cross-domain emotion recognition,” Computers in biology and medicine , vol. 141, 2022. [28] Chongxing Shi, CL Philip Chen, Shuzhen Li, and Tong Zhang, “Func-tional connectivity patterns learning for eeg-based emotion recognition,” 
+
+IEEE Transactions on Cognitive and Developmental Systems , 2024.
