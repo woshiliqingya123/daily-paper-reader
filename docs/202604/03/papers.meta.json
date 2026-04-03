@@ -1,0 +1,79 @@
+{
+  "label": "2026-04-03",
+  "date": "2026-04-03",
+  "generated_at": "2026-04-03T20:00:20",
+  "count": 5,
+  "papers": [
+    {
+      "paper_id": "202604/03/2604.01916v1-sure-synergistic-uncertainty-aware-reasoning-for-multimodal-emotion-recognition-in-conversations",
+      "section": "deep",
+      "title_en": "SURE: Synergistic Uncertainty-aware Reasoning for Multimodal Emotion Recognition in Conversations",
+      "authors": "Yiqiang Cai, Chengyan Wu, Bolei Ma, Bo Chen, Yun Xue, Julia Hirschberg, Ziwei Gong",
+      "date": "2026-04-02",
+      "pdf": "https://arxiv.org/pdf/2604.01916v1",
+      "score": "10.0",
+      "evidence": "使用协同推理的对话多模态情感识别",
+      "tldr": "针对多模态对话情感识别中噪声干扰和上下文推理不足的问题，本文提出SURE框架。该框架通过不确定性感知混合专家模块处理模态噪声，利用迭代推理模块增强多轮对话建模，并结合Transformer门控捕获模态间交互。实验证明SURE在多个基准数据集上超越了现有最先进方法，显著提升了情感识别的鲁棒性与准确性。",
+      "tags": "query:msa",
+      "abstract_en": "Multimodal emotion recognition in conversations (MERC) requires integrating multimodal signals while being robust to noise and modeling contextual reasoning. Existing approaches often emphasize fusion but overlook uncertainty in noisy features and fine-grained reasoning. We propose SURE (Synergistic Uncertainty-aware REasoning) for MERC, a framework that improves robustness and contextual modeling. SURE consists of three components: an Uncertainty-Aware Mixture-of-Experts module to handle modality-specific noise, an Iterative Reasoning module for multi-turn reasoning over context, and a Transformer Gate module to capture intra- and inter-modal interactions. Experiments on benchmark MERC datasets show that SURE consistently outperforms state-of-the-art methods, demonstrating its effectiveness in robust multimodal reasoning. These results highlight the importance of uncertainty modeling and iterative reasoning in advancing emotion recognition in conversational settings.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/03/2604.01533v1-validating-computational-markers-of-depressive-behavior-cross-linguistic-speech-based-depression-detection-with-neurophysiological-validation",
+      "section": "deep",
+      "title_en": "Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation",
+      "authors": "Fuxiang Tao, Dongwei Li, Shuning Tang, Xuri Ge, Wei Ma, Anna Esposito, Alessandro Vinciarelli",
+      "date": "2026-04-02",
+      "pdf": "https://arxiv.org/pdf/2604.01533v1",
+      "score": "9.0",
+      "evidence": "语音与脑电图多模态融合用于抑郁症检测",
+      "tldr": "本研究旨在验证基于语音的抑郁检测模型的跨语言鲁棒性及其神经生物学基础。研究将CDMA框架应用于中文数据集，通过融合不同情感效价的朗读与自发语音，探讨情感唤醒对检测性能的影响。此外，研究首次通过脑电图（EEG）分析，将模型预测结果与神经振荡模式关联，实现了神经生理学验证。结果显示该框架在中文环境下表现优异，且模型预测与抑郁症相关的神经标志物高度一致，为计算精神医学模型提供了新的验证范式。",
+      "tags": "query:msa",
+      "abstract_en": "Speech-based depression detection has shown promise as an objective diagnostic tool, yet the cross-linguistic robustness of acoustic markers and their neurobiological underpinnings remain underexplored. This study extends Cross-Data Multilevel Attention (CDMA) framework, initially validated on Italian, to investigate these dimensions using a Chinese Mandarin dataset with Electroencephalography (EEG) recordings. We systematically fuse read speech with spontaneous speech across different emotional valences (positive, neutral, negative) to investigate whether emotional arousal is a more critical factor than valence polarity in enhancing detection performance in speech. Additionally, we establish the first neurophysiological validation for a speech-based depression model by correlating its predictions with neural oscillatory patterns during emotional face processing. Our results demonstrate strong cross-linguistic generalizability of the CDMA framework, achieving state-of-the-art performance (F1-score up to 89.6%) on the Chinese dataset, which is comparable to the previous Italian validation. Critically, emotionally valenced speech (both positive and negative) significantly outperformed neutral speech. This comparable performance between positive and negative tasks supports the emotional arousal hypothesis. Most importantly, EEG analysis revealed significant correlations between the model's speech-derived depression estimates and neural oscillatory patterns (theta and alpha bands), demonstrating alignment with established neural markers of emotional dysregulation in depression. This alignment, combined with the model's cross-linguistic robustness, not only supports that the CDMA framework's approach is a universally applicable and neurobiologically validated strategy but also establishes a novel paradigm for the neurophysiological validation of computational mental health models.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/03/2604.01711v1-human-guided-reasoning-with-large-language-models-for-vietnamese-speech-emotion-recognition",
+      "section": "deep",
+      "title_en": "Human-Guided Reasoning with Large Language Models for Vietnamese Speech Emotion Recognition",
+      "authors": "Truc Nguyen, Then Tran, Binh Truong, Phuoc Nguyen T. H",
+      "date": "2026-04-02",
+      "pdf": "https://arxiv.org/pdf/2604.01711v1",
+      "score": "9.0",
+      "evidence": "基于大模型推理的语音情感识别",
+      "tldr": "针对越南语语音情感识别中声学模式模糊和标注数据匮乏的挑战，本文提出一种人机协作框架。该框架结合了声学特征模型与大语言模型（LLM）推理，通过置信度路由机制将模糊样本交给LLM处理，并利用人类标注规则引导推理。实验表明，该方法在处理复杂样本方面表现优异，为低资源语音情感识别提供了稳健的解决方案。",
+      "tags": "query:msa",
+      "abstract_en": "Vietnamese Speech Emotion Recognition (SER) remains challenging due to ambiguous acoustic patterns and the lack of reliable annotated data, especially in real-world conditions where emotional boundaries are not clearly separable. To address this problem, this paper proposes a human-machine collaborative framework that integrates human knowledge into the learning process rather than relying solely on data-driven models. The proposed framework is centered around LLM-based reasoning, where acoustic feature-based models are used to provide auxiliary signals such as confidence and feature-level evidence. A confidence-based routing mechanism is introduced to distinguish between easy and ambiguous samples, allowing uncertain cases to be delegated to LLMs for deeper reasoning guided by structured rules derived from human annotation behavior. In addition, an iterative refinement strategy is employed to continuously improve system performance through error analysis and rule updates. Experiments are conducted on a Vietnamese speech dataset of 2,764 samples across three emotion classes (calm, angry, panic), with high inter-annotator agreement (Fleiss Kappa = 0.8574), ensuring reliable ground truth. The proposed method achieves strong performance, reaching up to 86.59% accuracy and Macro F1 around 0.85-0.86, demonstrating its effectiveness in handling ambiguous and hard-to-classify cases. Overall, this work highlights the importance of combining data-driven models with human reasoning, providing a robust and model-agnostic approach for speech emotion recognition in low-resource settings.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/03/2604.01268v1-the-overlooked-repetitive-lengthening-form-in-sentiment-analysis",
+      "section": "deep",
+      "title_en": "The Overlooked Repetitive Lengthening Form in Sentiment Analysis",
+      "authors": "Lei Wang, Eduard Dragut",
+      "date": "2026-04-01",
+      "pdf": "https://arxiv.org/pdf/2604.01268v1",
+      "score": "8.0",
+      "evidence": "非正式风格和个人观点的情感分析",
+      "tldr": "本研究聚焦于情感分析中被长期忽视的重复拉长形式（RLF，如“sooooo”）。作者构建了首个包含85万样本的多领域数据集Lengthening，并提出了两阶段指令微调框架ExpInstruct，旨在提升大语言模型对RLF的理解与解释能力。研究证明RLF是情感表达的关键特征，且ExpInstruct能显著增强开源模型在RLF任务上的表现，使其在性能和解释力上比肩GPT-4。",
+      "tags": "query:msa",
+      "abstract_en": "Individuals engaging in online communication frequently express personal opinions with informal styles (e.g., memes and emojis). While Language Models (LMs) with informal communications have been widely discussed, a unique and emphatic style, the Repetitive Lengthening Form (RLF), has been overlooked for years. In this paper, we explore answers to two research questions: 1) Is RLF important for sentiment analysis (SA)? 2) Can LMs understand RLF? Inspired by previous linguistic research, we curate \\textbf{Lengthening}, the first multi-domain dataset with 850k samples focused on RLF for SA. Moreover, we introduce \\textbf{Exp}lainable \\textbf{Instruct}ion Tuning (\\textbf{ExpInstruct}), a two-stage instruction tuning framework aimed to improve both performance and explainability of LLMs for RLF. We further propose a novel unified approach to quantify LMs' understanding of informal expressions. We show that RLF sentences are expressive expressions and can serve as signatures of document-level sentiment. Additionally, RLF has potential value for online content analysis. Our results show that fine-tuned Pre-trained Language Models (PLMs) can surpass zero-shot GPT-4 in performance but not in explanation for RLF. Finally, we show ExpInstruct can improve the open-sourced LLMs to match zero-shot GPT-4 in performance and explainability for RLF with limited samples. Code and sample data are available at https://github.com/Tom-Owl/OverlookedRLF",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/03/2604.02056v1-compass-complete-multimodal-fusion-via-proxy-tokens-and-shared-spaces-for-ubiquitous-sensing",
+      "section": "quick",
+      "title_en": "COMPASS: Complete Multimodal Fusion via Proxy Tokens and Shared Spaces for Ubiquitous Sensing",
+      "authors": "Hao Wang, Yanyu Qian, Pengcheng Weng, Zixuan Xia, William Dan, Yangxin Xu, Fei Wang",
+      "date": "2026-04-02",
+      "pdf": "https://arxiv.org/pdf/2604.02056v1",
+      "score": "7.0",
+      "evidence": "通过代理标记进行缺失模态的多模态融合",
+      "tldr": "针对多模态感知中模态缺失导致的融合不完整问题，本文提出COMPASS框架。该框架遵循“融合完整性”原则，通过在共享潜空间中利用观测模态生成目标代理Token，确保融合层始终接收固定结构的N槽输入。COMPASS结合了代理对齐、共享空间正则化和判别性监督，在多个数据集和缺失场景下表现优于现有方法，为鲁棒多模态感知提供了新思路。",
+      "tags": "query:msa",
+      "abstract_en": "Missing modalities remain a major challenge for multimodal sensing, because most existing methods adapt the fusion process to the observed subset by dropping absent branches, using subset-specific fusion, or reconstructing missing features. As a result, the fusion head often receives an input structure different from the one seen during training, leading to incomplete fusion and degraded cross-modal interaction. We propose COMPASS, a missing-modality fusion framework built on the principle of fusion completeness: the fusion head always receives a fixed N-slot multimodal input, with one token per modality slot. For each missing modality, COMPASS synthesizes a target-specific proxy token from the observed modalities using pairwise source-to-target generators in a shared latent space, and aggregates them into a single replacement token. To make these proxies both representation-compatible and task-informative, we combine proxy alignment, shared-space regularization, and per-proxy discriminative supervision. Experiments on XRF55, MM-Fi, and OctoNet under diverse single- and multiple-missing settings show that COMPASS outperforms prior methods on the large majority of scenarios. Our results suggest that preserving a modality-complete fusion interface is a simple and effective design principle for robust multimodal sensing.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

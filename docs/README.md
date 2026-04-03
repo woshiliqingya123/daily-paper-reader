@@ -6,41 +6,37 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-02
-- 运行时间：2026-04-02 20:09:04 UTC
+- 最新运行日期：2026-04-03
+- 运行时间：2026-04-03 20:00:10 UTC
 - 运行状态：成功
-- 本次总论文数：7
+- 本次总论文数：5
 - 精读区：4
-- 速读区：3
+- 速读区：1
 
 ### 今日简报（AI）
-今日深度解析 7 篇多模态前沿论文，聚焦地缘政治新闻传播、精细化情感识别及
-- 详情：[/202604/02/README](/202604/02/README)
+今日深度研读 5 篇多模态感知论文，重点攻克对话情感识别与抑郁行为的跨语言神经生理验证。
+满分论文 SURE 揭示了不确定性协同推理在情感识别中的潜力，而语音标记物研究则为抑郁检测提供了跨语言的生理效度支撑。
+推荐关注多模态融合技术在心理健康领域的实战应用，了解如何通过感知数据实现更精准的情绪建模。
+- 详情：[/202604/03/README](/202604/03/README)
 
 ### 精读区论文标签
-1. [Multimodal Analysis of State-Funded News Coverage of the Israel-Hamas War on YouTube Shorts](/202604/02/2604.00994v1-multimodal-analysis-of-state-funded-news-coverage-of-the-israel-hamas-war-on-youtube-shorts)  
+1. [SURE: Synergistic Uncertainty-aware Reasoning for Multimodal Emotion Recognition in Conversations](/202604/03/2604.01916v1-sure-synergistic-uncertainty-aware-reasoning-for-multimodal-emotion-recognition-in-conversations)  
    标签：评分：10.0/10、query:msa
-   evidence：新闻报道中基于方面的情感分析多模态流水线
-2. [CLIP-AUTT: Test-Time Personalization with Action Unit Prompting for Fine-Grained Video Emotion Recognition](/202604/02/2603.27999v2-clip-autt-test-time-personalization-with-action-unit-prompting-for-fine-grained-video-emotion-recognition)  
+   evidence：使用协同推理的对话多模态情感识别
+2. [Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation](/202604/03/2604.01533v1-validating-computational-markers-of-depressive-behavior-cross-linguistic-speech-based-depression-detection-with-neurophysiological-validation)  
    标签：评分：9.0/10、query:msa
-   evidence：使用视觉语言模型进行细粒度视频情感识别
-3. [ParaSpeechCLAP: A Dual-Encoder Speech-Text Model for Rich Stylistic Language-Audio Pretraining](/202604/02/2603.28737v1-paraspeechclap-a-dual-encoder-speech-text-model-for-rich-stylistic-language-audio-pretraining)  
+   evidence：语音与脑电图多模态融合用于抑郁症检测
+3. [Human-Guided Reasoning with Large Language Models for Vietnamese Speech Emotion Recognition](/202604/03/2604.01711v1-human-guided-reasoning-with-large-language-models-for-vietnamese-speech-emotion-recognition)  
+   标签：评分：9.0/10、query:msa
+   evidence：基于大模型推理的语音情感识别
+4. [The Overlooked Repetitive Lengthening Form in Sentiment Analysis](/202604/03/2604.01268v1-the-overlooked-repetitive-lengthening-form-in-sentiment-analysis)  
    标签：评分：8.0/10、query:msa
-   evidence：用于情感和风格描述的双编码器语音-文本模型
-4. [Emotion Entanglement and Bayesian Inference for Multi-Dimensional Emotion Understanding](/202604/02/2604.00819v1-emotion-entanglement-and-bayesian-inference-for-multi-dimensional-emotion-understanding)  
-   标签：评分：8.0/10、query:msa
-   evidence：自然语言场景中的多维情感理解
+   evidence：非正式风格和个人观点的情感分析
 
 ### 速读区论文标签
-1. [Omni-Modal Dissonance Benchmark: Systematically Breaking Modality Consensus to Probe Robustness and Calibrated Abstention](/202604/02/2603.27187v1-omni-modal-dissonance-benchmark-systematically-breaking-modality-consensus-to-probe-robustness-and-calibrated-abstention)  
+1. [COMPASS: Complete Multimodal Fusion via Proxy Tokens and Shared Spaces for Ubiquitous Sensing](/202604/03/2604.02056v1-compass-complete-multimodal-fusion-via-proxy-tokens-and-shared-spaces-for-ubiquitous-sensing)  
    标签：评分：7.0/10、query:msa
-   evidence：跨视频、音频和文本测量模态特定贡献的全模态基准
-2. [EmoScene: A Dual-space Dataset for Controllable Affective Image Generation](/202604/02/2604.00933v1-emoscene-a-dual-space-dataset-for-controllable-affective-image-generation)  
-   标签：评分：7.0/10、query:msa
-   evidence：具有细粒度情感基调的情感图像生成
-3. [Unbiased Multimodal Reranking for Long-Tail Short-Video Search](/202604/02/2603.24975v2-unbiased-multimodal-reranking-for-long-tail-short-video-search)  
-   标签：评分：6.0/10、query:msa
-   evidence：短视频搜索应用中的多模态重排序
+   evidence：通过代理标记进行缺失模态的多模态融合
 
 
 <div class="dpr-home-promo-card">
