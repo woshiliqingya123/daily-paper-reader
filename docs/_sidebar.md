@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-04-04 <!--dpr-date:20260404-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/04/2604.00878v1-kuet-at-stancenakba-shared-task-stancemoe-mixture-of-experts-architecture-for-stance-detection" data-sidebar-item="{&quot;title&quot;: &quot;KUET at StanceNakba Shared Task: StanceMoE: Mixture-of-Experts Architecture for Stance Detection&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.00878v1-kuet-at-stancenakba-shared-task-stancemoe-mixture-of-experts-architecture-for-stance-detection&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;用于确定作者立场和观点的立场检测&quot;}">KUET at StanceNakba Shared Task: StanceMoE: Mixture-of-Experts Architecture for Stance Detection</a>
   * 2026-04-03 <!--dpr-date:20260403-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/03/2604.01916v1-sure-synergistic-uncertainty-aware-reasoning-for-multimodal-emotion-recognition-in-conversations" data-sidebar-item="{&quot;title&quot;: &quot;SURE: Synergistic Uncertainty-aware Reasoning for Multimodal Emotion Recognition in Conversations&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.01916v1-sure-synergistic-uncertainty-aware-reasoning-for-multimodal-emotion-recognition-in-conversations&quot;, &quot;score&quot;: &quot;10.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;使用协同推理的对话多模态情感识别&quot;}">SURE: Synergistic Uncertainty-aware Reasoning for Multimodal Emotion Recognition in Conversations</a>
