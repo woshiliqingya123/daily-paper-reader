@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-04-05 <!--dpr-date:20260405-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/05/2604.02236v1-do-emotions-in-prompts-matter-effects-of-emotional-framing-on-large-language-models" data-sidebar-item="{&quot;title&quot;: &quot;Do Emotions in Prompts Matter? Effects of Emotional Framing on Large Language Models&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.02236v1-do-emotions-in-prompts-matter-effects-of-emotional-framing-on-large-language-models&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;情感框架和语气对大语言模型性能的影响&quot;}">Do Emotions in Prompts Matter? Effects of Emotional Framing on Large Language Models</a>
   * 2026-04-04 <!--dpr-date:20260404-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/04/2604.00878v1-kuet-at-stancenakba-shared-task-stancemoe-mixture-of-experts-architecture-for-stance-detection" data-sidebar-item="{&quot;title&quot;: &quot;KUET at StanceNakba Shared Task: StanceMoE: Mixture-of-Experts Architecture for Stance Detection&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.00878v1-kuet-at-stancenakba-shared-task-stancemoe-mixture-of-experts-architecture-for-stance-detection&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;用于确定作者立场和观点的立场检测&quot;}">KUET at StanceNakba Shared Task: StanceMoE: Mixture-of-Experts Architecture for Stance Detection</a>

@@ -6,25 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-04
-- 运行时间：2026-04-04 19:35:14 UTC
+- 最新运行日期：2026-04-05
+- 运行时间：2026-04-05 19:14:52 UTC
 - 运行状态：成功
 - 本次总论文数：1
 - 精读区：0
 - 速读区：1
 
 ### 今日简报（AI）
-今日聚焦 MoE 架构在立场检测中的实战应用，探索 StanceMoE 模型在复杂任务中的表现。
-研究证明混合专家
-- 详情：[/202604/04/README](/202604/04/README)
+今日聚焦情绪化提示词对大模型的影响，看 AI 如何响应人类的“情感攻势”。
+核心结论揭示了在 Prompt 中嵌入情感框架能显著改变 LLM 的输出表现。
+建议普通用户在复杂任务中尝试加入适度情感引导，以探索更优的模型反馈。
+- 详情：[/202604/05/README](/202604/05/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [KUET at StanceNakba Shared Task: StanceMoE: Mixture-of-Experts Architecture for Stance Detection](/202604/04/2604.00878v1-kuet-at-stancenakba-shared-task-stancemoe-mixture-of-experts-architecture-for-stance-detection)  
+1. [Do Emotions in Prompts Matter? Effects of Emotional Framing on Large Language Models](/202604/05/2604.02236v1-do-emotions-in-prompts-matter-effects-of-emotional-framing-on-large-language-models)  
    标签：评分：7.0/10、query:msa
-   evidence：用于确定作者立场和观点的立场检测
+   evidence：情感框架和语气对大语言模型性能的影响
 
 
 <div class="dpr-home-promo-card">
