@@ -1,0 +1,631 @@
+Title: Variational Encoder–Multi-Decoder (VE-MD) for Privacy-by-functional-design (Group) Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2604.02397v1
+
+Published Time: Mon, 06 Apr 2026 00:02:19 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# VARIATIONAL ENCODER –M ULTI -D ECODER (VE-MD) FOR 
+
+# PRIVACY -BY -FUNCTIONAL -DESIGN (G ROUP ) E MOTION 
+
+# RECOGNITION 
+
+AUTHOR VERSION 
+
+# Anderson Augusma, 1,2, Dominique Vaufreydaz, 1, Fédérique Letué, 2,  
+
+> 1
+
+Univ. Grenoble Alpes, CNRS, Grenoble INP, LIG, 38000 Grenoble, France  
+
+> 2
+
+Univ. Grenoble Alpes, CNRS, Grenoble INP, LJK, 38000 Grenoble, France 
+
+# ABSTRACT 
+
+Group Emotion Recognition (GER) aims to infer collective af-fect in social environments such as classrooms, crowds, and public events. Many existing approaches rely on explicit individual-level processing, including cropped faces, person tracking, or per-person feature extraction, which makes the analysis pipeline person-centric and raises privacy concerns in deployment scenarios where only group-level understand-ing is needed. This research proposes VE-MD, a Varia-tional Encoder–Multi-Decoder framework for group emotion recognition under a privacy-aware functional design. Rather than providing formal anonymization or cryptographic pri-vacy guarantees, VE-MD is designed to avoid explicit indi-vidual monitoring by constraining the model to predict only aggregate group-level affect, without identity recognition or per-person emotion outputs. VE-MD learns a shared latent representation jointly optimized for emotion classification and internal prediction of body and facial structural representa-tions. Two structural decoding strategies are investigated: a transformer-based PersonQuery decoder and a dense Heatmap decoder that naturally accommodates variable group sizes. Ex-periments on six in-the-wild datasets, including two GER and four Individual Emotion Recognition (IER) benchmarks, show that structural supervision consistently improves representa-tion learning. More importantly, the results reveal a clear dis-tinction between GER and IER: optimizing the latent space alone is often insufficient for GER because it tends to attenuate interaction-related cues, whereas preserving explicit structural outputs improves collective affect inference. In contrast, pro-jected structural representations seem to act as an effective de-noising bottleneck for IER. VE-MD achieves state-of-the-art performance on GAF-3.0 (up to 90.06%) and VGAF (82.25% with multimodal fusion with audio). These results show that preserving interaction-related structural information is partic-ularly beneficial for group-level affect modeling without rely-ing on prior individual feature extraction. On IER datasets using multimodal fusion with audio modality, VE-MD out-performs SOTA on SamSemo (77.9%, adding text modality) while achieving competitive performances on MER-MULTI (63.8%), DFEW (70.7%) and EngageNet (69.0). 
+
+Keywords : Group emotion recognition, affective computing, multi-task learning, variational modeling, privacy-design. 
+
+# 1 Introduction 
+
+Group Emotion Recognition (GER) aims to infer the collective emotional state of a group. Unlike Individual Emotion Recog-nition (IER), GER depends not only on isolated facial cues but also on inter-person interactions, contextual dynamics, and collective behavioral patterns known as social signals [54]. However, existing GER approaches frequently rely on ex-plicit per-person detection and prior feature extraction, thereby maintaining individual-centric processing pipelines even when the final output is group-level. In affective computing, many state-of-the-art emotion recognition pipelines rely on explicit individual-level representations, such as cropped faces, facial action units (AU), or body-based features [13, 35, 46, 47, 50]. While effective, such person-centric approaches inherently de-pend on prior individual-processing cues, raising concerns about biometric processing, individual monitoring, and poten-tial misuse in surveillance contexts. These concerns are partic-ularly relevant in collective settings such as classrooms, meet-ings, concerts, and public gatherings, where the objective is often to understand group-level affect rather than monitor in-dividuals. Individual-centric processing raises concerns about privacy, responsible use, and the risk of unnecessary person-level mon-itoring. Recent regulatory frameworks, including the Euro-pean Union’s GDPR [2] and later AI Act [9], emphasize min-imizing identity-sensitive processing and restricting high-risk emotion recognition applications. Following these regulations, this research adopts a privacy-aware architectural design tai-lored to group emotion recognition. Rather than anonymiz-ing visual inputs or providing cryptographic privacy guaran-tees as approaches from the literature, it constrains the model to operate on full video frames as input and to only produce aggregated group-level predictions. The proposed framework avoids identity recognition, person tracking, individual em-bedding extraction as an explicit objective, and per-person emotion prediction. By restricting outputs to collective af-fect, the system avoids explicit individual monitoring while preserving socially meaningful interaction cues necessary for GER. 
+
+> arXiv:2604.02397v1 [cs.CV] 2 Apr 2026
+
+AUTHOR VERSION 
+
+The main contributions of this research are: • Variational Encoder–Multi-Decoder (VE-MD) . An architec-ture that learns from images a shared latent representation through multi-task learning for group-level emotion recog-nition under a privacy-aware functional design. The multi-task objective includes internal prediction of body and facial structural representations, while avoiding identity recogni-tion, person tracking, explicit individual feature extraction, and per-person emotion outputs. • Two alternative internal structural decoding strategies. 
+
+We investigate a query-based transformer decoder ( VE-MD-PersonQuery ) and a dense heatmap decoder ( VE-MD-Heatmap ) to model body and facial structural information, and analyze their respective trade-offs for variable group-size settings. • Extensive multi-dataset validation and ablations on six in-the-wild datasets . The dataset list includes GER but also IER datasets to evaluate the generalization capabili-ties of the model. Using multimodal-extensions to audio and text inputs, VE-MD demonstrates consistent improve-ments, achieving state-of-the-art performance on the GAF-3.0, VGAF, and SAMSEMO datasets. • Insight into using internal structural representation for group affect modeling . Results highlight that compressing structural representations seems to attenuate inter-person in-teraction information critical for Group Emotion Recogni-tion (GER), decreasing performance. A contrario, compres-sion seems to act as a denoiser in the case of IER datasets, improving performance metrics. 
+
+# 2 Related Work 
+
+2.1 Privacy-Aware Emotion Recognition 
+
+Privacy concerns in emotion recognition have been addressed primarily through two directions: (i) input-level obfusca-tion and (ii) privacy-preserving computation . Input-level ap-proaches aim to reduce identity exposure by modifying or masking sensitive regions. Zitouni et al. [67] demonstrate that masking facial regions and emphasizing contextual cues can maintain competitive affect recognition performance while limiting facial identity visibility. In audio, anonymization techniques focus on suppressing speaker identity while pre-serving emotional content. For example, Chen et al. [15] benchmark anonymization systems in the Voice Privacy Chal-lenge, highlighting privacy–utility trade-offs, while Yao et al. [62] and Leang et al. [33] propose architectures designed to conceal speaker identity while retaining paralinguistic cues. Complementary to obfuscation, privacy-preserving computa-tion techniques aim to protect data during inference. Pentyala et al. [41] employ Secure Multi-Party Computation (MPC) to enable encrypted video classification without exposing raw data or model parameters. While these approaches focus on anonymizing inputs or securing computation, they do not ex-plicitly address the functional design of group-level affect modeling systems. This research adopts a different perspec-tive: rather than modifying the input signal or encrypting com-putation, it constrains the model’s representational objectives and outputs. VE-MD is designed to avoid identity recogni-tion, tracking, and per-person emotion prediction, producing only aggregate group-level outputs. 
+
+2.2 Group Emotion Recognition from Individual Cues 
+
+Most existing GER pipelines rely on prior individual process-ing in their representations. Early works combine individual facial features with global scene context. Tan et al. [51] fuse facial CNN features with scene-level representations, while Yan et al. [61] integrate facial texture, landmarks, and au-dio cues via hybrid CNN–BRNN frameworks. Graph-based approaches further model explicit inter-person relationships. Ngoc et al. [38] and Guo et al. [23] construct graphs over facial landmarks or skeleton features to capture spatial dependen-cies, and Jung et al. [30] jointly model temporal appearance and landmark geometry. More recently, Kumar et al. [32] in-tegrate pose estimation with multimodal audio–video features for GER. Although these methods achieve strong performance, they typically rely on explicit per-person detection, landmark extraction in advance, or prior individual-aligned features for aggregation. Consequently, per-person modeling remains em-bedded in the processing pipeline, even when the final output is group-level. In contrast, the proposed approach avoids treat-ing structural cues as primary per-person inputs to the emotion classifier. Instead, VE-MD uses internal structural representa-tion as auxiliary supervision to shape the latent space, allowing group-level modeling independent of prior individual process-ing, while preserving interaction cues essential for GER. 
+
+2.3 Multitask Learning for Emotion Recognition 
+
+Multitask learning (MTL) has been widely adopted in emo-tion recognition to leverage shared representations across re-lated tasks. Foggia et al. [21] employ hard parameter shar-ing to jointly predict emotion, gender, and age, while Hu et al. [26] explore soft sharing and adversarial alignment to bal-ance shared and task-specific features. Auxiliary structural su-pervision has also been explored to enhance emotion model-ing. Yin et al. [63] and Pons et al. [42] incorporate pose and action-unit detection as complementary tasks. HyperFace [44] jointly learns facial detection, landmark localization, and pose estimation, and Hong et al. [25] integrate manifold regulariza-tion to improve structural consistency. However, prior multi-task frameworks primarily aim to improve predictive perfor-mance and do not explicitly examine how structural supervi-sion influences collective versus individual affect modeling. VE-MD extends MTL by introducing multi-task learning of internal structural representation on body and face skeletons, proposing two flavors of the model based on PETR-like [48] or Openpose-like [11] representations. 
+
+# 3 Model Architecture 
+
+The VE-MD architecture is depicted in Figure 1. It is com-posed of a Variational Encoder using two sub-encoders tak-ing entire video frames as input, a frozen ViT, and a trainable multitask encoder. This variational encoder provides the latent space representation of input video frames. Then, a structural 2AUTHOR VERSION 
+
+Figure 1: Overview of the proposed VE-MD architecture. Left: input data, consisting of video frames or a single image. Middle: the Variational Encoder (VE, green box), which learns two latent spaces: Z1 for emotion recognition and Z2 for joint optimization of emotion recognition and person structural representation. Right: the multi-decoder head, where the Emotion Decoder uses Z1 and Z2, optionally complemented by structural outputs from the body and face decoders (SR inputs). Optional modules are outlined with a dashed line. 
+
+decoder designed to provide insights about body language and facial expression is added to the model. In this paper, two different versions of the structural decoders are proposed and compared. The last component is the emotion decoder, taking inputs from encoders to generate the final classification of the video clip. During training time, internal structural informa-tion is added to guide the latent representation of the multi-task encoder toward body language information. The follow-ing sections describe these components. 
+
+3.1 Variational Encoder for Multitask Latent Space 
+
+The VE-MD employs a Variational Encoder (VE) design con-sisting of two encoder branches that create a compound latent-space for multitask learning. The variational encoder choice and design come from a series of experiments on end-to-end video emotion recognition presented later in sections 4. The first branch of the VE is a frozen pretrained version ViT-Large encoder [18]. The second branch is a trainable multitask en-coder, responsible for learning meaningful representations for emotion classification and structural representation estimation (body and face). After several experiments (see section 4.2.2), the selected multitask encoder is a ResNet-50 architecture. Both sub-encoder branches are projected to a lower dimension using a linear layer and provide Z1 and Z2, the two compo-nents of the encoder latent-space representation for emotion recognition in the VE-MD architecture. The latent-space rep-resentation is trained to follow a Gaussian distribution space using variational inference. 
+
+3.2 Structural Decoders for bodies and faces 
+
+The structural decoder architecture consists of two sub-decoders: a decoder for body structural representation esti-mation and a decoder for facial structural representation esti-𝑄 ! , 𝑄 " , … , 𝑄 #        
+
+> Transformer Decoder
+> Pose Skeleton Queries
+> MLP
+> Limbs Head
+> FC
+> Adj Head
+> Skeleton Adjacency
+> Latent -space
+> Aux CNN
+> F1 F2 F3
+> Flatten and Concat
+> Transformer Encoder
+
+Figure 2: PersonQuery decoder. Left: the latent space is processed by an auxiliary convolutional module that produces three multi-scale feature tensors, F1, F2, and F3, which are flattened and fed to the transformer encoder. Right: the trans-former decoder receives target queries together with the en-coded features and predicts the structural representation and the adjacency matrix through a multi-layer perceptron head and a fully connected head, respectively. 
+
+mation. The two structural representation decoders receive as inputs the latent-space embedding from the multitask encoder. Two approaches are proposed for these structural representa-tion decoders: PersonQuery and Heatmap . These propositions are detailed in the next sections. 
+
+3.2.1 PersonQuery Decoder 
+
+To perform the structural representation of bodies and/or faces, the PersonQuery network follows the PETR [48] style, which is based on DETR [12] for fully end-to-end pose prediction. As depicted in Figure 2, the proposed structural representation decoder builds upon a transformer-based architecture to pre-3AUTHOR VERSION 
+
+dict a limb head and an adjacency matrix. The network takes the latent-space from the variational encoder as input. Then, it applies an auxiliary residual convolution module (as defined in Section 4.2.1) to produce three high-level features to feed the transformer module. A learnable query embedding ( Q) of dimension D is inter-preted as a “prototype” that predicts a full structural represen-tation for one person (a set of limbs). These queries, organized into a target sequence T ∈ RQ×D (with Q = num_queries ), are passed into the transformer decoder alongside the encoded source sequence from the transformer encoder. In contrast to PETR, the network comprises two predic-tion heads. A Limb-Head , which is a multi-layer percep-tron (MLP) ended with a sigmoid, outputs line-segment end-points for each limb. Specifically, for num_limbs , it pre-dicts 4 × num_limbs coordinates, denoted [x 1, y1, x2, y2, . . . ]
+
+for each query. This format encodes the 2D endpoints of each limb Lpred ∈ RQ×4 ×num_limbs . An Adjacency-Head 
+
+which consists of a fully connected layer ended with sig-moid, output dimension num_limbs × num_limbs adjacency matrix for each query. This matrix specifies the connectiv-ity scores between all pairs of limbs. Formally, Apred ∈
+
+RQ×num_limbs ×num_limbs . Hence, each query in the decoder si-multaneously outputs both limb endpoints Lpred and the joint adjacency matrix Apred . The intuitive goal is for each query to specialize in decoding a consistent subset of structural rep-resentation connections or relationships. By predicting the ad-jacency matrix, the model can capture pairwise joint depen-dencies of limbs, enhancing the structural representation or-ganization [1]. To better exploit the structural dependencies of the human body, a Spatio-Temporal Graph Convolutional Network (ST-GCN) [59] is inserted on top of the SR features. Each joint is treated as a graph node, and the connections be-tween limbs define the adjacency matrix. The graph convolu-tion propagates information between connected limbs (spatial modeling), while a temporal convolution aggregates informa-tion across consecutive frames (temporal modeling). In this PersonQuery approach, as in PETR or DETR, the model’s capacity is constrained by a fixed number of queries defined at training time. Each query corresponds to a person to detect. Setting the number of queries to N allows the model to predict exactly N persons even if more or fewer are present in the image. The fixed-query mechanism inherently restricts scalability and flexibility when dealing with in-the-wild group scenes containing a variable number of people. Indeed, in-creasing the value of N increases the number of parameters in the model in return. Two main strategies can be used for defin-ing this value. N can be set to an arbitrary value. In this case, the PersonQuery decoder uses learnable queries of size N ×D,denoted QN in later experiments. N can be set to the maxi-mum value of detected persons to minimize false negatives, i.e., actual persons within the image that are not detected. This condition is named QM ax .
+
+3.2.2 Heatmap decoder 
+
+To overcome the limitation of the former decoder, another pro-posal, called Heatmap , operates an end-to-end estimation of 
+
+Figure 3: Heatmap decoder. At the top is the VE latent-space input, followed by a custom UNet-upsample network, and the limbs decoder is applied to predict the limb heatmap. The same process is applied to the structural representation of faces. 
+
+direct structural representations through limb-connection es-timation inspired by OpenPose [11]. In contrast to Person-Query , the Heatmap decoder naturally adapts to any number of individuals present in an image, since person structures emerge directly from the spatial activation patterns of the predicted heatmaps. In literature, most structural representation or pose-estimation methods [10, 11, 29, 40, 65] rely on keypoint de-tection followed by a separate post-processing step to infer the structural connections. In the Heatmap decoder, this two-step procedure is replaced by a single-stage prediction: rather than estimating discrete keypoints and linking them afterward, the model directly predicts limb-connection heatmaps represent-ing the structural configurations of both bodies and faces (see Figure 3). To do so, processing starts by upsampling features from the VE latent-space by using a custom U-Net network [45]. Then, it outputs a heatmap of n channels, n assigned to the number of limbs. Original OpenPose predicts both confidence maps and Part Affinity Fields (PAFs), i.e., 2D vectors to correspond-ing joints, to explicitly associate body parts to individual in-stances. Heatmap predicts only dense limb heatmaps without performing person-wise association. This design allows struc-tural information to be embedded directly within the latent-space, enhancing its semantic richness for emotion recogni-tion while maintaining an end-to-end differentiable training pipeline. By avoiding explicit part grouping or instance-level skeleton reconstruction, the decoder does not produce per-person structural outputs. Instead, it generates a dense rela-tional activation map that encodes structural patterns across the scene. 
+
+3.3 Emotion Decoder 
+
+The Emotion Decoder (ED) receives embeddings from all up-stream encoders, including structural representation-based in-formation derived from SR decoders. 
+
+3.3.1 Standard computation schema 
+
+For each frame, the variational encoder produces flattened fea-tures: Z1, Z2 ∈ RT ×(Cz ·hz ·wz ), where (Cz , h z , w z ) denote the channel and spatial dimensions of each encoder’s latent-space and T denotes the sequence of frames. The concatena-tion of Z1 and Z2 provides the latent representation of the VE, 4AUTHOR VERSION 
+
+defined as ˜Zt = ϕ([ Z1,t ; Z2,t ]) ∈ RC , where C = 2 Cz , and ϕ
+
+a linear projection. Structural representations are then directly concatenated as xt = [ ˜Zt; Sbody  
+
+> t
+
+; Sface  
+
+> t
+
+], with: 
+
+Sbody , Sface ∈
+
+(RT ×(4 NiQ), for PersonQuery ,
+
+RT ×(HS ·WS ), for Heatmap .
+
+where Ni is the number of limbs (body or face), Q is the number of detection queries, and (HS , W S ) are the spatial dimensions of the heatmaps. Consequently xt ∈ RD with 
+
+D = C + ∆ S . If there is only one structural representation 
+
+∆S = 4 QN i or ∆S = HS WS . If there are two (body, face), 
+
+∆S = 4 Q(Nb + Nf ) or ∆S = 2 HS WS .To handle the temporal aspect, i.e., to create a rich joint em-bedding at video-level, a first module integrates a transformer encoder coupled with a Frames Attention Pooling (FAP) com-putation adapted from Okabe et al [39] proposal. FAP models temporal dependencies across frames using a formula in the following equation: 
+
+FAP = 
+
+> N
+
+X
+
+> i=1
+
+αifi (1) where αi = softmax( si) and si = wT fi + b.Last, the emotion decoder employs an MLP to make the final classification from the video-level embedding coming from the Frame Attention Pooling. 
+
+3.3.2 Optional computations 
+
+As depicted in Figure 1, some modules can be optionally ac-tivated in the emotion decoder. The first module consists of a projection dedicated to reducing the embedding size of the structural representations coming from structural decoders: 
+
+ˆSbody  
+
+> t
+
+= ρ(Sbody  
+
+> t
+
+), ˆSface  
+
+> t
+
+= ρ(Sface  
+
+> t
+
+),
+
+yielding xt = [ ˜Zt; ˆSbody  
+
+> t
+
+; ˆSface  
+
+> t
+
+] ∈ RD , where ρ is the pro-jection linear function. In this case, ∆S = CS for only one structural representation and ∆S = 2 CS if there are two, with 
+
+CS being the projected dimension. The effect of the projection module is questioned in section 5.2.1. 
+
+3.4 Loss Function 
+
+The overall loss function for our model integrates multiple components, each tailored for specific tasks: • Emotion Classification Loss: A standard cross-entropy loss (Lcls ) is used for emotion classification. • Structural representation estimation Loss ( Lpi ) for body and face. In the case of Heatmap decoder, we use MSE-loss , and for PersonQuery , the structural loss is composed of limb and adjacency losses. For the limb-loss, we use smooth-L1 loss ,and for adjacency-loss, we use binary cross entropy .• Maximum Mean Discrepancy (MMD) Loss [19]: A regular-ization loss to ensure Gaussian feature representation. The total loss is defined: 
+
+L = Lcls + βp1 Lp1 + βp2 Lp2 + βmmd LMMD (2) where: 
+
+Lpi = βlimb Llimb + βadj Ladj , i ∈ { 1, 2} (3) with βpi , βlimb , βadj , and βmmd representing loss weighting factors. 
+
+# 4 Experiments on GER/IER Datasets 
+
+This section presents the experimental evaluation of VE-MD in the video-only setting on both GER and IER datasets. We first describe the datasets, the automatic structural annotations, and the preliminary experiments used to define the encoder training strategy and the multi-task backbone. We then detail the training setup and report the main video-only results of the proposed VE-MD-SR variants. Multimodal extensions with audio and text are presented later in Section 7. 
+
+4.1 Datasets and Automatic Annotations 
+
+Six in-the-wild datasets were used for evaluation, spanning both Group Emotion Recognition (GER) as our target task, and IER scenarios as a generalization task (Figure 4). GER datasets are corpora where the emotion label focuses on at least two persons. IER datasets are corpora where the emotion focuses on one individual, even though there could be other people around in the environment. GAF-3.0 [24] and VGAF [16] serve as GER benchmarks, each labeled into three affective classes ( Positive , Neutral ,
+
+Negative ). GAF-3.0 contains diverse social contexts (meet-ings, sports, protests), while VGAF provides video clips with dynamic camera motion and acoustic variations. The IER datasets include SAMSEMO [6], MER-MULTI [34], DFEW [28], and EngageNet [17]. SAMSEMO is a multilin-gual multimodal corpus (text, audio, video) annotated for six Ekman emotions plus Neutral/Other . MER-MULTI consists of movies and TV shows, annotated with discrete and contin-uous valence measures. DFEW focuses on facial expression dynamics across unconstrained scenes, while EngageNet tar-gets engagement recognition in online video-conference class-rooms with four engagement levels: Not-engaged, engaged, barely-engaged, and highly-engaged. To support multitask learning, all datasets are extended with automatic body and face structural representation annotations. Examples of these annotations are illustrated in Figure 5. Body pose keypoints were generated using ViTPose [60] following the COCO 17-keypoint format (to build 18 limb connections). Facial landmarks were extracted using FaceAlignment [7] and reduced from 63 to 20 connections, focusing on dynamic re-gions such as the lips, eyebrows, and eyes. This automatic annotation process is applied to the training set of all datasets. It is obviously not flawless. In the GER 5AUTHOR VERSION 
+
+Figure 4: Overview of datasets used in this study. GAF-3.0 and VGAF at left illustrate Group Emotion Recognition (GER) datasets, followed by examples from IER datasets: DFEW, SAMSEMO, MER-MULTI, and EngageNet. 
+
+Figure 5: Example of automatic data annotation for structural representation. The first line corresponds to body annotations using ViTPose with 18 limb connections (COCO-style). The second line corresponds to face annotations using FaceAlign-ment with 20 custom limb connections. 
+
+datasets, when the scene is crowded, or when framing, dis-tance, and lighting conditions are not adequate, automatic annotation can generate false negatives. Conversely, in the IER datasets, the emotion label is focused on a single per-son, but the automatic detection model also detects people present around them. This is the case for SAMSEMO and MER-MULTI, where some people give lectures in front of an audience. This quality of automatic labelling has an impact on the size of the datasets used in the experiments. Tables 1 and 2 provide statistics on the automatic labelling, showing complexity and diversity of the in-the-wild datasets. In Table 1, one can find the maximum number of annotated bodies and faces on each corpus. The reader can note that there is a mismatch between the number of detected bodies and faces across all datasets. This is due to the performance of the underlying detection models that were trained on different data. As expected, GAF and VGAF as GER datasets show the highest number of detected elements, and IER datasets may have more than 1 body or face detected. Table 2 gives insight about remaining training data after automatic annotation. In-deed, videos for which no structural representation detection was performed are excluded from the training set. Training data loss remained low (less than 3% across all datasets). The automatic labelling process is not applied to the validation set. 
+
+Table 1: Maximum number of bodies and faces annotated per dataset. No body annotations were done on DFEW.               
+
+> Dataset Maximum per frame Bodies Faces
+> GAF-3.0 56 104 VGAF 29 71 SAMSEMO 18 14 MER2023 11 16 DFEW ✗1EngageNet 51
+
+Table 2: Number of remaining videos in train/validation set after structural representation automatic annotation.                      
+
+> Dataset Validation-set Train-set Original Automatic Annotation
+> GAF-3.0 4356 9815 9558 (-2.62%) VGAF 766 2661 2636 (-0.94%) SAMSEMO 412 9822 9762 (-0.61%) MER2023 2341 3373 3272 (-2.99%) DFEW 2098 9356 9353 (-0.03%) EngageNet 1071 7879 7817 (-0.79%)
+
+4.2 Preliminary experiments on Variational Encoder 
+
+The preliminary experiments aim at designing two fundamen-tal elements of VE-MD: the training strategy for the latent space Z and the backbone architecture for the multi-task de-coder. The following sections present these experiments. 
+
+4.2.1 Training strategy 
+
+The final definition of the encoder optimization resulted from a series of experiments conducted to identify the most suitable training strategy and the associated constraints, and therefore the corresponding loss functions, for training VE-MD. Three variants were investigated: a Variational Autoencoder (VAE), a vanilla encoder, and a Variational Encoder (VE). The VAE was trained using the ELBO objective, which combines a re-construction term with KL-based latent regularization. In con-6AUTHOR VERSION 
+
+trast, the vanilla encoder was trained without reconstruction and without any explicit latent-space constraint. The VE also removed the reconstruction objective, but retained latent-space regularization by matching the latent distribution to a Gaussian prior using an MMD loss [19]. This choice was motivated by empirical observations: when the reconstruction term was re-moved, KL-only regularization resulted in unstable optimiza-tion, whereas MMD provided more stable training. Experiments were conducted using a custom residual encoder (Custom ) composed of stacked residual downsampling blocks. Given an input feature, the main branch of the residual block applies a stride-2 convolution followed by Batch Normaliza-tion (BN) and ELU activation, then a second convolution (stride 1) and BN. In parallel, the skip connection branch uses a stride-2 convolutional projection to match both spatial reso-lution and channel dimension. The block output is obtained by summation and a final ELU activation. 
+
+Table 3: Encoder performance 1 (VAE, VE, and Vanilla mod-els) in terms of accuracy (%). Columns are sorted by mean accuracy on all datasets. 
+
+Dataset VAE Vanilla VE 
+
+VGAF 48.05 48.96 51.54 
+
+MER-MULTI 32.52 40.29 39.81 DFEW 44.62 53.92 56.22 
+
+SamSemo 57.19 57.43 62.68 
+
+EngageNET 54.20 55.32 56.12 
+
+Mean 47.32 51.58 53.67 
+
+Comparative results across five datasets (VGAF, DFEW, MER-MULTI, SAMSEMO, and EngageNet) are reported in Table 3. Overall, the VE configuration outperformed both the VAE and Vanilla variants on all datasets except MER-MULTI, where the performance difference remained marginal (0.28%). The VE achieved performance gains of up to 6% across datasets. In contrast, the Vanilla encoder, which does not enforce a Gaussian latent distribution, yielded weaker results, while the VAE showed lower emotion classification performance, likely because the reconstruction objective con-strained the representation toward input reconstruction rather than discriminative emotion-related features. These findings suggest that enforcing a variational latent distribution while re-moving reconstruction constraints leads to a more compact and discriminative representation for emotion recognition, making the VE formulation particularly suitable for the multitask ar-chitecture adopted in VE-MD. Therefore, in the remaining ex-periments, the Variational Encoder was selected as the training strategy for our model. 
+
+4.2.2 Multi-task encoder backbone selection 
+
+Beyond the custom residual encoder used in the previous VE experiments, this research investigates several publicly avail-  
+
+> 1Bold values indicate best score on validation set for each dataset.
+
+Table 4: Accuracy 1 (%) results for ViT-only vs Variational Encoder combining ViT with different residual encoders. Columns are sorted by mean accuracy on all datasets.                                        
+
+> Dataset VE-SD ViT only VE-SD with ViT and Residual backbone
+> Custom ResNet-152 ResNet-101 ResNet-50
+> GAF-3.0 82.27 82.41 82.41 82.33 83.56
+> VGAF 76.11 75.72 76.63 77.02 76.63 MER-MULTI 54.74 59.22 59.47 61.11 60.83 DFEW 64.88 68.53 68.64 70.02 64.69 SAMSEMO 55.38 66.02 69.62 67.90 72.26
+> EngageNet 64.14 67.82 66.92 67.35 68.10
+> Mean 66.25 69.95 70.62 70.98 71.01
+
+able pretrained CNN backbones, namely ResNet-50, ResNet-101, and ResNet-152, as a multi-task encoder alongside the ViT one. The objective is to determine which architecture could provide more complementary representations to the ViT features. In this experiment, the structural decoders are not used; the model is then a Variational Encoder Single Decoder (VE-SD). Table 4 reports the results of VE-SD with ViT only and four variants combining it with Custom , ResNet-50 , ResNet-101 ,and ResNet-152 . Overall, combining ViT with a residual en-coder consistently improves performance over ViT only so-lution, confirming that the additional residual encoder pro-vides useful complementary information. Moreover, as ex-pected, the ResNet-based variants outperform the Custom vari-ant for all datasets. Among the ResNet variants, the differ-ences are relatively small, with all three showing competitive performance across datasets. ResNet-50 backbone achieves the best overall mean accuracy (71.01%), slightly outper-forming ResNet-101 (70.98%) and ResNet-152 (70.62%). Al-though ResNet-101 obtains the best results on some individual datasets, notably DFEW and VGAF, ResNet-50 offers the best trade-off between accuracy and model complexity. For this reason, ResNet-50 is selected as the multi-task encoder for all remaining experiments. 
+
+4.3 Experimental Setup and Training 
+
+Variational Encoder Multi-Decoder (VE-MD) receives as in-put a sequence of video frames. All frames are resized to 
+
+224 × 224 . Frame sampling followed the temporal settings of each dataset. For VGAF, 5 frames (1 per second) were kept as 5 frames per video because they provide the best accuracy in former experiments [4]. In EngageNet, SAMSEMO, and MER-MULTI, videos are longer (i.e varying from 1 to 41 sec-onds), thus 10 frames are uniformly selected to represent the video content. Last, DFEW provides 16 frames for each video sequence. To be able to compare with the state-of-the-art, the model uses an identical number of images as input. For the multitask encoder branch, the ResNet-50 architecture produces a final feature map of size 4096 × 7 × 7, which is reduced to 512 × 7 × 7 (Cz = 512 ) using a 2D convolution layer. The same dimensionality reduction is applied to the ViT encoder to ensure consistent feature size. Consequently, the 7AUTHOR VERSION 
+
+final latent-space has dimensions 1024 × 7 × 7. During train-ing, the ViT encoder is first trained by finetuning on the tar-get dataset using cross-entropy loss. Then, during training of the multitask encoder and the structural decoders, it remains frozen. The structural representation decoder uses two different sets of parameters. When using the PersonQuery decoder, three transformer layers are used, each with eight attention heads, and employ sinusoidal positional encoding for sequence rep-resentation. The number of queries Qi determines the number of persons the model can detect, with Qi ∈ { QMax , 50 , 100 },where QMax corresponds to the maximum number of annotated persons in the training dataset. The loss function weights are set as follows: βlimb = 1 .0 and βadj = 0 .5, giving higher im-portance to limb detection over adjacency refinement. Since emotion classification is the primary objective, the structural loss weights are kept lower, with βpi = 0 .1 and βmmd = 0 .1
+
+(see Equation 2). The Adam optimizer is used with a learning rate of 10 −7.For the Heatmap decoder, the limbs decoder module is ap-plied with six stages, each consisting of five CNN layers (input = output = 256 , kernel = 3 , padding = 1 ). The final outputs are heatmaps of size output _limbs × 56 × 56 ,where output _limbs = 18 for body connections and 83 for facial landmarks. It is worth noting that the VE-MD with 
+
+Heatmap augments the original 63 connections with an addi-tional 20 custom connections, resulting in a total of 83 connec-tions. The reason is that, unlike in the PersonQuery approach, the heatmap dimension remains the same for the emotion de-coder; it does not increase the model size. For the loss func-tion, weights are βmmd = 0 .1 and βpi = 1 .0 (see Equation 2), giving equal importance to structural representation detection and emotion classification. 
+
+4.4 VE-MD including Structural Representation (VE-MD-SR) 
+
+In the VE-MD-SR setting, the predicted Structural Represen-tation (SR) is provided as an additional input to the Emo-tion Decoder (ED), as illustrated by the orange arrow in Fig-ure 1. Two SR decoder variants are investigated: VE-MD-SR-PersonQuery and VE-MD-SR-Heatmap . For comparison, VE-MD variants trained in a multi-task manner but without inject-ing SR into the ED are analyzed later in the ablation study section (section 5). Table 5 reports the best overall accuracy obtained by VE-MD-SR-PersonQuery and VE-MD-SR-Heatmap across the six GER and IER datasets, together with the single-decoder base-line VE-SD . Both VE-MD-SR variants consistently outper-form VE-SD , confirming the benefit of explicitly incorpo-rating structural representations into the emotion recogni-tion pipeline. When comparing the two SR variants, nei-ther consistently dominates across all datasets. VE-MD-SR-PersonQuery achieves the best performance on GAF-3.0, MER-MULTI, SamSemo, and EngageNet, whereas VE-MD-SR-Heatmap performs best on VGAF and DFEW. Importantly, the absolute performance gap ( |∆|) between both variants re-mains small, ranging from 0.14 points on GAF-3.0 to 1.35 points on EngageNet, with an average below 1 point. The same overall trend is observed when considering GER and IER datasets separately, with each variant achieving the top result on half of the benchmarks. This near-parity is particularly noteworthy because VE-MD-SR-Heatmap offers two practical advantages over VE-MD-SR-PersonQuery . First, it does not require fixing the number of persons at training or inference time, unlike the query-based formulation defined by QBody and QF ace . Second, it uses a constant parameterization, avoiding the additional learn-able query embeddings required by the PersonQuery decoder. These properties make VE-MD-SR-Heatmap a more flexible and lightweight alternative, especially in in-the-wild scenarios where the number of visible individuals is unknown or varies across video frames. 
+
+# 5 Ablation studies 
+
+5.1 Variational Encoder with Multi Decoders only (VE-MD) 
+
+Before investigating VE-MD-SR , in which structural represen-tation (SR) is also provided as input to the emotion decoder, we first study the VE-MD setting. In this configuration, all variants are trained in a multi-task manner: the structural de-coders are used to guide and optimize the z2 embedding, but their SR outputs are not fed to the emotion decoder during training. In other words, the SR-to-emotion-decoder connec-tion illustrated by the orange arrow in Figure 1 is removed in this ablation. At inference time, the structural decoders are also discarded. This setting further supports the privacy-aware aspect of the proposed method, since no structural information is decoded at inference time. As in the previous experiments, two variants are evaluated: VE-MD-PersonQuery and VE-MD-Heatmap .Table 6 reports the best results obtained by the VE-MD 
+
+variants. Across all six datasets, PersonQuery consistently matches or outperforms Heatmap , achieving the best accuracy in five out of six cases. At the same time, the absolute differ-ence |∆| between both variants remains small across datasets (0.35–1.68), showing that Heatmap remains a competitive and more flexible alternative, while avoiding the need to specify a query count. Despite the absence of SR input to the emotion decoder, both variants still improve over VE-SD on all IER datasets, most notably on DFEW (+5.29 for PersonQuery ) and SamSemo (+3.38), indicating that the multi-person design itself provides a meaningful benefit for emotion recognition. By contrast, the gains are limited on the GER datasets: only a small improve-ment is observed on VGAF with PersonQuery , while perfor-mance on GAF-3.0 falls below the VE-SD baseline. Compared with the SR-equipped configurations reported in Table 5, this ablation suggests that incorporating SR input into the emo-tion decoder provides additional benefits, particularly for GER datasets. 8AUTHOR VERSION 
+
+Table 5: Overall accuracy 1 (%) of VE-MD-SR-PersonQuery and VE-MD-SR-Heatmap for all GER/IER datasets. Results are reported for best SR configurations (Number of queries, use of STGCN, Body, Face, or Body + Face structural representation training) for each dataset. Q Body and Q Face denote the number of respective queries, with QM ax corresponding to the maximum number of annotated bodies/faces in the dataset (underlined values). |∆| represents absolute difference between PersonQuery and Heatmap best performances.                                                                    
+
+> Dataset VE-SD VE-MD-SR-PersonQuery VE-MD-SR-Heatmap |∆|SR training use STGCN QBody QFace Accuracy SR training Accuracy
+> GAF-3.0 83.56 Body + Face yes 100 100 90.06 ( ↑6.50) Body + Face 89.92 ( ↑6.36) 0.14 VGAF 76.63 Body no 50 ✗78.46 ( ↑1.83) Face 79.77 ( ↑3.14) 1.31 MER-MULTI 60.83 Body + Face yes 16 16 62.38 ( ↑1.55) Body + Face 61.89 ( ↑1.06) 0.49 DFEW 64.69 Face no ✗168.96 ( ↑4.27) Face 70.31 ( ↑5.62) 1.3 SamSemo 72.26 Body no 18 ✗75.29 ( ↑3.03) Body + Face 75.10 ( ↑2.84) 0.19 EngageNet 68.10 Body + Face yes 1168.98 (↑0.88) Body 67.63 ( ↓0.47) 1.35
+
+Table 6: Overall accuracy 1 (%) of VE-MD-PersonQuery and VE-MD-Heatmap for all GER/IER datasets. Results are reported for the best SR training configurations (Number of queries, Body, Face, or Body + Face structural representation training) for each dataset. Q Body and Q Face denote the number of respective queries, with QM ax corresponding to the maximum number of annotated persons/faces in the dataset (underlined values). |∆| represents absolute difference between PersonQuery and Heatmap best performances. 
+
+Dataset VE-SD VE-MD-PersonQuery VE-MD-Heatmap |∆|SR training Q Body Q Face Accuracy SR training Accuracy 
+
+GAF-3.0 83.56 Body 50 ✗ 82.37 ( ↓1.19) Face 82.95 ( ↓0.61) 0.53 VGAF 76.63 Body 50 ✗ 77.28 ( ↑0.65) Body 76.37 ( ↓0.26) 0.91 MER-MULTI 60.83 Body + Face 16 16 62.38 ( ↑1.55) Face 61.65 ( ↑0.82) 0.73 DFEW 64.69 Face ✗ 1 69.98 ( ↑5.29) Face 68.30 ( ↑3.61) 1.68 SamSemo 72.26 Body 50 ✗ 75.64 ( ↑3.38) Face 75.29 ( ↑3.03) 0.35 EngageNet 68.10 Face ✗ 1 68.47 ( ↑0.37) Body + Face 68.10 (=0.00) 0.37 
+
+5.2 Ablations on Structural Representation 
+
+In the proposed approach, structural representation (SR) can affect performance through several design choices. First, SR can either be used only as an auxiliary supervision signal to optimize the latent space ( z2) in the multi-task setting, or be additionally provided as input to the emotion decoder, as ex-plored in Sections 4.4 and 5.1. When SR is used as input to the emotion decoder, it can also be projected into a lower-dimensional representation, which may further influence per-formance. Second, in the PersonQuery variant, performance may depend on the number of queries defined at training time and on whether STGCN is used. Third, the type of structural representation itself may play a role, depending on whether body, face, or body+face information is employed. This sub-section presents ablation studies to assess the impact of these SR-related design choices. 
+
+5.2.1 Effect of SR Projection 
+
+We investigate whether using the raw SR output or a pro-jected SR representation is more effective. The results re-veal opposite behaviors for GER and IER datasets. To il-lustrate this difference and identify a suitable projection di-mension, we first consider two representative datasets: VGAF for GER and SamSemo for IER. In these experiments, body-based SR is used. For this analysis, we select the VE-MD-SR-Heatmap decoder because it is more convenient than VE-MD-SR-PersonQuery , which requires fixing the query count. The raw SR outputs are linearly projected to match the latent-space dimension. Without projection, the SR embedding size is 2 × latent _dim + 56 × 56 . With projection, a multiplica-tive factor in {0.5, 1, 2, 3, 4} is used to scale the projection di-mension, resulting in an embedding size of 2 × latent _dim +
+
+factor × latent _dim .The results are reported in Table 7. Across the tested factors, the best projection size is 512, corresponding to factor = 1 .On VGAF (GER), the best accuracy is obtained without pro-jection (79.77%), and performance decreases when projection is introduced. By contrast, on SamSemo (IER), the accu-racy without projection is 67.48%, and performance improves steadily with projection, reaching 74.81%. After identifying the best projection size, we extend the analysis to face-based SR and include additional datasets, namely MER-MULTI and GAF-3.0, in order to confirm the trend observed between GER and IER datasets. The corresponding results are reported in Table 8. For GER, raw SR consistently outperforms projected 9AUTHOR VERSION 
+
+SR (+7% on GAF-3.0 and +2% on VGAF), whereas for IER, projection acts as a beneficial bottleneck, yielding gains of about +8% on MER-MULTI and +10% on SamSemo. 
+
+Table 7: Accuracy (%) comparison for projection-size (Proj.) with VE-MD-SR-Heatmap decoder for body SR. Evaluation for VGAF (GER) and SAMSEMO (IER).                                                                   
+
+> Dataset latent_dim L_Proj Factor Proj_size Emb_size Acc. (%)
+> VGAF
+> 1024 No ✗✗5184 78.20 512 No ✗✗4160 79.7 7512 Yes 42048 3072 77.81 512 Yes 31536 2560 78.07 512 Yes 21024 2048 77.94 512 Yes 1512 1536 77.42 SAMSEMO  512 No ✗✗4160 67.48 512 Yes 42048 3072 73.05 512 Yes 31536 2560 72.81 512 Yes 21024 2048 73.29 512 Yes 1512 1536 74.81
+> 512 Yes 0.5 256 1280 73.57
+
+Table 8: Accuracy (%) comparison between projected and non-projected face SR in VE-MD-SR-Heatmap on GER and IER datasets. 
+
+Dataset Acc. (Projected) Acc. (Without projection) 
+
+GAF-3.0 82.56 89.60 
+
+VGAF 77.42 79.77 
+
+MER-MULTI 61.17 54.85 SamSemo 75.00 55.34 
+
+5.2.2 Structural Representation Modality 
+
+As described previously, three structural representation (SR) modalities can be considered in the proposed VE-MD architec-ture: body, face, and body+face. This ablation evaluates the impact of these modalities on both VE-MD-SR-PersonQuery 
+
+and VE-MD-SR-Heatmap . Table 9 reports the influence of SR modality across the GER/IER datasets for VE-MD-SR-PersonQuery . The results show that the best modality is dataset-dependent, suggesting that the relative importance of body and face cues varies according to the visual content and interaction characteristics of each benchmark. On GAF-3.0, the highest performance is obtained with Body+Face combined with STGCN (90.06), clearly outper-forming the body-only and face-only settings. This indicates a strong complementarity between both modalities on this dataset. By contrast, VGAF achieves its best result with Body only at Q50 without STGCN (78.46), showing that adding facial information or graph refinement is not systematically beneficial. A similar dataset-dependent behavior is observed on the IER datasets. On MER-MULTI, the highest accuracy (62.38) is obtained by both the Body and Body+Face configu-rations when combined with STGCN. DFEW strongly favors face cues, with the best accuracy obtained using Face-only SR without STGCN (68.96). SamSemo reaches its best result with Body at Qmax (75.29), whereas EngageNet performs best with Body+Face combined with STGCN (68.98). Overall, these re-sults indicate that no single SR modality consistently domi-nates across datasets. Instead, the most effective modality de-pends on the characteristics of the benchmark, which makes the selection of SR modality dataset-specific. Interestingly, this is not always fully predictable from the apparent visual framing of the data. For instance, although EngageNet mainly contains head-centered videoconferencing views, the best re-sult is still obtained with Body+Face. Modality ablation results for VE-MD-SR-Heatmap are re-ported in Table 10. Similar trends are observed. The three modalities do not improve performance uniformly across datasets. For the GER datasets, the combination of Body+Face improves performance on GAF-3.0, but not on VGAF, where Face-only SR yields the best result. One possible explanation is that GAF-3.0 consists of static images, where body and face cues can be jointly exploited more consistently, whereas in video datasets, facial visibility may vary across frames. For the IER datasets, the results suggest a more complementary con-tribution of both modalities, as observed for MER-MULTI and SamSemo, where Body+Face achieves the best performance. In DFEW, only the face modality is available, as shown in Fig-ure 4, which explains why this dataset is evaluated only with Face-based SR. 
+
+5.2.3 Query Count and Use of STGCN 
+
+For the PersonQuery approach (see Table 9), the main ob-servation is that performance is sensitive to the query count (Q). On GAF-3.0, performance generally improves as Q in-creases, reaching its best value at Q = 100 . However, this trend does not hold for all datasets. On VGAF, for example, using Qmax (Q = 29 ) yields 75.98%, increasing the number of queries to 50 improves performance to 78.46%, whereas further increasing it to 100 reduces performance to 77.55% for the body-based structural representation. A similar pat-tern is observed for the Body+Face configuration. One possi-ble explanation is that using a fixed number of queries during training does not always match the actual number of persons present in the videos. Moreover, even when the selected query count matches the number of persons in one frame, this cor-respondence may no longer hold in subsequent frames due to temporal variation in visibility and scene composition. A related trend is observed on the IER datasets, where most benchmarks achieve their best performance when us-ing QM ax . In most cases, increasing the query count to 50 
+
+leads to a decrease in performance. For example, DFEW achieves 68.96 with QM ax but only 64.45 with Q50 , while MER-MULTI reaches 62.38 with QM ax and drops to 60.19 with Q50 . This behavior is consistent with the fact that the emotional content in these datasets is often centered on a sin-gle main person, making larger query counts less suitable. For this reason, experiments with Q = 100 were not conducted on these datasets. Regarding STGCN, the results show that its contribution is not consistent across either GER or IER datasets. It helps improve performance on GAF-3.0, where the best result reaches 90.06, 10 AUTHOR VERSION 
+
+Table 9: Accuracy (%) ablations on VE-MD-SR-PersonQuery for GER datasets. Results are reported for different SR config-urations (Body, Face, and Body+Face) across query settings. Qi denotes the number of queries, with QM ax corresponding to the maximum number of annotated persons in the dataset, Q50 : query = 50 , Q100 : query = 100 . The best query value is selected to train body+face.                                                                                                        
+
+> Datasets Body Face Body+Face
+> SR SR+STGCN SR SR+STGCN SR SR+STGCN
+> QM ax Q50 Q100 QM ax Q50 Q100 QM ax Q50 Q100 QM ax Q50 Q100
+> GAF-3.0 84.38 84.22 84.89 86.45 86.14 87.99 85.72 85.40 86.11 87.67 86.27 88.25 85.99 90.06
+> VGAF 75.98 78.46 77.55 77.02 77.02 78.33 77.28 77.28 77.55 77.15 76.11 76.5 78.33 77.55 MER-MULTI 61.17 61.41 ✗62.38 60.19 ✗60.19 61.41 ✗62.14 61.65 ✗60.92 62.38
+> DFEW ✗✗✗✗✗✗68.96 64.45 ✗68.66 ✗✗✗✗
+> SamSemo 75.29 74.76 ✗74.29 ✗✗75.14 75.19 ✗74.38 74.63 ✗75.05 74.29 EngageNet 68.53 67.35 ✗67.82 67.98 ✗67.91 67.63 ✗68.19 66.88 ✗68.38 68.98
+
+Table 10: Accuracy (%) for the ablation study on the influence of structural representation type in VE-MD-SR-Heatmap. 
+
+Dataset Body Face Body + Face 
+
+GAF-3.0 86.72 89.60 89.92 
+
+VGAF 79.24 79.77 79.37 MER-MULTI 61.17 60.19 61.89 
+
+DFEW ✗ 70.31 ✗
+
+SamSemo 74.81 75.00 75.10 
+
+EngageNet 67.63 67.26 67.26 but it does not provide the same benefit on VGAF. A similar pattern is observed on the IER datasets: STGCN contributes to the best performance on MER-MULTI (62.38) and Enga-geNet (68.98), but not on DFEW. One possible explanation is the noise and temporal inconsistency in the automatically gen-erated annotations, since some persons may be inaccurately detected or not tracked consistently across frames. To address these limitations, the Heatmap approach is introduced as an al-ternative that can better accommodate variations in the number of people across videos and across frames. 
+
+5.3 Ablation on ViT Branch Pretraining 
+
+For the GER datasets, we additionally investigate whether ini-tializing the ViT branch with a model pretrained for group emotion recognition improves performance. To this end, we use the synthetic-video pretraining strategy introduced in our previous work [4]. In that setting, synthetic videos are gener-ated by compositing face images with controlled expressions, selected from FACES and KDEF [8, 20], onto diverse LSUN backgrounds [64]. This process produces group emotion-labeled frames while preserving group-level affect, and was previously shown to encourage the model to focus on facial cues relevant to group emotion [4]. We reuse this pretrained ViT branch to train VE-MD-SR-Heatmap on the GER datasets. The results are reported in Table 11. Synthetic-video pretraining improves performance on VGAF, where the best accuracy increases from 79.77% to 80.81% (+1.04), but slightly decreases performance on GAF-3.0, where the best result drops from 89.92% to 89.55% (-0.37). Overall, these results suggest that synthetic-video pre-training can be beneficial, although its impact remains dataset-dependent. We include this initialization setting to enable di-rect comparison with our previous work [4]. 
+
+Table 11: Best accuracy (%) of VE-MD-SR-Heatmap on GER datasets with and without synthetic-video pretraining of the ViT branch.                    
+
+> Dataset Pretrained ViT (no-Synt) Pretrained ViT (with-Synt)
+> Body Face Body+Face Body Face Body+Face GAF-3.0 86.72 89.60 89.92 86.36 89.23 89.55
+> VGAF 79.24 79.77 79.37 80.68 80.81 80.55
+
+# 6 Discussion and Limitations 
+
+6.0.1 Discussion 
+
+The ablation studies support the central hypothesis of this work: structural supervision improves emotion recognition, but its contribution depends on how structural information is represented and integrated, and on whether the target task is GER or IER. Both decoder variants, PersonQuery and Heatmap , confirm the value of joint structural-affective learning. However, Per-sonQuery remains constrained by its fixed-query formulation, since performance depends on the selected query count and does not always benefit from STGCN. These constraints are particularly problematic when the number of visible persons varies across videos and across frames. In contrast, Heatmap 
+
+naturally handles variable group size without requiring prede-fined queries, making it a more flexible and stable design. 11 AUTHOR VERSION 
+
+A key result is that latent-space optimization alone is not suf-ficient for GER. When structural decoders are used only as auxiliary supervision in VE-MD , the gains remain limited on GER datasets, although clear improvements are observed on IER benchmarks. By contrast, when SR outputs are explicitly provided to the emotion decoder in VE-MD-SR , performance improves substantially on GER. This indicates that compress-ing structural information only into the shared latent represen-tation tends to attenuate interaction-related cues that are im-portant for collective affect modeling. In GER, emotion de-pends not only on isolated body or face evidence, but also on inter-person relations. Preserving explicit structural outputs up to the decoder, therefore, appears necessary to retain this relational information. The modality ablations further show that no single SR modal-ity consistently dominates across all datasets. The best choice among body, face, and body+face remains dataset-dependent, indicating that the contribution of structural cues varies with the visual and interaction characteristics of each benchmark. Similarly, the projection study reveals opposite behaviors for GER and IER. For GER, raw SR consistently outperforms pro-jected SR, suggesting that projection removes useful relational information. For IER, projection instead acts as a beneficial bottleneck, improving performance by suppressing noisy or redundant structural cues. This distinction reinforces the idea that collective affect recognition requires richer intermediate relational representations, whereas individual emotion recog-nition benefits more from compact and denoised structural in-formation. The ViT pretraining ablation also points to a dataset-dependent effect. Synthetic-video pretraining improves performance on VGAF but not on GAF-3.0, suggesting that such initialization can be beneficial, but is not universally advantageous. Last, findings on structural representation projection highlight a fundamental distinction between individual and collective af-fect modeling. For IER, compact latent representations and projected structural cues are often sufficient, since the emo-tional content is typically centered on a dominant individ-ual. For GER, however, preserving explicit structural informa-tion is more important, as group emotion emerges from inter-person dynamics and scene-level configuration. Importantly, this is achieved while maintaining a privacy-aware design: the framework predicts only group-level emotion and does not re-quire identity modeling or explicit per-person emotion infer-ence as a final objective. 
+
+6.0.2 Limitations 
+
+While VE-MD demonstrates strong performance across GER and IER datasets, several limitations remain. First, the pro-posed privacy-aware design restricts the model to group-level predictions, but it does not provide formal anonymization of the input data or cryptographic privacy guarantees, since the system operates directly on full RGB frames. Second, the structural supervision depends on automatically generated pose and landmark annotations, which may introduce noise and bias into the training process. Third, although explic-itly incorporating structural outputs improves GER perfor-mance, it also increases architectural complexity compared with approaches that rely only on latent representations. Fu-ture work will investigate interaction-aware latent disentan-glement mechanisms able to encode relational cues directly within the shared representation, with the goal of reducing re-liance on explicit structural outputs while preserving collective affect modeling performance. 
+
+# 7 VE-MD as video encoder for multimodal emotion recognition 
+
+7.1 Combining VE-MD with Audio 
+
+To enable comparison with multimodal state-of-the-art meth-ods on VGAF , SAMSEMO , and MER-MULTI , we extend VE-MD with an audio branch. This extension is motivated by the fact that emotional content is not only conveyed visually, but also through lexical information and paralinguistic vocal cues. 
+
+7.1.1 Audio Modeling 
+
+We use two complementary audio encoders: (i) a content en-coder and (ii) an acoustic representation encoder. Content encoders capture lexical and semantic information correlated with emotion, whereas acoustic encoders capture paralinguis-tic cues directly from the speech signal. For content modeling, we use Whisper (medium) [43]. For acoustic representation learning, we use Wav2Vec 2.0 [5]. Whisper is a transformer-based multilingual ASR model trained at scale, providing robust text-related audio repre-sentations under noisy conditions. Wav2Vec 2.0 learns con-textualized speech features from raw waveforms in a self-supervised manner and has shown strong performance on speech and paralinguistic tasks. When both encoders are used jointly, we model their interaction through bidirectional cross-attention. Let A denote the acoustic representation and 
+
+C the content representation. We compute: Att ACC =Attention( A, C, C ), and Att CAA = Attention( C, A, A ).
+
+The final audio representation is obtained by concatenating A,
+
+C, Att ACC , and Att CAA .
+
+7.1.2 Audio-Video Fusion Strategy 
+
+To combine the audio and VE-MD branches, the final design uses late fusion : each branch is first linearly projected to a common dimension, followed by multi-head self-attention and a FAP layer for sequence reduction. The fused representation is then fed to an MLP for classification. In addition to the late fusion, Attention-Guided Feature (AFG) [55] is evaluated. The AFG is a lightweight attention-based fusion module used to combine the audio and video embeddings into a single mul-timodal representation. Given an audio feature f ai ∈ Rda and a video feature f vi ∈ Rdv , AFG first projects both features into a shared D-dimensional space to obtain aligned vectors 
+
+hai , h vi ∈ RD . A small MLP with a softmax predicts two fu-sion weights αai and αvi (αai + αvi = 1 ), which reflect the rela-tive importance of audio vs. video for sample i. The final fused feature is computed as a weighted sum: ˆhi = αai hai + αvi hvi .
+
+12 AUTHOR VERSION 
+
+This allows the model to rely more on the modality that is more informative (or less noisy) for each input. 
+
+7.1.3 Training and Experimentation 
+
+To train the audio branch, the corresponding backbone is kept frozen. A linear layer is added in the last sequence of the em-bedding to project audio features to 1024, then classified with an MLP. The Adam optimizer is used with the learning rate fixed to 1e − 0.4 using cross-entropy loss. For audio-video fusion, VE-MD is also kept frozen before feeding the multi-modal emotion classification. The best VE-MD video for each dataset is selected in terms of performance. We observe that the video features that perform best in isolation do not always lead to the best fusion with a given audio branch, likely be-cause the two modalities may capture overlapping rather than complementary information. For VGAF, the best audio-visual combination is obtained with the final VE-MD-SR-Heatmap 
+
+version using Body+Face. For MER-MULTI, the best fusion result is achieved by VE-MD-PersonQuery with Body+Face, whereas for SamSemo, the best configuration uses Body only. The summary of best performance for audio-video fusion is given in Table 12. On the VGAF dataset, the best perfor-mance is 82.25% of accuracy when combining Wav2Vec 2.0 and video via late fusion, combining with the AFG mod-ule. For MER-MULTI, the best configuration combines Whis-per+Wav2Vec 2.0 + video branch, giving 64.23% of accuracy. In the case of SAMSEMO, the video combination with Whis-per achieves 78.07% of accuracy. 
+
+Table 12: Summary of Audio-Video Fusion Accuracy (%).                 
+
+> Datasets Audio-Encoder Acc. Audio Acc. Video Acc. Fusion
+> VGAF Wav2Vec 2.0 58.49 80.55 82.25
+> MER-MULTI Wav2Vec 2.0 + Whisper 63.75 62.38 64.23
+> SAMSEMO Wav2Vec 2.0 + Whisper 74.78 75.64 78.07
+
+7.2 Combining VE-MD with Audio and text 
+
+For SAMSEMO, in order to compare with the SOTA, we train the model with a text branch extension. For text features, we use Mixtral-8x7B and Llama-2-7B. Both produce 4096-dimensional embeddings, which are projected to 1024 for alignment. The performances for the text branch are 60.18% and 62.69% of accuracy for Llama-2 and Mixtral, respectively. When adding text to the audio–video fusion, performance im-proves further. The best result achieved with Mixtral features is 79.18% accuracy for 77.94% of weighted F1. The best per-formance with Llama-2 features is 79.20% of accuracy for 77.71% of F1-score. Finally, a summary of the multimodal extension combining 
+
+VE-MD and audio (or text ) branches is given in the Table 13 with the best performance accuracy and corresponding F1-score. As an observation, a well-balanced distribution across classes is shown for GAF-3.0, VGAF, and MER-MULTI based on the F1-scores, which is different from other datasets. 
+
+Table 13: Multimodal performance’s summary per dataset. Accuracy and corresponding F1-score, (in %). 
+
+Dataset Accuracy F1-score 
+
+GAF3.0 90.06 89.92 VGAF 82.25 82.16 SamSemo 79.20 77.94 MER-MULTI 64.94 64.84 DFEW 70.73 68.20 EngageNet 68.98 67.54 
+
+# 8 Comparisons with State-of-the-Art 
+
+Having validated the VE-MD framework across visual and multimodal configurations, we now benchmark its perfor-mance against existing state-of-the-art (SOTA) methods and baselines across all datasets. Comprehensive comparison and ranking against SOTA systems on all datasets are detailed in section .4 “Extended Comparisons with the State of the Art”. 
+
+8.1 SOTA Comparison for GER Datasets 
+
+In Figure 6, it is shown for GAF-3.0 that VE-MD surpasses significantly prior work by a clear margin. We report accuracy along with 95% confidence intervals computed using the Wil-son score interval. For pairwise comparisons between meth-ods evaluated on the same test set, statistical significance is assessed using a two-sided McNemar’s test, with p < 0.05 
+
+considered significant. Our best configuration (body and face structures) improves accuracy by +3.16 points over the last prior work (90.06% vs. 86.90%). Even using a single pre-dicted structural representation decoder (face or body), VE-MD exceeds SOTA [57], underscoring its effectiveness for group emotion recognition in images. It is worth noting that Zhu et al. (2025) [66] recently pro-posed the Key Role Guided Hierarchical Relation Inference (KR-HRI) model to enhance group-level emotion recognition. This method is not included in the comparison presented in Figure 6, as it reports performance using a different evaluation metric, Unweighted Average Recall (UAR), rather than accu-racy. On the GAF-3.0 dataset, KR-HRI achieved a UAR of 81.29%. In contrast, our best VE-MD model reached a UAR of 88.70% on GAF-3.0, outperforming KR-HRI by +7.41 per-centage points. For the VGAF dataset, VE-MD also proves effective. Our mul-timodal approach (VE-MD + Wav2Vec 2.0) achieves 82.25% accuracy, improving over the last prior work (81.98%) [31] by +0.27 points. 
+
+8.2 SOTA Comparison for IER Datasets 
+
+The SOTA result of SAMSEMO [6] is 69.00% for f1-score with all three modalities: audio, video, and text. The proposed 
+
+VE-MD outperforms the SOTA with +8.94 points by achieving the performance 77.94%. The corresponding configuration is 13 AUTHOR VERSION 
+
+Wav2Vec 2.0, Whisper, VE-MD, and Mixtral features for au-dio, video, and text modalities, respectively. On MER-MULTI by using the combined metric from MER2023 [34] challenge: 
+
+F 1 − 0.25 × M SE , VE-MD achieves 63.80% compared to 71.39% [56] as best performance since after the challenge. In their system, they used a multi-modal emotion recognition sys-tem with Pruning-based Network Architecture Optimization (PNAO) combined with the Attention Guided Feature (AFG) module. On EngageNet, VE-MD reaches 68.98% of accuracy versus 71.24% [1] for SOTA. Their higher result relies on ex-plicit individual features (facial landmarks) as inputs, which is avoided in the proposed system to be aligned with the pri-vacy claim, which avoids prior individual features in input. On DFEW, the proposed VE-MD achieved 70.31% less than the SOTA with 76.21% [14] with the top methods leveraging large vision–language models (CLIP variants, MLLMs such as LLaVA), specialized face encoders (e.g., FaceXFormer). No-ticed that, one of perspectives that could be used to improve 
+
+VE-MD is to combine with MLLM models for scene descrip-tion based on a reasoning process. A summary of these com-parisons is given in the Figure 6, highlighting the comparison difference. 
+
+Figure 6: Summary of VE-MD versus SOTA across datasets. The first two columns correspond to GER datasets. Aster-isks (*) indicates a statistically significant difference versus the SOTA using a two-sided McNemar test ( p < 0.05 ). 
+
+# 9 Conclusion 
+
+This paper introduced the Variational Encoder–Multi-Decoder (VE-MD) framework for group emotion recognition under a privacy-aware functional design. Rather than relying on iden-tity recognition, person tracking, or per-person emotion pre-diction as output objectives, VE-MD is designed for aggre-gate group-level affect inference while operating directly on full visual scenes. VE-MD combines a variational encoder with multi-task structural supervision through two comple-mentary decoding strategies: VE-MD-PersonQuery , a query-based structural decoder, and VE-MD-Heatmap , a dense al-ternative that naturally adapts to variable group size. Beyond the architectural contribution, the experiments reveal a central task-dependent finding: GER and IER respond differently to structural information compression. For GER, optimizing the latent representation alone is often insufficient, as compress-ing structural information tends to attenuate interaction-related cues that are important for collective affect inference. Pre-serving explicit structural outputs up to the emotion decoder, therefore, leads to stronger performance. For IER, by contrast, projected structural representations behave as a beneficial de-noising bottleneck and are often more effective than preserving raw structural cues. Experiments on six in-the-wild datasets confirm both the ef-fectiveness of the proposed framework and the relevance of this distinction. VE-MD achieves state-of-the-art performance on GAF-3.0, VGAF, and SAMSEMO, while remaining com-petitive on MER-MULTI, DFEW, and EngageNet. Overall, the results suggest that collective affect recognition benefits from structural guidance that preserves relational information, whereas individual emotion recognition benefits more from compact and denoised structural representations. These find-ings highlight a broader perspective for affective computing: the way structural information should be integrated depends on whether the target of inference is collective or individual. Future work will investigate how interaction-related cues can be encoded more directly within the shared latent representa-tion, with the goal of reducing reliance on explicit structural outputs while preserving strong performance on group-level affect recognition. 
+
+# 10 Acknowledgement 
+
+This research was supported by the PERSYVAL Labex (ANR11-LABX-0025) and the TALISMAN project (ANR-22-CE38-0007). This work was granted access to the HPC re-sources of IDRIS under the allocation 2023-AD010614233 made by GENCI. Part of the computations presented in this paper were performed using the GRICAD infrastructure (https://gricad.univ-grenoble-alpes.fr/), which is supported by Grenoble research communities. 
+
+# References 
+
+[1] Ali Abedi and Shehroz S Khan. Engagement measure-ment based on facial landmarks and spatial-temporal graph convolutional networks. arXiv e-prints , pages arXiv–2403, 2024. [2] Jan Philipp Albrecht. How the gdpr will change the world. Eur. Data Prot. L. Rev. , 2:287, 2016. [3] Avinash Anand, Avni Mittal, Laavanaya Dhawan, Juhi Krishnamurthy, Mahisha Ramesh, Naman Lal, Astha Verma, Pijush Bhuyan, Raijv Ratn Shah, Roger Zimmer-mann, et al. Exceda: Unlocking attention paradigms in extended duration e-classrooms by leveraging attention-mechanism models. In 2024 IEEE 7th International Con-ference on Multimedia Information Processing and Re-trieval (MIPR) , pages 301–307. IEEE, 2024. [4] Augusma, Anderson and Vaufreydaz, Dominique and Letué, Frédérique. Multimodal Group Emotion Recog-nition In-the-wild Using Privacy-Compliant Features. In 
+
+Proceedings of the 25th International Conference on Multimodal Interaction , pages 750–754, 2023. [5] Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli. wav2vec 2.0: A framework for self-14 AUTHOR VERSION 
+
+supervised learning of speech representations. Advances in neural information processing systems , 33:12449– 12460, 2020. [6] Paweł Bujnowski, Bartłomiej Ku´ zma, Bartłomiej Paziewski, Jacek Rutkowski, Joanna Marhula, Zuzanna Bordzicka, and Piotr Andruszkiewicz. Samsemo: New dataset for multilingual and multimodal emotion recognition. In Interspeech , 2024. [7] Adrian Bulat and Georgios Tzimiropoulos. How far are we from solving the 2d & 3d face alignment prob-lem?(and a dataset of 230,000 3d facial landmarks). In 
+
+Proceedings of the IEEE international conference on computer vision , pages 1021–1030, 2017. [8] Manuel G Calvo, Andrés Fernández-Martín, Guillermo Recio, and Daniel Lundqvist. Human observers and au-tomated assessment of dynamic emotional facial expres-sions: Kdef-dyn database validation. Frontiers in psy-chology , 9:2052, 2018. [9] Celso Cancela-Outeda. The eu’s ai act: A framework for collaborative governance. Internet of Things , 27:101291, 2024. [10] Zhe Cao, Tomas Simon, Shih-En Wei, and Yaser Sheikh. Realtime multi-person 2d pose estimation using part affinity fields. In Proceedings of the IEEE conference on computer vision and pattern recognition , pages 7291– 7299, 2017. [11] Zhe Cao, Gines Hidalgo, Tomas Simon, Shih-En Wei, and Yaser Sheikh. Openpose: Realtime multi-person 2d pose estimation using part affinity fields. IEEE trans-actions on pattern analysis and machine intelligence , 43 (1):172–186, 2019. [12] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, and Sergey Zagoruyko. End-to-end object detection with transform-ers. In European conference on computer vision , pages 213–229. Springer, 2020. [13] Bertrand Cassar. Règlement sur l’intelligence artificielle-version enrichie, 2024. [14] Haodong Chen, Haojian Huang, Junhao Dong, Mingzhe Zheng, and Dian Shao. Finecliper: Multi-modal fine-grained clip for dynamic facial expression recognition with adapters. In Proceedings of the 32nd ACM Inter-national Conference on Multimedia , pages 2301–2310, 2024. [15] Xiaojiao Chen, Guangxing Li, Hao Huang, Wangjin Zhou, Sheng Li, Yang Cao, and Yi Zhao. System de-scription for voice privacy challenge 2022. In Proc. 2nd Symposium on Security and Privacy in Speech Commu-nication , 2022. [16] Abhinav Dhall, Garima Sharma, Roland Goecke, and Tom Gedeon. Emotiw 2020: Driver gaze, group emotion, student engagement and physiological signal based chal-lenges. In Proceedings of the 2020 International Confer-ence on Multimodal Interaction , pages 784–789, 2020. [17] Abhinav Dhall, Monisha Singh, Roland Goecke, Tom Gedeon, Donghuo Zeng, Yanan Wang, and Kazushi Ikeda. Emotiw 2023: Emotion recognition in the wild challenge. In Proceedings of the 25th International Con-ference on Multimodal Interaction (ICMI 2023) , 2023. [18] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition at scale. ICLR , 2021. [19] Gintare Karolina Dziugaite, Daniel M Roy, and Zoubin Ghahramani. Training generative neural networks via maximum mean discrepancy optimization. In Proceed-ings of the Thirty-First Conference on Uncertainty in Ar-tificial Intelligence , pages 258–267, 2015. [20] Natalie C. Ebner, Michaela Riediger, and Ulman Lindenberger. Faces-a database of facial expres-sions in young, middle-aged, and older women and men: Development and validation. Behavior Re-search Methods , 42:351–362, 2 2010. ISSN 1554351X. doi:10.3758/BRM.42.1.351. [21] Pasquale Foggia, Antonio Greco, Alessia Saggese, and Mario Vento. Multi-task learning on the edge for ef-fective gender, age, ethnicity and emotion recognition. 
+
+Engineering Applications of Artificial Intelligence , 118: 105651, 2023. [22] Niki Maria Foteinopoulou and Ioannis Patras. Emoclip: A vision-language method for zero-shot video facial ex-pression recognition. In 2024 IEEE 18th International Conference on Automatic Face and Gesture Recognition (FG) , pages 1–10. IEEE, 2024. [23] Xin Guo, Luisa Polania, Bin Zhu, Charles Boncelet, and Kenneth Barner. Graph neural networks for image under-standing based on multiple cues: Group emotion recog-nition and event recognition as use cases. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision , pages 2921–2930, 2020. [24] Aarush Gupta, Dakshit Agrawal, Hardik Chauhan, Jose Dolz, and Marco Pedersoli. An attention model for group-level emotion recognition. In Proceedings of the 20th ACM International Conference on Multimodal In-teraction , pages 611–615, 2018. [25] Chaoqun Hong, Jun Yu, Jian Zhang, Xiongnan Jin, and Kyong-Ho Lee. Multimodal face-pose estimation with multitask manifold deep learning. IEEE transactions on industrial informatics , 15(7):3952–3961, 2018. [26] Guosheng Hu, Li Liu, Yang Yuan, Zehao Yu, Yang Hua, Zhihong Zhang, Fumin Shen, Ling Shao, Timo-thy Hospedales, Neil Robertson, et al. Deep multi-task 15 AUTHOR VERSION 
+
+learning to recognise subtle facial expressions of men-tal states. In Proceedings of the European conference on computer vision (ECCV) , pages 103–119, 2018. [27] Wenti Huang, Jun Long, et al. Psmf: Prototype network subgraph with multi-head attention framework for group emotion recognition. Not published yet (Rewiew) , page 121969, 2025. [28] Xingxun Jiang, Yuan Zong, Wenming Zheng, Chuangao Tang, Wanchuang Xia, Cheng Lu, and Jiateng Liu. Dfew: A large-scale database for recognizing dynamic facial ex-pressions in the wild. In Proceedings of the 28th ACM International Conference on Multimedia , pages 2881– 2889, 2020. [29] BeomJun Jo and SeongKi Kim. Comparative analysis of openpose, posenet, and movenet models for pose estima-tion in mobile devices. Traitement du Signal , 39(1):119, 2022. [30] Heechul Jung, Sihaeng Lee, Junho Yim, Sunjeong Park, and Junmo Kim. Joint fine-tuning in deep neural net-works for facial expression recognition. In Proceedings of the IEEE international conference on computer vision ,pages 2983–2991, 2015. [31] Ashwani Kumar, Zuopeng Justin Zhang, and Hongbo Lyu. Object detection in real time based on improved sin-gle shot multi-box detector algorithm. EURASIP Journal on Wireless Communications and Networking , 2020(1): 204, 2020. [32] Deepak Kumar, Piyush Dhamdhere, and Balasubrama-nian Raman. Fusing multimodal streams for improved group emotion recognition in videos. In International Conference on Pattern Recognition , pages 403–418. Springer, 2025. [33] Sotheara Leang, Anderson Augusma, Eric Castelli, Frédérique Letué, Sethserey Sam, and Dominique Vaufreydaz. Exploring vq-vae with prosody pa-rameters for speaker anonymization. arXiv preprint arXiv:2409.15882 , 2024. [34] Zheng Lian, Haiyang Sun, Licai Sun, Kang Chen, Mngyu Xu, Kexin Wang, Ke Xu, Yu He, Ying Li, Jin-ming Zhao, et al. Mer 2023: Multi-label learning, modal-ity robustness, and semi-supervised learning. In Proceed-ings of the 31st ACM International Conference on Multi-media , pages 9610–9614, 2023. [35] Chuanhe Liu, Wenqiang Jiang, Minghao Wang, and Tianhao Tang. Group level audio-video emotion recog-nition using hybrid networks. In Proceedings of the 2020 International Conference on Multimodal Interac-tion (ICMI 2020) , pages 807–812. Association for Com-puting Machinery, Inc, 10 2020. ISBN 9781450375818. doi:10.1145/3382507.3417968. [36] Xinji Mai, Junxiong Lin, Haoran Wang, Zeng Tao, Yan Wang, Shaoqi Yan, Xuan Tong, Jiawen Yu, Boyang Wang, Ziheng Zhou, et al. All rivers run into the sea: Unified modality brain-inspired emotional central mech-anism. In Proceedings of the 32nd ACM International Conference on Multimedia , pages 632–641, 2024. [37] Xinji Mai, Haoran Wang, Zeng Tao, Junxiong Lin, Shaoqi Yan, Yan Wang, Jing Liu, Jiawen Yu, Xuan Tong, Yating Li, et al. Ous: Scene-guided dynamic facial ex-pression recognition. CoRR , 2024. [38] Quang Tran Ngoc, Seunghyun Lee, and Byung Cheol Song. Facial landmark-based emotion recognition via directed graph neural network. Electronics , 9(5):764, 2020. [39] Koji Okabe, Takafumi Koshinaka, and Koichi Shinoda. Attentive statistics pooling for deep speaker embedding. 
+
+arXiv preprint arXiv:1803.10963 , 2018. [40] D Osokin. Real-time 2d multi-person pose estimation on cpu: Lightweight openpose. In ICPRAM 2019-Proceedings of the 8th International Conference on Pat-tern Recognition Applications and Methods , pages 744– 748, 2019. [41] Sikha Pentyala, Rafael Dowsley, and Martine De Cock. Privacy-preserving video classification with convolu-tional neural networks. In International conference on machine learning , pages 8487–8499. PMLR, 2021. [42] Gerard Pons and David Masip. Multitask, multilabel, and multidomain learning with convolutional networks for emotion recognition. IEEE Transactions on Cyber-netics , 52(6):4764–4771, 2020. [43] Alec Radford, Jong Wook Kim, Tao Xu, Greg Brockman, Christine McLeavey, and Ilya Sutskever. Robust speech recognition via large-scale weak supervision. In Inter-national conference on machine learning , pages 28492– 28518. PMLR, 2023. [44] Rajeev Ranjan, Vishal M Patel, and Rama Chellappa. Hyperface: A deep multi-task learning framework for face detection, landmark localization, pose estimation, and gender recognition. IEEE transactions on pattern analysis and machine intelligence , 41(1):121–135, 2017. [45] Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-net: Convolutional networks for biomedical image segmentation. In International Conference on Medi-cal image computing and computer-assisted interven-tion , pages 234–241. Springer, 2015. [46] Andrey V Savchenko and IA Makarov. Neural network model for video-based analysis of student’s emotions in e-learning. Optical Memory and Neural Networks , 31(3): 237–244, 2022. [47] Garima Sharma, Abhinav Dhall, and Jianfei Cai. Audio-visual automatic group affect analysis. IEEE Transac-tions on Affective Computing , 2021. 16 AUTHOR VERSION 
+
+[48] Dahu Shi, Xing Wei, Liangqi Li, Ye Ren, and Wenming Tan. End-to-end multi-person pose estimation with trans-formers. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 11069– 11078, 2022. [49] Monisha Singh, Ximi Hoque, Donghuo Zeng, Yanan Wang, Kazushi Ikeda, and Abhinav Dhall. Do i have your attention: A large scale engagement prediction dataset and baselines. In Proceedings of the 25th International Conference on Multimodal Interaction , pages 174–182, 2023. [50] Mo Sun, Jian Li, Hui Feng, Wei Gou, Haifeng Shen, Jian Tang, Yi Yang, and Jieping Ye. Multi-modal fusion us-ing spatio-temporal and static features for group emotion recognition. Proceedings of the 2020 International Con-ference on Multimodal Interaction (ICMI 2020) , pages 835–840, 10 2020. doi:10.1145/3382507.3417971. [51] Lianzhi Tan, Kaipeng Zhang, Kai Wang, Xiaoxing Zeng, Xiaojiang Peng, and Yu Qiao. Group emotion recogni-tion with individual facial emotion cnns and global image based cnns. In Proceedings of the 19th ACM interna-tional conference on multimodal interaction , pages 549– 552, 2017. [52] Zeng Tao, Yan Wang, Junxiong Lin, Haoran Wang, Xinji Mai, Jiawen Yu, Xuan Tong, Ziheng Zhou, Shaoqi Yan, Qing Zhao, et al. Align-dfer: Pioneering comprehensive dynamic affective alignment for dynamic facial expres-sion recognition with clip. CoRR , 2024. [53] Alexander Vedernikov, Puneet Kumar, Haoyu Chen, Tapio Seppänen, and Xiaobai Li. Tcct-net: Two-stream network architecture for fast and efficient engagement es-timation via behavioral feature signals. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pat-tern Recognition (CVPR) Workshops , pages 4723–4732, June 2024. [54] Alessandro Vinciarelli, Maja Pantic, and Hervé Bourlard. Social signal processing: Survey of an emerging domain. 
+
+Image and vision computing , 27(12):1743–1759, 2009. [55] Haotian Wang, Yuxuan Xi, Hang Chen, Jun Du, Yan Song, Qing Wang, Hengshun Zhou, Chenxi Wang, Jiefeng Ma, Pengfei Hu, et al. Hierarchical audio-visual information fusion with multi-label joint decoding for mer 2023. In Proceedings of the 31st ACM International Conference on Multimedia , pages 9531–9535, 2023. [56] Haotian Wang, Jun Du, Yusheng Dai, Chin-Hui Lee, Yuling Ren, and Yu Liu. Improving multi-modal emo-tion recognition using entropy-based fusion and pruning-based network architecture optimization. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 11766– 11770. IEEE, 2024. [57] Kai Wang, Xiaoxing Zeng, Jianfei Yang, Debin Meng, Kaipeng Zhang, Xiaojiang Peng, and Yu Qiao. Cas-cade attention networks for group emotion recognition with face, body and image cues. In Proceedings of the 20th ACM international conference on multimodal inter-action , pages 640–645, 2018. [58] Linhuang Wang, Xin Kang, Fei Ding, Satoshi Nakagawa, and Fuji Ren. A joint local spatial and global temporal cnn-transformer for dynamic facial expression recogni-tion. Applied Soft Computing , 161:111680, 2024. [59] Quanyu Wang, Kaixiang Zhang, and Manjotho Ali As-ghar. Skeleton-based st-gcn for human action recognition with extended skeleton graph and partitioning strategy. 
+
+IEEE Access , 10:41403–41410, 2022. [60] Yufei Xu, Jing Zhang, Qiming Zhang, and Dacheng Tao. Vitpose: Simple vision transformer baselines for human pose estimation. Advances in neural information pro-cessing systems , 35:38571–38584, 2022. [61] Jingwei Yan, Wenming Zheng, Zhen Cui, Chuangao Tang, Tong Zhang, Yuan Zong, and Ning Sun. Multi-clue fusion for emotion recognition in the wild. In Pro-ceedings of the 18th ACM International Conference on Multimodal Interaction , pages 458–463, 2016. [62] Jixun Yao, Nikita Kuzmin, Qing Wang, Pengcheng Guo, Ziqian Ning, Dake Guo, Kong Aik Lee, Eng-Siong Chng, and Lei Xie. Npu-ntu system for voice privacy 2024 chal-lenge. arXiv preprint arXiv:2409.04173 , 2024. [63] Xi Yin and Xiaoming Liu. Multi-task convolu-tional neural network for pose-invariant face recognition. 
+
+IEEE Transactions on Image Processing , 27(2):964–975, 2017. [64] Fisher Yu, Yinda Zhang, Shuran Song, Ari Seff, and Jianxiong Xiao. LSUN: construction of a large-scale im-age dataset using deep learning with humans in the loop. 
+
+CoRR , abs/1506.03365, 2015. URL http://arxiv. org/abs/1506.03365 .[65] Zheyu Zhang and Seong-Yoon Shin. Two-dimensional human pose estimation with deep learning: A review. Ap-plied Sciences , 15(13):7344, 2025. [66] Qing Zhu, Qirong Mao, Wenlong Dong, Xiuyan Shao, Xiaohua Huang, and Wenming Zheng. Adaptive key role guided hierarchical relation inference for enhanced group-level emotion recognition. IEEE Transactions on Affective Computing , 2025. [67] M Sami Zitouni, Peter Lee, Uichin Lee, Leontios J Had-jileontiadis, and Ahsan Khandoker. Privacy aware affec-tive state recognition from visual data. IEEE Access , 10: 40620–40628, 2022. [68] Daoming Zong, Chaoyue Ding, Baoxiang Li, Dinghao Zhou, Jiakui Li, Ken Zheng, and Qunyan Zhou. Build-ing robust multimodal sentiment recognition via a simple 17 AUTHOR VERSION Ground Truth Skeleton Predicted Skeleton Ground Truth Skeleton Predicted Skeleton 
+
+Figure 7: Qualitative examples of predicted structural repre-sentations (SR) obtained with VE-MD-PersonQuery on MER-MULTI using a query value of 6. The model predicts more structures than those aligned with the ground truth, illustrat-ing how noisy or redundant SR predictions can arise. 
+
+yet effective multimodal transformer. In Proceedings of the 31st ACM International Conference on Multimedia ,pages 9596–9600, 2023. 
+
+.1 Additional Structural Representation Analyses 
+
+We further compare the raw and projected body-based SR rep-resentations for VE-MD-PersonQuery on both GER and IER datasets. The results are reported in Table 14. For MER-MULTI and SamSemo, projection yields substantial improve-ments of about 5 to 8 percentage points over the raw setting, which further supports the interpretation that projection acts as a denoising bottleneck for individual emotion recognition. A qualitative illustration is shown in Figure 7 on MER-MULTI. In the first two columns, six structural representations are predicted, although not all of them align with the ground truth. In such cases, projection can help suppress noisy or re-dundant structural information, improving classification. By contrast, in group emotion cases (last two columns), where the number of predicted structures is closer to the number of people present in the image, projection may discard useful in-teraction cues, which can harm performance. 
+
+Table 14: Accuracy (%) comparison between projected and non-projected body SR for VE-MD-PersonQuery using QM ax .Results are reported for GER and IER datasets. 
+
+Dataset Acc. (Projected) Acc. (Without projection) 
+
+GAF-3.0 82.65 84.35 
+
+VGAF 76.24 78.46 
+
+MER-MULTI 61.17 56.55 SamSemo 75.29 67.45 
+
+In Figure 8. Unlike VE-MD-PersonQuery , the VE-MD-Heatmap decoder adapts to the number of visible persons in each image. It also frequently detects structural patterns not annotated in the ground truth, suggesting higher sensitivity. For example, in image neg _1005 , five face SR are detected al-though only three are annotated; in neg _1, four body SR are 
+
+Figure 8: Predicted SR obtained with VE-MD-Heatmap on the GAF-3.0 dataset. Unlike VE-MD-PersonQuery, the VE-MD-Heatmap decoder naturally adapts to the number of persons in each image. The model also often detects SR not annotated in the ground truth, reflecting higher sensitivity. For example, in image neg _1005 , five face SR are detected compared with three in the ground truth; in neg _1, four body SR are detected compared with three labeled; and in neg _108 , a second per-son is detected despite being unlabeled. 
+
+detected although only three are labeled; and in neg _108 , a second person is detected despite being unlabeled. 
+
+.2 Additional Multimodal Fusion Results .2.1 VGAF 
+
+Table 15 reports the detailed multimodal results on VGAF. The best VE-MD video accuracies are 80.81% with face SR and 80.68% with body SR. Late fusion with Wav2Vec 2.0 reaches 81.85%, while combining AFG with late fusion further im-proves performance to 82.25%, which is the best overall re-sult. The two-audio-encoder setup does not exceed this score, suggesting that acoustic cues, together with AFG, provide the most useful complement for this dataset. 
+
+Table 15: Detailed multimodal accuracy (%) on VGAF.                        
+
+> Audio Encoder Fusion Strategy Acc. Audio Acc. Video Acc. Fusion
+> Wav2Vec 2.0 late fusion 58.49 80.55 81.85 Whisper late fusion 65.79 80.55 81.20 Wav2Vec 2.0 late fusion + AFG 58.49 80.55 82.25
+> Whisper late fusion + AFG 65.79 80.55 81.59 Wav2Vec 2.0 + Whisper late fusion + cross-attention 65.79 80.55 81.59
+
+.2.2 MER-MULTI 
+
+Table 16 reports the detailed multimodal results on MER-MULTI. Whisper aligns best with the video branch under late 18 AUTHOR VERSION 
+
+fusion (63.02%), whereas AFG does not provide further im-provement. The best result, 64.23%, is obtained by combining content and acoustic audio features (Whisper + Wav2Vec 2.0) with cross-attention, followed by late fusion with the video branch. 
+
+Table 16: Detailed multimodal accuracy (%) on MER-MULTI.                        
+
+> Audio Encoder Fusion Strategy Acc. Audio Acc. Video Acc. Fusion
+> Wav2Vec 2.0 late fusion 44.52 62.38 60.84 Whisper late fusion 59.61 62.38 63.02 Wav2Vec 2.0 late fusion + AFG 44.42 62.38 60.35 Whisper late fusion + AFG 59.61 62.38 62.77 Wav2Vec 2.0 + Whisper late fusion + cross-attention 63.75 62.38 64.23
+
+.2.3 SamSemo 
+
+Table 17 reports the detailed multimodal results on SamSemo. Whisper again provides the strongest pairing with the video branch under late fusion, reaching 76.21%, and 76.31% when AFG is added. The best overall result is obtained by combin-ing Wav2Vec 2.0 and Whisper with cross-attention, followed by late fusion with the video branch, yielding 78.07% accuracy and 76.68% weighted F1-score. 
+
+Table 17: Detailed multimodal accuracy (%) on SamSemo.                        
+
+> Audio Encoder Fusion Strategy Acc. Audio Acc. Video Acc. Fusion
+> Wav2Vec 2.0 late fusion 61.68 75.31 74.97 Whisper late fusion 64.44 75.31 76.21 Wav2Vec 2.0 late fusion + AFG 61.68 75.31 75.07 Whisper late fusion + AFG 64.44 75.31 76.31 Wav2Vec 2.0 + Whisper cross-attention + late fusion 74.78 75.31 78.07
+
+.3 Architectural Details .3.1 VE-MD-Heatmap: UNet-Upsample 
+
+Table 18 provides the architectural details of the UNet-based upsampling module used in VE-MD-Heatmap .
+
+Table 18: UNetResUpsample architecture. Here, d denotes the latent-space dimension and Cout the output channel dimension. BatchNorm+ReLU follow each 3×3 convolution inside the 
+
+dec blocks. ResUp upsamples by ×2 and maps 2048 → 512 
+
+channels.                                                                                                                   
+
+> Stage Operation Channels (in →out) Kernel / Stride / Pad Output size H0×W0
+> up5 Conv2d d→2048 1×1/1/0(H0, W 0)7×7
+> up4 ResUp ( ↑ × 2)2048 →512 –(2 H0,2W0)14 ×14
+> dec4
+> (Conv + BN + ReLU) ×2512 →512 3×3/1/1(2 H0,2W0)14 ×14
+> up3 ConvT2d 512 →256 2×2/2/0(4 H0,4W0)28 ×28
+> dec3
+> (Conv + BN + ReLU) ×2256 →256 3×3/1/1(4 H0,4W0)28 ×28
+> up2 ConvT2d 256 →128 2×2/2/0(8 H0,8W0)56 ×56
+> dec2
+> (Conv + BN + ReLU) ×2128 →128 3×3/1/1(8 H0,8W0)56 ×56
+> up1 ConvT2d 128 →128 1×1/1/0(8 H0,8W0)56 ×56
+> dec1
+> (Conv + BN + ReLU) ×2128 →128 3×3/1/1(8 H0,8W0)56 ×56
+> final Conv2d 128 →Cout 1×1/1/0(8 H0,8W0)56 ×56
+
+.4 Extended Comparisons with the State of the Art 
+
+This appendix provides detailed comparisons with the state of the art for both GER and IER benchmarks. These extended tables complement the summary analysis reported in Section 8 and help position VE-MD more precisely with respect to prior methods. 
+
+.4.1 GER Datasets 
+
+The results on GER benchmarks show that VE-MD is partic-ularly effective for collective affect modeling. On both GAF-3.0 and VGAF, the proposed framework achieves the best re-ported performance, confirming that preserving structural and interaction-related cues is especially beneficial for group emo-tion recognition. In addition, the multimodal extension on VGAF further strengthens the competitiveness of the frame-work. On GAF-3.0, both VE-MD-Heatmap and VE-MD-PersonQuery outperform previous image-based approaches, with VE-MD-PersonQuery reaching the best overall accuracy of 90.06%. On VGAF, the video-only VE-MD result already exceeds prior video-only methods, while the multimodal extension with Wav2Vec 2.0 further improves performance to 82.25%, establishing the best result among the compared approaches. 19 AUTHOR VERSION 
+
+Table 19: Detailed comparison with the state of the art on GER datasets.                                            
+
+> Dataset Year Modalities Methodology Acc. [%] Rank
+> GAF-3.0  2018 Img CAN, ResNet, SE-Net [57] 86.90 42025 Img PSMF [27] 83.58 32026 Img VE-MD-Heatmap (ours) 89.92 22026 Img VE-MD-PersonQuery (ours) 90.06 1
+> VGAF
+> 2023 VViT + Synthetic data [4] 79.24 42024 VTimeSformer, YOLOv8 [31] 73.10 52024 A,V Streams-fusion (TimeSformer, Wav2Vec 2.0, YOLOv8) [31] 81.98 22026 VVE-MD (ours) 80.81 32026 A,V VE-MD + Wav2Vec 2.0 (ours) 82.25 1
+
+.4.2 IER Datasets 
+
+For IER benchmarks, the results are more mixed. VE-MD achieves state-of-the-art performance on SamSemo in the mul-timodal setting, showing that the framework generalizes be-yond GER when combined with complementary modalities. On MER-MULTI, EngageNet, and DFEW, VE-MD remains competitive but does not surpass the strongest specialized sys-tems. This is consistent with the main discussion of the paper: the proposed framework provides its clearest advantage when relational structural cues play a central role. SamSemo is the strongest IER benchmark for VE-MD in the present study. When combined with audio and text features, the proposed framework achieves the best overall weighted F1-score, clearly surpassing the original benchmark baselines. This result indicates that VE-MD can transfer effectively be-yond GER when multimodal information is available. 
+
+Table 20: Detailed comparison with the state of the art on SamSemo.                                              
+
+> Year Modalities Methodology F1-score [%] Rank
+> 2024 AE2E [6] 61.10 92024 TE2E [6] 63.00 82024 VE2E [6] 68.20 72024 A,V,T E2E [6] 69.00 62026 AWav2Vec 2.0 + Whisper (ours) 74.78 52026 A,V Whisper + VE-MD (ours) 74.97 42026 A,V Wav2Vec 2.0 + Whisper + VE-MD (ours) 76.68 32026 A,V,T Wav2Vec 2.0 + Whisper + VE-MD + Llama2 Feat. (ours) 77.71 22026 A,V,T Wav2Vec 2.0 + Whisper + VE-MD + Mixtral Feat. (ours) 77.94 1
+
+On MER-MULTI, VE-MD improves clearly over the original baseline but remains below the strongest recent multimodal systems. This suggests that, although structural supervision is beneficial, the current framework is not yet sufficient to match the most optimized fusion-oriented approaches on this bench-mark. 
+
+Table 21: Detailed comparison with the state of the art on MER-MULTI. 
+
+Year Modalities Methodology F1-0.25MSE [%] Rank 2023 A,V Baseline [34] 56.00 52023 A,V JDEV, HuBERT [55] 68.46 32023 A,V Weighted blending of supervision signals [68] 70.05 22024 A,V PNAO [56] 71.39 1
+
+2026 A,V Wav2Vec 2.0 + Whisper + VE-MD (ours) 63.80 4
+
+On EngageNet, VE-MD remains competitive and ranks close to the best recent methods, but does not exceed the landmark-based ST-GCN approach. This result is still encouraging, given that VE-MD does not rely on explicit individual facial landmark features as direct inputs for the final prediction. 
+
+Table 22: Detailed comparison with the state of the art on EngageNet. 
+
+Year Methodology Acc. [%] Rank 
+
+2023 Transformer [49] 55.45 72023 Transformer [49] 64.45 62023 Transformer [49] 69.10 22024 GLAMOR-Net [3] 68.72 52024 TCCT-Net [53] 68.91 42024 ST-GCN [1] 71.24 1
+
+2026 VE-MD (ours) 68.98 3
+
+On DFEW, both VE-MD variants outperform several earlier baselines, but remain below the strongest recent CLIP- and MLLM-based methods. These results indicate that VE-MD is competitive on dynamic facial expression recognition, al-though it does not yet match the performance of large vision-language systems specifically optimized for this task. 
+
+Table 23: Detailed comparison with the state of the art on DFEW.                              
+
+> Year Methodology WAR [%] Rank
+> 2024 EmoCLIP, CLIP-ViT-B/32 [22] 62.12 82024 OUS, CLIP [37] 68.85 72024 LSGT, ResNet-18 [58] 72.34 42024 UMBEnet, CLIP [36] 73.93 32024 Align-DFER, CLIP-ViT-L/14, MLLM [52] 74.20 22024 FineCLIPER, CLIP-ViT-L/16, LLaVA, MLLM [14] 76.21 1
+> 2026 VE-MD-PersonQuery (ours) 69.98 62026 VE-MD-Heatmap (ours) 70.31 5
+
+20

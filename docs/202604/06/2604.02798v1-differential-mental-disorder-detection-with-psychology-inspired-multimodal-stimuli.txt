@@ -1,0 +1,409 @@
+Title: Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli
+
+URL Source: https://arxiv.org/pdf/2604.02798v1
+
+Published Time: Mon, 06 Apr 2026 00:31:47 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli 
+
+# Zhiyuan Zhou 
+
+zhouzhiyuan.hfut@gmail.com Hefei University of Technology Hefei, China 
+
+# Jingjing Wu 
+
+2022800098@hfut.edu.cn Hefei University of Technology Hefei, China 
+
+# Zhibo Lei 
+
+2023212130@mail.hfut.edu.cn Hefei University of Technology Hefei, China 
+
+# Zhongcheng Yu 
+
+2024170763@mail.hfut.edu.cn Hefei University of Technology Hefei, China 
+
+# Yuqi Chu 
+
+chuyuqi127@gmail.com Hefei University of Technology Hefei, Anhui Province, China 
+
+# Xiaowei Zhang 
+
+zhangxw@lzu.edu.cn Lanzhou University Lanzhou, Gansu Province, China 
+
+# Qiqi Zhao 
+
+zhaoqq21@lzu.edu.cn Lanzhou University Lanzhou, Gansu Province, China 
+
+# Qi Wang 
+
+2023010055@mail.hfut.edu.cn Hefei University of Technology Hefei, Anhui Province, China 
+
+# Shijie Hao 
+
+hfut.hsj@gmail.com Hefei University of Technology Hefei, Anhui Province, China 
+
+# Yanrong Guo 
+
+yrguo@hfut.edu.cn Hefei University of Technology Hefei, Anhui Province, China 
+
+# Richang Hong 
+
+hongrc.hfut@gmail.com Hefei University of Technology Hefei, Anhui Province, China 
+
+## Abstract 
+
+Differential diagnosis of mental disorders remains a fundamental challenge in real-world clinical practice, where multiple conditions often exhibit overlapping symptoms. However, most existing public datasets are developed under single-disorder settings and rely on limited data elicitation paradigms, restricting their ability to capture disorder-specific patterns. In this work, we investigate differential mental disorder detection through psychology-inspired multimodal stimuli, designed to elicit diverse emotional, cognitive, and behav-ioral responses grounded in findings from experimental psychol-ogy. Based on this paradigm, we collect a large-scale multimodal mental health dataset (MMH) covering depression, anxiety, and schizophrenia, with all diagnostic labels clinically verified by li-censed psychiatrists. To effectively model the heterogeneous signals induced by diverse elicitation tasks, we further propose a paradigm-aware multimodal framework that leverages inter-disorder differ-ences prior knowledge as prompt-guided semantic descriptions to capture task-specific affective and interaction contexts for multi-modal representation learning in the new differential mental disorder detection task. Extensive experiments show that our framework con-sistently outperforms existing baselines, underscoring the value of psychology-inspired stimulus design for differential mental disorder detection. 1
+
+## CCS Concepts 
+
+• Applied computing → Psychology .
+
+## Keywords 
+
+Multimodal mental health dataset, Differential diagnosis, Psychology-inspired stimulus, Paradigm-aware learning. 
+
+> 1The full dataset and code will be publicly available soon.
+
+## 1 Introduction 
+
+Mental health disorders, such as depression (MD), anxiety (ANX), and schizophrenia (SC), are an escalating global public health con-cern, which affect hundreds of millions of individuals and impose a substantial burden on healthcare systems [ 53 ]. Early detection and accurate diagnosis are critical for timely intervention and effec-tive treatment. However, conventional clinical assessments largely rely on self-report questionnaires or face-to-face interviews, which are often time-consuming and subjective. Recent advances in deep learning have enabled multimodal mental health analysis using au-dio, video, and textual signals collected during structured elicitation tasks [ 51 , 55 , 57 ]. By modeling facial expressions, speech prosody, and linguistic content, these approaches offer a more objective and scalable alternative for supporting mental health diagnosis. Despite these advances, existing multimodal mental health meth-ods [ 1, 2, 18 , 26 , 30 ] remain limited in real-world diagnostic sce-narios. Most current approaches [ 12 , 55 ] formulate mental disorder detection as a single-disorder task and improve performance pri-marily through data-driven modeling. Specifically, some methods [ 11 , 20 , 31 ] focus on enhancing intra-modal feature modeling to capture discriminative modality-specific expressions, while others [8, 44 , 56 ] emphasize cross-modal feature fusion to combine comple-mentary information across modalities. They are typically developed on datasets [ 25 , 37 , 58 ] that focus on only one condition, most com-monly depression. Such settings implicitly assume homogeneous diagnostic contexts and simplified decision boundaries. In contrast, clinical practice requires differential diagnosis, as multiple mental disorders often coexist and exhibit overlapping emotional, cogni-tive, and behavioral symptoms, such as social withdrawal, emotional dysregulation, and impaired communication (Fig. 1). This discrep-ancy between dataset construction, computational task design, and 
+
+> arXiv:2604.02798v1 [cs.MM] 3 Apr 2026
+
+Conference’17, July 2017, Washington, DC, USA Trovato et al. Excessive Worry        
+
+> …… Social Withdrawal Emotional Dysregulation Sleep Disturbances ……
+> MD ANX SC
+> Low Mood Fatigue …… Slowed Thinking …… Attention Bias …… Persistent Sadness …… Sudden Emotional Shifts ……
+> Ours Dataset & Framework Narrow Elicitation Paradigm
+> Existing Paradigm: Interview / Reading Narrow Affective Context
+> Psychology evidence: Responses differ by Stimuli, Cognitive, Sensory.
+> Diagnostics Disambiguation
+> MD Introduce Emotional Context into Paradigm
+> 1. Image + Audio Emotional Stimuli
+> 2. Audio Emotional Stimuli
+> 3. Reading
+> 5. Interview 4. Video + Audio Emotional Stimuli
+> Collect Multi-disorder Data
+> Single-disorder Data
+> ANX SC HC
+> Interview / Reading
+> Symptom Overlap
+> New Task: Multi-Disorder Diferentiation
+> New Challenges
+> Symptom Overlap
+> ……
+> Task1 Data Task3 Data Task5 Data
+> Hard Cue Mining from Rich Multi-task Responses
+> Symptom Overlap
+> Task 1 Task 5
+> Prior 1
+> Prior 5
+> …
+> Guided Alignment Guided Alignment
+> Symptom Overlap
+> Downstream
+> ……
+> Paradigm-aware Multimodal Learning
+> Data-driven
+
+Figure 1: Comparison between conventional single-disorder assessment based on interview- or reading-based paradigms and our multi-disorder differential diagnosis setting built on a psychology-inspired multimodal elicitation paradigm, together with the proposed paradigm-aware multimodal learning frame-work. MD, ANX, SC and HC refer to depression, anxiety, schizophrenia and healthy controls, respectively. 
+
+real-world diagnostic requirements substantially limits the practical applicability of existing methods. A key but underexplored factor underlying the above limitation lies in how behavioral and emotional signals are elicited. Existing multimodal mental health datasets [ 7, 15 , 25 ] predominantly rely on interviews or reading-based tasks, which provide a narrow range of affective contexts and often fail to evoke disorder-specific symptom manifestations. Experimental psychology studies [ 23 , 42 ] suggest that different mental disorders respond divergently to variations in emotional stimuli, cognitive load, and sensory modalities. For ex-ample, depressive symptoms may manifest as blunted affect during passive observation, anxiety-related patterns may emerge under emo-tionally charged or evaluative situations, while schizophrenia-related impairments are often more evident in spontaneous communica-tion and multimodal integration. These findings indicate that richer, psychology-grounded elicitation paradigms are critical for differen-tial mental disorder detection. Motivated by these disorder–context associations, we design a psychology-grounded multimodal elicitation paradigm to collect data for differential mental disorder detection. The five elicitation tasks included in the proposed paradigm form a minimal yet suffi-cient set for emotion or behavior elicitation (Fig. 1): Multi-modal Stimulation I (image + audio) and Unimodal Stimulation (audio) probe affective induction, Text Reading provides a controlled speech baseline, Multi-modal Stimulation II (video + audio) captures higher-level social–emotional cognition, and the Human–Computer Inter-view elicits spontaneous verbal and interactive behaviors. This de-sign ensures comprehensive coverage of emotional reactivity, cog-nitive load, social evaluation, and cross-modal integration, while remaining feasible for large-scale data collection. Based on this par-adigm, we construct a large-scale multimodal mental health dataset (MMH) comprising 928 participants (24,128 facial video clips and 14,848 audio–text pairs) and encompassing depression, anxiety, and schizophrenia. All diagnostic labels are clinically verified by licensed psychiatrists, ensuring high reliability for differential disorder detec-tion. Although multi-task psychology-inspired stimulation enhances the discriminability of disorder-specific symptoms, it also leads to more heterogeneous signals and makes discriminative cue mining from a large amount of collected data substantially more challeng-ing. To handle the new task of differential mental disorder detection under diverse elicitation scenarios, we propose a paradigm-aware multimodal learning framework (PMLF). PMLF leverages disorder-specific prior knowledge to generate prompt-guided semantic de-scriptions for distinct stimulation tasks. These descriptions charac-terize task-specific affective and interaction contexts at the sample level. Based on them, the model further enhances multimodal feature alignment and fusion for multiple downstream tasks. This design moves the model beyond the purely data-driven paradigm of prior single-disorder approaches [ 36 , 52 ]. It allows the model to extract clinically meaningful evidence under explicit cross-disorder guid-ance from diverse tasks. This leads to better fine-grained differential detection and improved diagnostic interpretability. In summary, our contributions are as follows: 
+
+• We introduce a psychology-inspired multimodal stimulus par-adigm and construct a clinically verified multi-disorder multi-modal dataset (MMH), enabling rich elicitation of disorder-specific affective and behavioral cues; 
+
+• We propose a paradigm-aware multimodal learning frame-work (PMLF) that leverages prompt-guided semantic infor-mation of different elicitation tasks to enhance differential mental disorder detection; 
+
+• Extensive experiments demonstrate the superiority of the proposed framework, and evaluate the value of psychology-grounded stimulus design for differential diagnosis of mental disorders. 
+
+## 2 Related Works 2.1 Multi-modal Mental Disorder Datasets 
+
+Several multimodal interview-based datasets have been introduced to support computational mental health assessment, which can be broadly organized by target disorder. For depression, representative datasets include DAIC and E-DAIC [15 , 25 ], two widely used benchmarks that provide audio, video, and transcribed text collected from semi-structured interviews or addi-tional reading tasks, with 189 and 275 subjects, respectively, and PHQ-8-based annotations. Other depression-related datasets include MODMA [ 7], which provides audio, video, and EEG recordings from 55 participants with PHQ-9 scores. StudentSADD [ 46 ] contains audio and text data from 300 students, collected through interview and writing tasks with depression- and suicidality-related annota-tions. CMDC [ 58 ] is a small-scale interview dataset with audio, video, and text modalities, annotated by PHQ-9 labels. For anxiety, the Pittsburgh dataset [ 17 ] is a representative benchmark, containing Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli Conference’17, July 2017, Washington, DC, USA 
+
+Table 1: Comparison of our proposed dataset with existing public interview-based mental health datasets. The proposed dataset covers more disorder types: MD, ANX, and SC, and uses richer multi-modal triggering methods. 
+
+Dataset Modal Disorder Type Sample Size Triggering Method Quantification Standards DAIC [25] A, V, T MD 189 Interview PHQ-8 E-DAIC [15] A, V, T MD 275 Interview, Reading PHQ-8 Pittsburgh [17] A, V, T ANX 130 Interview HAMD + Clinical Diagnosis MODMA [7] A, V, EEG MD 55 Interview, Reading PHQ-9 + Clinical Diagnosis StudentSADD [46] A, T MD 300 Interview, Writing PHQ-9 CMDC [58] A, V, T MD 78 Interview PHQ-9 + Clinical Diagnosis MMH (Ours) A, V, T MD/ANX/SC 928 Listening, Watching, Interview, Reading PHQ-9 + Clinical Diagnosis audio and video data from 130 subjects collected through struc-tured interviews and annotated with the Hamilton Anxiety Rating Scale. For schizophrenia, multimodal behavioral data are particu-larly valuable due to the difficulty of data collection and the limited accessibility of patient resources. To the best of our knowledge, no publicly available multimodal benchmark currently exists for schizophrenia assessment. While these datasets have significantly advanced the field, they have two common limitations: (1) most focus on a single disorder, and (2) behavioral signals are predominantly elicited through ho-mogeneous paradigms, such as interviews or reading-based tasks, which restrict the diversity of affective and cognitive contexts. To address these limitations, our proposed dataset incorporates multiple mental health disorders and is structured around diverse psychology-inspired elicitation scenarios. A detailed comparison with existing public datasets is provided in Table 1. 
+
+## 2.2 Multi-modal Mental Disorder Detection Methods 
+
+Multi-modal mental health detection systems integrate heteroge-neous signals, including audio/speech, visual or facial behavior, text/language, and physiological responses, to capture complemen-tary aspects of mental health conditions. Specifically, for the visual modality, many studies [ 10 , 22 , 24 ] extract facial behavior cues us-ing tools such as OpenFace [ 5], including facial action units, gaze, and head-motion features. For the audio modality, commonly used representations include handcrafted acoustic descriptors such as Mel-Frequency Cepstral Coefficients (MFCCs) [ 14 ] as well as pre-trained speech features like wav2vec 2.0 [ 3]. For the text modality, most methods [ 21 , 31 , 41 ] employ BERT-based encoders [ 16 ] to obtain contextual semantic representations. By jointly modeling mul-tiple modalities, these systems have demonstrated clear advantages over single-modality approaches in providing more comprehensive evidence for mental health assessment. Existing multimodal methods for depression detection can be broadly grouped into two categories. One focuses on intra-modal feature learning, which aims to capture discriminative temporal and semantic patterns within each modality [ 20 , 21 , 31 ]. Based on these modality-specific representations, some studies further focus on intra-modal feature enhancement. For instance, Uddin et al. [ 48 ] develop a spatio-temporal framework to model facial and linguistic cues for depression assessment. The other empha-sizes cross-modal feature integration, with the goal of effectively exploiting complementary information across different modalities [ 8, 34 , 44 ]. More recent methods [ 8, 20 , 35 ] further adopt attention-based or Transformer-based fusion modules to explicitly model cross-modal interactions and exploit complementary information across modalities. A representative example is Niu et al. [ 36 ], who propose a spatio-temporal attention network coupled with a multi-modal attention-based fusion strategy to learn joint representations for depression prediction. Similarly, anxiety-related multimodal methods can also be broadly grouped into these two categories, i.e., intra-modal feature learn-ing and cross-modal feature integration. For the former, Diep et al. [ 19 ] collect speech and text data from self-management tasks and combine both deep and handcrafted features for anxiety-related assessment. For the latter, a representative example is Tsai et al. [ 47 ], who introduce a multimodal Transformer with cross-modal attention to capture temporal dependencies and cross-modal interactions for mental health analysis. Compared with depression and anxiety, multimodal research on schizophrenia remains much more limited. Existing studies [ 32 , 50 ]have traditionally focused on neuroimaging data, such as MRI, while behavior-based approaches [ 21 , 40 ] using audio, visual, and textual modalities have only recently begun to emerge. For instance, work in [38 ] develops an attention-based fusion framework over audio, video, and text for schizophrenia analysis. However, this non-public dataset contains only 7 schizophrenia samples, reflecting both the rarity of such cases and the difficulty of collecting publicly accessible data. Despite these advances, most existing methods are developed for single-disorder binary classification. The shift to multi-disorder classification and richer multi-task data introduces new challenges, making it harder for existing methods to mine discriminative cues among disorders. Therefore, we propose a paradigm-aware multi-modal learning framework to better mine disorder-discriminative cues from rich multi-task data. 
+
+## 3 Psychology-Inspired Multimodal Mental Health Dataset (MMH) 
+
+To support differential mental disorder detection under diverse affec-tive and cognitive contexts, we construct a large-scale multimodal Conference’17, July 2017, Washington, DC, USA Trovato et al. Task 1 Multimodal Stimulation I  
+
+> Happy
+> Neutral
+> Sad
+> Scared
+> Watching Images Listening to Audio Task 2 Unimodal Stimulation Low Frequency Audio Middle Frequency Audio High Frequency Audio Listening to Audio
+> Task 3 Text Reading
+> Negative Emotion Text Reading
+> Task 4 Multimodal Stimulation II Positive Video Neutral Video Negative Video Watching Video
+> Task 5 Human-Computer Interview Interview e.g., “Please describe your recent emotional experiences.” Emotional State Assessment e.g., “How would you evaluate your overall self-worth?” e.g., “If you had a vacation opportunity, how would you plan?” e.g.,“Please share what you are most worried about.” Self-Perception Measurement Behavioral Intention Inquiry Anxiety Detection
+> Listening to Soundtrack
+
+Figure 2: Overview of the psychology-inspired multimodal stimulus paradigm. 
+
+mental health (MMH) dataset based on a psychology-inspired elic-itation paradigm, covering depression (MD), anxiety (ANX), and schizophrenia (SC). 
+
+## 3.1 Psychology-Inspired Multimodal Elicitation Paradigm 
+
+We design a psychology-inspired multimodal elicitation paradigm to capture disorder-specific behavioral and emotional patterns un-der heterogeneous affective and cognitive contexts. The paradigm records synchronized facial expression video and audio signals from participants across multiple triggering tasks using a non-contact and rapid acquisition setup, enabling scalable data collection with minimal participant burden. Based on findings from experimental psychology, the protocol integrates both multimodal and unimodal emotional stimuli to elicit complementary affective and commu-nicative cues across different interaction settings. Each participant follows a fixed five-step elicitation procedure to ensure experimental consistency and control. As illustrated in Fig. 2, the five structured elicitation tasks are described as follows: 
+
+Part 1: Multi-modal Stimulation I (MS-I). This module aims to assess participants’ emotional reactivity, attention allocation, and multisensory integration under socially relevant affective con-texts. Following findings from experimental psychology [ 43 ], MS-I presents synchronized visual and auditory stimuli to simulate real-life social perception. The module consists of four clips correspond-ing to four emotional categories: happy, neutral, sad, and scared. Each clip includes two images and one audio segment. The images are selected from the International Affective Picture System (IAPS) and are displayed for 15 seconds. 
+
+Part 2: Unimodal Stimulation (US). This module focuses on iso-lating auditory emotional processing, including speech prosody per-ception and affective semantic understanding. Based on established auditory emotion perception studies [ 6], US presents audio-only emotional stimuli. The module contains nine audio clips grouped into three frequency bands (low, middle, and high). Each clip lasts 15 seconds, with continuous presentation within each group and a 5-second pause between groups. 
+
+Part 3: Text Reading. This task aims to evaluate basic speech production abilities and acoustic characteristics under controlled semantic conditions. Participants are instructed to read a paragraph with negative emotional content. The task is designed to capture acoustic features such as pitch, speech rate, and articulation patterns, enabling assessment of vocal expressiveness and fluency. 
+
+Part 4: Multi-modal Stimulation II (MS-II). This module eval-uates higher-level affective and social cognition, including emo-tional recognition, social interpretation, regulatory capacity, and multimodal affective integration. Following experimental psychol-ogy paradigms on facial emotion processing [ 27 ], MS-II presents emotional video clips in a fixed order: positive, neutral, and nega-tive. Each clip is followed by a 5-second break to allow emotional transition and stabilization. 
+
+Part 5: Human–Computer Interview. This task assesses ver-bal expression, emotional reactivity, and social interaction patterns under structured conversational settings. Similar to existing men-tal health datasets [ 7, 15 , 25 ], a structured interview is conducted via a human–computer dialogue system. The session consists of 15 standardized questions designed based on clinical diagnostic criteria (e.g., DSM-V), covering four dimensions: (1) Emotional State As-sessment, (2) Self-Perception Measurement, (3) Behavioral Intention Inquiry, and (4) Anxiety Detection. 
+
+## 3.2 Dataset Statistics 
+
+Based on the proposed psychology-inspired multimodal elicitation paradigm, we construct a large-scale multimodal mental health (MMH) dataset consisting of 928 participants and three modali-ties: video, audio, and text. For each participant, facial expression videos are recorded throughout the entire acquisition process, result-ing in 26 video clips, together with 16 audio recordings collected during the text reading and human–computer interview stages; the text modality is obtained via transcription of the corresponding audio. The dataset includes four groups: 700 healthy individuals, 67 with depression (MD), 112 with anxiety (ANX), and 49 with schizophre-nia (SC). The class distribution reflects the prevalence characteristics and practical recruitment difficulty of different populations in real-world mental health screening scenarios, especially for clinically diagnosed patient groups. All patients diagnosed with MD, ANX, and SC are clinically validated by licensed psychologists to ensure label reliability. Participant ages range from 10 to 59 years, and the Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli Conference’17, July 2017, Washington, DC, USA Pre-trained Feature Extractor 𝐀 𝐀 
+
+Pre-trained Feature Extractor 𝐀 𝐀 
+
+Cross-Modality Interaction & Fusion 
+
+> …
+
+…
+
+> Fuse
+
+Gemini In response to watching happy images ... 
+
+> Guide
+
+Prompt 
+
+𝐀 1
+
+> Guide
+
+Audio Feature Extractor 𝐀 𝐀 
+
+> Q1: How would you evaluate your overall self-worth? A1: No. Q2: Describe a recent difficulty you encountered. A2: Not getting enough sleep.
+
+Gemini Audio Text Text Feature Extractor 𝐀 𝐀 
+
+𝐀 𝐀 𝐀 𝐀 𝐀,1 
+
+𝐀 𝐀,5 
+
+Video 
+
+𝐀 𝐀,1 
+
+> During a human-computer interview, the subject ...
+
+Healthy Depression Anxiety 
+
+Prompt-guided Feature Extractor 𝐀 𝐀 
+
+Gemini 
+
+CLIP 
+
+Sample-level Description 𝐀 𝐀,𝐀 
+
+Prompt 𝐀 𝐀 
+
+> The subject's reaction is to the following stimulus....
+> The subject maintains a static posture and an unchanging facial expression...
+
+Video 𝐀 𝐀,𝐀 
+
+Schizophrenia Text Feature Extractor 𝐀 𝐀 
+
+ℒ𝐀𝐀𝐀 1
+
+Video 
+
+𝐀 𝐀,5 
+
+Stage 1: Prompt-guided Pretraining Stage 2: Multimodal Joint Training 
+
+ℒ𝐀𝐀𝐀 𝐀𝐀 
+
+ℒ𝐀𝐀𝐀 𝐀𝐀 
+
+ℒ𝐀𝐀𝐀 
+
+Prompt 
+
+𝐀 5
+
+𝐀 𝐀,1 
+
+𝐀 𝐀,5 
+
+𝐀 𝐀 𝐀 
+
+𝐀 𝐀 𝐀 
+
+𝐀 𝐀 𝐀𝐀𝐀 
+
+Figure 3: The overview of the proposed paradigm-level prompt-guided learning framework, taking the four-class downstream task as an example. Stage 1 pretrains a video feature extractor by aligning visual cues with paradigm-level semantic descriptions generated by a MLLM. Stage 2 integrates these paradigm-aware visual features with complementary audio and text modalities through a cross-modality interaction module for multi-disorder detection. Table 2: Statistics of the dataset. Item Stats Sample 
+
+Train Set 557 Val Set 186 Test Set 185 Total 928 Video Segments Per Sample 26 Audio/Text Segments Per Sample 16 
+
+Modality 
+
+Video Segments 24128 Audio/Text Segments 14848 Avg. Length (Sec) Per Aud/Vid 23.84 Avg. Words Per Sample 396.72 
+
+Labels 
+
+MD (Male/Female) 26/41 SC (Male/Female) 38/11 ANX (Male/Female) 26/86 HC (Male/Female) 514/186 gender distribution of each group is summarized in Table 2. Note that all participants have signed informed consent forms. 
+
+## 4 Methodology 4.1 Overview 
+
+Motivated by the observation that different elicitation paradigms induce distinct yet subtle behavioral and emotional patterns, we propose a paradigm-aware multimodal learning framework (PMLF) for differential mental disorder detection. Unlike conventional ap-proaches that rely primarily on low-level facial geometry, our frame-work is designed to capture paradigm-level semantic information induced by diverse interaction settings. As illustrated in Fig. 3, the framework consists of two stages: (1) Prompt-guided pretrain-ing , where we leverage multimodal large language model (MLLM), specifically Gemini-2.5-pro [ 13 ], to generate paradigm-aware tex-tual descriptions that serve as semantic anchors for pretraining a video feature extractor via cross-modality contrastive learning; and (2) Multimodal joint training , where the pretrained video repre-sentations are integrated with audio and text modalities through a modality interaction and fusion module to aggregate complementary information across paradigms for final multi-disorder classification. 
+
+## 4.2 Stage 1: Prompt-guided Pretraining 
+
+Learning discriminative video representations for mental disorder detection is challenging, because behavioral cues in facial videos are often subtle, sparse, and highly dependent on the elicitation paradigm. The same individual may exhibit different affective and interaction patterns across tasks, while visually similar facial behav-iors may correspond to different underlying psychological states. As a result, relying solely on low-level facial movements or purely data-driven visual modeling may fail to capture clinically mean-ingful task-specific semantics. To address this issue, we introduce paradigm-aware semantic supervision for video representation learn-ing. The key idea is to guide the video encoder not only with facial Conference’17, July 2017, Washington, DC, USA Trovato et al. 
+
+behavior signals, but also with high-level textual descriptions that ex-plicitly characterize the emotional, cognitive, and interaction context induced by each elicitation task. Given a sample 𝑖 , its video 𝑉 𝑖,𝑗 is collected under elicitation task 
+
+𝑗 (𝑗 ∈ { 1, 2, . . . , 5}). We first employ OpenFace [ 5] to extract frame-level facial behavior features following common processing prac-tices in existing datasets and methods, including facial landmarks, head pose, gaze direction, and facial action units. These low-level behavioral signals are then fed into a backbone network to learn higher-level and paradigm-aware video representations, which are encoded by a prompt-guided video feature extractor 𝐸 𝑣 .In parallel, for each video 𝑉 𝑖,𝑗 , we leverage Gemini-2.5-pro [ 13 ]to generate a sample-level description 𝐷 𝑖,𝑗 based on a task-specific prompt 𝑃 𝑗 . The generated description captures high-level emotional, cognitive, and interaction semantics induced by the corresponding elicitation task, and is encoded by a text encoder 𝐸 𝑡 .To bridge low-level visual signals and high-level semantic de-scriptions, we adopt CLIP [ 39 ] to model cross-modal correlations between video and text modalities, and apply Cross-Modality Con-trastive Learning (CCL) [ 9] to align the embeddings 𝑧 𝑣 𝑖,𝑗 = 𝐸 𝑣 (𝑉 𝑖,𝑗 )
+
+and 𝑧 𝑑 𝑖,𝑗 = 𝐸 𝑡 (𝐷 𝑖,𝑗 ) in a shared latent space: 
+
+L1 
+
+> 𝐶𝐶𝐿
+
+= − log exp (sim (𝑧 𝑣 𝑖,𝑗 , 𝑧 𝑑 𝑖,𝑗 )/ 𝜏 )
+
+Í(𝑚,𝑛 )≠(𝑖,𝑗 ) exp (sim (𝑧 𝑣 𝑖,𝑗 , 𝑧 𝑑 𝑚,𝑛 )/ 𝜏 ) (1) where sim (·) denotes cosine similarity, 𝑧 𝑑 𝑚,𝑛 denotes the textual feature for sample 𝑚 under task 𝑛 , and 𝜏 is a temperature param-eter set to 0.2 following CCL [ 9]. This alignment encourages the video encoder to capture fine-grained emotional cues and interaction contexts that are explicitly described in the paradigm-aware textual supervision. 
+
+## 4.3 Stage 2: Multimodal Joint Training 
+
+In Stage 2, we aim to fully exploit the diverse paradigms and modal-ities by jointly modeling their interactions. For each elicitation task 
+
+𝑗 , a dedicated video feature extractor, initialized from Stage 1, is employed to extract task-specific visual features 𝐹 𝑖,𝑗 . Each extractor is guided by its corresponding paradigm-aware textual description to maintain semantic consistency, obtaining 𝐹 𝑉 𝑖 . By leveraging these de-scriptions, the model can more effectively discriminate task-specific behavioral cues. Following the processing pipeline used in existing datasets and methods, for audio modality, we extract 13-dimensional Mel-Frequency Cepstral Coefficients (MFCCs) [ 14 ] to characterize spectral properties. These are processed by an audio backbone to yield the representation 𝐹 𝐴 𝑖 . For text modality, transcribed speech from interviews is encoded using BERT-base-Chinese [ 16 ] to ex-tract contextualized embeddings, which are further refined by a text backbone to yield 𝐹 𝑇 𝑖 .To maintain semantic consistency across modalities, we further apply cross-modality contrastive learning between 𝐹 𝑉 𝑖 and 𝐹 𝐴 𝑖 with 
+
+L𝑉 𝐴 𝐶𝐶𝐿 and 𝐹 𝑇 𝑖 and 𝐹 𝐴 𝑖 with L𝑇 𝐴 𝐶𝐶𝐿 . L𝑉 𝐴 𝐶𝐶𝐿 and L𝑇 𝐴 𝐶𝐶𝐿 are computed with Eq. 1. The aligned features {𝐹 𝑉 𝑖 , 𝐹 𝐴 𝑖 , 𝐹 𝑇 𝑖 } are then fed into a Modal-ity Interaction and Fusion Module, which utilizes cross-attention mechanisms [ 49 ] to explicitly model inter-modality dependencies, integrating task-specific cues into a unified representation 𝐹 𝐴𝐿𝐿 𝑖 for multi-class mental health classification. For mental health state pre-diction, we employ a standard cross-entropy loss on the fused feature 
+
+𝐹 𝐴𝐿𝐿 𝑖 .
+
+L𝐶𝐿𝑆 = −
+
+> 𝐶
+
+∑︁ 
+
+> 𝑐 =1
+
+𝑦 𝑐 log ˆ 𝑦 𝑐 (2) where 𝐶 is the number of mental health categories, 𝑦 𝑐 is the ground-truth label, and ˆ𝑦 𝑐 denotes the predicted probability. The total loss for Stage 2 is defined as the equal sum of L𝐶𝐿𝑆 , L𝑉 𝐴 𝐶𝐶𝐿 and L𝑇 𝐴 𝐶𝐶𝐿 .
+
+## 5 Experiments 5.1 Implementation Details 
+
+The proposed models are implemented using PyTorch 1.12 and trained on an Nvidia GTX A6000 GPU. We maintain the original class distribution in the training, validation, and test splits to ensure a fair evaluation. All models are trained for 80 epochs using the AdamW optimizer [ 33 ] with a learning rate of 1 × 10 −3 and a batch size of 12. Performance is evaluated using Accuracy (ACC), Preci-sion (P), Recall (R), and F1-score (F1), reported in both macro and weighted forms. 
+
+## 5.2 Differential Diagnosis of Mental Disorders 
+
+In Table 3, we report the results of our PMLF with various back-bones, including ResNet [ 31 ], Transformers [ 20 ], hybrid ResNet-Transformer [ 29 ] and the Mamba architecture [ 54 ]. We compare the proposed PMLF with some reproduced mental disorder detection methods, as well as with state-of-the-art general LLMs and MLLMs. Several important observations can be drawn. First, LLMs exhibit limited capability for differential mental dis-order detection. Although models such as GPT-4o, Grok-4, and Gemini-3 demonstrate strong general reasoning abilities, their per-formance remains consistently low across all disorder categories. This indicates that mental disorder detection is inherently challeng-ing when relying solely on textual descriptions, as many clinically relevant cues are expressed through subtle vocal, facial, and behav-ioral patterns that cannot be fully captured by language alone. Second, while multimodal perception is more consistent with clin-ical diagnostic practice, current MLLMs still struggle to effectively integrate long-duration video and text signals for multi-disorder de-tection. Models such as GPT-4o, Gemini, Grok, Doubao and Qwen exhibit unstable performance across different disorder categories. In some cases, introducing visual modality even leads to degraded performance compared to text-only settings, suggesting that existing MLLMs are not yet capable of reliably extracting and aggregating clinically meaningful cues from complex, long-range multimodal sequences. Third, supervised task-specific models [ 20 , 29 , 31 , 54 , 57 ] trained on our dataset exhibit more stable and reliable performance than general-purpose LLMs and MLLMs. Architectures such as DNet all achieve competitive results, without the severe performance fluc-tuations observed in LLMs/MLLMs. These results indicate that task-specific training on the proposed dataset is essential for learn-ing discriminative representations for differential mental disorder detection.  
+
+> 2https://x.ai/news/grok-4
+> 3https://console.volcengine.com/ Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli Conference’17, July 2017, Washington, DC, USA
+
+Table 3: Comparison of methods across four categories (HC/MD/SC/ANX) and overall performance. The best results are highlighted in bold, and the second-best results are underlined. ’w/’ denotes ’with’. 
+
+Method Modality ACC Macro-P Macro-R Macro-F1 Weighted-P Weighted-R Weighted-F1 GPT-4o [28] T 17.20 38.54 45.18 23.79 72.55 17.21 15.59 Grok-4 2 T 14.52 25.55 37.98 14.77 53.25 14.51 13.32 Gemini-3 [45] T 57.53 33.17 49.82 35.56 66.23 57.53 59.70 GPT-4o [28] VT 10.75 21.14 23.81 7.13 54.09 10.75 8.71 Gemini-2.5-flash [13] VT 32.26 30.85 42.92 23.09 72.65 32.26 38.51 Grok-4 2 VT 11.29 27.59 25.66 10.78 61.62 11.29 9.95 Doubao-1.5-vision-pro 3 VT 25.81 51.6 34.11 22.06 79.14 25.81 31.62 Qwen2.5-vl-7B-instruct [4] VT 20.43 54.26 32.53 19.78 78.98 20.43 22.85 Qwen2.5-vl-32B-instruct [4] VT 10.22 22.84 25.89 5.44 63.33 10.21 6.28 Zhou et al. [57] AT 88.17 62.94 56.36 53.49 85.43 88.17 85.10 Fan et al. [20] AT 87.10 36.96 50.00 41.18 80.93 87.10 82.92 Depmamba [54] AT 88.17 50.66 57.73 52.78 84.18 88.17 85.54 Fan et al. [20] AVT 88.17 51.10 60.71 54.46 85.38 88.17 86.34 Depmamba [54] AVT 87.63 62.22 52.5 45.96 86.43 87.63 84.01 Kumar et al. [31] AVT 88.71 61.13 58.8 58.03 87.63 88.71 87.60 DNet [29] AVT 89.25 59.10 60.00 56.37 86.24 89.25 86.67 PMLF w/ Transformer AVT 89.78 54.07 62.18 57.63 86.03 89.78 88.02 PMLF w/ Mamba AVT 90.32 74.51 66.23 67.42 90.86 90.32 89.67 PMLF w/ Resnet AVT 91.40 70.85 69.94 68.13 90.22 91.40 90.01 PMLF w/ (Resnet + Transformer) AVT 91.94 77.58 72.44 69.97 92.12 91.94 90.37 Table 4: Ablation study on different elicitation paradigms.                                    
+
+> Paradigm ACC Macro-P Macro-R Macro-F1 Weighted-F1 w/o MS-I 90.32 63.05 68.38 64.44 88.78 w/o US 90.32 60.53 65.00 60.68 87.60 w/o Reading 87.63 62.22 52.50 45.96 84.01 w/o MS-II 89.78 56.67 63.86 59.21 87.38 w/o Interview 90.32 61.29 65.00 61.29 87.88 Ours 91.94 77.58 72.44 69.97 90.37
+
+Finally, our method achieves the best overall performance. Across different backbone settings, PMLF consistently outperforms all com-pared methods, demonstrating both its general effectiveness and its compatibility with diverse architectures. These results verify the benefit of paradigm-aware semantic supervision and cross-modal representation alignment, and highlight the importance of jointly modeling elicitation contexts and multimodal interactions for differ-ential mental disorder detection. In addition, weighted metrics are generally higher than macro metrics, mainly due to class imbalance in the dataset. This suggests that existing methods remain more ef-fective on majority classes, while performance on minority classes still needs further improvement. 
+
+## 5.3 Key Research Questions 
+
+5.3.1 Effectiveness of Different Elicitation Tasks. To analyze the contribution of different elicitation tasks, we conduct an ablation study by removing each task from the proposed paradigm. The results are reported in Table 4. Overall, removing any elicitation task degrades performance, con-firming that different paradigms provide complementary information for differential mental disorder detection. In terms of Macro-F1 met-ric, removing the text reading task causes the largest drop, indicating that it contributes particularly important discriminative cues, likely because it requires subjects to process a relatively long passage with negative emotional content. Removing US, MS-II, or the interview tasks also leads to substantial degradation, while removing the MS-I results in moderate but consistent declines. These results suggest that incorporating multiple and diverse elicitation tasks is beneficial for improving multi-disorder detection performance. 
+
+5.3.2 Flexibility of MMH Across Different Diagnosis Tasks. 
+
+We further investigate the flexibility of MMH across different diag-nosis settings. As shown in Table 5, MMH supports unified evalu-ation under both multi-class and pairwise classification scenarios, demonstrating its versatility for diverse clinical diagnosis needs. The varying performance across different disorder combinations suggests that MMH captures heterogeneous levels of inter-disorder similarity and task difficulty, making it a practical benchmark for studying diagnosis under different granularities. Here, the baseline adopts the same feature extraction backbone as our method, i.e., a ResNet-Transformer architecture, and performs direct classification without paradigm-aware modeling. Meanwhile, the proposed PMLF consistently improves over this baseline in almost all settings, with particularly large gains on the MDD-vs-SC and ANX-vs-SC tasks. These results not only verify the effectiveness of PMLF in exploiting paradigm-aware discriminative cues, but also further confirm that MMH provides sufficiently rich and flexible data support for both general multi-disorder diagnosis and customized disorder-specific evaluation. Conference’17, July 2017, Washington, DC, USA Trovato et al. 
+
+Table 5: Results of different methods on three-class and binary differential diagnosis (%).                                                           
+
+> Method MDD ANX SC ACC Macro-P Macro-R Macro-F1 Weighted-F1 Baseline
+> ✓✓✓63.04 59.17 56.41 56.92 61.37
+> ✓✓69.44 70.20 63.31 63.03 66.45
+> ✓✓66.67 70.00 61.43 59.66 62.46
+> ✓✓78.12 75.71 70.45 71.96 76.89 Ours
+> ✓✓✓65.22 64.44 61.56 62.21 64.08
+> ✓✓69.44 68.52 64.61 64.86 67.68
+> ✓✓83.33 84.38 81.43 82.22 82.96
+> ✓✓84.38 84.86 77.73 79.97 83.49
+
+Figure 4: Modality-level ablation study. 
+
+5.3.3 Contribution of Different Modalities. To evaluate the con-tribution of different modalities, we perform a modality-level abla-tion study with different modality combinations, as shown in Fig. 4. Among single-modality settings, audio achieves the best perfor-mance, highlighting the importance of vocal cues for mental disor-der detection, while video performs substantially worse, suggesting that facial expressions alone are insufficient under complex elicita-tion contexts. Multi-modality combinations consistently outperform single-modality settings. In particular, A+V significantly improves over audio-only and video-only models, demonstrating the comple-mentarity between acoustic and facial cues. The full multimodal setting (A+V+T) achieves the best overall performance, confirming the benefit of jointly modeling facial, vocal, and linguistic signals. These results verify the effectiveness of multimodal fusion for robust multi-disorder detection. 
+
+5.3.4 Module-Level Ablation. To evaluate the contribution of each component in the proposed paradigm-aware multimodal learn-ing framework, we conduct a module-level ablation study by remov-ing individual modules and comparing the resulting performance with the full model. The results are summarized in Fig. 5. The full model (Ours) achieves the best overall performance, demonstrating the effectiveness of jointly optimizing all compo-nents. Removing the prompt-guided pretraining stage (w/o PT) leads to a noticeable performance drop, indicating that paradigm-aware semantic supervision is beneficial for initializing the video feature extractor with high-level contextual representations. When both cross-attention and contrastive learning are removed (w/o CA+CL), the F1 score further decreases, highlighting the im-portance of cross-modal interaction and representation alignment 
+
+Figure 5: Module-level ablation study on the paradigm-aware multimodal learning framework. (PT: Pretraining; CA: Cross-Attention; CL: Contrastive Learning) ’w/o’ denotes ’without’. 
+
+for learning discriminative multimodal features. Among the indi-vidual components, removing cross-attention (w/o CA) results in a larger degradation than removing contrastive learning alone (w/o CL), suggesting that explicit cross-modal interaction plays a more critical role in integrating heterogeneous signals induced by different elicitation paradigms. 
+
+## 5.4 Qualitative Interpretability 
+
+To further examine the discriminability of the learned representa-tions, we visualize the extracted features using t-SNE in Fig. 6. Com-pared with the baseline (introduced in 5.3.2), our method produces noticeably more compact intra-class clusters and clearer inter-class separation across all diagnosis settings. In the four-class setting, samples from different categories are grouped into more concen-trated regions with reduced overlap, indicating that the proposed method learns more structured and discriminative representations. Similar trends can also be observed in the binary diagnosis tasks. These results suggest that the proposed method can better capture category-specific characteristics and enhance feature compactness, thereby facilitating more reliable differential diagnosis. The four-class setting shows clearer feature separation because it provides richer supervision than binary classification. By jointly distinguish-ing multiple disorders, the model learns more globally discriminative and structured representations. In contrast, binary classification only focuses on a specific pairwise boundary, leading to less organized feature distributions. 
+
+## 6 Conclusions 
+
+In this work, we take a step toward clinically realistic differential mental disorder detection. We introduce a psychology-inspired multi-modal elicitation paradigm, construct a large-scale clinically verified dataset covering depression, anxiety, and schizophrenia, and pro-pose PMLF for paradigm-aware multimodal learning across diverse elicitation tasks. Experimental results demonstrate the effectiveness of both the proposed elicitation design and modeling framework for differential mental disorder detection. One limitation of the current Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli Conference’17, July 2017, Washington, DC, USA MD 
+
+> SC
+> ANX
+> Health MD
+> SC
+> ANX
+> Health
+
+(a) MD vs. SC vs. ANX vs. HC MD 
+
+> SC MD
+> SC
+
+(b) MD vs. SC SC 
+
+> ANX SC
+> ANX
+
+(c) SC vs. ANX 
+
+Figure 6: t-SNE visualization for different diagnosis tasks. Left shows the Baseline, and the right shows Ours. 
+
+study is that comorbidity within the same individual is not explicitly modeled, despite its prevalence in real-world clinical settings. Future work will extend the dataset and framework toward comorbidity-aware and more comprehensive multi-disorder diagnosis scenarios. 
+
+## Ethical Statement 
+
+The data collection process has been approved by an ethics review board. Informed consent has been obtained from all participants. Per-sonal information of the subjects is not disclosed and their extracted features of each modality are released. 
+
+## References 
+
+[1] Sharifa Alghowinem, Roland Goecke, Michael Wagner, Julien Epps, Matthew Hyett, Gordon Parker, and Michael Breakspear. 2018. Multimodal depression detection: Fusion analysis of paralinguistic, head pose and eye gaze behaviors. 
+
+IEEE Transactions on Affective Computing 9, 4 (2018), 478–490. doi:10.1109/TA FFC.2016.2634527 [2] Minghui An, Jingjing Wang, Shoushan Li, and Guodong Zhou. 2020. Multimodal topic-Enriched auxiliary learning for depression detection. In Proceedings of the 28th International Conference on Computational Linguistics , Donia Scott, Nuria Bel, and Chengqing Zong (Eds.). International Committee on Computational Linguistics, Barcelona, Spain (Online), 1078–1089. [3] Alexei Baevski, Yuhao Zhou, Abdelrahman Mohamed, and Michael Auli. 2020. wav2vec 2.0: A framework for self-supervised learning of speech representations. 33 (2020), 12449–12460. [4] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, Humen Zhong, Yuanzhi Zhu, Mingkun Yang, Zhaohai Li, Jianqiang Wan, Pengfei Wang, Wei Ding, Zheren Fu, Yi-heng Xu, Jiabo Ye, Xi Zhang, Tianbao Xie, Zesen Cheng, Hang Zhang, Zhibo Yang, Haiyang Xu, and Junyang Lin. 2025. Qwen2.5-VL Technical Report. arXiv:2502.13923 [cs.CV] https://arxiv.org/abs/2502.13923 [5] Tadas Baltrusaitis, Amir Zadeh, Yao Chong Lim, and Louis-Philippe Morency. 2018. OpenFace 2.0: Facial Behavior Analysis Toolkit. In Proceedings of the 13th IEEE International Conference on Automatic Face & Gesture Recognition (FG 2018) . 59–66. doi:10.1109/FG.2018.00019 [6] Rainer Banse and Klaus R Scherer. 1996. Acoustic profiles in vocal emotion expression. Journal of Personality and Social Psychology 70, 3 (1996), 614–636. [7] Hanshu Cai, Zhenqin Yuan, Yiwen Gao, Shuting Sun, Na Li, Fuze Tian, Han Xiao, Jianxiu Li, Zhengwu Yang, Xiaowei Li, et al . 2022. A multi-modal open dataset for mental-disorder analysis. Scientific Data 9, 1 (2022), 178. [8] Jian Chen, Yuzhu Hu, Qifeng Lai, Wei Wang, Junxin Chen, Han Liu, Gautam Srivastava, Ali Kashif Bashir, and Xiping Hu. 2024. IIFDD: Intra and inter-modal fusion for depression detection with multi-modal information from Internet of Medical Things. Information Fusion 102 (2024), 102017. [9] Ting Chen, Simon Kornblith, Mohammad Norouzi, and Geoffrey Hinton. 2020. A simple framework for contrastive learning of visual representations. In Proceedings of the International Conference on Machine Learning . PMLR, 1597–1607. [10] Zhuang Chen, Jiawen Deng, Jinfeng Zhou, Jincenzi Wu, Tieyun Qian, and Minlie Huang. 2024. Depression detection in clinical interviews with LLM-empowered structural element graph. In Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies . 8181–8194. [11] Ziqiang Chen, Dandan Wang, Liangliang Lou, Shiqing Zhang, Xiaoming Zhao, Shuqiang Jiang, Jun Yu, and Jun Xiao. 2025. Text-guided multimodal depression detection via cross-modal feature reconstruction and decomposition. Information Fusion 117 (2025), 102861. [12] Jiaee Cheong, Sinan Kalkan, and Hatice Gunes. 2024. Fairrefuse: Referee-guided fusion for multi-modal causal fairness in depression detection. In Proceedings of International Joint Conference on Artificial Intelligence (IJCAI) . 7224–7232. [13] Gheorghe Comanici, Eric Bieber, Mike Schaekermann, Ice Pasupat, Noveen Sachdeva, Inderjit Dhillon, Marcel Blistein, Ori Ram, Dan Zhang, Evan Rosen, et al . 2025. Gemini 2.5: Pushing the frontier with advanced reasoning, multi-modality, long context, and next generation agentic capabilities. arXiv preprint arXiv:2507.06261 (2025). [14] Steven Davis and Paul Mermelstein. 1980. Comparison of parametric representa-tions for monosyllabic word recognition in continuously spoken sentences. IEEE Transactions on Acoustics, Speech, and Signal Processing 28, 4 (1980), 357–366. [15] David DeVault, Ron Artstein, Grace Benn, Teresa Dey, Ed Fast, Alesia Gainer, Kallirroi Georgila, Jon Gratch, Arno Hartholt, Margaux Lhommet, et al . 2014. SimSensei Kiosk: A virtual human interviewer for healthcare decision support. In Proceedings of the 2014 International Conference on Autonomous Agents and Multi-agent Systems . 1061–1068. [16] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language understanding. In 
+
+Proceedings of the 2019 Conference of the North American Chapter of the Associ-ation for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers) . Association for Computational Linguistics, 4171–4186. [17] Hamdi Dibeklio˘ glu, Zakia Hammal, and Jeffrey F Cohn. 2018. Dynamic mul-timodal measurement of depression severity using deep autoencoding. IEEE Journal of Biomedical and Health Informatics 22, 2 (2018), 525–536. [18] Hamdi Dibeklio˘ glu, Zakia Hammal, Ying Yang, and Jeffrey F Cohn. 2015. Multi-modal detection of depression in clinical interviews. In Proceedings of the 2015 ACM on International Conference on Multimodal Interaction . 307–310. [19] Brian Diep, Marija Stanojevic, and Jekaterina Novikova. 2022. Multi-modal deep learning system for depression and anxiety detection. arXiv preprint arXiv:2212.14490 (2022). [20] Huiting Fan, Xingnan Zhang, Yingying Xu, Jiangxiong Fang, Shiqing Zhang, Xi-aoming Zhao, and Jun Yu. 2024. Transformer-based multimodal feature enhance-ment networks for multimodal depression detection integrating video, audio and remote photoplethysmograph signals. Information Fusion 104 (2024), 102161. [21] Weiquan Fan, Zhiwei He, Xiaofen Xing, Bolun Cai, and Weirui Lu. 2019. Multi-modality depression detection via multi-scale temporal dilated cnns. In Proceed-ings of the 9th International on Audio/Visual Emotion Challenge and Workshop .73–80. [22] Ricardo Flores, ML Tlachac, Avantika Shrestha, and Elke Rundensteiner. 2023. Temporal facial features for depression screening. In Proceedings of the 2022 ACM International Joint Conference on Pervasive and Ubiquitous Computing and the 2022 ACM International Symposium on Wearable Computers . 488–493. [23] Jay C Fournier, Matthew T Keener, Jorge Almeida, Dina M Kronhaus, and Mary L Phillips. 2013. Amygdala and whole-brain activity to emotional faces distinguishes major depressive disorder and bipolar disorder. Bipolar Disorders 15, 7 (2013), 741–752. doi:10.1111/bdi.12106 [24] Yuan Gong and Christian Poellabauer. 2017. Topic modeling based multi-modal depression detection. In Proceedings of the 7th Annual Workshop on Audio/Visual Emotion Challenge . 69–76. Conference’17, July 2017, Washington, DC, USA Trovato et al. 
+
+[25] Jonathan Gratch, Ron Artstein, Gale M Lucas, Giota Stratou, Stefan Scherer, Angela Nazarian, Rachel Wood, Jill Boberg, David DeVault, Stacy Marsella, et al .2014. The distress analysis interview corpus of human and computer interviews. In Proceedings of the International Conference on Language Resources and Evaluation , Vol. 14. Reykjavik, 3123–3128. [26] Tao Gui, Liang Zhu, Qi Zhang, Minlong Peng, Xu Zhou, Keyu Ding, and Zhigang Chen. 2019. Cooperative multimodal approach to depression detection in twitter. In Proceedings of the Association for the Advancement of Artificial Intelligence (AAAI) , Vol. 33. 110–117. [27] Ruben C Gur, Roland J Erwin, Raquel E Gur, Alexander S Zwil, Carolyn Heim-berg, and Helena C Kraemer. 1992. Facial emotion discrimination: II. Behavioral findings in depression. Psychiatry Research 42, 3 (1992), 241–251. [28] Aaron Hurst, Adam Lerer, Adam P Goucher, Adam Perelman, Ramesh, et al . 2024. GPT-4o System Card. arXiv:2410.21276 [cs.CL] https://arxiv.org/abs/2410.21276 [29] Zhongyi Jiang, Ke Xu, Xing Gao, Yin Cao, Yihan Zhang, Guanzhong Dong, Yun Chen, Xuanyan Zhu, Qiaoyang Zhang, Ran Bi, et al . 2025. DNet: A depression recognition network combining residual network and vision transformer. BMC Psychiatry 25, 1 (2025), 880. [30] Juho Jung, Chaewon Kang, Jeewoo Yoon, Seungbae Kim, and Jinyoung Han. 2024. Hique: Hierarchical question embedding network for multimodal depression de-tection. In Proceedings of the 33rd ACM International Conference on Information and Knowledge Management . 1049–1059. [31] Puneet Kumar, Shreshtha Misra, Zhuhong Shao, Bin Zhu, Balasubramanian Ra-man, and Xiaobai Li. 2025. Multimodal Interpretable Depression Analysis Us-ing Visual, Physiological, Audio and Textual Data. In Proceedings of the 2025 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) . 5305– 5315. doi:10.1109/WACV61041.2025.00518 [32] Qinghe Li, Fanghui Dong, Qun Gai, Kaili Che, Heng Ma, Feng Zhao, Tongpeng Chu, Ning Mao, and Peiyuan Wang. 2023. Diagnosis of major depressive disorder using machine learning based on multisequence MRI neuroimaging features. 
+
+Journal of Magnetic Resonance Imaging 58, 5 (2023), 1420–1430. [33] Ilya Loshchilov and Frank Hutter. 2019. Decoupled weight decay regularization. In Proceedings of the International Conference on Learning Representations .[34] Michelle Morales, Stefan Scherer, and Rivka Levitan. 2018. A linguistically-informed fusion approach for multimodal depression detection. In Proceedings of the Fifth Workshop on Computational Linguistics and Clinical Psychology: from Keyboard to Clinic . 13–24. [35] Luntian Mou, Siqi Zhen, Shasha Mao, and Nan Ma. 2025. Disentangled rep-resentation learning via transformer with graph attention fusion for depression detection. In Proceedings of the 1st International Workshop on Cognition-oriented Multimodal Affective and Empathetic Computing . 20–29. [36] Mingyue Niu, Jianhua Tao, Bin Liu, Jian Huang, and Zheng Lian. 2023. Mul-timodal spatiotemporal representation for automatic depression level detection. 
+
+IEEE Transactions on Affective Computing 14, 1 (2023), 294–307. [37] Yuchen Pan, Junjun Jiang, Kui Jiang, and Xianming Liu. 2024. Disentangled-multimodal privileged knowledge distillation for depression recognition with incomplete multimodal data. In Proceedings of the 32nd ACM International Conference on Multimedia . 5712–5721. [38] Gowtham Premananth, Yashish M Siriwarden, Philip Resnik, and Carol Espy-Wilson. 2024. A multi-modal approach for identifying schizophrenia using cross-modal attention. In Proceedings of the 46th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC) . IEEE, 1–5. [39] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh, Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. 2021. Learning transferable visual models from natural language supervision. In Proceedings of the International Conference on Machine Learning . PMLR, 8748–8763. [40] Anupama Ray, Siddharth Kumar, Rutvik Reddy, Prerana Mukherjee, and Ritu Garg. 2019. Multi-level attention network using text, audio and video for depression prediction. In Proceedings of the 9th International on Audio/Visual Emotion Challenge and Workshop . 81–88. [41] Mariana Rodrigues Makiuchi, Tifani Warnita, Kuniaki Uto, and Koichi Shinoda. 2019. Multimodal fusion of bert-cnn and gated cnn representations for depres-sion detection. In Proceedings of the 9th International on Audio/Visual Emotion Challenge and Workshop . 55–63. [42] Lars A Ross, Dave Saint-Amour, Victoria M Leavitt, Sophie Molholm, Daniel C Javitt, and John J Foxe. 2007. Impaired multisensory processing in schizophre-nia: deficits in the visual enhancement of speech comprehension under noisy environmental conditions. Schizophrenia Research 97, 1-3 (2007), 173–183. doi:10.1016/j.schres.2007.08.008 [43] Annett Schirmer and Sonja A Kotz. 2006. Beyond the right hemisphere: brain mechanisms mediating vocal emotional processing. Trends in Cognitive Sciences 
+
+10, 1 (2006), 24–30. [44] Hanlei Shi, Yu Liu, Haoxun Li, Yuxuan Ding, Jiaxi Hu, Leyuan Qu, and Taihao Li. 2025. HOPE: Hierarchical fusion for optimized and personality-aware estimation of depression. In Proceedings of the 33rd ACM International Conference on Multimedia . 13937–13943. [45] Gemini Team, Rohan Anil, Sebastian Borgeaud, Jean-Baptiste Alayrac, Jiahui Yu, Radu Soricut, Johan Schalkwyk, Andrew M Dai, Anja Hauth, Katie Millican, et al .2023. Gemini: a family of highly capable multimodal models. arXiv preprint arXiv:2312.11805 (2023). [46] ML Tlachac, Ricardo Flores, Miranda Reisch, Rimsha Kayastha, Nina Taurich, Veronica Melican, Connor Bruneau, Hunter Caouette, Joshua Lovering, Ermal Toto, et al . 2022. StudentSADD: rapid mobile depression and suicidal ideation screening of college students during the coronavirus pandemic. ACM on Interac-tive, Mobile, Wearable and Ubiquitous Technologies 6, 2 (2022), 1–32. [47] Yao-Hung Hubert Tsai, Shaojie Bai, Paul Pu Liang, J Zico Kolter, Louis-Philippe Morency, and Ruslan Salakhutdinov. 2019. Multimodal transformer for unaligned multimodal language sequences. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics . 6558–6569. [48] Md Azher Uddin, Joolekha Bibi Joolee, and Kyung-Ah Sohn. 2023. Deep multi-modal network based automated depression severity estimation. IEEE Transac-tions on Affective Computing 14, 3 (2023), 2153–2167. [49] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. 30 (2017). [50] Qianqian Wang, Long Li, Lishan Qiao, and Mingxia Liu. 2022. Adaptive multi-modal neuroimage integration for major depression disorder detection. Frontiers in Neuroinformatics 16 (2022), 856175. [51] Xiaojie Wang, Xin Wan, Zhaolong Ning, Zihan Qie, Jiameng Li, and Yulong Xiao. 2023. A multimodal fusion depression recognition assisted decision-making system based on EEG and speech signals. In Proceedings of the 2023 Interna-tional Conference on Communications, Computing, Cybersecurity, and Informat-ics (CCCI) . IEEE, 1–8. [52] Ping-Cheng Wei, Kunyu Peng, Alina Roitberg, Kailun Yang, Jiaming Zhang, and Rainer Stiefelhagen. 2023. Multi-modal depression estimation based on sub-attentional fusion. In Proceedings of the European Conference on Computer Vision . Springer, 623–639. [53] World Health Organization. 2022. World mental health report: transforming mental health for all. https://www.who.int/publications/i/item/9789240049338 Accessed: 2025-07-25. [54] Jiaxin Ye, Junping Zhang, and Hongming Shan. 2025. Depmamba: Progressive fusion mamba for multimodal depression detection. In Proceedings of the IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) .IEEE, 1–5. [55] Wei Zhang, En Zhu, Juan Chen, and YunPeng Li. 2024. MDDR: Multi-modal dual-Attention aggregation for depression recognition. In Proceedings of the 32nd ACM International Conference on Multimedia (MM ’24) . Association for Computing Machinery, New York, NY, USA, 321–329. doi:10.1145/3664647.3681491 [56] Li Zhou, Zhenyu Liu, Yutong Li, Yuchi Duan, Huimin Yu, and Bin Hu. 2024. Multi fine-grained fusion network for depression detection. ACM Transactions on Multimedia Computing, Communications and Applications 20, 8 (2024), 1–23. [57] Zhiyuan Zhou, Yanrong Guo, Shijie Hao, and Richang Hong. 2025. Multi-modal depression detection in interview via exploring emotional distribution information. 
+
+IEEE Transactions on Multimedia 27 (2025), 6872–6883. doi:10.1109/TMM.20 25.3590939 [58] Bochao Zou, Jiali Han, Yingxue Wang, Rui Liu, Shenghui Zhao, Lei Feng, Xi-angwen Lyu, and Huimin Ma. 2023. Semi-structural interview-based Chinese multimodal depression corpus towards automatic preliminary screening of de-pressive disorders. IEEE Transactions on Affective Computing 14, 4 (2023), 2823–2838.
