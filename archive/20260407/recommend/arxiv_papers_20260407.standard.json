@@ -1,0 +1,214 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-04-07T19:47:18.373367+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
+  },
+  "deep_dive": [
+    {
+      "id": "2604.03650v1",
+      "title": "CAGMamba: Context-Aware Gated Cross-Modal Mamba Network for Multimodal Sentiment Analysis",
+      "abstract": "Multimodal Sentiment Analysis (MSA) requires effective modeling of cross-modal interactions and contextual dependencies while remaining computationally efficient. Existing fusion approaches predominantly rely on Transformer-based cross-modal attention, which incurs quadratic complexity with respect to sequence length and limits scalability. Moreover, contextual information from preceding utterances is often incorporated through concatenation or independent fusion, without explicit temporal modeling that captures sentiment evolution across dialogue turns. To address these limitations, we propose CAGMamba, a context-aware gated cross-modal Mamba framework for dialogue-based sentiment analysis. Specifically, we organize the contextual and the current-utterance features into a temporally ordered binary sequence, which provides Mamba with explicit temporal structure for modeling sentiment evolution. To further enable controllable cross-modal integration, we propose a Gated Cross-Modal Mamba Network (GCMN) that integrates cross-modal and unimodal paths via learnable gating to balance information fusion and modality preservation, and is trained with a three-branch multi-task objective over text, audio, and fused predictions. Experiments on three benchmark datasets demonstrate that CAGMamba achieves state-of-the-art or competitive results across multiple evaluation metrics. All codes are available at https://github.com/User2024-xj/CAGMamba.",
+      "authors": [
+        "Minghai Jiao",
+        "Jing Xiao",
+        "Peng Xiao",
+        "Ende Zhang",
+        "Shuang Kan",
+        "Wenyan Jiang",
+        "Jinyao Li",
+        "Yixian Liu",
+        "Haidong Xin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-04T09:02:31+00:00",
+      "link": "https://arxiv.org/pdf/2604.03650v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Mamba framework for dialogue-based multimodal sentiment analysis",
+      "llm_evidence_cn": "用于对话式多模态情感分析的Mamba框架",
+      "llm_evidence": "用于对话式多模态情感分析的Mamba框架",
+      "canonical_evidence": "用于对话式多模态情感分析的Mamba框架",
+      "llm_tldr_en": "Proposes CAGMamba to improve efficiency and context modeling in multimodal sentiment analysis.",
+      "llm_tldr_cn": "提出CAGMamba框架，旨在提升多模态情感分析中的效率和上下文建模能力。",
+      "llm_tldr": "提出CAGMamba框架，旨在提升多模态情感分析中的效率和上下文建模能力。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.04064v1",
+      "title": "Extracting and Steering Emotion Representations in Small Language Models: A Methodological Comparison",
+      "abstract": "Small language models (SLMs) in the 100M-10B parameter range increasingly power production systems, yet whether they possess the internal emotion representations recently discovered in frontier models remains unknown. We present the first comparative analysis of emotion vector extraction methods for SLMs, evaluating 9 models across 5 architectural families (GPT-2, Gemma, Qwen, Llama, Mistral) using 20 emotions and two extraction methods (generation-based and comprehension-based). Generation-based extraction produces statistically superior emotion separation (Mann-Whitney p = 0.007; Cohen's d = -107.5), with the advantage modulated by instruction tuning and architecture. Emotion representations localize at middle transformer layers (~50% depth), following a U-shaped curve that is architecture-invariant from 124M to 3B parameters. We validate these findings against representational anisotropy baselines across 4 models and confirm causal behavioral effects through steering experiments, independently verified by an external emotion classifier (92% success rate, 37/40 scenarios). Steering reveals three regimes -- surgical (coherent text transformation), repetitive collapse, and explosive (text degradation) -- quantified by perplexity ratios and separated by model architecture rather than scale. We document cross-lingual emotion entanglement in Qwen, where steering activates semantically aligned Chinese tokens that RLHF does not suppress, raising safety concerns for multilingual deployment. This work provides methodological guidelines for emotion research on open-weight models and contributes to the Model Medicine series by bridging external behavioral profiling with internal representational analysis.",
+      "authors": [
+        "Jihoon Jeong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-04-05T11:09:27+00:00",
+      "link": "https://arxiv.org/pdf/2604.04064v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Analysis of internal emotion representations in language models",
+      "llm_evidence_cn": "语言模型内部情感表示分析",
+      "llm_evidence": "语言模型内部情感表示分析",
+      "canonical_evidence": "语言模型内部情感表示分析",
+      "llm_tldr_en": "Compares methods for extracting and steering emotion representations in small language models.",
+      "llm_tldr_cn": "比较了在小型语言模型中提取和引导情感表示的方法。",
+      "llm_tldr": "比较了在小型语言模型中提取和引导情感表示的方法。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.04160v1",
+      "title": "AffectSpeech: A Large-Scale Emotional Speech Dataset with Fine-Grained Textual Descriptions for Speech Emotion Captioning and Synthesis",
+      "abstract": "Emotion is essential in spoken communication, yet most existing frameworks in speech emotion modeling rely on predefined categories or low-dimensional continuous attributes, which offer limited expressive capacity. Recent advances in speech emotion captioning and synthesis have shown that textual descriptions provide a more flexible and interpretable alternative for representing affective characteristics in speech. However, progress in this direction is hindered by the lack of an emotional speech dataset aligned with reliable and fine-grained natural language annotations. To tackle this, we introduce AffectSpeech, a large-scale corpus of human-recorded speech enriched with structured descriptions for fine-grained emotion analysis and generation. Each utterance is characterized across six complementary dimensions, including sentiment polarity, open-vocabulary emotion captions, intensity level, prosodic attributes, prominent segments, and semantic content, enabling multi-granular modeling of vocal expression. To balance annotation quality and scalability, we adopt a human-LLM collaborative annotation pipeline that integrates algorithmic pre-labeling, multi-LLM description generation, and human-in-the-loop verification. Furthermore, these annotations are reformulated into diverse descriptive styles to enhance linguistic diversity and reduce stylistic bias in downstream modeling. Experimental results on speech emotion captioning and synthesis demonstrate that models trained on AffectSpeech consistently achieve superior performance across multiple evaluation settings.",
+      "authors": [
+        "Tianhua Qi",
+        "Wenming Zheng",
+        "Björn W. Schuller",
+        "Zhaojie Luo",
+        "Haizhou Li"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS",
+        "cs.SD",
+        "eess.SP"
+      ],
+      "published": "2026-04-05T16:03:12+00:00",
+      "link": "https://arxiv.org/pdf/2604.04160v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multimodal emotional speech dataset with textual descriptions",
+      "llm_evidence_cn": "带有文本描述的多模态情感语音数据集",
+      "llm_evidence": "带有文本描述的多模态情感语音数据集",
+      "canonical_evidence": "带有文本描述的多模态情感语音数据集",
+      "llm_tldr_en": "Introduces a large-scale emotional speech dataset aligned with fine-grained natural language descriptions.",
+      "llm_tldr_cn": "引入了一个与细粒度自然语言描述对齐的大规模情感语音数据集。",
+      "llm_tldr": "引入了一个与细粒度自然语言描述对齐的大规模情感语音数据集。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.01533v2",
+      "title": "Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation",
+      "abstract": "Speech-based depression detection has shown promise as an objective diagnostic tool, yet the cross-linguistic robustness of acoustic markers and their neurobiological underpinnings remain underexplored. This study extends Cross-Data Multilevel Attention (CDMA) framework, initially validated on Italian, to investigate these dimensions using a Chinese Mandarin dataset with Electroencephalography (EEG) recordings. We systematically fuse read speech with spontaneous speech across different emotional valences (positive, neutral, negative) to investigate whether emotional arousal is a more critical factor than valence polarity in enhancing detection performance in speech. Additionally, we establish the first neurophysiological validation for a speech-based depression model by correlating its predictions with neural oscillatory patterns during emotional face processing. Our results demonstrate strong cross-linguistic generalizability of the CDMA framework, achieving state-of-the-art performance (F1-score up to 89.6%) on the Chinese dataset, which is comparable to the previous Italian validation. Critically, emotionally valenced speech (both positive and negative) significantly outperformed neutral speech. This comparable performance between positive and negative tasks supports the emotional arousal hypothesis. Most importantly, EEG analysis revealed significant correlations between the model's speech-derived depression estimates and neural oscillatory patterns (theta and alpha bands), demonstrating alignment with established neural markers of emotional dysregulation in depression. This alignment, combined with the model's cross-linguistic robustness, not only supports that the CDMA framework's approach is a universally applicable and neurobiologically validated strategy but also establishes a novel paradigm for the neurophysiological validation of computational mental health models.",
+      "authors": [
+        "Fuxiang Tao",
+        "Dongwei Li",
+        "Shuning Tang",
+        "Xuri Ge",
+        "Wei Ma",
+        "Anna Esposito",
+        "Alessandro Vinciarelli"
+      ],
+      "primary_category": "eess.AS",
+      "categories": [
+        "eess.AS"
+      ],
+      "published": "2026-04-02T02:10:18+00:00",
+      "link": "https://arxiv.org/pdf/2604.01533v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multimodal fusion of speech and neurophysiological signals for emotion-related detection",
+      "llm_evidence_cn": "融合语音和神经生理信号进行情感相关检测",
+      "llm_evidence": "融合语音和神经生理信号进行情感相关检测",
+      "canonical_evidence": "融合语音和神经生理信号进行情感相关检测",
+      "llm_tldr_en": "Fuses speech and EEG signals to detect depression, exploring the role of emotional arousal and valence.",
+      "llm_tldr_cn": "融合语音和脑电信号进行抑郁检测，探讨情感唤醒度与效价的作用。",
+      "llm_tldr": "融合语音和脑电信号进行抑郁检测，探讨情感唤醒度与效价的作用。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2604.03586v1",
+      "title": "MultiPress: A Multi-Agent Framework for Interpretable Multimodal News Classification",
+      "abstract": "With the growing prevalence of multimodal news content, effective news topic classification demands models capable of jointly understanding and reasoning over heterogeneous data such as text and images. Existing methods often process modalities independently or employ simplistic fusion strategies, limiting their ability to capture complex cross-modal interactions and leverage external knowledge. To overcome these limitations, we propose MultiPress, a novel three-stage multi-agent framework for multimodal news classification. MultiPress integrates specialized agents for multimodal perception, retrieval-augmented reasoning, and gated fusion scoring, followed by a reward-driven iterative optimization mechanism. We validate MultiPress on a newly constructed large-scale multimodal news dataset, demonstrating significant improvements over strong baselines and highlighting the effectiveness of modular multi-agent collaboration and retrieval-augmented reasoning in enhancing classification accuracy and interpretability.",
+      "authors": [
+        "Tailong Luo",
+        "Hao Li",
+        "Rong Fu",
+        "Xinyue Jiang",
+        "Huaxuan Ding",
+        "Yiduo Zhang",
+        "Zilin Zhao",
+        "Simon Fong",
+        "Guangyin Jin",
+        "Jianyuan Ni"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-04T04:25:26+00:00",
+      "link": "https://arxiv.org/pdf/2604.03586v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multimodal news classification with cross-modal interactions",
+      "llm_evidence_cn": "具有跨模态交互的多模态新闻分类",
+      "llm_evidence": "具有跨模态交互的多模态新闻分类",
+      "canonical_evidence": "具有跨模态交互的多模态新闻分类",
+      "llm_tldr_en": "A multi-agent framework for interpretable multimodal news classification using gated fusion.",
+      "llm_tldr_cn": "一种用于可解释多模态新闻分类的多智能体框架，采用门控融合机制。",
+      "llm_tldr": "一种用于可解释多模态新闻分类的多智能体框架，采用门控融合机制。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

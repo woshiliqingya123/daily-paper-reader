@@ -1,0 +1,497 @@
+Title: Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation
+
+URL Source: https://arxiv.org/pdf/2604.01533v2
+
+Published Time: Tue, 07 Apr 2026 01:14:44 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+> JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 1
+
+# Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation 
+
+Fuxiang Tao, Dongwei Li*, Shuning Tang*, Xuri Ge, Wei Ma, Anna Esposito, Alessandro Vinciarelli, Member, IEEE 
+
+Abstract —Speech-based depression detection has shown promise as an objective diagnostic tool, yet the cross-linguistic robustness of acoustic markers and their neurobiological under-pinnings remain underexplored. This study extends Cross-Data Multilevel Attention (CDMA) framework, initially validated on Italian, to investigate these dimensions using a Chinese Man-darin dataset with Electroencephalography (EEG) recordings. We systematically fuse read speech with spontaneous speech across different emotional valences (positive, neutral, negative) to investigate whether emotional arousal is a more critical factor than valence polarity in enhancing detection performance in speech. Additionally, we establish the first neurophysiological validation for a speech-based depression model by correlating its predictions with neural oscillatory patterns during emotional face processing. Our results demonstrate strong cross-linguistic generalizability of the CDMA framework, achieving state-of-the-art performance (F1-score up to 89.6%) on the Chinese dataset, which is comparable to the previous Italian validation. Critically, emotionally valenced speech (both positive and negative) signif-icantly outperformed neutral speech. This comparable perfor-mance between positive and negative tasks supports the emotional arousal hypothesis. Most importantly, EEG analysis revealed significant correlations between the model’s speech-derived de-pression estimates and neural oscillatory patterns (theta and alpha bands), demonstrating alignment with established neural markers of emotional dysregulation in depression. This align-ment, combined with the model’s cross-linguistic robustness, not only supports that the CDMA framework’s approach is a universally applicable and neurobiologically validated strategy but also establishes a novel paradigm for the neurophysiological validation of computational mental health models. 
+
+The research leading to these results has received funding from the project ANDROIDS funded by the program V:ALERE 2019 Universit` a della Campa-nia “Luigi Vanvitelli”, D.R. 906 del 4/10/2019, prot. n. 157264,17/10/2019. The work of Alessandro Vinciarelli was supported by UKRI and EPSRC through grants EP/S02266X/1 and EP/N035305/1, respectively. The work of Dongwei Li was supported by the National Natural Science Foundation of China (32400863), and the Open Research Fund of the State Key Laboratory of Brain-Machine Intelligence, Zhejiang University (BMI2400006). Fuxiang Tao, Dongwei Li and Shuning Tang are with Department of Psychology, Faculty of Arts and Sciences, Beijing Normal University, Zhuhai, 519087, China; Beijing Key Laboratory of Applied Experimental Psychology, National Demonstration Center for Experimental Psychology Education, Fac-ulty of Psychology, Beijing Normal University, Beijing, 100875, China. Xuri Ge is now with the School of Artificial Intelligence, Shandong University, 250100, China. Wei Ma and Alessandro Vinciarelli are with the School of Computing Science, University of Glasgow, G12 8RZ, UK. Xuri Ge is now with the School of Artificial Intelligence, Shandong University, 250100, China. Anna Esposito is with the Dipartimento di Psicologia, Universit` a della Campania “Luigi Vanvitelli”, Caserta, 81100, Italy. * Corresponding authors: Dongwei Li and Shuning Tang. 
+
+Index Terms —Affective computation, computational paralin-guistics, depression detection, deep learning, EEG 
+
+I. I NTRODUCTION 
+
+# ACCORDING to the World Health Organization, depres-sion affected approximately 3.8% of the global popula-tion in 2023 [1]. Traditional depression diagnosis predomi-nantly relies on patient self-reporting combined with clinical observation and interviews. However, this conventional ap-proach faces significant limitations, including patients’ varying levels of self-awareness, willingness to disclose symptoms, and memory biases [2], [3], as well as the inherent subjectivity in clinicians’ personal experience and judgment [4]. These factors collectively compromise diagnostic accuracy and reli-ability. The urgent need for objective, quantifiable biomarkers to supplement clinical assessment is therefore paramount for improving early screening and providing personalised patient care [5]. Among potential biomarkers, speech, as the natural medium of communication in clinical interviews and the primary channel for expressing internal affective and cognitive states, has become a major focus for the development of auto-matic detection approaches [6]–[9]. Speech-based depression detection typically employs two types of speech, i.e., read 
+
+speech and spontaneous speech. Both have been demonstrated to contain complementary information relevant to depression identification [10], [11]. Consequently, an increasing number of studies have begun exploring the fusion of these types of speech to enhance depression detection performance [12], [13]. However, the promise of this fusion is undermined by an oversimplification in how spontaneous speech is handled. A dominant paradigm often treats the entirety of a participant’s spontaneous speech as a monolithic block of data for anal-ysis [14], [15]. This analysis unavoidably flattens a complex emotional landscape, where speech representing different di-mensional and even contradictory affective states is processed identically, despite compelling evidence that it is precisely these emotion-dependent patterns that serve as key indicators of a depressive state [16], [17]. Recognising this limitation, a more nuanced line of research has begun to investigate the role of different emotional contexts within spontaneous speech  
+
+> arXiv:2604.01533v2 [eess.AS] 5 Apr 2026 JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 2
+
+for depression detection [18], [19]. However, the findings from this work are not entirely consistent. Some studies report that positive-valence tasks yield the highest classification accuracy, arguing that the blunted response to positive stimuli (anhedo-nia) creates the sharpest acoustic contrast [18]. Conversely, a strong theoretical rationale suggests negative-valence tasks should be highly effective, as they are tailored to engage the specific cognitive impairments central to depression, such as the failure to inhibit negative information and associated ruminative processes [20]. This apparent contradiction raises a more fundamental question about the relative importance of emotional valence versus emotional arousal . This leads to our central hypothesis that for depression detection, the intensity of an emotional state (arousal) is a more critical factor than its polarity (valence) in eliciting discriminative acoustic markers. A second research gap impeding the clinical translation of these models is their cross-linguistic generalizability. While some research suggests that certain linguistic and acoustic fea-tures [21] and acoustic features of depression show similarities across languages [22], these findings have been predominantly observed within related language families. These similarities have enabled reasonable cross-linguistic generalisation of de-pression detectors within European language systems [23], [24]. However, this generalisability often fails when extending to typologically distant languages, particularly between tonal (e.g., Chinese) and non-tonal (e.g., English) systems, where systematic validation remains severely limited [25]. The most profound research gap is that even high-performing depression detectors lack interpretability, leaving their clinical trustworthiness in question without a clear un-derstanding of their biological underpinnings. To bridge this gap, Electroencephalography (EEG) offers a direct, objective measure of the fast neural dynamics of emotional processing. A robust body of literature has used EEG to delineate atten-tional biases in Major Depressive Disorder (MDD), revealing attenuated early sensory encoding of positive stimuli and hypervigilance toward negative content [26]–[30]. However, no study has yet attempted to validate a speech-based depres-sion model by directly correlating its predictions with these established neural markers of emotional dysregulation. This study extends the Cross-Data Multilevel Attention (CDMA) framework [13], which was initially validated on Italian speech. Here, the primary contribution is not the proposal of a new model architecture but rather a rigorous investigation that aims to address the three fundamental gaps outlined above. Specifically, we apply this framework to a typologically distinct language dataset, MODMA Chinese Mandarin corpus [31], to make the following contributions:  
+
+> •
+
+we provide the first empirical evidence supporting the hypothesis that emotional arousal in speech, rather than valence, is a more critical factor for depression detection;  
+
+> •
+
+we demonstrate the cross-linguistic generalizability of the CDMA framework by achieving state-of-the-art perfor-mance on a typologically distinct language;  
+
+> •
+
+and we establish novel neurophysiological correlations between the model’s depression estimates and corre-sponding EEG oscillatory activity, providing the first neurobiological validation for a computational speech-based approach to automatic depression detection. The rest of this paper is organised as follows: Section II reviews the relevant literature, Section III details the methodol-ogy, Section IV presents the experimental findings, Section V discusses insights and Section VI draws conclusions. II. R ELATED WORK 
+
+A. Speech Types and Emotional Contexts in Automatic De-pression Detection 
+
+Early research on speech-based depression detection pre-dominantly focused on a single speech type. For instance, [32] utilised read speech to extract stable acoustic baselines, demonstrating that reading speed and pause duration are effec-tive markers (reducing error rates by over 50%). In contrast, [33] focused on spontaneous speech, finding that modulation features extracted from spontaneous speech yielded a 25% relative error reduction compared to read speech baselines. Re-cent approaches have advanced the processing of spontaneous speech through sophisticated architectures but often without differentiating emotional contexts. For instance, [14] proposed a multimodal framework using Bidirectional Long Short-Term Memory networks that fused acoustic and linguistic features at the clause level; however, the model aggregated all clauses from the spontaneous speech into a single depression prediction regardless of the specific topic’s valence. Simi-larly, [15] introduced a “thin slices” approach that improved detection performance by segmenting recordings into 128 blind slices, explicitly acknowledging in their conclusion that this “blind segmentation” overlooked the variable emotional content within the spontaneous speech. Empirical evidence from emotion-dependent speech pattern analysis challenges this aggregation strategy. For example, [17] analysed speech from 118 participants and reported that indi-viduals with higher depression scores produced significantly more words (increased verbosity), specifically during positive and negative story narrations but not in neutral contexts. In the acoustic domain, [16] applied multivariate analysis of variance on a Chinese clinical dataset and reported that Mel-frequency Cepstral Coefficients (MFCCs) (specifically MFCC2, MFCC3, and MFCC8) exhibited statistically signif-icant variations across positive, neutral, and negative emotion tasks. Notably, they found that specific features, such as MFCC7 extracted from negative tasks, were highly predictive of Patient Health Questionnaire-9 (PHQ-9) scores ( β = 0 .90 ), whereas neutral task features showed weaker correlations. The divergence in identifying the optimal emotional context reflects distinct pathophysiological hypotheses. For instance, [18] reported superior classification performance in positive-valence tasks (87.5% accuracy), attributing this to the “positive attenuation” mechanism where patients fail to exhibit the ex-pected acoustic buoyancy associated with joy. Conversely, [20] provided evidence favoring the diagnostic utility of negative-valence contexts, noting that the cognitive load induced by rumination and the failure to inhibit negative information lead JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 3
+
+to measurable prosodic delays and pauses. These conflicting pieces of evidence highlight that valence-specific markers may be highly task-dependent, lacking a unified framework to explain detection performance across the emotional spectrum. 
+
+B. Cross-Linguistic Generalizability Challenges in Automatic Depression Detection 
+
+Efforts to identify language-independent markers have yielded promising evidence regarding specific feature robust-ness. For instance, [21] conducted a multi-lab synthesis and identified that first-person pronoun usage and negative emotion word frequency serve as consistent linguistic markers across diverse communicative contexts. Similarly, [22] analysed re-motely collected speech from English, Spanish, and Dutch cohorts, reporting that reduced speaking rate was a robust acoustic marker consistently associated with depression sever-ity across these European languages. Building on these feature-level similarities, model transfer-ability has been successfully demonstrated within typologi-cally similar language families. For instance, [23] employed Support Vector Regression (SVR) to predict depression sever-ity across German, Hungarian, and Italian. Their experiments showed consistent performance, with Root Mean Square Error (RMSE) values ranging between 8.27 and 9.83 for cross-lingual tests, and an exceptionally low RMSE of 5.09 when training on German/Hungarian and testing on Italian. Sim-ilarly, [24] utilised Multi-Layer Perceptrons (MLP) on the Emofilm dataset, achieving over 80% classification accuracy across English, Italian, and Spanish, suggesting that within Western languages, acoustic affective markers are robust to linguistic variation. However, this generalizability breaks down when bridging the gap between tonal (e.g., Mandarin) and non-tonal (e.g., English) languages. For example, [25] proposed a lightweight multimodal architecture using MLP-Mixer for audio and Transformers for text. While the model achieved an F1-score of 81% on the Chinese EATD-Corpus, the exact same architec-ture yielded an F1-score of only 67% on the English DAIC-WOZ dataset, indicating a fundamental disparity in feature discriminability. This gap was exemplified in studies cited by [34], where a model trained on English data plummeted to an accuracy of 48.72% when tested on Chinese Mandarin data. These failures indicate that standard prosodic features (e.g., F0 variance) dominant in non-tonal languages are likely to fail to capture depression markers in tonal languages, where pitch variations are constrained by lexical semantic requirements. 
+
+C. Neural Dysfunction during Emotional Face Processing 
+
+EEG studies have extensively utilised event-related poten-tials (ERPs) to delineate the attentional bias in MDD. ERPs capture distinct neural processing stages through specific com-ponents: P1 reflects early sensory encoding, N170 indicates structural face analysis, and P300 represents late cognitive evaluation. Patients with MDD exhibit attenuated P1 ampli-tudes over occipital regions specifically for positive stimulus, reflecting impaired initial engagement with positive stimuli; this deficit correlates with anhedonia severity [26]. Conversely, enhanced N170 amplitudes to sad faces at temporo-occipital sites indicate hypervigilance toward negative emotional con-tent in MDD [27]. During late-stage processing (300–500 ms), increased P300 amplitudes for sad faces in parietal regions have been reported, indicating deficient cognitive inhibition and excessive facilitation [26]. Apart from phase-locked ERP signals, ongoing non-phase-locked oscillatory signals could also provide more evidence for the neural impairments in MDD. Alpha rhythms (8–12 Hz) are highly related to selective attention; a decrease in alpha power, known as alpha event-related desynchroniza-tion (ERD), is associated with increased cortical activation indicative of attentional engagement [28], [29], [35]. Previous work demonstrated elevated alpha ERD in posterior regions during emotional face viewing [36]. Conversely, theta synchro-nization (3–7 Hz) intensifies during negative face exposure, facilitating sustained negative information processing [30]. However, few studies focused on the temporal dynamics of neural oscillations associated with face processing in MDD. Whether patients with MDD exhibit cortical hyperactivation and maladaptive inhibition of negative face remains unclear. To address it, we mainly focused on alpha and theta oscillations during face processing with different emotions to figure out whether these oscillatory signals could serve as markers for the neural dysfunction observed in MDD. III. T HE APPROACH 
+
+A. The Data 1) Participants: The MODMA dataset was collected un-der approved ethical guidelines as detailed by its original creators, and all participants provided informed consent [31]. For speech-based depression detection, we utilised participants from the recordings of the spoken language experiment subset in MODMA, which originally included 52 participants (23 MDD patients: 16 males and 7 females, aged 16-56 years; 29 healthy controls: 20 males and 9 females, aged 18-55 years). For EEG analysis, a total of 17 participants with MDD (11 males and 6 females, 31.76 ± 10.94 years) and 21 Healthy Controls (HCs) (14 males and 7 females, 32.19 
+
+± 10.18 years) who had both EEG and speech recordings were selected for further analysis. During EEG preprocessing, three participants (1 HC and 2 MDDs) were excluded due to excessive artifacts resulting in fewer than 50% valid EEG trials. In the time-frequency analysis stage, 2 additional MDD participants were excluded due to power values deviating more than three standard deviations from the group mean. As a result, 13 MDD patients (8 males and 5 females, 32.08 ±
+
+10.36 years) and 20 HCs (14 males and 6 females, 32.10 ±
+
+10.43 years) were retained for final analysis. 
+
+2) Data Acquisition: For this work, we utilised reading recordings and interview responses covering positive, neutral, and negative emotions to evaluate the effectiveness of our proposed approach. The reading task (recording 19) included a standard narrative passage (“The North Wind and the Sun”). Interview recordings consisted of 18 questions derived from clinical depression assessment scales, with 6 questions each targeting positive (recordings 1-6), neutral (recordings 7-12), JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 4
+
+and negative (recordings 13-18) emotional valences. For EEG, participants performed an emotion-modulated dot-probe task using grayscale facial images from the Chinese Facial Affec-tive Picture System (CFAPS) [37], presented in emotional-neutral pairs (happy, sad, or fear vs. neutral), see [31] for more details. 
+
+B. Feature Extraction and Segmentation 
+
+To ensure methodological consistency with the original CDMA study [13], we adopted identical feature extraction protocols using the OpenSMILE toolkit [38] with configura-tions from the Androids corpus [39]. We extracted 16 acoustic descriptors (energy, MFCCs, fundamental frequency, zero-crossing rate, and voicing probability) along with their first-order temporal derivatives, yielding 32-dimensional feature vectors ( D = 32 ) for each temporal frame. Feature vectors ⃗x u
+
+were computed using 25 ms sliding windows with 10 ms frame shifts. This approach ensures a direct and fair comparison of the model’s performance across different languages (Italian and Mandarin Chinese). Moreover, this established feature set has been widely validated for capturing key prosodic, spectral, and voice quality information relevant to depression [20]. As illustrated in Fig. 1A, this processing produces feature sequences X = {⃗x 1, . . . ,⃗ x T } for read speech. Although Fig. 1A illustrates using read speech as an example, the same methodology is applied uniformly to spontaneous speech. We use Z =⃗ z 1, . . . ,⃗ z Q to represent one category of sponta-neous speech (either negative, neutral, or positive interview response). Note that the same representation applies uniformly across all three emotional categories throughout the entire approach. Sequence lengths T and Q typically differ due to varying recording durations. Following feature extraction, each recording becomes a high-dimensional time series of acoustic feature vectors. Since recordings span several seconds to minutes, the resulting sequences contain thousands of feature vectors, which are too long for direct neural model processing. To maintain consis-tency with established protocols [39], we partition sequences 
+
+X and Z into overlapping temporal segments of M = 128 
+
+consecutive feature vectors using a sliding window with stride 
+
+M/ 2, providing 50% overlap for temporal continuity. For read speech sequences, this segmentation generates a series of segments I = {Ik} (k ∈ [1 , N ]), where each segment Ik contains M feature vectors and N denotes the total number of segments. For spontaneous speech, since each emotional category contains 6 interview responses, seg-mentation is performed at the individual response level to preserve discourse structure. This response-based approach produces a set of segments V = {Vm} (m ∈ [1 , L ]), where 
+
+L represents the total number of frames, with the constraint that no segment spans across different responses within the same emotional category. This procedure yields segmented read speech ( I) and segmented spontaneous speech ( V ) for each emotional category, with consistent representations across all three emotional states. 
+
+C. Detection: Cross-Data Multilevel Attention 1) Intra-Type Multi-Local Attention: Following segmenta-tion, the sequences I and V represent read and spontaneous speech as collections of temporal segments, respectively. The first detection stage, termed Intra-Type Multi-Local Attention 
+
+(IT-MLA), processes each speech type independently to iden-tify and emphasise localised segment-level acoustic patterns that are indicative of depression. Fig. 1B depicts the IT-MLA detection stage for read speech, the identical procedure is applied to spontaneous speech. Within each segment k, we compute the average feature vector ⃗a k as a local contextual reference. Each feature vector ⃗x i within the segment is then adaptively weighted according to its acoustic alignment with ⃗a k, using a cosine similarity-based attention mechanism: ⃗x ∗ 
+
+> i
+
+=⃗x i + exp (cos θi)
+
+PMj=1 exp (cos θj ) ·⃗x i, (1) 
+
+cos θi =⃗a k⃗x i/|| ⃗a k|| · || ⃗x i|| , (2) where i ∈ { 1, . . . , M }, and cos θi represents the cosine simi-larity between vector ⃗x i and segment-average vector ⃗a k. This attention mechanism selectively amplifies feature vectors with stronger alignment to the local acoustic context, enhancing discriminative capacity of depression-related patterns within each segment. The attention-enhanced segments are subsequently pro-cessed through a Long Short-Term Memory network (LSTM) [40] for binary classification at the segment level. Speaker-level depression likelihood is estimated as the pro-portion of segments classified as depressive. This generates two probability estimates: pc from read speech and po from spontaneous speech, with the same framework applied across all three emotional states. 
+
+2) Cross-Type Global Attention: The second component, termed Cross-Type Global Attention (CT-GA), leverages inter-type information exchange between speech types while high-lighting shared discriminative patterns present in both read and spontaneous speech. This cross-type approach enables each speech type to inform and enhance the representation of the other, capturing complementary depression-related cues across different speaking contexts. Following IT-MLA, the LSTM networks generate hidden state representations for each temporal segment. These hidden states are temporally averaged to produce segment-level repre-sentations ⃗c k for read speech, as depicted in Fig. 1B. Similarly, we use ⃗ o k to denote the corresponding average segment-level representations obtained through spontaneous speech. These vectors form the sequences C and O, respectively, as illustrated in Fig. 1C. The CT-GA mechanism applies cross-type attention to trans-form both sequences. We present the transformation for ⃗c k,with the analogous operation applied to ⃗o k:⃗c ∗ 
+
+> k
+
+=⃗c k + exp (cos αk)
+
+PNj=1 exp (cos αj ) ·⃗c k, (3) 
+
+cos αk =⃗s⃗ c k/|| ⃗s|||| ⃗c k|| , (4) JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 5... 
+
+> ...
+> M
+> D
+
+...          
+
+> MDI1I1*a1cos( θ)1
+> 12,,MM+1 ,NM/2 ,
+
+... ... M/2 +1 ... 3M/2-1 ... (N-1)M/2-1 ...      
+
+> I1I2IN
+> A. Feature Extraction and Segmentation
+
+... ... ...           
+
+> I1I2INMLA MLA MLA
+> I1*I2*IN*LSTM LSTM LSTM c1c2cNB. Intra-Type Multi-Local Attention LSTM
+
+... c1c2cN* * *
+
+... c1c2cN ... o1o2oLrs
+
+> ...
+> N
+> D
+
+...   
+
+> ND{C1, ..., CN}*s1cos( α)
+
+...    
+
+> {C1, ..., CN}*CA CA 2
+
+... o1o* *oL *LSTM C. Cross-Type Global Attention 
+
+... c1c2cN* * *r *2
+
+... o1o* *s *oL*f
+
+> *f
+
+... c1c2cN
+
+... o1o2oLrsD. Cross-TypeFu sionpc+ptpdpfpf
+
+> *Reading Interview Positive Neutral Negative Feature Extraction and Segmentation Intra-Type Multi-Local Attention Cross-Type Global Attention Cross-Type Global Attention Cross-Type Global Attention Cross-Type Fusion Cross-Type Fusion Cross-Type Fusion E. The Framework +
+
+Fig. 1. The figure illustrates the proposed framework. Purple arrow shows read speech processing; green, yellow, and red arrows show positive, neutral, and negative spontaneous speech processing, respectively. The symbol ⊗ indicates majority voting that combines classification results from all speech types to produce the final depression prediction. 
+
+where ⃗s represents the global average of spontaneous speech sequence O, serving as the cross-type reference for adapt-ing read speech representations. Conversely, for spontaneous speech transformation, ⃗r (the global average of sequence C)serves as the guiding reference. This bidirectional attention mechanism enhances features exhibiting consistent patterns across both speech types, amplifying depression-relevant in-formation. The attention-enhanced sequences C∗ and O∗ are fed into separate LSTM networks, generating sequences of refined hid-den states. These are temporally averaged to produce speaker-level representations, then processed through a softmax layer to yield depression probability estimates pt and pd, corre-sponding to read-speech-informed and spontaneous-speech-informed predictions, respectively. 
+
+3) Cross-Type Fusion: Following CT-GA, four distinct sequences emerge: C, O, C∗, and O∗, with corresponding global averages ⃗r,⃗s,⃗r ∗, and ⃗s ∗, as illustrated in Fig. 1D. This enables construction of two composite vectors representing different processing stages: ⃗ f =⃗r +⃗s and ⃗ f ∗ =⃗r ∗ +⃗s ∗.Vector ⃗ f encapsulates information from the intermediate stage following IT-MLA, while ⃗ f ∗ captures enhanced representa-tions from CT-GA. Both vectors are independently processed through separate softmax layers, yielding depression proba-bility estimates pf and pf ∗ . Since vectors ⃗ f and ⃗ f ∗ integrate averaged representations from distinct speech types, this stage is designated as Cross-Type Fusion (CTF). 
+
+4) Aggregation: The framework generates six probability estimates throughout the detection pipeline, combined through averaging: 
+
+ˆp = 1
+
+|B| 
+
+X
+
+> v∈B
+
+pv , (5) where B = {c, o, f, f ∗, t, d } represents the set of all probabil-ity estimates. The final classification assigns a speaker to the depressed category when ˆp > 0.5. For training, all probability estimates are simultaneously optimised using a unified loss function: 
+
+L = − 1
+
+K
+
+X
+
+> v∈B
+
+[y log( pv ) + (1 − y) log(1 − pv )] , (6) where K is the total number of training samples, and y is the ground truth label. Since the framework processes each emotional category of spontaneous speech separately with read speech, three independent predictions are generated for negative, neutral, and positive spontaneous speech processing. The final speaker-level depression prediction combines these three predictions through majority vote, as shown in Fig. 1E. 
+
+D. Experimental setup and training 
+
+All experiments were conducted using 5-fold cross-validation. To ensure person-independent evaluation, all recordings from each speaker were assigned to the same JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 6
+
+fold, guaranteeing no participant appears in both training and testing sets. This design ensures models learn depression-related patterns rather than speaker-specific characteristics. The LSTM networks used 32 hidden units, with training at a learning rate of 10 −3, batch size 32, over 50 epochs. We employed PyTorch’s default weight initialisation with RMSProp optimizer [41]. To account for stochastic weight initialisation variability, each configuration was executed 50 times independently. All performance metrics are presented as mean values with standard deviations across these 50 iterations. 
+
+E. EEG Methods 1) Preprocessing: EEG preprocessing was performed using EEGLAB v2020.0 and MATLAB R2023b. Raw data were re-referenced to the average reference, bandpass filtered (0.1-30 Hz), notch filtered (48-52 Hz) to remove line noise, and downsampled to 250 Hz. Epochs were extracted from -1 to 2 s relative to stimulus onset, with the interval from -0.5 to 1.5 s used for artifact detection. Independent Component Analysis (ICA) with Principal Component Analysis (PCA) dimensionality reduction (30 components) was applied to identify and remove artifacts. Epochs with voltage fluctuations exceeding ±100 μV or containing residual electrooculographic (EOG) artifacts were excluded from further analysis. 
+
+2) Time-Frequency Analysis: Event-Related Spectral Per-turbation (ERSP) analysis was conducted using Short-Time Fourier Transform-based methods to extract time-frequency representations from 1-30 Hz with 1.25 Hz frequency res-olution using EEGLAB’s pop_newtimef function. EEG Baseline correction was applied using the pre-stimulus interval from -300 to -100 ms. Spectral power in the theta (3-7 Hz) and alpha (8-12 Hz) frequency bands was averaged across time and frequency bins for statistical comparison between groups. 
+
+3) Group-Level Statistical Analysis: Two-tailed independent-sample t-tests were conducted to compare spectral power between MDD patients and HCs across predefined regions of interest (ROIs): frontal (13 electrodes) and parieto-occipital (17 electrodes) regions. Statistical comparisons were performed within specific time windows: early (0-200 ms) and late (400-600 ms) time windows. 
+
+4) Correlation Analysis Between Model Logits and Neu-ral Features: Spearman correlation analysis was performed to assess the relationship between mean ERSP power and model-derived logits obtained from the CDMA framework. Correlations were computed separately for three emotional spontaneous conditions (positive, neutral, negative) and dif-ferential emotion scores ( ∆positive = positive logits minus neutral logits; ∆negative = negative logits minus neutral logits) within theta and alpha frequency bands, across the defined frontal and parieto-occipital ROIs and the specified early and late time windows. IV. E XPERIMENTS AND RESULTS 
+
+A. CDMA Peformance Analysis 
+
+We next evaluate the performance of the full framework described in Section III. A comprehensive ablation study                             
+
+> TABLE I PERFORMANCE OF THE PROPOSED FRAMEWORK IN TERMS OF ACCURACY
+> (A CC .), PRECISION (P REC .), RECALL (R EC .), AND F1-SCORE FOR MODELS COMBINING READ SPEECH WITH POSITIVE ,NEUTRAL ,AND NEGATIVE SPONTANEOUS SPEECH ,RESPECTIVELY . M ETRICS ARE PRESENTED AS MEAN ±STANDARD DEVIATION ACROSS 50 ITERATIONS .Acc.(%) Prec.(%) Rec.(%) F1(%) Read + Positive 83.8 ±2.6 83.0 ±4.4 89.2 ±4.7 84.4 ±2.5 Read + Neutral 81.5 ±2.1 79.3 ±3.6 87.9 ±5.6 82.1 ±2.6 Read + Negative 84.0 ±2.1 82.4 ±3.9 89.8 ±4.0 85.0 ±2.2
+
+demonstrating the necessity of each component within the core CDMA framework was conducted in the study that originally proposed the framework [13]. This allows the current analysis to further investigate the framework’s detection performance across different linguistic and emotional contexts, validating these findings neurophysiologically with EEG data. 
+
+1) Comparisons Between Emotional Spontaneous Speech: 
+
+To evaluate the statistical significance of performance differ-ences between different models, we conducted two-tailed t-tests on the F1-scores obtained from 50 experimental itera-tions. Specifically, we compared the performance of models that combine read speech with different emotional categories of spontaneous speech (negative, neutral, positive), as shown in Table I. The combination of read speech with positive, neutral, and negative spontaneous speech yielded average F1-scores of 84.4%, 82.1%, and 85.0%, respectively. Statistical analysis suggested that combining read speech with either positive or negative spontaneous speech significantly outperformed the combination with neutral spontaneous speech according to two-tailed t-tests with all p < 0.001 . These results demon-strate that when integrated with read speech, emotionally spontaneous speech (both positive and negative) provides more discriminative acoustic patterns for depression detection compared to neutral spontaneous speech. Notably, no statistically significant difference was observed between the positive task (Read + Positive) and the negative task (Read + Negative) ( p > 0.05 ). The performances between the positive and negative tasks are comparable, despite their opposite valences. This indicates that the intensity of the emotional state (arousal) is a more critical factor for detection accuracy than the polarity of the emotion (valence). These findings provide strong empirical evidence for the arousal hypothesis. This has important implications for developing depression detectors, suggesting that any emotionally engaging context can effectively complement read speech to achieve robust detection. 
+
+2) Comparisons to state-of-the-arts: To contextualise our findings, Table II presents a comprehensive comparison be-tween our proposed framework and a range of baseline and SOTA approaches on the MODMA dataset with person-independent split protocols. The results unequivocally demon-strate that our approach achieves superior performance across all evaluation metrics. Our method consistently outperforms a wide spectrum of models, from classic machine learning algorithms like Decision Trees to established deep learning architectures such as Recurrent Neural Networks (RNNs), JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 7
+
+TABLE II BEST PERFORMANCE OF THE PROPOSED FRAMEWORK COMPARED WITH BASELINE AND STATE -OF -THE -ART (SOTA) METHODS ON THE MODMA 
+
+> DATASET
+
+. T HE TABLE SHOWS THE HIGHEST F1-SCORE AND CORRESPONDING ACCURACY , PRECISION , AND RECALL FOR MODELS COMBINING READ SPEECH WITH POSITIVE , NEUTRAL , AND NEGATIVE SPONTANEOUS SPEECH INDIVIDUALLY , AND THE COMBINED RESULT USING MAJORITY VOTING ACROSS ALL THREE EMOTIONAL CATEGORIES .RESULTS FOR RNN [42] AND DEP AUDIO NET [43] ARE AS REPORTED IN [44], WHILE THOSE FOR DMPF, V LAD -GRU, C ONV NEXT, AND 
+
+TIMES NET ARE AS REPORTED IN [45]. T HE SYMBOL ‘-’ INDICATES THAT THE METRIC WAS NOT REPORTED IN THE ORIGINAL STUDY .Acc.(%) Prec.(%) Rec.(%) F1(%) DepAudioNet [43] - - - 79.0 Decision Tree [46] 83.4 81.9 79.0 80.5 RNN [42] - - - 70.0 MLP [47] 84.2 85.3 83.8 84.1 CNN [47] 84.2 85.3 83.8 84.0 MSCDR [44] 85.7 79.2 90.5 85.6 DCAN [34] 81.1 - - 78.4 DMPF [45] 76.9 76.8 76.4 76.5 Vlad-GRU [48] 63.9 66.7 55.3 60.4 ConvNeXt [49] 68.1 69.1 66.7 63.8 TimesNet [50] 65.4 67.1 63.7 61.8 Read + Positive 88.7 89.2 93.3 89.6 
+
+Read + Neutral 86.5 86.8 90.0 86.8 Read + Negative 86.7 85.7 92.7 88.7 Combination 88.5 81.5 95.7 88.0 
+
+Convolutional Neural Networks (CNNs), and dedicated mod-els like DepAudioNet. Notably, our best-performing individual model (read speech with positive spontaneous speech) achieves an F1-score of 89.6%, establishing a substantial margin of 4.0% over the strongest SOTA competitor, MSCDR [44]. The combination result, obtained through majority voting across all three emotional categories, achieves an F1-score of 88.0%, which does not exceed the performance of the individ-ual best model. This suggests that the majority voting mech-anism may introduce some conservative bias, as it requires consensus among multiple models that may have different strengths and weaknesses. However, the combination approach demonstrates a crucial advantage in clinical applications: it achieves the highest recall of 95.7%, substantially exceeding both the individual models and state-of-the-art methods. This exceptional recall performance indicates that the ensemble approach minimises false negatives, ensuring that fewer in-dividuals with depression are misclassified as healthy. Such high sensitivity is particularly valuable in depression screening scenarios, where missing positive cases could delay critical interventions and have serious clinical consequences. Notably, the CDMA framework was originally developed and validated on Italian speech [13]. The successful appli-cation to the typologically distinct Chinese Mandarin cor-pus, achieving comparable performance, provides compelling evidence for the cross-linguistic robustness of the proposed cross-type attention mechanisms. This consistent effectiveness suggests that the framework captures underlying depression-related acoustic patterns that may be largely language-independent, potentially representing universal indicators of emotional dysregulation tied to the physiological underpin-nings of depression. 
+
+B. EEG analysis 
+
+To validate that the acoustic patterns identified by the speech model are associated with depression-related emotional dysregulation, we first examined EEG differences between MDD patients and HCs during emotional processing, then explored associations between these neural oscillatory patterns and our CDMA-derived depression estimates. 0            
+
+> 10
+> -10
+> -200 0200 400 600
+> Theta band
+> Alpha band
+> Frequencies (Hz)
+> frontal (MDD)
+> Times (ms)
+> frontal (HC)
+> Frequencies (Hz)
+> parieto-occipital (HC)
+> parieto-occipital (MDD)
+> Theta band
+> Alpha band
+> A
+> E
+> BCD
+> FGH
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> -200 0200 400 600
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> Power (μV ²)Power (μV ²) Power (μV ²)Power (μV ²)
+
+Fig. 2. Time-frequency representations for the fearful facial expression condition. (A-D) Frontal region (13 electrodes including E23, E18, E16, E10, E3, E19, E11, E4, E20, E12, E5, E118): (A) Time-frequency representations of HCs and MDDs; (B) topographical distribution of the difference in theta (3-7 Hz) and alpha (8-12 Hz) band power between HCs and MDDs during 0-200 ms time windows; (C) time course of theta and alpha power with significant differences ( p < 0.05 ); (D) bar plots of mean theta and alpha power within 0-200 ms; ** denotes p < 0.01 . (E-H) Parieto-occipital region (17 electrodes, E62, E60, E67, E72, E77, E85, E59, E66, E71, E76, E84, E91, E65, E70, E75, E83, E90 included): (E)Time-frequency representations of HCs and MDDs; (F) topographical difference maps (HCs minus MDDs); (G) time course with significant time ( p < 0.05 ); (H) bar plots of mean theta and alpha power within 0-200 ms. * denotes p < 0.05 . Significant group differences are observed in both theta and alpha power for both regions. 
+
+1) Group Differences in Time-Frequency Representations: 
+
+Time-frequency analysis revealed oscillatory changes in theta and alpha frequency bands following presentation of emotional faces in both MDD and HC groups. Notably, significant group differences in oscillatory dynamics were mainly observed for negative emotional faces (fearful and sad) but not for positive faces (happy). For negative facial expressions (fear and sad), time-frequency analysis revealed marked group differences in theta and alpha bands during the early time window (0-200 ms) following stimulus onset, shown as Fig. 2A and Fig. 3A. Topographical difference maps (HCs minus MDD), shown as Fig. 2B and Fig. 3B, demonstrated greater frontal theta and alpha activity in HCs compared to MDD patients. Sim-ilarly, the parieto-occipital region showed pronounced group differences in both frequency bands during this early window (Fig. 2E-F and Fig. 3E-F). Temporal dynamics of averaged power at frontal (Fig. 2C and Fig. 3C) and parieto-occipital electrodes (Fig. 2G and Fig. 3G) confirmed significant group differences in the early window through independent-sample 
+
+t-tests conducted at each time point ( p < 0.05 ). Statistical analysis revealed non-significant frontal theta differences (all JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 8-200 0 200 400 600             
+
+> Theta band
+> Frequencies (Hz)
+> frontal (MDD)
+> frontal (HC)
+> Frequencies (Hz)
+> parieto-occipital (HC)
+> parieto-occipital (MDD)
+> Theta band
+> Alpha band
+> A
+> E
+> Alpha band
+> BCD
+> FGH
+> Times (ms)
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> -200 0200 400 600
+> 0
+> 10
+> -10
+> 0
+> 10
+> 15
+> 30
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 2
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> Power (μV ²)Power (μV ²) Power (μV ²)Power (μV ²)
+> -10
+
+Fig. 3. Time-frequency representations for the sad facial expression condi-tion. (A-D) Frontal region: (A) Time-frequency power fluctuations in HCs and MDDs following stimulus onset; (B) topographical distribution of the difference in theta and alpha power between HCs and MDDs during the 0-200 ms time window, with stronger power observed in HCs; (C) time course of theta and alpha power with shaded areas indicating standard error of the mean (SEM); significant intervals in alpha are marked ( p < 0.05 ). * denotes p < 0.05 ; (D) bar plots of mean theta and alpha power within 0-200 ms, showing a significant group difference in alpha ( p < 0.05 ), while theta remains non-significant. (E-H) Parieto-occipital region: (E) Time-frequency representations of theta and alpha activity in HCs and MDDs; (F) topographical distribution of group differences (HCs minus MDDs), with higher theta and alpha power in HCs; (G) time course of theta and alpha power with significant intervals indicated ( p < 0.05 ); (H) bar plots of mean theta and alpha power within 0-200 ms, with both frequency bands showing significant group differences. 
+
+p > 0.05 ) but significant differences in frontal alpha power (fear: t(31) = 2 .822 , p = 0 .008 , Cohen’s d = 1 .005 ; sad: 
+
+t(31) = 2 .062 , p = 0 .048 , Cohen’s d = 0 .735 ) (Fig. 2D and Fig. 3D), while MDD patients showed significantly larger parieto-occipital ERDs in both theta (fear: t(31) = 2 .459 ,
+
+p = 0 .020 , Cohen’s d = 0 .876 ; sad: t(31) = 2 .238 , p = 0 .033 ,Cohen’s d = 0 .797 ) and alpha bands (fear: t(31) = 2 .364 ,
+
+p = 0 .025 , Cohen’s d = 0 .842 ; sad: t(31) = 2 .265 , p = 0 .031 ,Cohen’s d = 0 .807 ) (Fig. 2H and Fig. 3H). These findings suggest that the reduced alpha power observed in MDD during early processing of negative faces reflects maladaptive sus-tained attention toward negative stimuli, while the attenuated theta power indicates deficient top-down cognitive control and impaired emotional regulation mechanisms [51], [52]. For positive facial expressions (happy), time-frequency analysis revealed different temporal and regional patterns compared to negative faces, with frontal regions showing considerable theta and alpha band activity changes within the early window (Fig 4A) but parieto-occipital regions dis-playing later power differences between groups (Fig. 4E). Topographical difference maps (Fig. 4B and Fig. 4F) indicated comparable frontal theta power between groups but lower frontal alpha power in MDD patients, while the parieto-occipital region showed greater theta and alpha activity in MDD patients during later processing. Temporal dynamics (Fig.4C and Fig.4G) revealed non-significant group differences for frontal alpha and theta power, as well as parieto-occipital -200 0 200 400 600             
+
+> Theta band
+> Alpha band
+> Frequencies (Hz)
+> frontal (MDD)
+> frontal (HC)
+> Frequencies (Hz)
+> parieto-occipital (HC)
+> parieto-occipital (MDD)
+> Theta band
+> Alpha band
+> A
+> E
+> BCD
+> FGH
+> Times (ms)
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> 0
+> 10
+> -10
+> -200 0200 400 600
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 15
+> 30
+> 2
+> 0
+> 10
+> -10
+> Power (μV ²)Power (μV ²) Power (μV ²)Power (μV ²)
+
+Fig. 4. Time-frequency representations for the happy facial expression condition. (A-D) Frontal region: (A) Time-frequency representations in HCs and MDDs; (B) topographical distribution of the difference in theta and alpha band power between HCs and MDDs during the 0-200 ms time window, showing increased alpha power in HCs; (C) time course of theta and alpha power with shaded areas indicating standard error of the mean (SEM); no significant group differences were observed; (D) bar plots of mean theta and alpha power within 0-200 ms, confirming non-significant effects. (E-H) Parieto-occipital region: (E) Time-frequency representations of HCs and MDDs showing activity differences in the 400-600 ms window; (F) topographical distribution of group differences (HCs minus MDDs), showing higher theta and alpha power in MDDs; (G) time course of theta and alpha power with significant intervals in alpha indicated ( p < 0.05 ). * denotes 
+
+p < 0.05 ; (H) bar plots of mean theta and alpha power within 400-600 ms; alpha power shows a significant group difference ( p < 0.05 ), while theta remains non-significant. 
+
+theta power, while only parieto-occipital alpha power showed significant differences from 344 to 600 ms. Statistical analysis revealed no significant frontal differences in either theta or alpha power during early processing, with all p > 0.05 
+
+(Fig. 4D), while MDD patients showed significantly greater parieto-occipital alpha power during later processing ( t(31) = 
+
+−2.362 , p = 0 .025 , Cohen’s d = −0.841 ) but non-significant theta differences ( p > 0.05 ), shown as Fig. 4H. While MDD patients initially process positive emotional stimuli similarly to HCs, as evidenced by the absence of group differences in early theta and alpha power, elevated alpha power during the later time window suggests decreased cortical activation and disengagement from sustained processing of positive informa-tion. This pattern aligns with the anhedonic characteristics of MDD patients, where attentional resources are not effectively maintained toward rewarding stimuli [53]. 
+
+2) Correlation Between Model Logits and Neural Features: 
+
+To assess whether speech-based diagnostic model estimates align with neural indices of depressive symptomatology, we examined correlations between model logits (predicted de-pression probability, ranged 0-1) and theta/alpha power that showed significant group differences (Fig. 5). We found that frontal alpha power during fearful face processing was negatively correlated with depression logits across all speech conditions (negative: r = −0.368 , p =0.036 ; neutral: r = −0.479 , p = 0.005 ; positive: r =
+
+−0.379 , p = 0 .030 ; Fig. 5A-C). Similarly, parieto-occipital JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 9F   
+
+> (μV 2）
+> ABC
+> E
+> (μV 2）
+> D
+> (μV 2）
+> I
+> (μV 2）
+> H
+> (μV 2）
+> G
+> (μV 2）
+> HC
+> MDD MDD
+> HC
+> Fig. 5. Spearman correlations between model-derived depression logits and time-frequency power. (A-C) In the frontal region (0-200 ms, fearful condi-tion), alpha power was negatively correlated with logits from the negative, neutral, and positive speech conditions. (D-F) In the parieto-occipital region (0-200 ms, fearful face condition), alpha power showed significant negative associations with logits under the negative, neutral, and positive speech conditions. (G) Parieto-occipital theta power (0-200 ms, fearful condition) negatively correlated with neutral speech logits. (H) Under the sad face condition (0-200 ms), parieto-occipital alpha power negatively correlated with positive speech logits. (I) In the happy face condition (400-600 ms), parieto-occipital alpha power positively correlated with logits from the negative speech condition. Each dot represents one participant (orange: MDD; green: HC).
+
+alpha power showed negative correlations with logits from all speech conditions during fearful faces (negative: r = −0.371 ,
+
+p = 0.034 ; neutral: r = −0.486 , p = 0.005 ; positive: 
+
+r = −0.366 , p = 0 .037 ; Fig. 5D-F). These findings indicate that reduced frontal and parieto-occipital alpha activity dur-ing early processing of fearful faces reliably co-varies with higher model-predicted depression likelihood. Additionally, parieto-occipital theta power during fearful face processing was negatively correlated with neutral speech logits during fearful faces ( r = −0.384 , p = 0 .028 ; Fig. 5G). Under sad face conditions, parieto-occipital alpha power in the 0-200 ms window was negatively correlated with positive speech logits ( r = −0.376 , p = 0.032 ; Fig. 5H). These findings indicate that speech model-predicted depression probability is consistent with the significant reduction in early neural activity during negative face processing. During happy face processing, parieto-occipital alpha power in the 400-600 ms window positively correlated with negative speech logits ( r = 0 .378 ,
+
+p = 0 .031 ; Fig. 5I). This result indicates that higher speech model-predicted depression probability is associated with in-creased later neural activity during positive face processing. 
+
+3) Correlation Between ∆Logits and EEG: To further investigate the relationship between emotional expression in speech and potential context-specific neural modulation, we calculated Spearman correlation between ∆logits ( ∆positive and ∆negative) and EEG power features across time-frequency representations of different time windows (early/late), fre-quency bands (alpha/theta) and regions (frontal/parieto-B
+
+D
+
+> △△
+> △△
+
+C
+
+A                 
+
+> Fig. 6. Spearman correlations between ∆logits (positive minus neutral and negative minus neutral) and time-frequency power. (A) Frontal alpha (400-600 ms, fearful condition) positively correlated with negative ∆logits across groups ( r= 0 .444 ,p= 0 .010 ). (B) In MDD, frontal theta (0-200 ms, fearful condition) positively correlated with positive ∆logits ( r= 0 .621 ,p=0.027 ). (C) In MDD, frontal alpha (400-600 ms, happy condition) positively correlated with negative ∆logits ( r= 0 .736 ,p= 0 .006 ). (D) In MDD, frontal theta (400-600 ms, happy condition) positively correlated with positive
+> ∆logits ( r= 0 .599 ,p= 0 .034 ). Each dot represents one participant (orange: MDD; green: HC).
+
+occipital). Significant correlations were found between ∆logits and mean time-frequency power (Fig. 6). When collapsing across groups, ∆negative were positively correlated with frontal alpha power between 400 and 600 ms during the fearful condition ( r = 0 .444 , p = 0 .010 ; Fig. 6A). This indicates that, regardless of MDD patients or HCs, individuals who tend toward more negative linguistic expressions invest more cognitive resources in late-stage processing of fearful stimuli. However, group-specific analyses revealed unique correla-tion patterns in MDD patients that were absent in HCs. Within the MDD group, ∆negative showed a strong positive asso-ciation with frontal alpha power during the happy condition in the later time window from 400 to 600 ms ( r = 0 .736 ,
+
+p = 0.006 ; Fig. 6B). This finding reveals that in MDD patients, stronger negative linguistic tendencies are associated with enhanced frontal alpha activity when processing positive stimuli. Additionally, ∆positive was significantly correlated with frontal theta power during fear (0-200 ms: r = 0 .621 ,
+
+p = 0.027 ; Fig. 6C) and happy conditions (400-600 ms: 
+
+r = 0 .599 , p = 0 .034 ; Fig. 6D). These findings suggest that in MDD patients, more positive speech expressions are associated with enhanced frontal theta activity, reflecting the increased cognitive effort needed for top-down control mechanisms when producing positive emotional expressions. V. D ISCUSSION 
+
+While the general state of depression is often characterised by low valence and low arousal according to the circumplex model of affect [54], the high-arousal tasks used in this JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 10 
+
+study (eliciting positive and negative affect) measure the acute response to an emotional provocation [55] rather than this general state. A central finding of this study is the strong empirical support for the emotional arousal hypothesis in speech. This acute response effectively exposes the underlying emotional dysregulation in depression, such as positive atten-uation [52] and the amplification of negative affect [56], [57]. In contrast, the low-arousal neutral task provides insufficient emotional provocation, leading to less distinct speech patterns between the groups. Our findings confirm that the key acoustic differentiator was not the polarity of the emotion (valence), but the atypical manner in which individuals with depression responded to any high-arousal prompt. The successful cross-linguistic generalisation of the CDMA framework warrants a careful distinction from transfer learning approaches. Transfer learning demonstrates the data-driven engineering feasibility of knowledge transfer by forcing a statistical alignment between source and target domains, a process often reliant on a large source dataset [58]; thus, its success in depression detection [34] may depend heavily on the transferred knowledge. In contrast, the success of the CDMA framework stems not from inheriting knowledge but from its inherent architectural design. This provides a crucial inductive bias [59] that allows it to naturally discover the shared pattern of depression even within a typologically distinct language. This study therefore not only presents a framework effective on smaller datasets where large-scale source data is unavailable but also scientifically validates that there are generalizable principles to be learned in the first place, which provides a theoretical foundation for transfer learning [60]. This suggests that applying transfer learning to the CDMA framework in the future would likely be highly successful, transforming the process from a blind alignment into a guided fine-tuning of already meaningful features. Our neurophysiological analysis provides the direct answer to the question of whether capturing acoustic signals that have a genuine neurophysiological basis, or by merely exploit-ing superficial statistical artifacts unrelated to the underlying pathophysiology of depression. EEG results revealed distinct group differences between patients with MDD and HCs in both the theta and alpha frequency bands during the early encoding phase of negative face, highlighting alterations in the neural dynamics of emotional processing in depression. Consistent with the attentional bias to negative information previously reported in MDD [52], these attenuated oscillatory activities suggest abnormally attentional engagement toward negative stimuli, further indicating deficient top-down cognitive con-trol [61] and impaired regulation of emotional responses at early sensory stages [62]. In contrast, positive emotional pro-cessing showed no early group differences, but patients with MDD displayed increased parieto-occipital alpha power during later processing. This enhancement of alpha activity implies decreased cortical activation and withdrawal of attention from happy faces [63], aligning with reduced motivation toward positive stimuli commonly observed in depression [64]. Im-portantly, correlations between EEG oscillations and speech-based model logits provide crucial physiological validation for the computational model. The negative correlations between model-predicted depression likelihood and early frontal and parieto-occipital alpha power during negative-face processing indicate that individuals classified as more depressed by the model also showed weaker early neural responses to emotional stimuli. And the positive correlation between model logits and later alpha power during happy-face processing suggests that higher predicted depression levels are linked to greater neural inhibition during positive emotion processing. Furthermore, regardless of the valence, stronger tendencies of predicted depression were associated with increased frontal alpha and theta activity during emotion processing in patients with MDD, suggesting neural evidence for the critical role of emotional arousal in speech-derived identification of depression. There-fore, the cross-linguistic robustness might be partly explained by the observed neurophysiological validation, however, it is crucial to acknowledge that without corresponding EEG data from the another corpus, this link remains speculative and requires further multimodal cross-lingual investigation. Despite these contributions, several limitations should be acknowledged, which also point toward avenues for future research. First, our EEG analysis utilised the MODMA dataset. While this is the largest publicly available dataset of its kind, the number of participants with high-quality concurrent recordings remains relatively modest. Replicating these corre-lational findings in a larger, independent cohort is therefore an essential next step. Second, another limitation is the cor-relational nature of our findings. We cannot infer causality from our data due to potential confounding variables such as medication status and specific comorbidities (e.g., anxiety disorders), which were not reported in the original dataset publication. Although the original study applied rigorous di-agnostic and exclusion criteria, the absence of this specific information means that their potential influence on speech and EEG features could not be assessed. For instance, a psychomotor slowing might simultaneously lead to reduced speech variability and altered alpha/theta band power, creating the observed correlation without a direct causal link between the two. Future research with longitudinal designs would be necessary to probe potential causal pathways. VI. C ONCLUSION 
+
+This study makes three primary contributions to computa-tional mental health assessment. First, we provide the first empirical validation that the emotional arousal, rather than valence polarity, is the critical factor enhancing detection performance, with both positive and negative spontaneous speech significantly outperforming neutral speech. Second, we provide strong evidence for the cross-linguistic generalizability of the CDMA framework for speech-based depression detec-tion, achieving comparable performance on Chinese Mandarin speech (F1-score up to 89.6%) as previous Italian validation. Third, we establish the first neurophysiological validation of a speech-based depression model by demonstrating significant correlations between model-derived depression estimates and established neural markers of emotional dysregulation. The clinical implications of this research are substantial. The high recall performance (95.7%) minimises false negatives, JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 11 
+
+crucial for depression screening, while the cross-linguistic ro-bustness enables potential deployment in multilingual clinical environments. Future work could also investigate the integra-tion of other physiological signals, such as heart rate and skin conductance, to further enrich the model’s understanding of a patient’s mental state and move closer to a holistic, computationally-driven assessment of depression. REFERENCES [1] World Health Organization, “Depression,” https://www.who.int/ news-room/fact-sheets/detail/depression, 2023, accessed: 2025-06-11. [2] M. Hunt, J. Auriemma, and A. C. Cashaw, “Self-report bias and underreporting of depression on the bdi-ii,” Journal of personality assessment , vol. 80, no. 1, pp. 26–30, 2003. [3] S. Clement, O. Schauman, T. Graham, F. Maggioni, S. Evans-Lacko, N. Bezborodovs, C. Morgan, N. R¨ usch, J. S. Brown, and G. Thornicroft, “What is the impact of mental health-related stigma on help-seeking? a systematic review of quantitative and qualitative studies,” Psychological medicine , vol. 45, no. 1, pp. 11–27, 2015. [4] A. J. Mitchell, A. Vaze, and S. Rao, “Clinical diagnosis of depression in primary care: a meta-analysis,” The Lancet , vol. 374, no. 9690, pp. 609–619, 2009. [5] Y. Li, S. Kumbale, Y. Chen, T. Surana, E. S. Chng, and C. Guan, “Automated depression detection from text and audio: A systematic review,” IEEE Journal of Biomedical and Health Informatics , 2025. [6] S. S. Leal, S. Ntalampiras, and R. Sassi, “Speech-based depression assessment: A comprehensive survey,” IEEE Transactions on Affective Computing , 2024. [7] M. Niu, J. Tao, Y. Li, Y. Qin, and Y. Li, “Wavdepressionnet: Automatic depression level prediction via raw speech signals,” IEEE Transactions on Affective Computing , vol. 15, no. 1, pp. 285–296, 2023. [8] Y. Sun, Y. Zhou, X. Xu, J. Qi, F. Xu, Z. Ren, and B. W. Schuller, “Weakly-supervised depression detection in speech through self-learning based label correction,” IEEE Transactions on Audio, Speech and Language Processing , 2025. [9] M. Niu, J. Tao, Y. He, S. Zhang, and M. Li, “Examining the fourier spec-trum of speech signal from a time-frequency perspective for automatic depression level prediction,” IEEE Transactions on Affective Computing ,2025. [10] G. Kiss and K. Vicsi, “Comparison of read and spontaneous speech in case of automatic detection of depression,” in IEEE International Con-ference on Cognitive Infocommunications , 2017, pp. 000 213–000 218. [11] S. Alghowinem, R. Goecke, M. Wagner, J. Epps, M. Breakspear, and G. Parker, “Detecting depression: a comparison between spontaneous and read speech,” in IEEE International Conference on Acoustics, Speech and Signal Processing , 2013, pp. 7547–7551. [12] L. Ilias and D. Askounis, “A cross-attention layer coupled with mul-timodal fusion methods for recognizing depression from spontaneous speech,” in INTERSPEECH , 2024, pp. 912–916. [13] F. Tao, X. Ge, W. Ma, A. Esposito, and A. Vinciarelli, “Cross-data multilevel attention for depression detection: Analyzing the interplay between read and spontaneous speech,” in IEEE International Confer-ence on Bioinformatics and Biomedicine , 2024, pp. 1169–1176. [14] N. Aloshban, A. Esposito, and A. Vinciarelli, “What you say or how you say it? depression detection through joint modeling of linguistic and acoustic aspects of speech,” Cognitive Computation , vol. 14, no. 5, pp. 1585–1598, 2022. [15] R. Alsarrani, A. Esposito, and A. Vinciarelli, “Thin slices of depression: Improving depression detection performance through data segmenta-tion,” in IEEE International Conference on Acoustics, Speech and Signal Processing , 2022, pp. 6257–6261. [16] Q. Zhao, H.-Z. Fan, Y.-L. Li, L. Liu, Y.-X. Wu, Y.-L. Zhao, Z.-X. Tian, Z.-R. Wang, Y.-L. Tan, and S.-P. Tan, “Vocal acoustic features as potential biomarkers for identifying/diagnosing depression: a cross-sectional study,” Frontiers in Psychiatry , vol. 13, p. 815678, 2022. [17] A. K¨ onig, J. Tr¨ oger, E. Mallick, M. Mina, N. Linz, C. Wagnon, J. Kar-bach, C. Kuhn, and J. Peter, “Detecting subtle signs of depression with automated speech analysis in a non-clinical sample,” BMC psychiatry ,vol. 22, no. 1, p. 830, 2022. [18] Q. Lin, X. Wu, Y. Lei, W. Cheng, S. Huang, W. Wang, C. Li, and J. Zhao, “Acoustic signatures of depression elicited by emotion-based and theme-based speech tasks,” BMJ Mental Health , vol. 28, no. 1, 2025. [19] S. Teng, J. Liu, H. Sun, S. Chai, T. Tateyama, L. Lin, and Y.-W. Chen, “Enhanced multimodal depression detection with emotion prompts,” in IEEE International Conference on Acoustics, Speech and Signal Processing , 2025, pp. 1–5. [20] N. Cummins, S. Scherer, J. Krajewski, S. Schnieder, J. Epps, and T. F. Quatieri, “A review of depression and suicide risk assessment using speech analysis,” Speech Communication , vol. 71, pp. 10–49, 2015. [21] A. M. Tackman, D. A. Sbarra, A. L. Carey, M. B. Donnellan, A. B. Horn, N. S. Holtzman, T. S. Edwards, J. W. Pennebaker, and M. R. Mehl, “Depression, negative emotionality, and self-referential language: A multi-lab, multi-measure, and multi-language-task research synthesis.” 
+
+Journal of personality and social psychology , vol. 116, no. 5, p. 817, 2019. [22] N. Cummins, J. Dineley, P. Conde, F. Matcham, S. Siddi, F. Lamers, E. Carr, G. Lavelle, D. Leightley, K. M. White et al. , “Multilingual markers of depression in remotely collected speech samples: A prelim-inary analysis,” Journal of affective disorders , vol. 341, pp. 128–136, 2023. [23] G. Kiss and K. Vicsi, “Investigation of cross-lingual depression pre-diction possibilities based on speech processing,” in IEEE Interna-tional Conference on Cognitive Infocommunications , 2017, pp. 000 097– 000 102. [24] G. Costantini, E. Parada-Cabaleiro, D. Casali, and V. Cesarini, “The emotion probe: On the universality of cross-linguistic and cross-gender speech emotion recognition via machine learning,” Sensors , vol. 22, no. 7, p. 2461, 2022. [25] E. Lim, M. Jhon, J.-W. Kim, S.-H. Kim, S. Kim, and H.-J. Yang, “A lightweight approach based on cross-modality for depression detection,” 
+
+Computers in Biology and Medicine , vol. 186, p. 109618, 2025. [26] Q. Dai and Z. Feng, “Deficient interference inhibition for negative stimuli in depression: An event-related potential study,” Clinical Neuro-physiology , vol. 122, no. 1, pp. 52–61, 2011. [27] Q. Zhao, Y. Tang, S. Chen, Y. Lyu, A. Curtin, J. Wang, J. Sun, and S. Tong, “Early perceptual anomaly of negative facial expression in depression: An event-related potential study,” Neurophysiologie Clin-ique/Clinical Neurophysiology , vol. 45, no. 6, pp. 435–443, 2015. [28] D. Li, X. Zhang, Y. Kong, W. Yin, K. Jiang, X. Guo, X. Dong, L. Fu, G. Zhao, H. Gao et al. , “Lack of neural load modulation explains attention and working memory deficits in first-episode schizophrenia,” 
+
+Clinical Neurophysiology , vol. 136, pp. 206–218, 2022. [29] D. Li, Y. Hu, M. Qi, C. Zhao, O. Jensen, J. Huang, and Y. Song, “Pri-oritizing flexible working memory representations through retrospective attentional strengthening,” NeuroImage , vol. 269, p. 119902, 2023. [30] L. Diao, S. Qi, M. Xu, L. Fan, and D. Yang, “Electroencephalographic theta oscillatory dynamics reveal attentional bias to angry faces,” Neu-roscience letters , vol. 656, pp. 31–36, 2017. [31] H. Cai, Z. Yuan, Y. Gao, S. Sun, N. Li, F. Tian, H. Xiao, J. Li, Z. Yang, X. Li et al. , “A multi-modal open dataset for mental-disorder analysis,” 
+
+Scientific Data , vol. 9, no. 1, p. 178, 2022. [32] F. Tao, A. Esposito, and A. Vinciarelli, “Spotting the traces of depression in read speech: An approach based on computational paralinguistics and social signal processing.” in INTERSPEECH , 2020, pp. 1828–1832. [33] V. Mitra and E. Shriberg, “Effects of feature type, learning algorithm and speaking style for depression detection from speech,” in IEEE International Conference on Acoustics, Speech and Signal Processing ,2015, pp. 4774–4778. [34] S. Qin, Y. Zhang, Y. Ma, H. Li, X. Li, B. Lian, W. Cai, J. Cui, and X. Zhao, “A cross-linguistic depression detection method based on speech data,” Journal of Affective Disorders , p. 119739, 2025. [35] D. Li, C. Zhao, J. Guo, Y. Kong, H. Li, B. Du, Y. Ding, and Y. Song, “Visual working memory guides spatial attention: evidence from alpha oscillations and sustained potentials,” Neuropsychologia , vol. 151, p. 107719, 2021. [36] T. Sollfrank, O. Kohnen, P. Hilfiker, L. C. Kegel, H. Jokeit, P. Brugger, M. L. Loertscher, A. Rey, D. Mersch, J. Sternagel et al. , “The effects of dynamic and static emotional facial expressions of humans and their avatars on the eeg: An erp and erd/ers study,” Frontiers in neuroscience ,vol. 15, p. 651044, 2021. [37] B. Lu, M. Hui, and H. Yu-Xia, “The development of native chinese affective picture system–a pretest in 46 college students.” Chinese mental health journal , 2005. [38] F. Eyben, F. Weninger, F. Gross, and B. Schuller, “Recent developments in opensmile, the munich open-source multimedia feature extractor,” in 
+
+21st ACM International Conference on Multimedia , 2013, pp. 835–838. [39] F. Tao, A. Esposito, and A. Vinciarelli, “The androids corpus: A new publicly available benchmark for speech based depression detection,” 
+
+INTERSPEECH , vol. 47, pp. 11–9, 2023. JOURNAL OF L ATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021 12 
+
+[40] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural Computation , vol. 9, no. 8, pp. 1735–1780, 1997. [41] T. Tieleman, G. Hinton et al. , “Lecture 6.5-rmsprop: Divide the gradient by a running average of its recent magnitude,” COURSERA: Neural networks for machine learning , vol. 4, no. 2, pp. 26–31, 2012. [42] E. Rejaibi, A. Komaty, F. Meriaudeau, S. Agrebi, and A. Othmani, “Mfcc-based recurrent neural network for automatic clinical depression recognition and assessment from speech,” Biomedical Signal Processing and Control , vol. 71, p. 103107, 2022. [43] X. Ma, H. Yang, Q. Chen, D. Huang, and Y. Wang, “Depaudionet: An efficient deep model for audio based depression classification,” in 
+
+Proceedings of the 6th international workshop on audio/visual emotion challenge , 2016, pp. 35–42. [44] M. Du, S. Liu, T. Wang, W. Zhang, Y. Ke, L. Chen, and D. Ming, “De-pression recognition using a proposed speech chain model fusing speech production and perception features,” Journal of Affective Disorders , vol. 323, pp. 299–308, 2023. [45] M. Zhao, H. Gao, L. Zhao, Z. Wang, F. Wang, W. Zheng, J. Li, and C. Liu, “Decoupled multi-perspective fusion for speech depression detection,” IEEE Transactions on Affective Computing , 2025. [46] X. Chen and Z. Pan, “A convenient and low-cost model of depression screening and early warning based on voice data using for public mental health,” International Journal of Environmental Research and Public Health , vol. 18, no. 12, p. 6441, 2021. [47] M. Gheorghe, S. Mihalache, and D. Burileanu, “Using deep neural networks for detecting depression from speech,” in European Signal Processing Conference , 2023, pp. 411–415. [48] Y. Shen, H. Yang, and L. Lin, “Automatic depression detection: An emo-tional audio-textual corpus and a gru/bilstm-based model,” in ICASSP 2022-2022 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2022, pp. 6247–6251. [49] Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, “A convnet for the 2020s,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2022, pp. 11 976–11 986. [50] H. Wu, T. Hu, Y. Liu, H. Zhou, J. Wang, and M. Long, “Timesnet: Temporal 2d-variation modeling for general time series analysis,” arXiv preprint arXiv:2210.02186 , 2022. [51] S. Villafaina, C. Sitges, D. Collado-Mateo, J. P. Fuentes-Garc´ ıa, and N. Gusi, “Influence of depressive feelings in the brain processing of women with fibromyalgia: An eeg study,” Medicine , vol. 98, no. 19, p. e15564, 2019. [52] S. G. Disner, C. G. Beevers, E. A. Haigh, and A. T. Beck, “Neural mechanisms of the cognitive model of depression,” Nature Reviews Neuroscience , vol. 12, no. 8, pp. 467–477, 2011. [53] D. A. Pizzagalli, “Depression, stress, and anhedonia: toward a synthesis and integrated model,” Annual review of clinical psychology , vol. 10, no. 1, pp. 393–423, 2014. [54] J. Posner, J. A. Russell, and B. S. Peterson, “The circumplex model of affect: An integrative approach to affective neuroscience, cognitive development, and psychopathology,” Development and psychopathology ,vol. 17, no. 3, pp. 715–734, 2005. [55] J. M. Girard, J. F. Cohn, M. H. Mahoor, S. M. Mavadati, Z. Hammal, and D. P. Rosenwald, “Nonverbal social withdrawal in depression: Evidence from manual and automatic analyses,” Image and vision computing ,vol. 32, no. 10, pp. 641–647, 2014. [56] I. H. Gotlib, E. Krasnoperova, D. N. Yue, and J. Joormann, “Attentional biases for negative interpersonal stimuli in clinical depression.” Journal of abnormal psychology , vol. 113, no. 1, p. 127, 2004. [57] I. H. Gotlib and J. Joormann, “Cognition and depression: current status and future directions,” Annual review of clinical psychology , vol. 6, no. 1, pp. 285–312, 2010. [58] S. J. Pan and Q. Yang, “A survey on transfer learning,” IEEE Trans-actions on knowledge and data engineering , vol. 22, no. 10, pp. 1345– 1359, 2009. [59] P. W. Battaglia, J. B. Hamrick, V. Bapst, A. Sanchez-Gonzalez, V. Zam-baldi, M. Malinowski, A. Tacchetti, D. Raposo, A. Santoro, R. Faulkner 
+
+et al. , “Relational inductive biases, deep learning, and graph networks,” 
+
+arXiv preprint arXiv:1806.01261 , 2018. [60] J. Yosinski, J. Clune, Y. Bengio, and H. Lipson, “How transferable are features in deep neural networks?” Advances in neural information processing systems , vol. 27, 2014. [61] A. S. Heller, T. Johnstone, A. J. Shackman, S. N. Light, M. J. Peterson, G. G. Kolden, N. H. Kalin, and R. J. Davidson, “Reduced capacity to sustain positive emotion in major depression reflects diminished maintenance of fronto-striatal brain activation,” Proceedings of the National Academy of Sciences , vol. 106, no. 52, pp. 22 445–22 450, 2009. [62] A. Paquet, B. Calvet, A. Lacroix, and M. Girard, “Sensory processing in depression: Assessment and intervention perspective,” Clinical Psy-chology & Psychotherapy , vol. 29, no. 5, pp. 1567–1579, 2022. [63] W. Klimesch, P. Sauseng, and S. Hanslmayr, “Eeg alpha oscillations: the inhibition–timing hypothesis,” Brain research reviews , vol. 53, no. 1, pp. 63–88, 2007. [64] J. Epstein, H. Pan, J. H. Kocsis, Y. Yang, T. Butler, J. Chusid, H. Hochberg, J. Murrough, E. Strohmayer, E. Stern et al. , “Lack of ventral striatal response to positive stimuli in depressed versus normal subjects,” American Journal of Psychiatry , vol. 163, no. 10, pp. 1784– 1790, 2006.

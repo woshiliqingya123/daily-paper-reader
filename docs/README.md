@@ -6,37 +6,37 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-06
-- 运行时间：2026-04-06 20:27:30 UTC
+- 最新运行日期：2026-04-07
+- 运行时间：2026-04-07 19:48:07 UTC
 - 运行状态：成功
 - 本次总论文数：5
 - 精读区：4
 - 速读区：1
 
 ### 今日简报（AI）
-今日深度研读 5 篇前沿论文，聚焦多模态技术在心理健康与老年认知领域的突破性应用。
-重点推荐受心理学启发的精神障碍检测模型及 MECO 老年人情感认知数据集，两项研究均获 9.0 高分。
-建议关注 AI 如何通过多维感官数据赋能精准医疗，探索技术在老龄化社会中的人文关怀潜力。
-- 详情：[/202604/06/README](/202604/06/README)
+今日深度解析 5 篇前沿成果，聚焦 Mamba 架构在多模态情感分析中的满分表现及小模型的情感表征操控。
+重点推荐 CAGMamba 提出的上下文感知门控网络，以及针对轻量化模型情感提取与干预的方法论对比。
+建议开发者关注 Mamba 架构的跨模态潜力，并尝试在小参数模型中实践精准的情感引导技术。
+- 详情：[/202604/07/README](/202604/07/README)
 
 ### 精读区论文标签
-1. [Differential Mental Disorder Detection with Psychology-Inspired Multimodal Stimuli](/202604/06/2604.02798v1-differential-mental-disorder-detection-with-psychology-inspired-multimodal-stimuli)  
+1. [CAGMamba: Context-Aware Gated Cross-Modal Mamba Network for Multimodal Sentiment Analysis](/202604/07/2604.03650v1-cagmamba-context-aware-gated-cross-modal-mamba-network-for-multimodal-sentiment-analysis)  
+   标签：评分：10.0/10、query:msa
+   evidence：用于对话式多模态情感分析的Mamba框架
+2. [Extracting and Steering Emotion Representations in Small Language Models: A Methodological Comparison](/202604/07/2604.04064v1-extracting-and-steering-emotion-representations-in-small-language-models-a-methodological-comparison)  
    标签：评分：9.0/10、query:msa
-   evidence：用于真实临床实践中精神障碍检测的多模态刺激
-2. [MECO: A Multimodal Dataset for Emotion and Cognitive Understanding in Older Adults](/202604/06/2604.03050v1-meco-a-multimodal-dataset-for-emotion-and-cognitive-understanding-in-older-adults)  
+   evidence：语言模型内部情感表示分析
+3. [AffectSpeech: A Large-Scale Emotional Speech Dataset with Fine-Grained Textual Descriptions for Speech Emotion Captioning and Synthesis](/202604/07/2604.04160v1-affectspeech-a-large-scale-emotional-speech-dataset-with-fine-grained-textual-descriptions-for-speech-emotion-captioning-and-synthesis)  
    标签：评分：9.0/10、query:msa
-   evidence：针对老年人情感和认知理解的多模态数据集
-3. [Valence-Arousal Subspace in LLMs: Circular Emotion Geometry and Multi-Behavioral Control](/202604/06/2604.03147v1-valence-arousal-subspace-in-llms-circular-emotion-geometry-and-multi-behavioral-control)  
-   标签：评分：9.0/10、query:msa
-   evidence：大语言模型中的情感色调分析与效价-唤醒子空间研究
-4. [Variational Encoder--Multi-Decoder (VE-MD) for Privacy-by-functional-design (Group) Emotion Recognition](/202604/06/2604.02397v1-variational-encoder--multi-decoder-ve-md-for-privacy-by-functional-design-group-emotion-recognition)  
+   evidence：带有文本描述的多模态情感语音数据集
+4. [Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation](/202604/07/2604.01533v2-validating-computational-markers-of-depressive-behavior-cross-linguistic-speech-based-depression-detection-with-neurophysiological-validation)  
    标签：评分：8.0/10、query:msa
-   evidence：隐私保护的群体情感识别框架
+   evidence：融合语音和神经生理信号进行情感相关检测
 
 ### 速读区论文标签
-1. [CrossWeaver: Cross-modal Weaving for Arbitrary-Modality Semantic Segmentation](/202604/06/2604.02948v1-crossweaver-cross-modal-weaving-for-arbitrary-modality-semantic-segmentation)  
+1. [MultiPress: A Multi-Agent Framework for Interpretable Multimodal News Classification](/202604/07/2604.03586v1-multipress-a-multi-agent-framework-for-interpretable-multimodal-news-classification)  
    标签：评分：6.0/10、query:msa
-   evidence：适用于任意模态的多模态融合框架
+   evidence：具有跨模态交互的多模态新闻分类
 
 
 <div class="dpr-home-promo-card">
