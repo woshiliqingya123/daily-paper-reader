@@ -6,37 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-07
-- 运行时间：2026-04-07 19:48:07 UTC
+- 最新运行日期：2026-04-08
+- 运行时间：2026-04-08 20:26:30 UTC
 - 运行状态：成功
-- 本次总论文数：5
-- 精读区：4
-- 速读区：1
+- 本次总论文数：9
+- 精读区：5
+- 速读区：4
 
 ### 今日简报（AI）
-今日深度解析 5 篇前沿成果，聚焦 Mamba 架构在多模态情感分析中的满分表现及小模型的情感表征操控。
-重点推荐 CAGMamba 提出的上下文感知门控网络，以及针对轻量化模型情感提取与干预的方法论对比。
-建议开发者关注 Mamba 架构的跨模态潜力，并尝试在小参数模型中实践精准的情感引导技术。
-- 详情：[/202604/07/README](/202604/07/README)
+今日深挖多模态情感分析的鲁棒性前沿，重点攻克模态缺失下的可靠性难题。
+满分论文提出的“先评估后生成”范式与 QA-MoE 架构，重新定义了不完整数据下的情感识别精度。
+建议关注如何将这些鲁棒性技术应用于金融推理与人体感知等高要求实战场景。
+- 详情：[/202604/08/README](/202604/08/README)
 
 ### 精读区论文标签
-1. [CAGMamba: Context-Aware Gated Cross-Modal Mamba Network for Multimodal Sentiment Analysis](/202604/07/2604.03650v1-cagmamba-context-aware-gated-cross-modal-mamba-network-for-multimodal-sentiment-analysis)  
+1. [Evaluation Before Generation: A Paradigm for Robust Multimodal Sentiment Analysis with Missing Modalities](/202604/08/2604.05558v1-evaluation-before-generation-a-paradigm-for-robust-multimodal-sentiment-analysis-with-missing-modalities)  
    标签：评分：10.0/10、query:msa
-   evidence：用于对话式多模态情感分析的Mamba框架
-2. [Extracting and Steering Emotion Representations in Small Language Models: A Methodological Comparison](/202604/07/2604.04064v1-extracting-and-steering-emotion-representations-in-small-language-models-a-methodological-comparison)  
-   标签：评分：9.0/10、query:msa
-   evidence：语言模型内部情感表示分析
-3. [AffectSpeech: A Large-Scale Emotional Speech Dataset with Fine-Grained Textual Descriptions for Speech Emotion Captioning and Synthesis](/202604/07/2604.04160v1-affectspeech-a-large-scale-emotional-speech-dataset-with-fine-grained-textual-descriptions-for-speech-emotion-captioning-and-synthesis)  
-   标签：评分：9.0/10、query:msa
-   evidence：带有文本描述的多模态情感语音数据集
-4. [Validating Computational Markers of Depressive Behavior: Cross-Linguistic Speech-Based Depression Detection with Neurophysiological Validation](/202604/07/2604.01533v2-validating-computational-markers-of-depressive-behavior-cross-linguistic-speech-based-depression-detection-with-neurophysiological-validation)  
+   evidence：真实场景下缺失模态的多模态情感分析
+2. [QA-MoE: Towards a Continuous Reliability Spectrum with Quality-Aware Mixture of Experts for Robust Multimodal Sentiment Analysis](/202604/08/2604.05704v1-qa-moe-towards-a-continuous-reliability-spectrum-with-quality-aware-mixture-of-experts-for-robust-multimodal-sentiment-analysis)  
+   标签：评分：10.0/10、query:msa
+   evidence：基于质量感知混合专家的鲁棒多模态情感分析
+3. [Learning Shared Sentiment Prototypes for Adaptive Multimodal Sentiment Analysis](/202604/08/2604.05873v1-learning-shared-sentiment-prototypes-for-adaptive-multimodal-sentiment-analysis)  
+   标签：评分：10.0/10、query:msa
+   evidence：基于共享情感原型的自适应多模态情感分析
+4. [AICA-Bench: Holistically Examining the Capabilities of VLMs in Affective Image Content Analysis](/202604/08/2604.05900v1-aica-bench-holistically-examining-the-capabilities-of-vlms-in-affective-image-content-analysis)  
    标签：评分：8.0/10、query:msa
-   evidence：融合语音和神经生理信号进行情感相关检测
+   evidence：情感图像内容分析与情感推理
+5. [FEEL: Quantifying Heterogeneity in Physiological Signals for Generalizable Emotion Recognition](/202604/08/2604.05926v1-feel-quantifying-heterogeneity-in-physiological-signals-for-generalizable-emotion-recognition)  
+   标签：评分：8.0/10、query:msa
+   evidence：基于生理信号的情感识别大规模基准测试
 
 ### 速读区论文标签
-1. [MultiPress: A Multi-Agent Framework for Interpretable Multimodal News Classification](/202604/07/2604.03586v1-multipress-a-multi-agent-framework-for-interpretable-multimodal-news-classification)  
+1. [SenseAI: A Human-in-the-Loop Dataset for RLHF-Aligned Financial Sentiment Reasoning](/202604/08/2604.05135v1-senseai-a-human-in-the-loop-dataset-for-rlhf-aligned-financial-sentiment-reasoning)  
+   标签：评分：7.0/10、query:msa
+   evidence：金融情感推理与推理链
+2. [Hierarchical Contrastive Learning for Multimodal Data](/202604/08/2604.05462v1-hierarchical-contrastive-learning-for-multimodal-data)  
+   标签：评分：7.0/10、query:msa
+   evidence：多模态表示的分层对比学习
+3. [Purify-then-Align: Towards Robust Human Sensing under Modality Missing with Knowledge Distillation from Noisy Multimodal Teacher](/202604/08/2604.05584v1-purify-then-align-towards-robust-human-sensing-under-modality-missing-with-knowledge-distillation-from-noisy-multimodal-teacher)  
+   标签：评分：7.0/10、query:msa
+   evidence：鲁棒多模态人体感知与模态缺失处理
+4. [PDMP: Rethinking Balanced Multimodal Learning via Performance-Dominant Modality Prioritization](/202604/08/2604.05773v1-pdmp-rethinking-balanced-multimodal-learning-via-performance-dominant-modality-prioritization)  
    标签：评分：6.0/10、query:msa
-   evidence：具有跨模态交互的多模态新闻分类
+   evidence：重新思考多模态学习中的平衡问题以提升性能
 
 
 <div class="dpr-home-promo-card">
