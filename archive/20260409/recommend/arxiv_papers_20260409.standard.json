@@ -1,0 +1,365 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-04-09T20:21:09.392056+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2604.05704v2",
+      "title": "QA-MoE: Towards a Continuous Reliability Spectrum with Quality-Aware Mixture of Experts for Robust Multimodal Sentiment Analysis",
+      "abstract": "Multimodal Sentiment Analysis (MSA) aims to infer human sentiment from textual, acoustic, and visual signals. In real-world scenarios, however, multimodal inputs are often compromised by dynamic noise or modality missingness. Existing methods typically treat these imperfections as discrete cases or assume fixed corruption ratios, which limits their adaptability to continuously varying reliability conditions. To address this, we first introduce a Continuous Reliability Spectrum to unify missingness and quality degradation into a single framework. Building on this, we propose QA-MoE, a Quality-Aware Mixture-of-Experts framework that quantifies modality reliability via self-supervised aleatoric uncertainty. This mechanism explicitly guides expert routing, enabling the model to suppress error propagation from unreliable signals while preserving task-relevant information. Extensive experiments indicate that QA-MoE achieves competitive or state-of-the-art performance across diverse degradation scenarios and exhibits a promising One-Checkpoint-for-All property in practice.",
+      "authors": [
+        "Yitong Zhu",
+        "Yuxuan Jiang",
+        "Guanxuan Jiang",
+        "Bojing Hou",
+        "Peng Yuan Zhou",
+        "Ge Lin Kan",
+        "Yuyang Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-07T11:04:23+00:00",
+      "link": "https://arxiv.org/pdf/2604.05704v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "robust multimodal sentiment analysis in real-world scenarios",
+      "llm_evidence_cn": "真实场景下的鲁棒多模态情感分析",
+      "llm_evidence": "真实场景下的鲁棒多模态情感分析",
+      "canonical_evidence": "真实场景下的鲁棒多模态情感分析",
+      "llm_tldr_en": "Develops a Quality-Aware Mixture-of-Experts framework for robust multimodal sentiment analysis.",
+      "llm_tldr_cn": "开发了一种质量感知混合专家框架，用于处理真实场景下的多模态情感分析。",
+      "llm_tldr": "开发了一种质量感知混合专家框架，用于处理真实场景下的多模态情感分析。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.07193v1",
+      "title": "LaScA: Language-Conditioned Scalable Modelling of Affective Dynamics",
+      "abstract": "Predicting affect in unconstrained environments remains a fundamental challenge in human-centered AI. While deep neural embeddings dominate contemporary approaches, they often lack interpretability and limit expert-driven refinement. We propose a novel framework that uses Language Models (LMs) as semantic context conditioners over handcrafted affect descriptors to model changes in Valence and Arousal. Our approach begins with interpretable facial geometry and acoustic features derived from structured domain knowledge. These features are transformed into symbolic natural-language descriptions encoding their affective implications. A pretrained LM processes these descriptions to generate semantic context embeddings that act as high-level priors over affective dynamics. Unlike end-to-end black-box pipelines, our framework preserves feature transparency while leveraging the contextual abstraction capabilities of LMs. We evaluate the proposed method on the Aff-Wild2 and SEWA datasets for affect change prediction. Experimental results show consistent improvements in accuracy for both Valence and Arousal compared to handcrafted-only and deep-embedding baselines. Our findings demonstrate that semantic conditioning enables interpretable affect modelling without sacrificing predictive performance, offering a transparent and computationally efficient alternative to fully end-to-end architectures",
+      "authors": [
+        "Kosmas Pinitas",
+        "Ilias Maglogiannis"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.ET"
+      ],
+      "published": "2026-04-08T15:18:39+00:00",
+      "link": "https://arxiv.org/pdf/2604.07193v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Language-conditioned modelling of affective dynamics using facial and acoustic features",
+      "llm_evidence_cn": "利用面部和声学特征进行语言调节的情感动态建模",
+      "llm_evidence": "利用面部和声学特征进行语言调节的情感动态建模",
+      "canonical_evidence": "利用面部和声学特征进行语言调节的情感动态建模",
+      "llm_tldr_en": "Uses LMs as context conditioners over facial and acoustic features for interpretable affect prediction.",
+      "llm_tldr_cn": "利用语言模型作为面部和声学特征的上下文调节器，实现可解释的情感预测。",
+      "llm_tldr": "利用语言模型作为面部和声学特征的上下文调节器，实现可解释的情感预测。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.06752v1",
+      "title": "Busemann energy-based attention for emotion analysis in Poincaré discs",
+      "abstract": "We present EmBolic - a novel fully hyperbolic deep learning architecture for fine-grained emotion analysis from textual messages. The underlying idea is that hyperbolic geometry efficiently captures hierarchies between both words and emotions. In our context, these hierarchical relationships arise from semantic ambiguities. EmBolic aims to infer the curvature on the continuous space of emotions, rather than treating them as a categorical set without any metric structure. In the heart of our architecture is the attention mechanism in the hyperbolic disc. The model is trained to generate queries (points in the hyperbolic disc) from textual messages, while keys (points at the boundary) emerge automatically from the generated queries. Predictions are based on the Busemann energy between queries and keys, evaluating how well a certain textual message aligns with the class directions representing emotions. Our experiments demonstrate strong generalization properties and reasonably good prediction accuracy even for small dimensions of the representation space. Overall, this study supports our claim that affective computing is one of the application domains where hyperbolic representations are particularly advantageous.",
+      "authors": [
+        "Zinaid Kapić",
+        "Vladimir Jaćimović"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-04-08T07:19:52+00:00",
+      "link": "https://arxiv.org/pdf/2604.06752v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Fine-grained emotion analysis from textual messages using hyperbolic deep learning",
+      "llm_evidence_cn": "利用双曲深度学习对文本信息进行细粒度情感分析",
+      "llm_evidence": "利用双曲深度学习对文本信息进行细粒度情感分析",
+      "canonical_evidence": "利用双曲深度学习对文本信息进行细粒度情感分析",
+      "llm_tldr_en": "Presents a hyperbolic attention architecture for capturing hierarchical relationships in textual emotion analysis.",
+      "llm_tldr_cn": "提出一种双曲注意力架构，用于捕捉文本情感分析中的层级关系。",
+      "llm_tldr": "提出一种双曲注意力架构，用于捕捉文本情感分析中的层级关系。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.06728v1",
+      "title": "URMF: Uncertainty-aware Robust Multimodal Fusion for Multimodal Sarcasm Detection",
+      "abstract": "Multimodal sarcasm detection (MSD) aims to identify sarcastic intent from semantic incongruity between text and image. Although recent methods have improved MSD through cross-modal interaction and incongruity reasoning, they often assume that all modalities are equally reliable. In real-world social media, however, textual content may be ambiguous and visual content may be weakly relevant or even irrelevant, causing deterministic fusion to introduce noisy evidence and weaken robust reasoning. To address this issue, we propose Uncertainty-aware Robust Multimodal Fusion (URMF), a unified framework that explicitly models modality reliability during interaction and fusion. URMF first employs multi-head cross-attention to inject visual evidence into textual representations, followed by multi-head self-attention in the fused semantic space to enhance incongruity-aware reasoning. It then performs unified unimodal aleatoric uncertainty modeling over text, image, and interaction-aware latent representations by parameterizing each modality as a learnable Gaussian posterior. The estimated uncertainty is further used to dynamically regulate modality contributions during fusion, suppressing unreliable modalities and yielding a more robust joint representation. In addition, we design a joint training objective integrating task supervision, modality prior regularization, cross-modal distribution alignment, and uncertainty-driven self-sampling contrastive learning. Experiments on public MSD benchmarks show that URMF consistently outperforms strong unimodal, multimodal, and MLLM-based baselines, demonstrating the effectiveness of uncertainty-aware fusion for improving both accuracy and robustness.",
+      "authors": [
+        "Zhenyu Wang",
+        "Weichen Cheng",
+        "Weijia Li",
+        "Junjie Mou",
+        "Zongyou Zhao",
+        "Guoying Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.MM"
+      ],
+      "published": "2026-04-08T06:50:43+00:00",
+      "link": "https://arxiv.org/pdf/2604.06728v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Uncertainty-aware robust multimodal fusion for sarcasm detection in social media",
+      "llm_evidence_cn": "针对社交媒体讽刺检测的不确定性感知鲁棒多模态融合",
+      "llm_evidence": "针对社交媒体讽刺检测的不确定性感知鲁棒多模态融合",
+      "canonical_evidence": "针对社交媒体讽刺检测的不确定性感知鲁棒多模态融合",
+      "llm_tldr_en": "Proposes URMF to model modality reliability for robust multimodal sarcasm detection.",
+      "llm_tldr_cn": "提出 URMF 框架，通过建模模态可靠性来实现鲁棒的多模态讽刺检测。",
+      "llm_tldr": "提出 URMF 框架，通过建模模态可靠性来实现鲁棒的多模态讽刺检测。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.07017v1",
+      "title": "A-MBER: Affective Memory Benchmark for Emotion Recognition",
+      "abstract": "AI assistants that interact with users over time need to interpret the user's current emotional state in order to respond appropriately and personally. However, this capability remains insufficiently evaluated. Existing emotion datasets mainly assess local or instantaneous affect, while long-term memory benchmarks focus largely on factual recall, temporal consistency, or knowledge updating. As a result, current resources provide limited support for testing whether a model can use remembered interaction history to interpret a user's present affective state.   We introduce A-MBER, an Affective Memory Benchmark for Emotion Recognition, to evaluate this capability. A-MBER focuses on present affective interpretation grounded in remembered multi-session interaction history. Given an interaction trajectory and a designated anchor turn, a model must infer the user's current affective state, identify historically relevant evidence, and justify its interpretation in a grounded way. The benchmark is constructed through a staged pipeline with explicit intermediate representations, including long-horizon planning, conversation generation, annotation, question construction, and final packaging. It supports judgment, retrieval, and explanation tasks, together with robustness settings such as modality degradation and insufficient-evidence conditions.   Experiments compare local-context, long-context, retrieved-memory, structured-memory, and gold-evidence conditions within a unified framework. Results show that A-MBER is especially discriminative on the subsets it is designed to stress, including long-range implicit affect, high-dependency memory levels, trajectory-based reasoning, and adversarial settings. These findings suggest that memory supports affective interpretation not simply by providing more history, but by enabling more selective, grounded, and context-sensitive use of past interaction",
+      "authors": [
+        "Deliang Wen",
+        "Ke Sun",
+        "Yu Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-08T12:36:18+00:00",
+      "link": "https://arxiv.org/pdf/2604.07017v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark for emotion recognition in interaction history",
+      "llm_evidence_cn": "交互历史中情感识别的基准",
+      "llm_evidence": "交互历史中情感识别的基准",
+      "canonical_evidence": "交互历史中情感识别的基准",
+      "llm_tldr_en": "Introduces A-MBER, a benchmark to evaluate emotion recognition grounded in long-term interaction memory.",
+      "llm_tldr_cn": "引入 A-MBER，一个用于评估基于长期交互记忆的情感识别能力的基准。",
+      "llm_tldr": "引入 A-MBER，一个用于评估基于长期交互记忆的情感识别能力的基准。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.07066v1",
+      "title": "SemEval-2026 Task 3: Dimensional Aspect-Based Sentiment Analysis (DimABSA)",
+      "abstract": "We present the SemEval-2026 shared task on Dimensional Aspect-Based Sentiment Analysis (DimABSA), which improves traditional ABSA by modeling sentiment along valence-arousal (VA) dimensions rather than using categorical polarity labels. To extend ABSA beyond consumer reviews to public-issue discourse (e.g., political, energy, and climate issues), we introduce an additional task, Dimensional Stance Analysis (DimStance), which treats stance targets as aspects and reformulates stance detection as regression in the VA space. The task consists of two tracks: Track A (DimABSA) and Track B (DimStance). Track A includes three subtasks: (1) dimensional aspect sentiment regression, (2) dimensional aspect sentiment triplet extraction, and (3) dimensional aspect sentiment quadruplet extraction, while Track B includes only the regression subtask for stance targets. We also introduce a continuous F1 (cF1) metric to jointly evaluate structured extraction and VA regression. The task attracted more than 400 participants, resulting in 112 final submissions and 42 system description papers. We report baseline results, discuss top-performing systems, and analyze key design choices to provide insights into dimensional sentiment analysis at the aspect and stance-target levels. All resources are available on our GitHub repository.",
+      "authors": [
+        "Liang-Chih Yu",
+        "Jonas Becker",
+        "Shamsuddeen Hassan Muhammad",
+        "Idris Abdulmumin",
+        "Lung-Hao Lee",
+        "Ying-Lung Lin",
+        "Jin Wang",
+        "Jan Philip Wahle",
+        "Terry Ruas",
+        "Natalia Loukachevitch",
+        "Alexander Panchenko",
+        "Ilseyar Alimova",
+        "Lilian Wanzare",
+        "Nelson Odhiambo",
+        "Bela Gipp",
+        "Kai-Wei Chang",
+        "Saif M. Mohammad"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-08T13:15:48+00:00",
+      "link": "https://arxiv.org/pdf/2604.07066v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Dimensional Aspect-Based Sentiment Analysis",
+      "llm_evidence_cn": "维度型细粒度情感分析",
+      "llm_evidence": "维度型细粒度情感分析",
+      "canonical_evidence": "维度型细粒度情感分析",
+      "llm_tldr_en": "Presents a shared task for modeling sentiment along valence-arousal dimensions in aspect-based analysis.",
+      "llm_tldr_cn": "提出了一个在细粒度分析中沿效价-唤醒维度建模情感的共享任务。",
+      "llm_tldr": "提出了一个在细粒度分析中沿效价-唤醒维度建模情感的共享任务。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2604.05584v2",
+      "title": "Purify-then-Align: Towards Robust Human Sensing under Modality Missing with Knowledge Distillation from Noisy Multimodal Teacher",
+      "abstract": "Robust multimodal human sensing must overcome the critical challenge of missing modalities. Two principal barriers are the Representation Gap between heterogeneous data and the Contamination Effect from low-quality modalities. These barriers are causally linked, as the corruption introduced by contamination fundamentally impedes the reduction of representation disparities. In this paper, we propose PTA, a novel \"Purify-then-Align\" framework that solves this causal dependency through a synergistic integration of meta-learning and knowledge diffusion. To purify the knowledge source, PTA first employs a meta-learning-driven weighting mechanism that dynamically learns to down-weight the influence of noisy, low-contributing modalities. Subsequently, to align different modalities, PTA introduces a diffusion-based knowledge distillation paradigm in which an information-rich clean teacher, formed from this purified consensus, refines the features of each student modality. The ultimate payoff of this \"Purify-then-Align\" strategy is the creation of exceptionally powerful single-modality encoders imbued with cross-modal knowledge. Comprehensive experiments on the large-scale MM-Fi and XRF55 datasets, under pronounced Representation Gap and Contamination Effect, demonstrate that PTA achieves state-of-the-art performance and significantly improves the robustness of single-modality models in diverse missing-modality scenarios.",
+      "authors": [
+        "Pengcheng Weng",
+        "Yanyu Qian",
+        "Yangxin Xu",
+        "Fei Wang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-04-07T08:24:47+00:00",
+      "link": "https://arxiv.org/pdf/2604.05584v2",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "robust multimodal human sensing and modality missing",
+      "llm_evidence_cn": "鲁棒的多模态人体感知与模态缺失",
+      "llm_evidence": "鲁棒的多模态人体感知与模态缺失",
+      "canonical_evidence": "鲁棒的多模态人体感知与模态缺失",
+      "llm_tldr_en": "Proposes a framework for robust multimodal human sensing under conditions of missing or noisy modalities.",
+      "llm_tldr_cn": "提出了一种在模态缺失或噪声环境下进行鲁棒多模态人体感知的框架。",
+      "llm_tldr": "提出了一种在模态缺失或噪声环境下进行鲁棒多模态人体感知的框架。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2604.05782v1",
+      "title": "An Empirical Study of Perceptions of General LLMs and Multimodal LLMs on Hugging Face",
+      "abstract": "Large language models (LLMs) have rapidly evolved from general-purpose systems to multimodal models capable of processing text, images, and audio. As both general-purpose LLMs (GLLMs) and multimodal LLMs (MLLMs) gain widespread adoption, understanding user perceptions in real-world settings becomes increasingly important. However, existing studies often rely on surveys or platform-specific data (e.g., Reddit or GitHub issues), which either constrain user feedback through predefined questions or overemphasize failure-driven, debugging-oriented discussions, thus failing to capture diverse, experience-driven, and cross-model user perspectives in practice. To address this issue, we conduct an empirical study of user discussions on Hugging Face, a major model hub with diverse models and active communities. We collect and manually annotate 662 discussion threads from 38 representative models (21 GLLMs and 17 MLLMs), and develop a three-level taxonomy to systematically characterize user concerns. Our analysis reveals that LLM access barriers, generation quality, and deployment and invocation complexity are the most prominent concerns, alongside issues such as documentation limitations and resource constraints. Based on these findings, we derive actionable implications for improving LLM ecosystem.",
+      "authors": [
+        "Yujian Liu",
+        "Xiao Yu",
+        "Jacky Keung",
+        "Xing Hu",
+        "Xin Xia",
+        "Xiaoxue Ma"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-04-07T12:19:27+00:00",
+      "link": "https://arxiv.org/pdf/2604.05782v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "user perceptions of multimodal LLMs in real-world settings",
+      "llm_evidence_cn": "真实场景下用户对多模态大模型的感知",
+      "llm_evidence": "真实场景下用户对多模态大模型的感知",
+      "canonical_evidence": "真实场景下用户对多模态大模型的感知",
+      "llm_tldr_en": "Conducts an empirical study on user perceptions of general and multimodal LLMs on Hugging Face.",
+      "llm_tldr_cn": "对 Hugging Face 上用户对通用和多模态大语言模型的感知进行了实证研究。",
+      "llm_tldr": "对 Hugging Face 上用户对通用和多模态大语言模型的感知进行了实证研究。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2604.06826v1",
+      "title": "Environmental, Social and Governance Sentiment Analysis on Slovene News: A Novel Dataset and Models",
+      "abstract": "Environmental, Social, and Governance (ESG) considerations are increasingly integral to assessing corporate performance, reputation, and long-term sustainability. Yet, reliable ESG ratings remain limited for smaller companies and emerging markets. We introduce the first publicly available Slovene ESG sentiment dataset and a suite of models for automatic ESG sentiment detection. The dataset, derived from the MaCoCu Slovene news collection, combines large language model (LLM)-assisted filtering with human annotation of company-related ESG content. We evaluate the performance of monolingual (SloBERTa) and multilingual (XLM-R) models, embedding-based classifiers (TabPFN), hierarchical ensemble architectures, and large language models. Results show that LLMs achieve the strongest performance on Environmental (Gemma3-27B, F1-macro: 0.61) and Social aspects (gpt-oss 20B, F1-macro: 0.45), while fine-tuned SloBERTa is the best model on Governance classification (F1-macro: 0.54). We then show in a small case study how the best-preforming classifier (gpt-oss) can be applied to investigate ESG aspects for selected companies across a long time frame.",
+      "authors": [
+        "Paula Dodig",
+        "Boshko Koloski",
+        "Katarina Sitar Šuštar",
+        "Senja Pollak",
+        "Matthew Purver"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-04-08T08:42:02+00:00",
+      "link": "https://arxiv.org/pdf/2604.06826v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "ESG sentiment detection in news",
+      "llm_evidence_cn": "新闻中的 ESG 情感检测",
+      "llm_evidence": "新闻中的 ESG 情感检测",
+      "canonical_evidence": "新闻中的 ESG 情感检测",
+      "llm_tldr_en": "Introduces a novel dataset and models for automatic ESG sentiment analysis in Slovene news.",
+      "llm_tldr_cn": "引入了一个用于斯洛文尼亚新闻自动 ESG 情感分析的新型数据集和模型。",
+      "llm_tldr": "引入了一个用于斯洛文尼亚新闻自动 ESG 情感分析的新型数据集和模型。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
