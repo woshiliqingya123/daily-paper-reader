@@ -1,0 +1,273 @@
+Title: Semantic-Emotional Resonance Embedding: A Semi-Supervised Paradigm for Cross-Lingual Speech Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2604.07417v1
+
+Published Time: Fri, 10 Apr 2026 00:02:42 GMT
+
+Number of Pages: 6
+
+Markdown Content:
+# Semantic–Emotional Resonance Embedding: A Semi-Supervised Paradigm for Cross-Lingual Speech Emotion Recognition 
+
+Ya Zhao 1,2,3,4,5, Yinfeng Yu 1,2,3,4,5,†, Liejun Wang 1,2,3,4,5,†
+
+1School of Computer Science and Technology, Xinjiang University, Urumqi, China 
+
+2Pengcheng Laboratory Xinjiang Network Node 
+
+3Xinjiang Multimodal Intelligent Processing and Information Security Engineering Technology Research Center 
+
+4Joint Research Laboratory for Embodied Intelligence, Xinjiang University 
+
+5Joint International Research Laboratory of Silk Road Multilingual Cognitive Computing, Xinjiang University yuyinfeng@xju.edu.cn, wljxju@xju.edu.cn 
+
+Abstract —Cross-lingual Speech Emotion Recognition (CLSER) aims to identify emotional states in unseen languages. How-ever, existing methods heavily rely on the semantic synchrony of complete labels and static feature stability, hindering low-resource languages from reaching high-resource performance. To address this, we propose a semi-supervised framework based on Semantic–Emotional Resonance Embedding (SERE), a cross-lingual dynamic feature paradigm that requires neither target language labels nor translation alignment. Specifically, SERE constructs an emotion-semantic structure using a small number of labeled samples. It learns human emotional experiences through an Instantaneous Resonance Field (IRF), enabling unla-beled samples to self-organize into this structure. This achieves semi-supervised semantic guidance and structural discovery. Additionally, we design a Triple-Resonance Interaction Chain (TRIC) loss to enable the model to reinforce the interaction and embedding capabilities between labeled and unlabeled sam-ples during emotional highlights. Extensive experiments across multiple languages demonstrate the effectiveness of our method, requiring only 5-shot labeling in the source language. 
+
+Index Terms —cross-lingual speech emotion recognition, emo-tional resonance, semi-supervised learning, IRF 
+
+I. I NTRODUCTION 
+
+Cross-lingual speech emotion recognition is dedicated to understanding emotions in multilingual interactions [1]. Ide-ally, machines should be able to perceive a speaker’s emotional state from intonation, rhythm, and energy—much like humans do—even when unable to comprehend the semantic meaning. Cross-lingual emotional resonance is believed to stem from the mirror neuron system’s [2] mechanism of mapping others’ emotional experiences onto one’s own neural representations. However, current mainstream approaches heavily rely on large amounts of target-language emotion labels for supervised learning, which is difficult to achieve in low-resource language environments, thereby limiting their practical application. A more fundamental challenge lies in the fact that existing CLSER methods predominantly rely on feature translation or 
+
+> †
+
+Both Yinfeng Yu and Liejun Wang are corresponding authors. This study was funded by the National Natural Science Foundation of China (grant numbers 62463029, 62472368, and 62303259). 
+
+Fig. 1. Traditional cross-lingual SER methods have significant drawbacks. Method A requires the presence of relevant emotional words for recognition, while B struggles with recognition due to the lack of explicit semantic content. Additionally, C relies on the assumption that the entire speech segment maintains a static emotional state. In contrast, our method D learns human emotional experiences to capture instantaneous dynamic emotional processes. 
+
+adversarial alignment strategies [3], implicitly assuming the existence of a language-independent emotional feature space. Such approaches typically require parallel corpora or manually aligned emotional segments, yet such data remains scarce in practice. Even when employing unsupervised alignment, cul-tural differences in emotional expression and acoustic diversity are often overlooked, leading to unstable cross-lingual transfer performance. In contrast, human emotional resonance requires no translation. Understanding others’ emotions stems from em-pathy, where similar emotions across languages activate com-parable neural representations. This relies on the resonance of emotional experiences rather than semantic comprehension. Moreover, emotion is not a static attribute but a dynamic process driven by transient acoustic bursts. Existing methods rely on global statistical features or similarity metrics [4], [5], making it difficult to capture the dynamic synchrony of cross-
+
+> arXiv:2604.07417v1 [cs.SD] 8 Apr 2026
+
+lingual speech during emotional highlights. Traditional semi-supervised learning (SSL) [6] encompasses three paradigms: pseudo-labeling [7], consistency regularization [8], and graph propagation [9]. All rely on translation or alignment. In con-trast, CLSER’s core lies in emotion-driven prosodic dynamic commonalities. These commonalities possess implicit features difficult to model through traditional alignment methods. As shown in Fig. 1, to address the aforementioned chal-lenges, our work proposes the SERE framework. Unlike tra-ditional semi-supervised methods, SERE semantically anchors labeled data by learning human emotional experiences, while treating unlabeled data as a source for discovering cross-lingual affective resonance structures—rather than merely for label expansion—thus establishing a novel dynamic feature paradigm for cross-lingual semi-supervised learning. Conse-quently, our main contributions can be summarized as follows:  
+
+> •
+
+We propose an emotion resonance paradigm for cross-lingual dynamic features, leveraging language-heterogeneous encoders on unlabeled pathways to intro-duce a high-level semantic-combined Instantaneous Dy-namic Feature Extractor (IDFE). This approach captures enhanced synchrony between transient dynamic features and emotional highlights, achieving alignment of emo-tions in latent space.  
+
+> •
+
+We designed an Instantaneous Resonance Field (IRF) that focuses on emotional highlights, capturing the intensity of emotional resonance at each moment.  
+
+> •
+
+We propose a Triple-Resonance Interaction Chain (TRIC) loss that implicitly achieves triple emotional resonance embeddings between labeled and unlabeled samples. This enhances similarity across languages during emotional experience highlights and improves the model’s sensitiv-ity to sentiment classification.  
+
+> •
+
+Experiments conducted across 12 tasks in 4 languages demonstrate that our method achieves effective general-ization with only 5-shot labeled samples. II. T HE PROPOSED METHOD 
+
+This section introduces the overall architecture of our pro-posed SERE method. 
+
+A. Overview 
+
+We propose the CLSER paradigm, an efficient semi-supervised approach enabling cross-lingual resonance in emo-tional experiences. As shown in Fig. 2, SERE incorporates two distinct data streams: a labeled path defines emotional semantic prototype anchors, while the unlabeled path pre-encodes source and target language samples using heteroge-neous encoders, outputting context-aware high-level embed-ding sequences H = E(x) ∈ RT ×d. Subsequently, IDFE extracts instantaneous dynamic features from the three vo-cal components. IRF calculates resonance similarity across linguistic emotional highlights (e.g., sudden fundamental fre-quency surges, abrupt energy drops), driving unsupervised self-organizing alignment among unlabeled samples. Specif-ically, the labeled path first defines initial prototype anchors 
+
+plc for emotional semantics. Unlabeled source samples auto-matically approach these initial anchors plc based on high IRF values with labeled source samples, forming a new enhanced prototype anchor pl+uc . Subsequently, this pl+uc guides unla-beled source samples toward convergence, constructing a com-plete emotional resonance structure within the source domain. Finally, IRF aligns target language unlabeled samples with the peak moments of source domain unlabeled samples, enabling implicit cross-lingual transfer of emotional structures. Notably, our TRIC loss designed for labeled-unlabeled interactions drives this entire emotional interaction process. This chained mechanism ensures that unlabeled data is progressively guided into embeddings, achieving semi-supervised transfer. 
+
+B. Instantaneous Dynamic Feature Extractor 
+
+In traditional methods, single static features [4] like spectral characteristics are often extracted, which easily leads to the loss of important speech features. To address this, we will utilize an Instantaneous Dynamic Feature Extractor (IDFE) to extract instantaneous dynamic features from the three fun-damental elements of speech (Pitch, Loudness, and Timbre). This will result in an enhanced representation comprising four types of features. Specifically, we will extract the fundamental frequency F0(t) from the pitch. For loudness, we continue to use the RMS energy envelope E(t). Regarding timbre elements, we employ the second-dimensional MFCC M (t),which reflects spectral tilt and characterizes the timbre contour, along with the spectral centroid C(t), which reflects the bright-ness of the sound. These four static features are collectively denoted as f (t) = [ F0(t), E (t), M (t), C (t)] ⊤ ∈ R4. Then, for each feature fi(t) ( i = 1 , 2, 3, 4) , calculate the difference between adjacent frames, where i = 1, 2, 3, 4 correspond to F0(t), E(t),M (t), C(t) respectively, yielding the change amount ∆fi(t) = fi(t) − fi(t − 1) . To enable comparison of variation across different features, we divide the difference value by its average absolute variation. First, we calculate the average variation amplitude of that feature across the entire speech, then normalize the current variation: 
+
+ˆ∆fi(t) = ∆fi(t)
+
+Var i + ε , (1) where Var i = 1
+
+> T
+
+PTt=1 |∆fi(t)|, ϵ = 10 −3 prevents division by zero. Finally, we introduce a weight w(t) = σ(w⊤H(t)+ b)
+
+guided by the semantic context to amplify the dynamic sig-nals of emotion-related frames, where σ denotes the sigmoid function, w ∈ Rd, and b ∈ R are learnable parameters. The final dynamic feature is di(t) = w(t) · ˆ∆fi(t). By concatenating the four dynamic features as described above to obtain r(t) = [ d1(t), d 2(t), d 3(t), d 4(t)] ⊤ ∈ R4, and then concatenating it with the high-level semantic context sequence embedding, we form the final representation: 
+
+U(t) = [ H(t); r(t)] ∈ Rd+4 . (2) This representation encompasses both diverse emotional se-mantics and how emotions dynamically erupt. Fig. 2. Overview of the proposed SERE semi-supervised dual-path architecture for CLSER tasks. 
+
+C. Instantaneous Resonance Field 
+
+Based on enhanced representations of the source language 
+
+Us and target language Ut, we construct an Instantaneous Resonance Field (IRF) to automatically align cross-lingual emotional highlights. Specifically, we define the emotional burst intensity per frame as the weighted sum of dynamic features: 
+
+B(t) = α · | d1(t)| + β · | d2(t)| + γ · (|d3(t)| + |d4(t)|) , (3) where α, β, γ represents learnable intensity parameters. Next, we construct a resonance similarity matrix: 
+
+R(i, j ) = e−δ·(Bs(i)−Bt(j)) 2
+
+· cos ( Us(i), Ut(j)) , (4) The first part measures cosine similarity, assessing the degree of semantic content matching, while the latter part evaluates the synchrony of burst intensity. δ > 0 is the temperature coef-ficient, controlling burst intensity synchronization sensitivity. To preserve the emotional evolution of the source language, for each frame i in the source language, we locate the most resonant frame j∗ 
+
+> i
+
+in the target language—i.e., the maximum position in each row of the resonance similarity matrix. We then extract enhanced representations of these optimal resonant frames from the target language and average them to obtain the source language’s resonance-aware representation: 
+
+vs = 1
+
+TsTsX
+
+> i=1
+
+Ut (j∗ 
+
+> i
+
+) . (5) To obtain the overall resonance level between source and target audio, we calculate the average resonance intensity across all highlight frames. First, we extract the resonance intensity values for all highlight frames: Rmax = {R(i, j ∗ 
+
+> i
+
+) |
+
+i = 1 , 2, . . . , T s}. Then, we compute their mean as the final resonance similarity: IRF (xs, x t) = 1
+
+TsTsX
+
+> i=1
+
+R(i, j ∗ 
+
+> i
+
+). (6) It is worth noting that IRF is not only used for cross-lingual emotional resonance in unlabeled data but also for emotional resonance across various types of labels. 
+
+D. Triple-Resonance Interaction Chain (TRIC) Loss 
+
+This section introduces three instances of semantic and affective resonance embedding guided by TRIC. TRIC encom-passes global prototype resonance embedding, intra-source resonance embedding, and cross-lingual resonance embedding. 
+
+a) Global Prototype Resonance: This path calibrates the entire emotional semantics, where labeled source samples and unlabeled target samples will define the enhanced global prototype anchors for emotional semantics. We first compute initial prototype anchors plc for each emotion category c using labeled source samples xls. For each unlabeled target sample 
+
+xut , we calculate its IRF values with all labeled samples and select the labeled sample with the highest IRF as the pseudo-anchor ˆxls = arg max xls∈D ls IRF (xut , x ls). Next, we use the TABLE I COMPARED WITH STATE -OF -THE -ART CLSER EXPERIMENTS , WHERE THE BEST RESULTS ARE HIGHLIGHTED IN BOLD .(%)                                                                                                                                                                                       
+
+> Method (Source →Target) B→CC→BB→EE→BC→EE→CB→OO→BC→OO→CE→OO→EAvg.
+> JDAR [10] 42.70 48.97 37.95 47.80 37.58 35.60 -------JIASL [11] 38.10 53.64 38.05 48.35 37.76 36.00 -------CIAN [12] 39.60 59.37 36.34 47.40 34.75 31.90 -------LRJDA-IS10 [13] 43.10 50.09 37.57 48.93 34.88 38.40 -------ADoGT [14] 34.91 55.01 ----60.85 71.43 45.99 45.52 ---BYOL [15] 44.44 61.03 ----57.66 78.96 45.50 43.94 ---SimSiam [16] 44.99 64.40 ----61.59 68.83 45.04 43.98 ---U-ERMS [17] 47.54 69.04 ----61.77 82.35 50.22 50.53 ---DAN [18] 36.30 56.72 33.58 43.50 32.17 29.30 35.53 44.24 36.51 32.42 32.14 28.93 36.78 NRC [19] 37.80 60.16 31.87 48.42 32.22 31.40 35.12 44.93 32.74 29.00 29.76 27.73 36.76 AaD [20] 35.00 55.50 31.47 48.12 32.17 29.10 34.52 44.93 34.92 27.30 25.60 26.50 35.43 ECAN [21] 39.00 61.37 34.21 46.87 34.53 31.90 36.51 40.86 35.91 27.42 28.57 29.16 37.19
+> SERE (Ours) 48.68 69.28 40.97 54.47 40.52 40.05 49.86 58.43 48.55 51.98 37.58 32.65 47.75
+
+semantic embedding zˆxls of this pseudo-anchor to represent the pseudo-semantics of the unlabeled target. Finally, we perform a weighted average of the representations of the labeled source samples and the unlabeled target samples to obtain the final enhanced global prototype anchors: 
+
+pl+uc = 1
+
+Nc + Mc
+
+ X
+
+> i:yi=c
+
+zxls 
+
+> i
+
++ X 
+
+> j:ˆ yj=c
+
+zˆxls
+
+> j
+
+ , (7) where Nc denotes the number of labeled samples in category c,
+
+Mc represents the number of unlabeled target samples assigned to category c, ˆyj = c is the semantic embedding of the jth unlabeled sample assigned to category c via IRF, zxls 
+
+> i
+
+is the semantic embedding of the labeled sample, and zˆxls 
+
+> j
+
+is the semantic embedding of the corresponding pseudo-anchor for that sample. Building upon enhanced global prototype anchors, we introduce the global prototype resonance loss: 
+
+Lproto = 1
+
+C
+
+> C
+
+X
+
+> c=1
+
+ 1
+
+Nc
+
+X
+
+> i:yi=c
+
+∥zxls 
+
+> i
+
+− pl+uc ∥2
+
++ 1
+
+Mc
+
+X 
+
+> j:ˆ yj=c
+
+∥vxut 
+
+> j
+
+− pl+uc ∥2
+
+ ,
+
+(8) where vxut 
+
+> j
+
+is the resonant perception representation of the jth unlabeled sample. This will compute the Euclidean distance between samples of different categories, ensuring all samples cluster closely around their corresponding enhanced prototype anchors within a unified space, achieving strong clustering. 
+
+b) Dual Instance Resonance: Building upon the en-hanced global prototype anchor that achieves resonant embed-dings for labeled source samples and unlabeled target samples, we define the dual instance resonance loss to realize both intra-source resonance and cross-language highlight resonance: 
+
+Ldual = Exu
+
+  1 − IRF (xu, x ref ) · ∥ vu − vref ∥2 , (9) where Exu denotes averaging over all unlabeled samples. xu
+
+represents any unlabeled sample (source or target language). 
+
+xref denotes its corresponding reference sample. When xu is an unlabeled source sample, xref is a labeled source sample, enabling intra-source resonance. When xu is an unlabeled target sample, xref is an unlabeled source sample, enabling cross-lingual highlight resonance. vu and vref denote the corresponding resonance-aware representations. 
+
+c) Overall Objective: The overall objective of the pro-posed method can be defined as follows: 
+
+LSERE = LTRIC = λ1Lproto + λ2Ldual . (10) III. E XPERIMENTS AND RESULTS 
+
+A. Corpus and Experimental Setup a) Corpus: We evaluated our method across four lan-guages (German, English, Chinese, and Italian) using publicly available emotional speech corpora including EmoDB (B) [22], eNTERFACE (E) [23], CASIA (C) [24], and EMOVO (O) [25]. EmoDB contains 535 German samples from 10 speakers, covering 7 emotions: neutral, anger, fear, happiness, sadness, disgust, and boredom. eNTERFACE is an English audiovisual emotion database with 1,582 samples recorded by 43 participants, covering 6 emotions: anger, disgust, fear, hap-piness, sadness, and surprise. CASIA is a Chinese emotional speech corpus comprising 1,200 recordings from 4 speakers, covering 6 emotions: anger, sadness, fear, happiness, neutral, and surprise. EMOVO is an Italian speech database comprising 588 samples recorded by 6 speakers, covering 7 emotions: happiness, sadness, anger, fear, disgust, surprise, and neutral. 
+
+b) Experimental Setup: For the above corpus, we de-signed 12 cross-lingual SER tasks (Source corpus →Target corpus). In the unlabeled path, we selected the best-performing pre-trained models for each language and performed partial fine-tuning to extract context-aware embedding sequences: For German, we utilize whisper-large-v3 (G-Whisper), while English employs wavlm-large (E-WavLM), Chinese employs hubert-base (C-Hubert), and Italian employs wav2vec2-large (I-Wav2vec2). The labeled path utilizes wav2vec2.0-base [26] to generate high-level contextual embeddings. It is particularly important to note that the output dimensions of the encoders for all paths remain consistent. Additionally, we extracted four static features from raw audio based on the three fundamental elements of speech: fundamental frequency estimated via TABLE II ABLATION STUDY OF THE PROPOSED SERE M ETHOD . ‘ W/O’DENOTES REMOVING THE COMPONENT .(%)                                                                                                                   
+
+> Method (Source →Target) B→CC→BB→EE→BC→EE→CB→OO→BC→OO→CE→OO→EAvg.
+> SERE w/o Lproto &Ldual 41.77 65.05 36.00 51.45 32.14 32.40 43.12 51.35 39.54 41.60 35.66 30.03 41.68 SERE w/o Ldual 42.36 65.22 35.78 49.73 35.60 35.00 46.98 55.65 43.37 43.09 35.74 31.52 43.34 SERE w/o Lproto 44.90 67.50 37.67 51.12 38.17 37.10 46.52 55.03 45.29 46.50 36.80 32.47 44.92
+> SERE 48.68 69.28 40.97 54.47 40.52 40.05 49.86 58.43 48.55 51.98 37.58 32.65 47.75
+> (a) SERE w/o Lproto &Ldual (b) SERE w/o Ldual (c) SERE w/o Lproto (d) SERE Fig. 3. Feature distribution of different SERE components under task C →B. TABLE III HETEROGENEOUS VS . I SOMORPHIC ENCODING : P ERFORMANCE ON
+> UNLABELED PATHS .
+> Method Encoders(Source →Target) Encoding Type UA(%)
+> C-Hubert →C-Hubert Isomorphic 46.21
+> B→CG-Whisper →G-Whisper Isomorphic 46.05
+> G-Whisper →C-Hubert Heterogeneous 48.68
+> G-Whisper →G-Whisper Isomorphic 66.28
+> C→BC-Hubert →C-Hubert Isomorphic 66.95
+> C-Hubert →G-Whisper Heterogeneous 69.28
+> I-Wav2vec2 →I-Wav2vec2 Isomorphic 36.77
+> E→OE-WavLM →E-WavLM Isomorphic 36.65
+> E-WavLM →I-Wav2vec2 Heterogeneous 37.58
+> E-WavLM →E-WavLM Isomorphic 31.49
+> O→EI-Wav2vec2 →I-Wav2vec2 Isomorphic 32.16
+> I-Wav2vec2 →E-WavLM Heterogeneous 32.65
+
+CREPE [27], RMS energy envelope, spectral centroid, and the 2nd-dimensional MFCC feature representing timbre contour from the Librosa toolbox [28]. These initial static features were transformed into instantaneous dynamic features through IDFE. Each training process is set to 80 epochs, using an initial learning rate of 10 −4 with the Adam optimizer. To fully leverage the limited dataset, we employ 5-fold cross-validation to consistently evaluate model generalization performance. Additionally, we utilize unweighted average recall (UAR) as the evaluation metric. 
+
+B. Cross-Language SER Results Comparison and Analysis 
+
+To demonstrate the effectiveness of our proposed method, we compared it with two domain adaptation baselines, DAN [18] and AaD [20]. Table I presents the comparative results against state-of-the-art methods. SERE achieves an average UAR of 47.75% across 12 CLSER tasks, outperforming state-of-the-art methods on 9 tasks. However, tasks including eN-TERFACE–CASIA and eNTERFACE–EMOVO present sig-nificant challenges, primarily due to cultural and emotion-inducing differences between Chinese and English, as well as structural variations in vocabulary, tense, and syntax between Italian and English. Notably, our method achieves break-throughs in the more challenging tasks C →E (40.52%), E →C(40.05%), E →O (37.58%), and O →E (32.65%), demonstrat-ing significant advantages over existing methods and bridging emotional resonance across different languages. Upon closer examination of the additional results, in both the B →O and O →B tasks, the U-ERMS [17] algorithm simul-taneously reconstructs masks in both the source and target do-mains. This effectively prevents capturing sentiment-irrelevant information, improving performance. Regarding limitations in this task, we observed that despite linguistic similarities and belonging to the same language family, German and Italian exhibit distinct differences in emotional pronunciation. German intonation tends to be more abrupt, while Italian emotional expression is smoother and more melodic. This led our model to misclassify certain emotions. Nevertheless, our method still outperformed the average. 
+
+C. Ablation Study 
+
+We conduct ablation experiments on 12 cross-lingual tasks to validate the effectiveness of the TRIC loss. The results in Table II show that the worst performance occurs when both Lproto and Ldual are removed simultaneously, indicat-ing that the model almost loses its cross-sample emotional resonance capability without these two components. Further comparison reveals that “w/o Lproto ” outperforms “w/o Ldual ”, suggesting that Lproto primarily enhances the embedding of single-instance emotional resonance by reducing the emotional distance between labeled source samples and unlabeled target samples, while Ldual promotes the embedding of dual-instance emotional resonance by facilitating emotional mapping both within the source domain and across domains. To visually observe the impact of each component, we also visualized the features learned by different SERE branches for the C →B task in Fig. 3. The results reveal: Firstly, as shown in Fig. 3(a), in the initial state without any active SERE branches, target features across emotion categories exhibit distinct, scattered distributions. Secondly, Fig. 3(b) displays the outcome after removing Ldual . Due to the absence of dual emotional resonance within the source language domain and across language samples, features remain dispersed, even showing fragmented distributions within the same category. Furthermore, Fig. 3(c) depicts the scenario without Lproto .Although target features begin to cluster, different emotion categories overlap, resulting in blurred boundaries. Finally, Fig. 3(d) presents the representation under the complete SERE framework, where target features form a tighter structure with clearer category boundaries. Table III validates the effectiveness of integrating language heterogeneous encoders with our framework in the unlabeled path. To more intuitively compare the performance differences between isometric encoders (where source and target lan-guages share the same encoder) and heterogeneous encoders (where different languages use independent encoders), we conducted evaluations across four tasks. Results show that the isometric encoder significantly underperforms the heteroge-neous encoder across all tasks, with the most pronounced gap observed in the C →B and B →C tasks. Notably, even under homogenous encoders, our SERE framework achieved stable performance across multiple pre-trained models, demonstrat-ing its strong adaptability. This confirms that encoders with language adaptability can more effectively capture complex linguistic emotional features, while single encoders tend to conflate emotional differences across languages, further vali-dating the advantages of language-heterogeneous encoders. IV. C ONCLUSION 
+
+This paper proposes a semi-supervised CLSER paradigm called SERE that learns human emotional experiences. We introduce a heterogeneous encoder to extract high-level se-mantics, thereby mitigating the limitation of mismatched low-level features across languages. Under the influence of IRF, labeled and unlabeled paths achieve semantic guidance of instantaneous dynamic features and resonance with unlabeled emotional experience structures. Furthermore, our proposed TRIC loss enhances emotional clustering and linkage capabil-ities for low-label languages. The effectiveness of the SERE framework is validated across multiple low-resource languages with only 5-shot labeling, outperforming existing methods on several CLSER tasks. REFERENCES [1] S. Latif, R. Rana, S. Khalifa et al. , “Self supervised adversarial do-main adaptation for cross-corpus and cross-language speech emotion recognition,” IEEE Transactions on Affective Computing , vol. 14, pp. 1912–1926, 2022. [2] S. Bekkali, G. J. Youssef, P. H. Donaldson et al. , “Is the putative mirror neuron system associated with empathy? a systematic review and meta-analysis,” Neuropsychology review , vol. 31, pp. 14–57, 2021. [3] D. Wang, B. Jing, C. Lu et al. , “Coarse alignment of topic and sentiment: A unified model for cross-lingual sentiment classification,” 
+
+IEEE Transactions on Neural Networks and Learning Systems , vol. 32, no. 2, pp. 736–747, 2020. [4] R. Zhao, X. Jiang, F. R. Yu et al. , “Leveraging cross-attention trans-former and multi-feature fusion for cross-linguistic speech emotion recognition,” IEEE Internet of Things Journal , 2025. [5] Y. Yu, Z. Jia et al. , “Weavenet: End-to-end audiovisual sentiment analysis,” in International Conference on Cognitive Systems and Signal Processing , 2021, pp. 3–16. [6] D. Berthelot, N. Carlini, I. Goodfellow et al. , “Mixmatch: A holistic approach to semi-supervised learning,” Advances in neural information processing systems , vol. 32, 2019. [7] D.-H. Lee et al. , “Pseudo-label: The simple and efficient semi-supervised learning method for deep neural networks,” in Workshop on challenges in representation learning, ICML , vol. 3, no. 2. Atlanta, 2013, p. 896. [8] H. Xu, L. Liu, Q. Bian et al. , “Semi-supervised semantic segmentation with prototype-based consistency regularization,” Advances in neural information processing systems , vol. 35, pp. 26 007–26 020, 2022. [9] W. Feng, J. Zhang, Y. Dong et al. , “Graph random neural networks for semi-supervised learning on graphs,” Advances in neural information processing systems , vol. 33, pp. 22 092–22 103, 2020. [10] J. Zhang, L. Jiang, Y. Zong et al. , “Cross-corpus speech emotion recognition using joint distribution adaptive regression,” in ICASSP 2021-2021 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2021, pp. 3790–3794. [11] C. Lu, Y. Zong, C. Tang et al. , “Implicitly aligning joint distributions for cross-corpus speech emotion recognition,” Electronics , vol. 11, p. 2745, 2022. [12] X. Zhou, J. Li, Q. Yu et al. , “Classification inconsistency alignment network for cross-corpus speech emotion recognition,” in ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2025, pp. 1–5. [13] S. Li, C. Lu, Y. Zhao et al. , “Low-rank joint distribution adaptation for cross-corpus speech emotion recognition,” Knowledge-Based Systems ,vol. 315, p. 113260, 2025. [14] Y. Gao, L. Wang, J. Liu et al. , “Adversarial domain generalized trans-former for cross-corpus speech emotion recognition,” IEEE Transactions on Affective Computing , vol. 15, pp. 697–708, 2023. [15] J.-B. Grill, F. Strub, F. Altch´ e et al. , “Bootstrap your own latent-a new approach to self-supervised learning,” Advances in neural information processing systems , vol. 33, pp. 21 271–21 284, 2020. [16] X. Chen and K. He, “Exploring simple siamese representation learning,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2021, pp. 15 750–15 758. [17] R. Zhang, J. Wei, X. Lu et al. , “An adaptation framework with unified embedding reconstruction for cross-corpus speech emotion recognition,” 
+
+Applied Soft Computing , vol. 174, p. 112948, 2025. [18] M. Long, Y. Cao, J. Wang et al. , “Learning transferable features with deep adaptation networks,” in International conference on machine learning . PMLR, 2015, pp. 97–105. [19] S. Yang, J. Van de Weijer, L. Herranz et al. , “Exploiting the intrinsic neighborhood structure for source-free domain adaptation,” Advances in neural information processing systems , pp. 29 393–29 405, 2021. [20] S. Yang, S. Jui, J. Van De Weijer et al. , “Attracting and dispersing: A simple approach for source-free domain adaptation,” Advances in Neural Information Processing Systems , vol. 35, pp. 5802–5815, 2022. [21] Y. Zhao, J. Wang, C. Lu et al. , “Emotion-aware contrastive adaptation network for source-free cross-corpus speech emotion recognition,” in 
+
+ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2024, pp. 11 846–11 850. [22] F. Burkhardt, A. Paeschke, M. Rolfes et al. , “A database of german emotional speech.” in Interspeech , vol. 5, 2005, pp. 1517–1520. [23] O. Martin, I. Kotsia, B. Macq et al. , “The enterface’05 audio-visual emotion database,” in 22nd international conference on data engineering workshops (ICDEW’06) . IEEE, 2006, pp. 8–8. [24] J. Zhang and H. Jia, “Design of speech corpus for mandarin text to speech,” in The blizzard challenge 2008 workshop , 2008. [25] G. Costantini, I. Iaderola, A. Paoloni et al. , “Emovo corpus: an italian emotional speech database,” in Proceedings of the ninth international conference on language resources and evaluation (LREC’14) . European Language Resources Association (ELRA), 2014, pp. 3501–3504. [26] A. Baevski, Y. Zhou, A. Mohamed et al. , “wav2vec 2.0: A framework for self-supervised learning of speech representations,” in Advances in neural information processing systems , vol. 33, 2020, pp. 12 449–12 460. [27] J. W. Kim, J. Salamon, P. Li et al. , “Crepe: A convolutional represen-tation for pitch estimation,” in 2018 IEEE international conference on acoustics, speech and signal processing (ICASSP) . IEEE, 2018, pp. 161–165. [28] B. McFee, C. Raffel, D. Liang et al. , “librosa: Audio and music signal analysis in python.” SciPy , vol. 2015, pp. 18–24, 2015.

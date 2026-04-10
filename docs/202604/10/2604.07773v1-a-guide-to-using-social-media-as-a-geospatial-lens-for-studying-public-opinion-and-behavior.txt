@@ -1,0 +1,642 @@
+Title: A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior
+
+URL Source: https://arxiv.org/pdf/2604.07773v1
+
+Published Time: Fri, 10 Apr 2026 00:38:55 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 
+
+LINGYAO LI, University of South Florida, USA 
+
+Abstract: Social media and online review platforms have become valuable sources for studying how people express opinions, report experiences, and respond to events across space. This work presents a practical guide to using user-generated social data for geospatial research on public opinion, human behavior, and place-based experience. It shows the promise of using these data as a form of passive, distributed, and human-centered sensing that complements traditional surveys and sensor systems. Methodologically, the chapter outlines a general workflow that includes platform-aware data collection, information extraction, geospatial anchoring, and statistical modeling. It also discusses how advances in large language models (LLMs) strengthen the ability to extract structured information from noisy and unstructured content. Four case studies illustrate this framework: COVID-19 vaccine acceptance, earthquake damage assessment, airport service quality, and accessibility in urban environment. Across these cases, social media data are shown to support timely measurement of public attitudes, rapid approximation of geographically distributed impacts, and fine-grained understanding of place-based experiences. CCS Concepts: • Applied computing → Law, social and behavioral sciences .Additional Key Words and Phrases: Social Media, Geospatial, Crowdsourcing, Information Extraction, Large Language Models 
+
+1 INTRODUCTION 
+
+Understanding how people perceive risk and respond to unfolding events is central to public health, disaster management, and urban planning [ 5, 40 ]. These questions matter not only for describing social and spatial conditions, but also for explaining how individuals and communities form opinions and act on them. Surveys and interviews have long been the primary tools for studying such processes [ 16 , 21 , 38 , 39 ], and they remain essential because they provide structured measurement and a strong basis for decision-making. However, they are often slow to deploy, costly to scale, and limited in their ability to capture rapidly evolving spatial and temporal dynamics. Social media provides an important complementary lens [ 13 , 45 , 53 ]. Platforms such as X/Twitter, Reddit, YouTube, and Google Maps host large volumes of user-generated content produced in direct response to lived experience. During the COVID-19 pandemic, users expressed views on vaccina-tion [ 53 ], masking [ 23 ], and reopening [ 50 ]; during disasters, they reported urgent requests [ 85 ], community response [ 57 ], and infrastructure disruption [ 43 ]; in everyday urban settings, online reviews capture experiences like parking [ 46 ] and service [ 34 ] tied to specific places. These digital traces reveal how people interpret situations and signal behavioral intentions. Although imperfect proxies for broader public opinion, they offer an observational infrastructure that detects change rapidly and captures aspects of lived experience conventional surveys often miss [53, 70]. For geospatial research, the value of these data lies in their ability to connect human expression to place [ 22 , 45 ]. Some posts include explicit geographic coordinates, while others can be linked to location through profile metadata, place names in text, hashtags, images, or direct attachment to points of interest (POIs). This makes it possible to examine how attitudes, reported impacts, and everyday experiences vary across neighborhoods, cities, counties, states, and facilities. In addition, social media provides a form of passive data collection by recording what individuals choose to communicate in more natural settings [ 71 ]. These properties make social media well-suited for studying the spatial patterns of public opinion, human behavior, and place-based experience.  
+
+> Author’s Contact Information: Lingyao Li, lingyaol@usf.edu, University of South Florida, Tampa, Florida, USA.
+> arXiv:2604.07773v1 [cs.SI] 9 Apr 2026 2Li et al.
+
+The analytical value of these data has expanded substantially with advances in natural language processing (NLP). Early work often relies on rule-based methods, sentiment lexicons, or conventional machine learning pipelines [ 7 , 30 , 43 , 51 ]. Transformer-based models such as Bidirectional Encoder Representations from Transformers (BERT) improve these approaches by enabling contextual text representations [ 12 , 32 ]. More recently, GPT-style large language models (LLMs) further change the landscape [ 55 , 55 ]. LLMs can extract structured information from noisy and highly unstructured text [ 15 ], resolve references to entities and places [ 29 ], summarize large volumes of discussion [ 68 ], and synthesize evidence across multimodal inputs such as text and images [ 52 ]. These capabilities are especially useful for social media analysis, where language is often informal, context-dependent, and highly variable across users and platforms [ 15 ]. In this sense, LLMs extend social media analytics beyond simple text classification toward richer forms of information extraction. Against this background, this study conceptualizes social media as a form of crowdsourced geospatial sensing that is passive, distributed, and human-centered. The goal is not to position social media as a replacement for surveys or field inspection but as a complementary layer. Used in this way, social media can provide temporal immediacy and spatial detail that are often difficult to capture through conventional data sources alone. To illustrate this perspective, the study discusses common approaches for processing social media data and extracting information relevant to geospatial patterns, and then presents four case studies in different settings: (i) COVID-19 vaccine acceptance, (ii) earthquake damage assessment, (iii) airport service quality, and (iv) accessibility as a place-based urban experience. Together, these cases show how user-generated social data can extend geospatial research beyond locating events to understanding how people perceive, experience, and respond to them across space. 
+
+2 METHODOLOGICAL FOUNDATIONS 
+
+Figure 1 outlines a general workflow for processing social media data for geospatial analysis. The pipeline begins with data collection from social media platforms, followed by computational models that can process textual, visual, and geographic information. The extracted signals are then linked to spatial units and analyzed using statistical models to identify geographic patterns, associations, and heterogeneity in public opinion and behavior. In practice, these stages are closely connected rather than strictly sequential: decisions made during data collection affect what can be extracted later, and the form of extracted information shapes the statistical inference. This section outlines the methodological foundations of this workflow, focusing on four core components: (i) data collection, (ii) information extraction, (iii) geospatial anchoring, and (iv) inferential modeling. 
+
+2.1 Social Media Data Collection 
+
+The first methodological decision is platform selection. Different platforms generate different forms of user expression and therefore support different research objectives, as summarized in Table 1. X (formerly Twitter) is characterized by rapid, event-driven posting and high temporal granularity, making it well-suited for tracking policy debate [ 62 ], crisis communication [ 10 ], and fast-changing public discourse [ 1 ]. Reddit typically contains longer, more discursive posts useful for analyzing community interpretation, peer exchange, and extended discussion [ 19 ]. Facebook can capture localized coordination and civic communication [ 37 ]. Instagram and YouTube are particularly useful when visual content is central to the phenomenon under study [ 63 , 74 ]. Google Maps and Yelp reviews differ because they are directly attached to POIs, enabling precise linkage to urban facilities and services [45, 81]. Once the platform is selected, corpus construction requires explicit decisions about query de-sign, time windows, language filters, deduplication rules, and inclusion criteria. Query design is particularly important because social media retrieval is intrinsically noisy. Narrow keyword rules A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 3Page  1      
+
+> Geotagging
+> Data Collection
+> User -level
+> metadata
+> Social Media Platforms
+> Prompt
+> Engineering
+> Retrieval
+> Augmented
+> Generation
+> Fine
+> Tuning
+> Sentiment
+> Classification
+> Topic
+> Modeling
+> Stance
+> Classification
+> Statistical
+> Modeling
+> NLP /LLM -based Pipelines
+> Reddit
+> X(Twitter)
+> YouTube
+> Facebook
+
+# +   
+
+> Downstream Analytics Geospatial Information Extraction
+> Apply
+> Apply
+> Input Input
+
+# +
+
+> Search
+> Queries
+> Platform -native
+> linkage
+> Content -based
+> geolocation
+> Geolocation
+> inference
+> Input
+
+Fig. 1. A general framework for processing social media data for geospatial analysis. Table 1. Social media platforms and their geospatial analytic value. 
+
+Platform Content characteristics Geospatial analytic value Example studies 
+
+X (Twitter) Short, rapid, event-driven posts with high temporal granularity Tracking policy debate, crisis com-munication, and fast-changing pub-lic discourse Cheng [10] , Li et al .[48], Milani et al. [62] Reddit Longer, discursive posts or-ganized into topical commu-nities Analyzing community interpreta-tion, peer exchange, and extended discussion Gauthier et al . [19] ,Treen et al. [75] Facebook Localized civic and commu-nity communication Capturing neighborhood-level coor-dination and civic engagement Lappas et al. [37] Instagram Image-centric posts with captions and hashtags Studying phenomena where visual content is central Song et al. [74] YouTube Long-form video with com-ments and metadata Multimodal analysis of events, opin-ions, and place-based experience Mohamed and Shoufan [63] Google Maps Reviews directly attached to POIs Precise linkage of user evaluations to urban facilities and services Li et al. [45] Yelp POI-anchored reviews of businesses and services Place-based service quality and con-sumer experience analysis Zhang and Luo [81] 
+
+can improve precision but may exclude relevant posts expressed through alternative wording, slang, abbreviations, or indirect references. Broader queries can improve recall but often introduce irrelevant content. For this reason, corpus construction typically requires iterative query refinement. In these workflows, an initial candidate set can be retrieved using keywords, hashtags, or Boolean rules, and then filtered with an LLM or a smaller domain-specific classifier to distinguish relevant posts from keyword matches. Data engineering decisions also shape downstream analysis. Researchers need to decide whether to retain reposts, replies, and quoted posts; whether the unit of analysis should be the post, user, thread, or location; and whether reposts should be treated as evidence of prevalence or as a signal of diffusion. In public-opinion studies, duplicated or highly propagated content can bias prevalence estimates if aggregation is not handled carefully [ 25 ]. In crisis communication studies, by contrast, 4 Li et al. 
+
+reposting behavior may itself be analytically meaningful because it reflects information visibility and dissemination [79]. 
+
+2.2 Text Parsing: From Classical NLP to LLM-based Pipelines 
+
+The core computational task in social media analysis is to transform unstructured and context-dependent posts into structured information that can support subsequent inference. Common tasks include sentiment classification, stance detection, topic modeling, named entity recognition (NER), event extraction, summarization, and multimodal interpretation. These tasks can be implemented using classical NLP pipelines [ 9 , 59 ], transformer models [ 12 , 32 ], or LLM-based workflows [ 29 , 56 ]. The appropriate approach depends on the complexity of the target construct, the availability of annotated data, and the trade-offs among accuracy, interpretability, and scalability. Classical pipelines usually begin with text normalization, tokenization, and vectorization. A common baseline is term frequency–inverse document frequency (TF-IDF) [ 72 ], which remains effective for short-text classification because it captures discriminative lexical cues with limited modeling overhead: TF-IDF (𝑡, 𝑑 ) = tf (𝑡, 𝑑 ) · log 𝑁 𝑛 𝑡 
+
+, (1) where tf (𝑡, 𝑑 ) denotes the frequency of term 𝑡 in document 𝑑 , 𝑁 is the total number of documents, and 𝑛 𝑡 is the number of documents containing term 𝑡 . Traditional classifiers such as multinomial naive Bayes, logistic regression, support vector machines, and random forests can then be trained on the resulting feature matrix. Beyond TF-IDF, pre-transformer workflows also frequently use word representations such as Word2Vec [ 61 ], GloVe [ 67 ], and FastText [ 6 ], which encode semantic meaning in dense vector space. These embeddings can be paired with neural architectures such as convolutional neural network (CNN) classifiers to improve text classification. Transformer models improve on sparse lexical features by encoding contextual semantics. Models such as BERT [ 12 ] and RoBERTa [ 54 ] generate dense token and sentence representations that support fine-tuned classification, similarity, and topic clustering. In a standard fine-tuning setting, a contextual encoder produces a representation h for an input post 𝑥 , and the class probability is estimated as 
+
+𝑝 (𝑦 | 𝑥 ) = softmax (𝑊 h + 𝑏 ), (2) where 𝑊 and 𝑏 are trainable parameters. Contextual encoders are particularly important when meaning depends on context rather than isolated keywords. For example, a post can contain negative emotion (e.g., fear of COVID-19) while expressing support for the lockdown policy. LLMs extend this progression in three main ways. First, they support instruction-based extraction, allowing researchers to specify a target schema directly in natural language. Second, they support few-shot learning [ 8 ] or fine-tuning [ 27 ], which is useful when labeled samples are small or discourse shifts rapidly over time. Third, LLMs can integrate textual and visual cues, enabling interpretation of captions, street scenes, and imagery [ 52 ]. In abstract form, an LLM-based information extraction pipeline can be written as, 
+
+𝑦 = LLM (𝑝, 𝑥, 𝑚 ), (3) where 𝑥 is the social media post, 𝑝 is the instruction or prompt, 𝑚 denotes optional multimodal inputs such as images, and 𝑦 is the structured output. Although LLM-based pipelines offer substantial advantages over traditional methods, they can be computationally intensive and financially costly, particularly when models such as GPT or Gemini are applied to millions of social media posts. 
+
+2.2.1 Sentiment Classification. Sentiment classification estimates the polarity of a post as positive, negative, or neutral. Classical approaches often rely on rule-based or lexicon-based methods such as VADER [ 30 ], which aggregate word-level polarity scores. These methods are computationally A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 5
+
+efficient and interpretable, but they are sensitive to slang, sarcasm, domain shift, and rapidly evolving platform-specific language. Supervised sentiment analysis replaces fixed lexical rules with learned mappings from text to labels. Typical workflows use TF-IDF features with classifiers such as logistic regression or support vector machines, whereas more recent workflows fine-tune contextual encoders such as BERT [ 18 ] or RoBERTa [ 3]. In either case, the objective is to learn a function 𝑓 that maps a post 𝑥 to a sentiment label 𝑦 . Model performance is typically evaluated using precision, recall, and F1-score. LLM-based sentiment analysis can be performed through prompt engineering. This is particularly useful when sentiment must be interpreted under informal or highly variable social media writing styles [ 82 ]. Compared with conventional classifiers, LLMs are often better able to interpret such language. They are also useful when sentiment must be extracted at a finer granularity than the whole post. In aspect-based sentiment analysis, for example, the goal is to estimate sentiment toward a specific attribute [ 65 ] (e.g., parking cost, accessibility, cleanliness, safety, or waiting time) from a Google Maps or Yelp review rather than assign a single polarity to the entire post. 
+
+2.2.2 Stance Detection. Stance detection estimates a post’s orientation toward a specified target, such as a policy, intervention, public issue, or public figure [ 36 ]. It is distinct from sentiment analysis because emotional tone and target-oriented position do not necessarily coincide. A post may be emotionally negative while supporting a vaccine, or emotionally positive while opposing a government policy. Stance detection should therefore be treated as a separate inferential task rather than approximated by general sentiment. Traditional stance detection typically relies on annotated datasets and supervised learning models using text vectorization and classifiers [ 53 ]. More recent approaches use contextual encoders such as BERT to model the relationship between the post and the target more explicitly [ 33 , 46 ]. LLM-based stance detection further extends this capability by allowing the model to reason directly over the post and a specified target proposition [ 84 ]. Instead of relying only on lexical polarity, LLMs can infer whether the post supports, opposes, or is unrelated to the target, and can optionally return supporting evidence or explanations. An important extension is aspect-based stance detection, in which stance is estimated not only toward a broad issue but toward a specific dimension of that issue. For example, a post may support vaccination overall while opposing mandates or expressing concern about side effects. A related task is aspect-based sentiment classification [ 64 ], which estimates sentiment toward a specific attribute rather than the entire post. These finer-grained approaches are increasingly important because many public policy debates are multidimensional rather than binary. 
+
+2.2.3 Topic Modeling. When discourse is heterogeneous and the objective is exploratory, topic modeling can be used to identify latent thematic structure. Traditional latent Dirichlet allocation (LDA) represents each document as a mixture of topics and each topic as a distribution over words [31]. Under this formulation, the probability of observing a word 𝑤 in document 𝑑 is, 
+
+𝑝 (𝑤 | 𝑑 ) =
+
+> 𝐾
+
+∑︁ 
+
+> 𝑘 =1
+
+𝑝 (𝑤 | 𝑧 = 𝑘 ) 𝑝 (𝑧 = 𝑘 | 𝑑 ), (4) where 𝑧 denotes the latent topic assignment and 𝐾 is the total number of topics. LDA remains interpretable, but its bag-of-words assumption is often limiting for short social media posts, where meaning depends heavily on context and co-occurrence patterns are sparse. Recent topic modeling workflows increasingly rely on BERTopic [ 20 ], which is better suited to context-dependent text. BERTopic first computes transformer-based document embeddings, then applies dimensionality reduction, typically with Uniform Manifold Approximation and Projection 6 Li et al. 
+
+(UMAP) [ 60 ], to preserve semantic structure in a lower-dimensional space. The reduced embeddings are then clustered, often using HDBSCAN, and each cluster is summarized using class-based TF– IDF to identify representative terms. This combination of semantic embeddings, dimensionality reduction, density-based clustering, and lexical summarization makes BERTopic more effective than traditional bag-of-words topic models for many social media datasets. LLMs can further enhance topic analysis in two ways. First, they can improve cluster inter-pretability by generating clearer and more coherent human-readable labels. Second, they can summarize groups of posts into analytic themes while preserving representative evidence or ex-ample posts. This is especially useful for social media discourse analysis, where a single cluster may contain eyewitness reports, advice, emotional reactions, and media commentary. Recent GPT-based workflows are best understood as LLM-assisted topic interpretation rather than replace-ments for embedding-based clustering. One example is TopicGPT, a prompt-based topic modeling framework [69]. 
+
+2.2.4 Named Entity Recognition (NER) and Event Extraction. NER identifies spans corresponding to entities such as persons, organizations, places, and facilities [ 42 ]. In geospatial social sensing, NER often provides the first bridge between text and location because explicit geographic coordinates are uncommon. Classical systems such as Stanford CoreNLP [ 59 ] and other neural sequence-labeling tools [ 24 ] have been widely used for this task, particularly when the target entity set is known in advance. However, extracting place names alone is usually insufficient. Event extraction must also determine what happened, where it happened, and in what status or stage. For example, a wildfire post may mention a city while also indicating whether it concerns an active evacuation, a shelter destination, or general discussion. LLM-based pipelines can help simplify this process by enabling direct extraction into structured information. For example, an LLM can be prompted to return fields such as event type, stage, location, stance classification, and supporting evidence in a JSON schema [ 47 ]. This joint extraction strategy is especially useful for noisy social media text because it can integrate entity recognition and contextual interpretation in a single step. When possible, structured extraction should retain evidence spans or source sentences so that the output remains auditable. 
+
+2.3 Geospatial Anchoring and Location Inference 
+
+The geospatial value of social media depends on how reliably digital traces can be linked to places. In most workflows, location is not directly observed but inferred from multiple signals with different levels of spatial precision and uncertainty. Several strategies are commonly used for location inference, as summarized in Table 2. The first is direct geotagging, in which latitude-longitude coordinates are attached to the post itself. This provides the highest spatial precision, but geotagged posts are rare on most platforms. The second is user-level metadata, such as profile location or home region, which increases coverage but often reflects the user’s general location rather than the location of the reported event or experience. The third is content-based geolocation (illustrated in Figure 2), in which location is inferred from text or hashtags using NER. The fourth is platform-native linkage, as in Google Maps or Yelp reviews, where content is already attached to a POI and therefore inherits a natural spatial anchor. The fifth is geolocation inference using LLMs, which infer location from joint textual and visual context, such as road signs, architectural style, terrain, storefronts, or other scene-level cues. This strategy is particularly useful when explicit coordinates and place names are absent but visual evidence is available. For geolocation inference, content-based geolocation is a common approach (see Figure 2). Classical NLP pipelines typically use NER tools such as Stanford CoreNLP [ 59 ] or spaCy [ 26 ] to identify candidate place mentions in text (e.g., “Ridgecrest, California” from the given tweet). In A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 7
+
+Table 2. Common strategies for geospatial anchoring in social media analysis. 
+
+Strategy Description Strengths and limitations Example studies 
+
+Direct geotag-ging Latitude–longitude coordi-nates attached to the post itself Highest spatial precision, but geo-tagged posts are rare on most plat-forms Paradkar et al .[66] User-level metadata Profile location or self-reported home region Broader coverage, but reflects general user location rather than the event location Li et al. [53] Content-based geolocation Place names, hashtags, and tex-tual cues extracted via NER Wide applicability, but sensitive to ambiguity, nesting, and multiple ref-erences Li et al. [49] Platform-native linkage Content already attached to a POI (e.g., Google Maps, Yelp) Natural and reliable spatial anchor, limited to review-style platforms Li et al. [46] LLM-based in-ference Joint interpretation of textual and visual cues by multimodal LLMs Useful when coordinates and place names are absent but visual evidence is available; uncertainty in inference Li et al. [52] 
+
+parallel, computer vision methods can infer location from images through landmark recognition, scene classification, or reverse geocoding when distinctive environmental cues are visible [ 28 ]. More recently, LLMs have been used to process images, allowing models to interpret place references, understand contextual descriptions, and infer likely locations based on visual information [52]. Page                            
+
+> 1
+> Tweets grouped by locations
+> Tweets containing locations
+> This crack in the road was spotted in Ridgecrest, California,
+> after the 6.4 magnitude quake.
+> Collected Tweets
+> NER tool
+> Geospatial
+> database
+> LLM -based
+> pipeline “Ridgecrest,
+> California ”
+> “Kern County,
+> California”
+> Prompt Design
+> Identify location entity
+> location info.
+> Traditional Advance
+> An  Example
+
+Fig. 2. An example of content-based geolocation information extraction. 
+
+However, geolocation inference remains challenging. Place names may be ambiguous. A post may mention “Springfield,” which cannot be uniquely identified without additional context, or use relational expressions such as “northern California” or “near Shaver Lake” rather than naming a single canonical location. Posts may also contain multiple place references, some of which correspond to origins, destinations, comparison points, or broader administrative regions rather than the actual event location [ 44 ]. Reliable geospatial inference therefore requires careful interpretation of which location is most relevant to the event or experience under study. For real-world applications, neighborhood-level precision can be difficult to validate; aggregation at the city, county, corridor, or 8 Li et al. 
+
+metropolitan level often provides a more defensible balance between spatial coverage and locational certainty [45]. 
+
+2.4 Statistical and Inferential Modeling 
+
+Once social media posts have been transformed into analytic variables and linked to place, the next step is statistical modeling. This usually requires aggregation, validation, and inference. Ag-gregation is necessary because raw posts rarely correspond directly to the substantive unit of interest. Depending on the research question, indicators may be aggregated to users, locations, time periods, events, or POIs. The choice of aggregation unit should follow the theoretical con-struct being measured. Post-level aggregation emphasizes communication intensity and temporal responsiveness, whereas user-level aggregation reduces distortion from highly active accounts. Place-level aggregation supports spatial analysis, but estimates may become unstable in sparsely observed areas. Let 𝑆 𝑢 denote an aggregated digital indicator for a unit 𝑢 , such as mean sentiment, stance prevalence, or impact severity score. A general aggregation can be written as, 
+
+𝑆 𝑢 = 1
+
+𝑛 𝑢 ∑︁ 𝑖 ∈𝑢 
+
+𝑠 𝑖 , (5) where 𝑠 𝑖 is the extracted signal from post 𝑖 assigned to unit 𝑢 , and 𝑛 𝑢 is the number of posts or users contributing to that unit. Validation is critical because social media indicators are only useful if they correspond, at least partially, to external phenomena of scientific interest. A common strategy is to compare derived indicators with downstream ground-truth data, such as vaccination rates, hazard intensity maps, or administrative statistics from nationwide surveys. This can be assessed through correlation analysis. For two variables 𝑥 and 𝑦 observed over 𝑛 spatial or temporal units, the Pearson correlation coefficient is [73], 
+
+𝑟 =
+
+Í𝑛 𝑖 =1 (𝑥 𝑖 − ¯𝑥 )( 𝑦 𝑖 − ¯𝑦 )√︁ Í𝑛 𝑖 =1 (𝑥 𝑖 − ¯𝑥 )2 Í𝑛 𝑖 =1 (𝑦 𝑖 − ¯𝑦 )2 . (6) A strong correlation does not prove causal validity, but it provides evidence that the extracted digital signal captures meaningful variation related to the target process [ 44 ]. In longitudinal settings, validation can also be framed through time-series analysis or event-study logic, asking whether the indicator responds as expected to major external events [53]. Regression modeling is then used to explain how social media–derived indicators vary with so-cioeconomic, demographic, environmental, or built-environment factors across geographic regions. A standard starting point is ordinary least squares (OLS) [14], written as, 
+
+𝑦 𝑖 = 𝛽 0 +
+
+> 𝐾
+
+∑︁ 
+
+> 𝑘 =1
+
+𝛽 𝑘 𝑥 𝑖𝑘 + 𝜀 𝑖 , (7) where 𝑦 𝑖 is the digital indicator for unit 𝑖 , 𝑥 𝑖𝑘 are explanatory variables, 𝛽 𝑘 are regression coefficients, and 𝜀 𝑖 is the error term. In this setting, regression analysis is useful for testing whether online public responses are systematically associated with contextual factors such as income, racial composition, education, land use, accessibility, or transportation infrastructure. In spatial settings, however, OLS may be insufficient because relationships can vary across space and residuals may be spatially auto-correlated. Spatial regression models are therefore often more appropriate. Multiscale geographically weighted regression (MGWR) [ 17 ] allows coefficients to vary locally, thereby capturing geographic heterogeneity in the association between digital indicators and contextual variables. The Spatial Durbin Model (SDM) [ 2] extends this by accounting A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 9
+
+for dependence between neighboring units. A general SDM can be written as, 
+
+y = 𝜌𝑊 y + 𝑋 𝜷 + 𝑊 𝑋 𝜽 + 𝜺 , (8) where 𝑊 is a spatial weights matrix, 𝜌 captures spatial dependence in the dependent variable, and 
+
+𝜽 captures spillover effects from neighboring covariates. These models are particularly useful when public opinion or behavioral response is shaped not only by local conditions but also by social and spatial contexts. 
+
+3 CASE STUDIES 
+
+The four cases below are organized to illustrate how different computational tasks map onto different questions. The vaccine case emphasizes stance detection and index construction. The earthquake case illustrates damage-oriented text classification and location inference. The airport case investigates place-based service evaluation and shows how online reviews support geographi-cally explicit comparison. The accessibility case highlights how user-generated reviews, combined with regression modeling, can reveal socio-spatial inequality in inclusive urban design. 
+
+3.1 CASE 1: Vaccine Acceptance 
+
+The vaccine case demonstrated how social media could be used not only to characterize online discourse but also to construct a geographically explicit indicator of public readiness for vaccina-tion [ 53 ]. The study analyzed approximately 29 million English-language tweets containing the keyword vaccine from August 2020 to April 2021. From this corpus, 15,000 frequently occurring unique tweets were manually labeled as positive, negative, or unrelated, and an additional 2,000 tweets were reserved for testing. Multiple text-classification pipelines were evaluated, and TF-IDF combined with a random forest classifier achieved the best overall performance with approximately 74.4% testing accuracy. The selected model was then applied to classify the full corpus. A major contribution of the study was the development of the Vaccine Acceptance Index (VAI). Rather than aggregating classified tweets directly, the study first computed a user-level acceptance score based on the relative balance of positive and negative tweets posted by each individual, and then averaged these values within each geographic unit. This design reduced the influence of highly active accounts and yielded a measure that was more interpretable across places and time. The VAI was estimated at multiple geographic scales, including the national, state, and county levels. Figure 3 showed how the VAI changed across states over time. At the national level, the index shifted from negative to positive in late 2020 and remained largely positive after January 2021, indicating a broad change in public orientation as vaccine development progressed and rollout expanded. The state-level results revealed substantial geographic heterogeneity in vaccine accep-tance. The VAI could be mapped across states to show where acceptance was relatively higher or lower at different time points, thereby transforming diffuse online discussion into a spatially interpretable indicator of public opinion. For example, states such as New York and Massachusetts remained above the national VAI for much of the study period, whereas Texas and Florida were generally below it. California became more positive as rollout progressed, while some southern states showed weaker or declining acceptance after November 2020. Another strength of this case was that the VAI was evaluated against external reference data rather than presented as an internally coherent metric alone. The study compared the index with subsequent vaccination uptake and with survey-based measures of vaccine hesitancy, including the CDC Household Pulse Survey [ 77 ] and its county-level downscaling based on American Community Survey [ 76 ] data. The results showed meaningful associations at both the state and county levels, with stronger relationships in counties that met a modest threshold of active users. 10 Li et al. -1                                                  
+
+> -0.5
+> 0
+> 0.5
+> 1WI VT NH ME
+> -1
+> -0.5
+> 0
+> 0.5
+> 1WA ID MT ND MN IL MI NY MA
+> -1
+> -0.5
+> 0
+> 0.5
+> 1OR NV WY SD IA IN OH PA NJ CT RI
+> -1
+> -0.5
+> 0
+> 0.5
+> 1CA UT CO NE MO KY WV VA MD DE
+> -1
+> -0.5
+> 0
+> 0.5
+> 1AZ NM KS AR TN NC SC DC
+> Above most of the time
+> Below initially, above later
+> Above initially, below later
+> Below most of the time
+> -1
+> -0.5
+> 0
+> 0.5
+> 1OK LA MS AL GA
+> Sep 2020
+> Apr 2021 -1
+> -0.5
+> 0
+> 0.5
+> 1HI
+> Sep 2020
+> Apr 2021
+> AK
+> Sep 2020
+> Apr 2021
+> TX
+> Sep 2020
+> Apr 2021
+> FL
+> Compare to the National VAI
+> Above Below
+
+Fig. 3. State-level trajectories of the VAI from August 2020 to April 2021. Each panel shows how a state’s VAI changed over time relative to the national VAI (adjusted from [53]). 
+
+3.2 CASE 2: Earthquake Damage Assessment 
+
+The earthquake damage case addressed a key challenge in disaster response: obtaining an early picture of where damage was likely to be concentrated before formal assessment is complete [ 44 ]. Using the 2019 Ridgecrest earthquake sequence as a case study, this analysis began with a large corpus of earthquake-related tweets and then filtered for damage-related content. A subset of tweets was manually labeled using a four-level damage scale derived from the Modified Mercalli Intensity framework: no damage, slight damage, moderate damage, and severe damage. Multiple text-classification pipelines were evaluated. Location inference was equally important in this case. Damage reports were useful only when they could be tied to a place, yet most social media posts did not include precise geographic coordinates. The study therefore combined explicit coordinates, when available, with content-based location inference from textual references to assign damage levels to counties. This required distinguishing locations directly associated with reported damage from places mentioned only as comparison points, prior events, or general discussion. The case thus shows that rapid damage assessment depends not only on text classification, but also on geospatial anchoring. Figure 4 presented the county-level results. The Twitter-derived county damage map is shown together with the U.S. Geological Survey Did You Feel It? map to compare the spatial distribution of crowdsourced reports with the official communal intensity surface. The highest estimated damage levels were observed in counties near the epicenter, especially Kern and Inyo, whereas counties A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 11 
+
+farther away showed substantially lower estimated damage. The study also showed that the tweet-derived damage signal increased rapidly after the major shocks and generally converged within approximately 12 to 14 hours, indicating that social media can provide a useful early approximation of damage geography. At the same time, the study made clear that this approach should be interpreted as a rapid and approximate complement to conventional inspection-based systems rather than a replacement. This case further showed that social media users can function as distributed sensors whose reports, when carefully classified and geolocated, supplement traditional damage assessment with temporal immediacy and spatial density. Epicenter 
+
+> San Bernardino
+> Kern
+> Stanislaus
+> Tulare
+> Riverside
+> Ventura
+> San Francisco
+> Sacramento
+> Inyo
+> Orange
+> Los Angeles
+> San Diego
+> Santa Barbara
+> Napa
+
+a. 
+
+0.00 1.50 3.00 
+
+Twitter-derived damage 
+
+Epicenter   
+
+> Nevada
+> Fresno
+> Amador
+> Monterey
+> San Luis Obispo
+> San Bernardino
+> San Benito
+> Kern
+> El Dorado
+> Placer
+> Sierra
+> Stanislaus
+> Tulare
+> Riverside
+> Ventura
+> San Mateo
+> Merced
+> Sutter
+> Butte
+> Colusa
+> Madera
+> Sacramento
+> Alameda
+> Inyo
+> Mariposa
+> Santa Clara
+> Orange
+> Los Angeles
+> Calaveras
+> Alpine
+> San Diego
+> San Joaquin
+> Santa Barbara
+> Imperial
+> Contra Costa Tuolumne Mono
+> Kings
+> Yolo
+> Santa Cruz
+> Yuba
+> Solano
+> Napa
+> Glenn
+
+b. 
+
+2.00 3.50 5.00 
+
+MMI Mean Intensity 
+
+2.0 2.5 3.0 3.5 4.0 4.5 5.0 
+
+County-level average MMI 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+3.0 
+
+> County-level Twitter derived damage
+
+R = 0.853 
+
+Kern 
+
+Los Angeles 
+
+Inyo 
+
+San Bernardino 
+
+Orange San Diego 
+
+Riverside 
+
+Ventura 
+
+Fresno 
+
+Tulare 
+
+c. 
+
+Fig. 4. County-level earthquake damage assessment from Twitter compared with U.S. Geological Survey intensity data. (a) Twitter-derived county damage; (b) county-level average Modified Mercalli Intensity from the USGS Did You Feel It? system; (c) the correlation between these two data resources, indicating that crowdsourced reports can approximate the spatial distribution of earthquake impact (adjusted from [44]). 12 Li et al. 
+
+3.3 CASE 3: Airport Service Quality 
+
+The airport service quality case illustrated how online reviews could be used to measure place-based experience at scale [ 51 ]. Google Maps reviews provide a complementary source of user-generated evaluations that are directly tied to specific airports. In this study, reviews from the 98 busiest U.S. airports were used to examine how passenger perceptions changed before and after the COVID-19 outbreak. The study combined topic extraction with fine-grained sentiment analysis. A topical ontology was developed to identify eight first-level service dimensions: access, check-in, security, wayfinding, arrival, facilities, environment, and personnel. Because each review could contain evaluations of multiple service dimensions, the study applied aspect-based sentiment analysis to estimate sentiment toward specific aspects of the airport experience rather than assigning a single overall polarity to the entire review. Figure 5 showed the airport-level sentiment before and during COVID-19. The results revealed clear temporal shifts after the COVID-19 outbreak. The average airport rating increased from 3.55 to 4.13, and sentiment improved for most service dimensions, especially personnel, environment, arrival, check-in, and wayfinding. Among these, personnel showed the largest increase in sentiment, while facilities remained largely unchanged. Environment had the highest average sentiment after the outbreak, suggesting that travelers responded positively to cleanliness and environmental conditions, whereas arrival remained the lowest-rated dimension in both periods, likely reflecting dissatisfaction with baggage claim and passport control processes. The airport-level map revealed substantial heterogeneity across airports and service dimensions (Figure 5). For example, the study noted that Atlanta airport (ATL in Figure 5) showed less positive sentiment for environment before COVID-19 but improved substantially afterward. The map also illustrated that airport service quality was spatially uneven and multi-dimensional, showing that online reviews could function as a geographically explicit indicator of traveler experience. 
+
+3.4 CASE 4: Accessibility Satisfaction 
+
+The accessibility case shows how online reviews can be used to study inclusive urban design at a national scale [ 46 ]. Google Maps reviews provide a useful complementary source because they capture naturally occurring public experiences tied to specific POIs. In this study, more than one million accessibility-related reviews from POIs across the United States were used to investigate how people perceive accessibility in everyday urban environments. The study framed the problem as a specialized attitude-classification task rather than relying on generic sentiment tools. The workflow (Figure 6) began by constructing an accessibility-focused dictionary grounded in ADA guidelines and empirical review language, and then annotating reviews into positive, negative, neutral, or unrelated classes. A prompt design is illustrated in Figure 6(d). After comparing multiple candidate models, the fine-tuned Llama 3 model achieved the strongest performance and was applied to the full dataset. This design allowed the analysis to move beyond keyword matching and recover more meaningful public attitudes toward accessible facilities and services. At the POI level, the results (Figure 7) revealed substantial heterogeneity across urban activity spaces. Most major POI categories, including restaurants, retail, hotels, and health care, showed predominantly negative accessibility sentiment, suggesting persistent barriers across sectors that are central to daily life. By aggregating accessibility sentiment to counties and census block groups, the study examined how public perceptions varied across socio-spatial contexts. The regression results showed that more positive accessibility sentiment was associated with areas with higher proportions of white residents and greater socioeconomic advantage, whereas more negative sentiment was observed in areas with higher concentrations of elderly and highly educated populations. No clear A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 13 ATL                                                                              
+
+> ORD
+> DEN
+> MCO
+> EWR
+> Access - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Access - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Check-in - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Check-in - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Security - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Security - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Wayfinding - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> EWR
+> Wayfinding - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Arrival - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Arrival - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Facility - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Facility - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Environment - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Environment - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Service - Before COVID
+> ATL
+> ORD
+> DEN
+> MCO
+> MIA
+> Service - During COVID
+> 1.0 0.5 0.0 0.5 1.0 1.0 0.5 0.0 0.5 1.0
+> 0.4 0.2 0.0 0.2 0.4 0.6
+> Sentiment Score
+
+Fig. 5. Airport-level sentiment maps for eight dimensions of airport service quality before and during COVID-19. Each panel shows the spatial distribution of topic-specific sentiment across the top 98 international U.S. airports (adjusted from [51]). 
+
+relationship was found between disability prevalence and sentiment itself, but a significant positive association was identified between public sentiment and external disability-friendly scores. These findings suggested that accessibility was not only a design issue at the level of individual facilities, but also a socio-spatially uneven urban condition. More broadly, the case showed how user-generated reviews could help planners and policymakers identify where accessibility challenges arose and how they related to broader patterns of urban inequality. 
+
+4 DISCUSSION 4.1 Potential and Practical Implications 
+
+One of the main strengths of social media for geospatial research is its temporal responsiveness. Because user-generated content is produced continuously and often in direct response to unfolding events, it can provide near-real-time evidence of public attitudes and place-based experiences. This is particularly valuable in settings where conventional data sources are too slow to support timely understanding, such as public health emergencies [ 35 ] and disaster response [ 78 ]. In these 14 Li et al. Page  1
+
+Models 
+
+• TF -IDF + RF 
+
+• TF -IDF + LR 
+
+• BERT 
+
+• RoBERTa 
+
+• Llama3   
+
+> User 1
+> User 2
+
+Negative 
+
+Positive 
+
+[POI type, (lat, lng)] 
+
+Positive 
+
+Negative 
+
+Neutral 
+
+Evaluation 
+
+• Precision 
+
+• Recall 
+
+• F1 -score 
+
+• Accuracy 
+
+a. POI distribution 
+
+c. Aspect -based sentiment classification 
+
+b. Google Maps reviews         
+
+> You are a language model trained to identify the sentiment for accessibility from reviews. Your task is to analyze the text of each
+> review and assign an appropriate label based on the sentiment or relevance of the content. The possible labels are:
+> •Negative: The review expresses a negative sentiment or criticism about the accessibility of disabilities.
+> •Positive: The review expresses a positive sentiment or praise about the accessibility for disabilities.
+> •Neutral: The review provides a factual or mixed description without strong positive or negative sentiment.
+> •Unrelated: The review does not pertain to accessibility or describe any attitude toward accessibility.
+> Reviews that discuss personal experiences or talk about something or somewhere accessible but not for disabilities, even have
+> positive or negative words, should be labeled as unrelated. For each input, respond with the label that best describes the sentiment
+> or relevance of the review.
+
+d. Prompt design 
+
+Fig. 6. Workflow for extracting accessibility attitudes from Google Maps reviews. (a) The POI distribution; (b) A representative example of relevant Google Maps review; (c) Aspect-based sentiment classification; (d) Prompt design for LLM-based attitude classification (adjusted from [46]). 
+
+contexts, social media is best understood not as a replacement for formal data systems, but as an early observational layer that can reveal emerging spatial patterns before surveys or administrative reporting become available. A second strength lies in geographic scale. A single collection and processing pipeline can gather information across many cities, counties, states, or POIs simultaneously, making it possible to compare spatial heterogeneity in public opinion and behavior at scales that are difficult to achieve through conventional fieldwork alone [ 46 , 50 ]. The case studies in this study illustrate this advantage clearly: vaccine acceptance can be tracked across states and counties [ 53 ], and disaster impacts [ 44 ] can be approximated across affected regions. In this sense, social media expands geospatial analysis from isolated case observation to scalable comparative measurement. Social media also contributes a form of informational richness that is difficult to recover from conventional administrative data or physical sensing systems. User-generated content can show how people respond to events such as satisfaction, inconvenience, trust, fear, or behavioral intention. Combined with computational text analysis, these expressions can be translated into indicators of stance [ 53 ], perceived impact [ 57 ], service quality [ 34 ], or urban environmental barriers [ 46 ]. This makes it possible to examine subjective experience in relation to spatial context in a more systematic and analytically tractable way. These characteristics also create substantial practical value for decision-making. For planners, transportation agencies, emergency managers, and public health officials, social media analytics can help identify where problems are concentrated, which issues matter most to the public, and how A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 15 120 100 80                   
+
+> Longitude
+> 30
+> 40
+> Latitude
+> Retail Trade (n=3293)
+> 120 100 80
+> Longitude
+> 30
+> 40
+> 50
+> Latitude
+> Recreation (n=2892)
+> 120 100 80
+> Longitude
+> 30
+> 40
+> 50
+> Latitude
+> Hotel (n=2836)
+> 120 100 80
+> Longitude
+> 30
+> 40
+> Latitude
+> Personal Service (n=557)
+> 120 100 80
+> Longitude
+> 30
+> 40
+> Latitude
+> Restaurant (n=456)
+> 120 100 80
+> Longitude
+> 25
+> 30
+> 35
+> 40
+> 45
+> Latitude
+> Health Care (n=304)
+> 1.00 0.75 0.50 0.25 0.00 0.25 0.50 0.75 1.00
+> Avg Accessibility Sentiment
+
+Fig. 7. Average accessibility sentiment across POI categories and its spatial distribution in the U.S. The figure summarizes POI-level accessibility sentiment, including retail, recreation, hotel, personal service, restaurant, and health care. 
+
+responses differ across places. In disaster settings, this may support rapid situational awareness [ 58 ]; in public health, it may help track shifts in confidence or hesitancy [ 53 ]; in urban planning, it may reveal persistent dissatisfaction with accessibility, parking, or service environments [45, 46]. The broader implication is therefore methodological as well as substantive. The value of social media does not lie simply in the volume of available data, but in the ability to connect computational extraction with geospatial reasoning and statistical inference. The most informative applications are not those that merely count posts or classify sentiment, but those that link extracted signals to meaningful spatial units and interpret them in relation to demographic, socioeconomic, or built-environment conditions. Recent advances in LLMs and multimodal systems further strengthen this potential by making it easier to extract structured information from noisy text, interpret nuanced attitudes, resolve place references, summarize large corpora, and integrate textual and visual evidence. Social media is thus becoming not only a source of rapid descriptive signals, but also a foundation for richer forms of geospatial social sensing. 
+
+4.2 Limitations and Future Work 
+
+Understanding the limitations of social media data is equally important. The first is represen-tativeness. Social media platform demographics differ by age, education, political engagement, urbanization, and digital access [ 4 , 80 ]. Even within a platform, those who post are not the same as those who read silently, and those who post repeatedly can dominate the visible signal. This means that social media indicators should not be interpreted as direct estimates of population prevalence without calibration or careful caveats. A second limitation concerns geospatial precision. Explicit geotags are rare, profile locations are often coarse or outdated, and content-based place extraction is inherently noisy. A post may mention multiple places, relational geography, or locations unrelated to the focal event [ 44 ]. For 16 Li et al. 
+
+this reason, scientific claims should be aligned with the defensible level of spatial certainty. In many applications, city- or county-level inference is more credible than point-level mapping. Advanced LLMs can improve contextual interpretation, but they cannot recover geographic certainty that is absent from the source material itself. A third limitation concerns the difficulty of extracting meaningful opinions from social media text. Posts are often unstructured and heavily shaped by platform-specific language, which makes interpretation inherently uncertain. In particular, constructs such as stance are difficult to identify because opinions are often implicit or mixed. A post may express fear, sarcasm, or frustration without clearly indicating support or opposition, and the same wording can carry different meanings depending on the context and timing. Similar challenges arise when trying to infer event status or behavioral intention from brief and noisy content. Although LLM-based pipelines improve the ability to interpret context and recover structured information, they also introduce additional uncertainty, including sensitivity to prompt design [ 83 ] and occasional hallucination [ 41 ]. Scientific use therefore requires carefully designed pipelines and systematic human validation. A fourth limitation is platform dependence. Data access policies, API pricing, and content moderation rules can change abruptly. A pipeline that is viable on one platform or during one period may not remain viable later, which directly affects reproducibility and the comparability of longitudinal research. For example, after Elon Musk acquired Twitter in October 2022, the company announced in February 2023 that free API access would be discontinued [ 11 ], showing how platform-level policy shifts can quickly alter research feasibility. Future work should therefore emphasize portable methods that can operate across platforms, as well as archives that preserve legally usable research corpora when possible. Looking ahead, several directions appear especially promising. First, modern LLMs can integrate text with images, maps, and street-level scenes, creating new opportunities for disaster impact as-sessment, environmental monitoring, and place-based urban analysis. Second, retrieval-augmented workflows can ground social media extraction in official or external data sources, thereby reducing unsupported inference and improving verifiability. Third, structured extraction can move beyond simple labels toward richer records that capture locations, time windows, infrastructure types, and confidence scores. Fourth, cross-platform data fusion may help reduce platform-specific bias by combining fast-moving streams such as X/Twitter with place-linked platforms such as Google Maps and more discursive environments such as Reddit. Finally, ethical practice must remain central. Social media data may be public, but this does not make every analytical use ethically unproblematic. Researchers should minimize harm, avoid unjustified inference about individuals, respect platform terms and privacy norms, and remain cautious when analyzing sensitive behaviors or vulnerable communities. The scientific value of crowdsourced geospatial sensing therefore depends not only on computational sophistication, but also on transparent, responsible, and context-aware practice. 
+
+References           
+
+> [1] Mohammad Al-Ramahi, Ahmed Elnoshokaty, Omar El-Gayar, Tareq Nasralah, and Abdullah Wahbeh. 2021. Public discourse against masks in the COVID-19 era: Infodemiology study of Twitter data. JMIR Public Health and Surveillance
+> 7, 4 (2021), e26780. [2] Luc Anselin. 2022. Spatial econometrics. Handbook of spatial analysis in the social sciences (2022), 101–122. [3] Francesco Barbieri, Jose Camacho-Collados, Luis Espinosa Anke, and Leonardo Neves. 2020. TweetEval: Unified benchmark and comparative evaluation for tweet classification. In Findings of the association for computational linguistics: EMNLP 2020 . 1644–1650. [4] Grant Blank and Christoph Lutz. 2017. Representativeness of social media in great britain: investigating Facebook, Linkedin, Twitter, Pinterest, Google+, and Instagram. American Behavioral Scientist 61, 7 (2017), 741–756.
+
+A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 17 
+
+[5] Moran Bodas, Kobi Peleg, Nathan Stolero, and Bruria Adini. 2022. Risk perception of natural and human-made disasters—cross sectional study in eight countries in Europe and beyond. Frontiers in public health 10 (2022), 825985. [6] Piotr Bojanowski, Edouard Grave, Armand Joulin, and Tomas Mikolov. 2017. Enriching word vectors with subword information. Transactions of the association for computational linguistics 5 (2017), 135–146. [7] Anton Borg and Martin Boldt. 2020. Using VADER sentiment and SVM for predicting customer response sentiment. 
+
+Expert Systems with Applications 162 (2020), 113746. [8] Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al . 2020. Language models are few-shot learners. Advances in neural information processing systems 33 (2020), 1877–1901. [9] Jose Camacho-Collados, Kiamehr Rezaee, Talayeh Riahi, Asahi Ushio, Daniel Loureiro, Dimosthenis Antypas, Joanne Boisson, Luis Espinosa Anke, Fangyu Liu, and Eugenio Martínez-Cámara. 2022. TweetNLP: Cutting-edge natural language processing for social media. In Proceedings of the 2022 conference on empirical methods in natural language processing: system demonstrations . 38–49. [10] Yang Cheng. 2018. How social media is changing crisis communication strategies: Evidence from the updated literature. 
+
+Journal of contingencies and crisis management 26, 1 (2018), 58–68. [11] Sheila Dang. 2023. Exclusive: Elon Musk’s X restructuring curtails disinformation research, spurs legal fears. Reuters 
+
+(6 Nov. 2023). https://www.reuters.com/technology/elon-musks-x-restructuring-curtails-disinformation-research-spurs-legal-fears-2023-11-06/ Accessed: 2026-04-08. [12] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. Bert: Pre-training of deep bidirectional transformers for language understanding. In Proceedings of the 2019 conference of the North American chapter of the association for computational linguistics: human language technologies, volume 1 (long and short papers) . 4171–4186. [13] Ly Dinh, Lingzi Hong, Catherine Dumas, Beth Patin, Souvick Ghosh, Lingyao Li, and Christy Khoury. 2024. Social Media and Crisis Informatics Research in LIS. Proceedings of the Association for Information Science and Technology 61, 1 (2024), 749–753. [14] Norman R Draper and Harry Smith. 1998. Applied regression analysis . Vol. 326. John Wiley & Sons. [15] Zhijie Duan, Kai Wei, Zhaoqian Xue, Jiayan Zhou, Shu Yang, Siyuan Ma, Jin Jin, and Lingyao Li. 2025. Crowdsourcing-based knowledge graph construction for drug side effects using large language models with an application on semaglutide. In AMIA Annual Symposium Proceedings , Vol. 2024. 332. [16] Adam Finnemann, Karoline Huth, Denny Borsboom, Sacha Epskamp, and Han van der Maas. 2024. The urban desirability paradox: UK urban-rural differences in well-being, social satisfaction, and economic satisfaction. Science Advances 10, 29 (2024), eadn1636. [17] A Stewart Fotheringham, Wenbai Yang, and Wei Kang. 2017. Multiscale geographically weighted regression (MGWR). 
+
+Annals of the American Association of Geographers 107, 6 (2017), 1247–1265. [18] Zhengjie Gao, Ao Feng, Xinyu Song, and Xi Wu. 2019. Target-dependent sentiment classification with BERT. Ieee Access 7 (2019), 154290–154299. [19] Robert P Gauthier, Mary Jean Costello, and James R Wallace. 2022. “I will not drink with you today”: a topic-guided thematic analysis of addiction recovery on Reddit. In Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems . 1–17. [20] Maarten Grootendorst. 2022. BERTopic: Neural topic modeling with a class-based TF-IDF procedure. arXiv preprint arXiv:2203.05794 (2022). [21] Ziqiang Han and Guochun Wu. 2024. Why do people not prepare for disasters? A national survey from China. Npj Natural Hazards 1, 1 (2024), 1. [22] Samiul Hasan, Xianyuan Zhan, and Satish V Ukkusuri. 2013. Understanding urban human activity and mobility patterns using large-scale location-based data from online social media. In Proceedings of the 2nd ACM SIGKDD international workshop on urban computing . 1–8. [23] Lu He, Changyang He, Tera L Reynolds, Qiushi Bai, Yicong Huang, Chen Li, Kai Zheng, and Yunan Chen. 2021. Why do people oppose mask wearing? A comprehensive analysis of US tweets during the COVID-19 pandemic. Journal of the American Medical Informatics Association 28, 7 (2021), 1564–1573. [24] Wahed Hemati and Alexander Mehler. 2019. LSTMVoter: chemical named entity recognition using a conglomerate of sequence labeling tools. Journal of cheminformatics 11, 1 (2019), 3. [25] Libby Hemphill, Annelise Russell, and Angela M Schöpke-Gonzalez. 2021. What drives US congressional members’ policy attention on Twitter? Policy & Internet 13, 2 (2021), 233–256. [26] Matthew Honnibal, Ines Montani, Sofie Van Landeghem, Adriane Boyd, et al . 2020. spaCy: Industrial-strength natural language processing in Python. (2020). [27] Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Liang Wang, Weizhu Chen, et al. 2022. Lora: Low-rank adaptation of large language models. Iclr 1, 2 (2022), 3. 18 Li et al. 
+
+[28] Wenmiao Hu, Yichen Zhang, Yuxuan Liang, Yifang Yin, Andrei Georgescu, An Tran, Hannes Kruppa, See-Kiong Ng, and Roger Zimmermann. 2022. Beyond geo-localization: Fine-grained orientation of street-view images by cross-view matching with satellite imagery. In Proceedings of the 30th ACM international conference on multimedia . 6155–6164. [29] Yingjie Hu, Gengchen Mai, Chris Cundy, Kristy Choi, Ni Lao, Wei Liu, Gaurish Lakhanpal, Ryan Zhenqi Zhou, and Kenneth Joseph. 2023. Geo-knowledge-guided GPT models improve the extraction of location descriptions from disaster-related social media messages. International Journal of Geographical Information Science 37, 11 (2023), 2289–2318. [30] Clayton Hutto and Eric Gilbert. 2014. Vader: A parsimonious rule-based model for sentiment analysis of social media text. In Proceedings of the international AAAI conference on web and social media , Vol. 8. 216–225. [31] Hamed Jelodar, Yongli Wang, Chi Yuan, Xia Feng, Xiahui Jiang, Yanchao Li, and Liang Zhao. 2019. Latent Dirichlet allocation (LDA) and topic modeling: models, applications, a survey. Multimedia tools and applications 78, 11 (2019), 15169–15211. [32] Rohit Kumar Kaliyar, Anurag Goswami, and Pratik Narang. 2021. FakeBERT: Fake news detection in social media with a BERT-based deep learning approach. Multimedia tools and applications 80, 8 (2021), 11765–11788. [33] Hema Karande, Rahee Walambe, Victor Benjamin, Ketan Kotecha, and TS Raghu. 2021. Stance detection with BERT embeddings for credibility analysis of information on social media. PeerJ Computer Science 7 (2021), e467. [34] Woo Gon Kim, Jun Justin Li, and Robert A Brymer. 2016. The impact of social media reviews on restaurant performance: The moderating role of excellence certificate. International Journal of Hospitality Management 55 (2016), 41–51. [35] Patty Kostkova, Martin Szomszor, and Connie St. Louis. 2014. # swineflu: The use of twitter as an early warning and risk communication tool in the 2009 swine flu pandemic. ACM Transactions on Management Information Systems (TMIS) 5, 2 (2014), 1–25. [36] Dilek Küçük and Fazli Can. 2020. Stance detection: A survey. ACM Computing Surveys (CSUR) 53, 1 (2020), 1–37. [37] Georgios Lappas, Amalia Triantafillidou, and Anastasia Kani. 2022. Harnessing the power of dialogue: examining the impact of facebook content on citizens’ engagement. Local Government Studies 48, 1 (2022), 87–106. [38] Jeffrey V Lazarus, Scott C Ratzan, Adam Palayew, Lawrence O Gostin, Heidi J Larson, Kenneth Rabin, Spencer Kimball, and Ayman El-Mohandes. 2021. A global survey of potential acceptance of a COVID-19 vaccine. Nature medicine 27, 2 (2021), 225–228. [39] Jeffrey V Lazarus, Katarzyna Wyka, Trenton M White, Camila A Picchio, Lawrence O Gostin, Heidi J Larson, Kenneth Rabin, Scott C Ratzan, Adeeba Kamarulzaman, and Ayman El-Mohandes. 2023. A survey of COVID-19 vaccine acceptance across 23 countries in 2022. Nature medicine 29, 2 (2023), 366–375. [40] David MJ Lazer, Alex Pentland, Duncan J Watts, Sinan Aral, Susan Athey, Noshir Contractor, Deen Freelon, Sandra Gonzalez-Bailon, Gary King, Helen Margetts, et al . 2020. Computational social science: Obstacles and opportunities. 
+
+Science 369, 6507 (2020), 1060–1062. [41] Junyi Li, Xiaoxue Cheng, Wayne Xin Zhao, Jian-Yun Nie, and Ji-Rong Wen. 2023. Halueval: A large-scale hallucination evaluation benchmark for large language models. In Proceedings of the 2023 conference on empirical methods in natural language processing . 6449–6464. [42] Jing Li, Aixin Sun, Jianglei Han, and Chenliang Li. 2020. A survey on deep learning for named entity recognition. 
+
+IEEE transactions on knowledge and data engineering 34, 1 (2020), 50–70. [43] Lingyao Li, Michelle Bensi, and Gregory Baecher. 2023. Exploring the potential of social media crowdsourcing for post-earthquake damage assessment. International Journal of Disaster Risk Reduction 98 (2023), 104062. [44] Lingyao Li, Michelle Bensi, Qingbin Cui, Gregory B Baecher, and You Huang. 2021. Social media crowdsourcing for rapid damage assessment following a sudden-onset natural hazard event. International Journal of Information Management 60 (2021), 102378. [45] Lingyao Li, Songhua Hu, Yinpei Dai, Min Deng, Parisa Momeni, Gabriel Laverghetta, Lizhou Fan, Zihui Ma, Xi Wang, Siyuan Ma, et al . 2025. Toward satisfactory public accessibility: A crowdsourcing approach through online reviews to inclusive urban design. Computers, Environment and Urban Systems 122 (2025), 102329. [46] Lingyao Li, Songhua Hu, Ly Dinh, and Libby Hemphill. 2026. Crowdsourced reviews reveal substantial disparities in public perceptions of parking. Cities 171 (2026), 106866. [47] Lingyao Li, Xiaoshan Huang, Renkai Ma, Ben Zefeng Zhang, Haolun Wu, Fan Yang, and Chen Chen. 2025. LLM Use for Mental Health: Crowdsourcing Users’ Sentiment-based Perspectives and Values from Social Discussions. arXiv preprint arXiv:2512.07797 (2025). [48] Lingyao Li, Zihui Ma, and Tao Cao. 2020. Leveraging social media data to study the community resilience of New York City to 2019 power outage. International Journal of Disaster Risk Reduction 51 (2020), 101776. [49] Lingyao Li, Zihui Ma, and Tao Cao. 2021. Data-driven investigations of using social media to aid evacuations amid Western United States wildfire season. Fire Safety Journal 126 (2021), 103480. [50] Lingyao Li, Zihui Ma, Hyesoo Lee, and Sanggyu Lee. 2021. Can social media data be used to evaluate the risk of human interactions during the COVID-19 pandemic? International Journal of Disaster Risk Reduction 56 (2021), 102142. A Guide to Using Social Media as a Geospatial Lens for Studying Public Opinion and Behavior 19 
+
+[51] Lingyao Li, Yujie Mao, Yu Wang, and Zihui Ma. 2022. How has airport service quality changed in the context of COVID-19: A data-driven crowdsourcing approach based on sentiment analysis. Journal of Air Transport Management 
+
+105 (2022), 102298. [52] Lingyao Li, Runlong Yu, Qikai Hu, Bowei Li, Min Deng, Yang Zhou, and Xiaowei Jia. 2025. From pixels to places: A systematic benchmark for evaluating image geolocalization ability in large language models. arXiv preprint arXiv:2508.01608 (2025). [53] Lingyao Li, Jiayan Zhou, Zihui Ma, Michelle T Bensi, Molly A Hall, and Gregory B Baecher. 2022. Dynamic assessment of the COVID-19 vaccine acceptance leveraging social media data. Journal of Biomedical Informatics 129 (2022), 104054. [54] Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. Roberta: A robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692 
+
+(2019). [55] Josephine Lukito, Bin Chen, Gina M Masullo, and Natalie Jomini Stroud. 2024. Comparing a BERT classifier and a GPT classifier for detecting connective language across multiple social media. In Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing . 19140–19153. [56] Hanjia Lyu, Jinfa Huang, Daoan Zhang, Yongsheng Yu, Xinyi Mou, Jinsheng Pan, Zhengyuan Yang, Zhongyu Wei, and Jiebo Luo. 2025. Gpt-4v (ision) as a social media analysis engine. ACM Transactions on Intelligent Systems and Technology 16, 3 (2025), 1–54. [57] Zihui Ma, Lingyao Li, Libby Hemphill, Gregory B Baecher, and Yubai Yuan. 2024. Investigating disaster response for resilient communities through social media data and the Susceptible-Infected-Recovered (SIR) model: A case study of 2020 Western US wildfire season. Sustainable Cities and Society 106 (2024), 105362. [58] Zihui Ma, Lingyao Li, Yubai Yuan, and Gregory B Baecher. 2023. Appraising Situational Awareness in Social Media Data for Wildfire Response. In ASCE Inspire 2023 . 289–297. [59] Christopher D Manning, Mihai Surdeanu, John Bauer, Jenny Rose Finkel, Steven Bethard, and David McClosky. 2014. The Stanford CoreNLP natural language processing toolkit. In Proceedings of 52nd annual meeting of the association for computational linguistics: system demonstrations . 55–60. [60] Leland McInnes, John Healy, and James Melville. 2018. Umap: Uniform manifold approximation and projection for dimension reduction. arXiv preprint arXiv:1802.03426 (2018). [61] Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg S Corrado, and Jeff Dean. 2013. Distributed representations of words and phrases and their compositionality. Advances in neural information processing systems 26 (2013). [62] Elena Milani, Emma Weitkamp, and Peter Webb. 2020. The visual vaccine debate on Twitter: A social network analysis. 
+
+Media and Communication 8, 2 (2020), 364–375. [63] Fatma Mohamed and Abdulhadi Shoufan. 2024. Users’ experience with health-related content on YouTube: an exploratory study. BMC Public Health 24, 1 (2024), 86. [64] Nimra Mughal, Ghulam Mujtaba, Sarang Shaikh, Aveenash Kumar, and Sher Muhammad Daudpota. 2024. Comparative analysis of deep natural networks and large language models for aspect-based sentiment analysis. Ieee Access 12 (2024), 60943–60959. [65] Farhad Nadi, Hadi Naghavipour, Tahir Mehmood, Alliesya Binti Azman, Jeetha A/P Nagantheran, Kezia Sim Kui Ting, Nor Muhammad Ilman Bin Nor Adnan, Roshene A/P Sivarajan, Suita A/P Veerah, and Romi Fadillah Rahmat. 2023. Sentiment analysis using large language models: A case study of GPT-3.5. In The International Conference on Data Science and Emerging Technologies . Springer, 161–168. [66] Aumkar Shriram Paradkar, Cheng Zhang, Faxi Yuan, and Ali Mostafavi. 2022. Examining the consistency between geo-coordinates and content-mentioned locations in tweets for disaster situational awareness: A Hurricane Harvey study. International Journal of Disaster Risk Reduction 73 (2022), 102878. [67] Jeffrey Pennington, Richard Socher, and Christopher D Manning. 2014. Glove: Global vectors for word representation. In Proceedings of the 2014 conference on empirical methods in natural language processing (EMNLP) . 1532–1543. [68] Jayr Pereira, Robson Fidalgo, Roberto Lotufo, and Rodrigo Nogueira. 2023. Crisis event social media summarization with GPT-3 and neural reranking. In Proceedings of the 20th International ISCRAM Conference . 371–384. [69] Chau Minh Pham, Alexander Hoyle, Simeng Sun, Philip Resnik, and Mohit Iyyer. 2024. TopicGPT: A prompt-based topic modeling framework. In Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) . 2956–2984. [70] Maud Reveilhac, Stephanie Steinmetz, and Davide Morselli. 2022. A systematic literature review of how and whether social media data can complement traditional survey data to study public opinion. Multimedia tools and applications 
+
+81, 7 (2022), 10107–10142. [71] Koustuv Saha, Ayse E Bayraktaroglu, Andrew T Campbell, Nitesh V Chawla, Munmun De Choudhury, Sidney K D’Mello, Anind K Dey, Ge Gao, Julie M Gregg, Krithika Jagannath, et al . 2019. Social media as a passive sensor in longitudinal studies of human behavior and wellbeing. In Extended Abstracts of the 2019 CHI Conference on Human Factors in Computing Systems . 1–8. 20 Li et al. 
+
+[72] Gerard Salton and Christopher Buckley. 1988. Term-weighting approaches in automatic text retrieval. Information processing & management 24, 5 (1988), 513–523. [73] Patrick Schober, Christa Boer, and Lothar A Schwarte. 2018. Correlation coefficients: appropriate use and interpretation. 
+
+Anesthesia & analgesia 126, 5 (2018), 1763–1768. [74] Yang Song, Huan Ning, Xinyue Ye, Divya Chandana, and Shaohua Wang. 2022. Analyze the usage of urban greenways through social media images and computer vision. Environment and Planning B: Urban Analytics and City Science 49, 6 (2022), 1682–1696. [75] Kathie Treen, Hywel Williams, Saffron O’Neill, and Travis G Coan. 2022. Discussion of climate change on Reddit: Polarized discourse or deliberative debate? Environmental Communication 16, 5 (2022), 680–698. [76] U.S. Census Bureau. 2026. American Community Survey (ACS). https://www.census.gov/programs-surveys/acs.html. Accessed: 2026-04-08. [77] U.S. Census Bureau. 2026. Household Pulse Survey. https://www.census.gov/programs-surveys/household-pulse-survey.html. Accessed: 2026-04-08. [78] Desheng Wu and Yiwen Cui. 2018. Disaster early warning and damage assessment analysis using social media data and geo-location information. Decision support systems 111 (2018), 48–59. [79] Jinwen Xu and Yi Qiang. 2022. Analysing information diffusion in natural hazards using retweets-a case study of 2018 winter storm diego. Annals of GIS 28, 2 (2022), 213–227. [80] Junjun Yin, Guangqing Chi, and Jennifer Van Hook. 2018. Evaluating the representativeness in the geographic distribution of twitter user population. In Proceedings of the 12th workshop on geographic information retrieval . 1–2. [81] Mengxia Zhang and Lan Luo. 2023. Can consumer-posted photos serve as a leading indicator of restaurant survival? Evidence from Yelp. Management Science 69, 1 (2023), 25–50. [82] Wenxuan Zhang, Yue Deng, Bing Liu, Sinno Pan, and Lidong Bing. 2024. Sentiment analysis in the era of large language models: A reality check. In Findings of the Association for Computational Linguistics: NAACL 2024 . 3881–3906. [83] Jingming Zhuo, Songyang Zhang, Xinyu Fang, Haodong Duan, Dahua Lin, and Kai Chen. 2024. ProSA: Assessing and understanding the prompt sensitivity of LLMs. In Findings of the Association for Computational Linguistics: EMNLP 2024 . 1950–1976. [84] Caleb Ziems, William Held, Omar Shaikh, Jiaao Chen, Zhehao Zhang, and Diyi Yang. 2024. Can large language models transform computational social science? Computational Linguistics 50, 1 (2024), 237–291. [85] Lei Zou, Danqing Liao, Nina SN Lam, Michelle A Meyer, Nasir G Gharaibeh, Heng Cai, Bing Zhou, and Dongying Li. 2023. Social media for emergency rescue: An analysis of rescue requests on Twitter during Hurricane Harvey. 
+
+International Journal of Disaster Risk Reduction 85 (2023), 103513.
