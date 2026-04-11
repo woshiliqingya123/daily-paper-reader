@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-04-11 <!--dpr-date:20260411-->
+    * 速读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/11/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning" data-sidebar-item="{&quot;title&quot;: &quot;TEMPER: Testing Emotional Perturbation in Quantitative Reasoning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;测试语言模型中的情感扰动与情感框架&quot;}">TEMPER: Testing Emotional Perturbation in Quantitative Reasoning</a>
   * 2026-04-10 <!--dpr-date:20260410-->
     * 精读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/10/2604.07417v1-semantic-emotional-resonance-embedding-a-semi-supervised-paradigm-for-cross-lingual-speech-emotion-recognition" data-sidebar-item="{&quot;title&quot;: &quot;Semantic-Emotional Resonance Embedding: A Semi-Supervised Paradigm for Cross-Lingual Speech Emotion Recognition&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.07417v1-semantic-emotional-resonance-embedding-a-semi-supervised-paradigm-for-cross-lingual-speech-emotion-recognition&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;使用半监督学习的跨语言语音情感识别&quot;}">Semantic-Emotional Resonance Embedding: A Semi-Supervised Paradigm for Cross-Lingual Speech Emotion Recognition</a>

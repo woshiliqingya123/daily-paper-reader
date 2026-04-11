@@ -1,0 +1,23 @@
+{
+  "label": "2026-04-11",
+  "date": "2026-04-11",
+  "generated_at": "2026-04-11T20:00:24",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "202604/11/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning",
+      "section": "quick",
+      "title_en": "TEMPER: Testing Emotional Perturbation in Quantitative Reasoning",
+      "authors": "Atahan Dokme, Benjamin Reichman, Larry Heck",
+      "date": "2026-04-09",
+      "pdf": "https://arxiv.org/pdf/2604.07801v1",
+      "score": "7.0",
+      "evidence": "测试语言模型中的情感扰动与情感框架",
+      "tldr": "本文研究了大语言模型在面对带有情感色彩（如沮丧、紧迫）的定量推理任务时的表现。研究者开发了TEMPER框架，构建了包含5400个情感-中性对照样本的数据集，并在18个模型上进行评估。结果发现，即使数值内容完全一致，情感修饰也会导致模型准确率下降2-10个百分点。研究还证明了通过中性化处理可以恢复性能，揭示了情感风格对模型推理鲁棒性的显著影响。",
+      "tags": "query:msa",
+      "abstract_en": "Large language models are trained and evaluated on quantitative reasoning tasks written in clean, emotionally neutral language. However, real-world queries are often wrapped in frustration, urgency or enthusiasm. Does emotional framing alone degrade reasoning when all numerical content is preserved? To investigate this, a controlled emotion translation framework is developed that rewrites problems into emotional variants while preserving all quantities and relationships. Using this framework, Temper-5400 (5,400 semantically verified emotion--neutral pairs) is constructed across GSM8K, MultiArith, and ARC-Challenge, and evaluated on eighteen models (1B to frontier scale). Two core results emerge: First, emotional framing reduces accuracy by 2-10 percentage points even though all numerical content is preserved. Second, neutralizing emotional variants recovers most of the lost performance, showing both that the degradation is tied to emotional style rather than content corruption and that neutralization can serve as a lightweight inference-time mitigation. Non-emotional paraphrases cause no such degradation, implicating emotional content rather than surface-level changes. Beyond emotion specifically, the benchmark construction procedure provides a general framework for controlled stylistic translation and robustness evaluation.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
