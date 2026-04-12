@@ -1,6 +1,9 @@
 * <a class="dpr-sidebar-root-link" href="#/">首页</a>
 * <a class="dpr-sidebar-root-link dpr-sidebar-noactive-link" href="javascript:void(0)" data-dpr-hash="#/tutorial/README">使用教程</a>
 * Daily Papers
+  * 2026-04-12 <!--dpr-date:20260412-->
+    * 精读区
+      * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/12/2604.07198v1-beyond-the-mean-modelling-annotation-distributions-in-continuous-affect-prediction" data-sidebar-item="{&quot;title&quot;: &quot;Beyond the Mean: Modelling Annotation Distributions in Continuous Affect Prediction&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.07198v1-beyond-the-mean-modelling-annotation-distributions-in-continuous-affect-prediction&quot;, &quot;score&quot;: &quot;8.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;连续情感预测中的标注分布建模&quot;}">Beyond the Mean: Modelling Annotation Distributions in Continuous Affect Prediction</a>
   * 2026-04-11 <!--dpr-date:20260411-->
     * 速读区
       * <a class="dpr-sidebar-item-link dpr-sidebar-item-structured" href="#/202604/11/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning" data-sidebar-item="{&quot;title&quot;: &quot;TEMPER: Testing Emotional Perturbation in Quantitative Reasoning&quot;, &quot;link&quot;: &quot;https://arxiv.org/abs/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning&quot;, &quot;score&quot;: &quot;7.0&quot;, &quot;tags&quot;: [{&quot;kind&quot;: &quot;query&quot;, &quot;label&quot;: &quot;msa&quot;}], &quot;evidence&quot;: &quot;测试语言模型中的情感扰动与情感框架&quot;}">TEMPER: Testing Emotional Perturbation in Quantitative Reasoning</a>

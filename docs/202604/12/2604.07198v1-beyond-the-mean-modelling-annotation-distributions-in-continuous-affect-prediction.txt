@@ -1,0 +1,289 @@
+Title: Beyond the Mean: Modelling Annotation Distributions in Continuous Affect Prediction
+
+URL Source: https://arxiv.org/pdf/2604.07198v1
+
+Published Time: Thu, 09 Apr 2026 01:12:09 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Beyond the Mean: Modelling Annotation Distributions in Continuous Affect Prediction 
+
+# Kosmas Pinitas Department of Digital Systems University of Piraeus 
+
+> kpinitas@unipi.gr
+
+# Ilias Maglogiannis Department of Digital Systems University of Piraeus 
+
+> imaglo@unipi.gr
+
+# Abstract 
+
+Emotion annotation is inherently subjective and cognitively demanding, producing signals that reflect diverse percep-tions across annotators rather than a single ground truth. In continuous affect prediction, this variability is typically collapsed into point estimates such as the mean or me-dian, discarding valuable information about annotator dis-agreement and uncertainty. In this work, we propose a distribution-aware framework that models annotation con-sensus using the Beta distribution. Instead of predicting a single affect value, models estimate the mean and stan-dard deviation of the annotation distribution, which are transformed into valid Beta parameters through moment matching. This formulation enables the recovery of higher-order distributional descriptors, including skewness, kurto-sis, and quantiles, in closed form. As a result, the model captures not only the central tendency of emotional per-ception but also variability, asymmetry, and uncertainty in annotator responses. We evaluate the proposed approach on the SEWA and RECOLA datasets using multimodal fea-tures. Experimental results show that Beta-based modelling produces predictive distributions that closely match the em-pirical annotator distributions while achieving competi-tive performance with conventional regression approaches. These findings highlight the importance of modelling anno-tation uncertainty in affective computing and demonstrate the potential of distribution-aware learning for subjective signal analysis. 
+
+# 1. Introduction 
+
+Human emotion is one of the most complex signals to model. It is inherently multimodal, expressed through speech, facial expressions, physiological responses, and its perception requires substantial cognitive effort from human annotators [25]. Unlike deterministic signals with a well-defined ground truth, emotional perception is inherently subjective. Different observers may interpret the same be-havioural cues differently depending on context, cultural background, and perceptual bias. As a result, emotion anno-tations rarely converge to a single value; instead, they form distributions that reflect diverse interpretations of affective behaviour [16]. In affective computing, this variability has traditionally been treated as noise around a latent true label. However, recent perspectives suggest that annotator disagreement it-self carries meaningful information about emotional per-ception. Multiple annotators observing the same stimulus may assign different affective values, reflecting ambigu-ity or competing interpretations of the observed behaviour. From this perspective, disagreement is not merely an arte-fact of annotation but an intrinsic property of emotional sig-nals. Therefore, modelling this variability provides an op-portunity to capture richer information about how emotions are perceived by humans. Despite this, most continuous emotion recognition pipelines reduce annotations to point estimates such as the mean or median [14, 20, 21]. While this simplification fa-cilitates standard regression frameworks, it collapses the underlying annotation distribution into a single scalar tar-get. In doing so, important characteristics of the annotation signal, such as variability, asymmetry, and uncertainty, are lost. Although widely adopted, such averaging implicitly assumes that disagreement reflects noise rather than mean-ingful variation. Previous studies have demonstrated that overlooking annotator variability can impair both general-ization and calibration in affective models [3, 20, 24]. This issue is particularly relevant for real-world applications in healthcare and education, as exemplified by European ini-tiatives like AI4Work [11], which employs Digital Twin technology to predict burnout symptoms and detect stress in demanding work environments. These limitations motivate modelling frameworks that explicitly represent the distributional nature of emotion an-notations. Rather than predicting a single consensus value, distribution-aware approaches aim to capture both central 1
+
+> arXiv:2604.07198v1 [cs.LG] 8 Apr 2026
+
+tendency and variability in human perception. Such rep-resentations can provide richer insight into affective be-haviour, allowing models to distinguish between confident emotional signals and inherently ambiguous ones. In do-mains involving subjective human judgements, modelling the full annotation distribution may therefore lead to more robust and interpretable systems. In this paper, we propose a distribution-centric frame-work for affective consensus modelling based on the Beta distribution. Our contributions are threefold: (i) we in-troduce a Beta-based formulation in which models predict mean and standard deviation to obtain valid Beta parame-ters; (ii) we show how this formulation enables closed-form computation of higher-order descriptors such as skewness, kurtosis, and quantiles; (iii) we demonstrate through exper-iments on SEWA [8] and RECOLA [23] that Beta-based models match or surpass point-estimate baselines while capturing richer distributional properties of annotator dis-agreement. This shows that reliable higher-order statistics can be derived from simple μ, σ predictions, without the need to regress each descriptor directly. Our findings es-tablish emotion as a benchmark for probabilistic signal pro-cessing and show the broader applicability of Beta-based consensus modelling in subjective domains. 
+
+# 2. Related Work 
+
+Emotion annotations are inherently subjective and often ex-hibit disagreement across annotators. Rather than treating this variability as noise, several approaches have attempted to explicitly model annotation ambiguity in affective com-puting. Early work explored interval-based methods such as strength modelling [6], which represents annotator agree-ment through confidence intervals. Other approaches in-corporate uncertainty directly into regression frameworks. For instance, Gaussian-based formulations have been used to estimate both mean and variance of affect signals, some-times incorporating temporal lag correction or additional constraints [7, 28]. More recently, probabilistic learning frameworks have been proposed to capture uncertainty in emotion predic-tion. Bayesian neural networks model predictive distri-butions over outputs [22], while evidential regression ap-proaches estimate distribution parameters directly from data [2, 27]. Mixture density networks have also been explored to represent multi-modal output distributions [4]. These methods allow models to capture uncertainty in the predic-tion process, but they are often designed around Gaussian assumptions or focus primarily on modelling the mean and variance of annotations. Similar trends appear in related perceptual modelling tasks. In speech quality estimation, MBNet models listener bias during mean opinion score (MOS) prediction [9], while DeePMOS predicts the full MOS distribution rather than a single score [10]. Variance-aware regression approaches further attempt to recover uncertainty in subjective labels [5]. Beyond Gaussian assumptions, recent work has ex-plored alternative distributional formulations such as Beta-based quantile regression [1] and conformalised regression for uncertainty estimation [15]. These studies highlight the benefits of treating subjective labels as distributions rather than single-valued targets. Despite this progress, most existing approaches remain limited to modelling the mean and variance of annotation distributions. Higher-order characteristics of subjective per-ception, such as skewness, kurtosis, entropy, or distribution quantiles, are rarely considered. In this work, we address this limitation through a Beta-based modelling framework that predicts the mean and variance of annotation signals and derives higher-order descriptors in closed form. This formulation is lightweight and model-agnostic, and com-plements recent advances in ordinal emotion modelling [26] and Beta-based regression [1]. Importantly, it allows us to explicitly examine whether predicted distributions capture the structure of annotator disagreement rather than collaps-ing it into a single consensus value. 
+
+# 3. Methodology 
+
+3.1. Beta Distribution for Annotation Consensus Modelling 
+
+Continuous affect annotations are inherently ambiguous, as different annotators may perceive the same emotional be-haviour differently. Rather than collapsing these percep-tions into a single consensus value, we model the distribu-tion of annotator responses directly. Specifically, we as-sume that the distribution of annotations for a given time window can be approximated by a Beta distribution. The Beta distribution is defined on the bounded interval 
+
+[0 , 1] , making it well suited for modelling normalised af-fect dimensions such as valence and arousal. In our exper-iments, annotation signals are rescaled to this interval prior to modelling. The flexibility of the Beta distribution allows it to represent a wide range of shapes, including symmet-ric, skewed, and concentrated distributions, which makes it suitable for capturing the variability and asymmetry often observed in subjective annotations. Importantly, its param-eters (α, β ) allow closed-form computation of descriptive statistics such as mean, variance, skewness, kurtosis, and quantiles. Let {ai}Ni=1 denote annotations from N raters at a given time step. The empirical mean μ and variance σ2 of these annotations are used to recover the parameters of the Beta distribution through moment matching: 
+
+ϕ = μ(1 − μ)
+
+σ2 − 1, α = μϕ, β = (1 − μ)ϕ. (1) 2Figure 1. Framework Overview: (a) annotator signals form a probabilistic consensus (μ, σ ); (b) multimodal features are mapped to these parameters during training; (c) at test time, predicted (μ, σ ) define a Beta distribution capturing annotation ambiguity. 
+
+This mapping is valid under the conditions 
+
+0 < μ < 1, 0 < σ 2 < μ (1 −μ), α > 0, β > 0,
+
+(2) which ensure that (α, β ) define a valid Beta distribution. In practice, small numerical adjustments can be applied when necessary to guarantee valid parameter values. Once the Beta parameters are obtained, the resulting dis-tribution provides a compact representation of annotator consensus and disagreement. In particular, higher-order de-scriptors of the annotation distribution can be computed an-alytically. The skewness captures asymmetry in annotator responses, while the excess kurtosis describes the concen-tration of annotations around the mean: 
+
+Skew( X) = 2( β − α)√α + β + 1 (α + β + 2) √αβ ,
+
+Kurt ex (X) = 6(α − β)2(α + β + 1) − αβ (α + β + 2) 
+
+αβ (α + β + 2)( α + β + 3) .
+
+Finally, distribution quantiles—including the me-dian—can be obtained by inverting the regularised incom-plete Beta function: 
+
+qp = I−1 
+
+> p
+
+(α, β ).
+
+For α, β > 1, a useful closed-form approximation for the median is 
+
+(α − 1/3) /(α + β − 2/3) .
+
+This formulation allows models to predict only the mean and variance of the annotation distribution while recovering richer descriptors of annotator perception in closed form. 
+
+3.2. Machine Learning Models 
+
+This study employs lightweight two-layer ANNs with ReLU activations, where each layer reduces dimensionality by 25% (first layer at 75% of input size, second at 50%). Models are trained to predict μ and σ from multimodal features under three variants: MI , two independent net-works for μ and σ; MS , a shared first layer with split sec-ond layers; and MF , a fully shared network with two out-puts. These designs assess the trade-off between indepen-dent modelling and parameter sharing. As a baseline ( B), we implement point-regressors that train a separate network for each descriptor (e.g., μ, σ, skewness, kurtosis, quan-tiles), directly predicting values without probabilistic cou-pling. In contrast, our Beta-based models require predict-ing only μ and σ, from which all higher-order descriptors are obtained in closed form, offering a more efficient and coherent approach to consensus modelling. 
+
+# 4. Datasets and Preprocessing 
+
+4.1. Datasets 
+
+We evaluate the proposed framework on two widely used benchmarks for continuous affect prediction: RECOLA 3[23] and SEWA [8]. Both datasets provide multimodal recordings together with continuous annotations of emo-tional dimensions in the valence–arousal space, making them suitable benchmarks for studying annotation variabil-ity in affective computing. 
+
+RECOLA (Remote Collaborative and Affective inter-actions) contains multimodal recordings of dyadic interac-tions between participants collaborating on a remote task. The dataset includes synchronised audio, video, and phys-iological signals collected from 23 participants during a collaborative problem-solving activity. Continuous annota-tions of valence and arousal were obtained from six expert raters who independently evaluated the recordings while watching the interaction videos. The dataset provides sev-eral feature modalities including 40 acoustic descriptors, 130 visual features derived from facial behaviour analy-sis, and 116 physiological features extracted from biosig-nals such as electrodermal activity and electrocardiography. RECOLA has become a standard benchmark for continuous emotion recognition due to its rich multimodal recordings and carefully curated annotations. 
+
+SEWA (Sentiment Analysis in the Wild) is a large-scale audiovisual dataset designed to capture spontaneous emotional behaviour in naturalistic settings. The dataset contains more than 2,000 minutes of audio–visual record-ings from 398 participants spanning six different cultures (British, German, Hungarian, Greek, Serbian, and Chi-nese) with ages ranging from 18 to 65 years. Participants were recorded while watching advertisements and subse-quently discussing them through video-chat interactions. The dataset includes continuous annotations of several af-fective dimensions including valence, arousal, liking, and agreement. For the purposes of this work, we focus on va-lence and arousal annotations provided by three annotators. In addition to the raw recordings, the dataset provides a rich set of behavioural features including facial landmarks, fa-cial action units, and vocalisation cues extracted from the audiovisual streams. 
+
+4.2. Preprocessing 
+
+For both datasets, recordings were segmented into tempo-ral windows of 3 seconds with a shift of 400 ms in order to generate temporally consistent samples for model train-ing [13, 17]. This sliding-window strategy is commonly used in continuous affect prediction as it balances tempo-ral resolution with annotation stability. The chosen window size allows the model to capture short-term behavioural pat-terns while smoothing very rapid fluctuations in the signals. The 400 ms stride produces overlapping windows, which in-creases the number of training samples and preserves tem-poral continuity in the data. Within each window, multimodal features were aggre-gated by computing their average value over the corre-sponding time interval. This aggregation step produces a single feature vector per window while preserving the over-all behavioural trends within the segment. Since the feature extraction pipelines of RECOLA and SEWA provide frame-level descriptors, this averaging operation also ensures tem-poral alignment across modalities by mapping all signals to a common time scale. Annotation traces were processed using the same win-dowing scheme to ensure consistency between input fea-tures and supervisory signals. For each time window, the annotation values provided by all raters were first tempo-rally aligned and aggregated. We then computed the empir-ical mean and standard deviation across annotators. The mean reflects the central tendency of perceived emotion, while the standard deviation captures the level of disagree-ment among annotators. This representation therefore pro-vides a compact description of both consensus and ambi-guity in emotional perception. Each time window is thus associated with a pair (μ, σ ) describing the distribution of annotator responses. Since the proposed framework models annotation dis-tributions using the Beta distribution, which is defined on the interval [0 , 1] , all annotation signals were linearly rescaled to this range prior to modelling. This normalisa-tion step preserves the relative relationships between anno-tations while ensuring compatibility with the Beta param-eterisation. After applying the preprocessing pipeline, the resulting datasets contain 5268 samples for RECOLA and 8162 samples for SEWA. 
+
+# 5. Experiments 
+
+5.1. Training and Evaluation Protocol 
+
+In this initial study, we evaluate the proposed models on continuous arousal and valence regression using five-fold subject-independent cross-validation. This protocol ensures that training, validation, and test sets contain recordings from non-overlapping participants, providing a realistic es-timate of model generalisation to unseen subjects (see Fig-ure 1). Neural networks are trained using the Adam opti-miser with a learning rate of 10 −3 and a batch size of 128 for up to 50 epochs. Early stopping is applied based on the validation loss using mean squared error (MSE) as the optimisation objective, with training terminated after five epochs without improvement. To account for variability due to random initialisation, each experiment is repeated 10 times using different random seeds. Model performance is evaluated using the Concordance Correlation Coefficient (CCC), which measures agreement between predicted and ground-truth signals by jointly accounting for correlation and scale differences. Statistical significance is assessed us-ing paired Wilcoxon signed-rank tests with a significance level of p < 0.05 .45.2. Results 
+
+Table 1. CCC performance on RECOLA and SEWA for arousal and valence regression. MI : independent μ, σ networks; MS :shared first layer with split second layers; MF : fully shared net-work with two outputs. Best scores in bold; non-significant differ-ences also marked. 
+
+RECOLA Arousal Valence 
+
+Modality Model μ σ μ σ
+
+Audio 
+
+MI 0.19 0.04 0.54 0.25 
+
+MS 0.17 0.04 0.51 0.27 
+
+MF 0.13 0.02 0.52 0.22 Visual 
+
+MI 0.05 0.03 0.03 0.03 
+
+MS 0.03 0.01 0.02 0.03 
+
+MF 0.03 0.01 0.03 0.02 Physiology 
+
+MI 0.11 0.01 0.14 0.14 
+
+MS 0.15 0.01 0.18 0.14 
+
+MF 0.13 0.01 0.20 0.12 Fusion 
+
+MI 0.24 0.01 0.48 0.26 
+
+MS 0.21 0.05 0.47 0.28 
+
+MF 0.23 0.07 0.50 0.26 
+
+SEWA Arousal Valence 
+
+Modality Model μ σ μ σ
+
+Audio 
+
+MI 0.02 0.03 0.04 0.01 
+
+MS 0.01 0.01 0.01 0.01 
+
+MF 0.01 0.01 0.02 0.01 Visual 
+
+MI 0.77 0.55 0.76 0.53 
+
+MS 0.75 0.60 0.75 0.51 
+
+MF 0.80 0.61 0.76 0.51 Fusion 
+
+MI 0.76 0.61 0.74 0.50 
+
+MS 0.78 0.65 0.73 0.52 
+
+MF 0.76 0.65 0.78 0.57 
+
+Table 2. KL divergence of predicted distributions against ground-truth annotation Betas on RECOLA and SEWA. U: Uniform base-line; B: true Beta distribution. Lower values indicate closer match to annotator distributions. 
+
+RECOLA Arousal Valence 
+
+Modality Model U B U B
+
+Audio 
+
+MI 13.59 0.64 5.97 0.53 
+
+MS 13.18 0.62 5.90 0.55 
+
+MF 13.77 0.64 5.87 0.57 
+
+Fusion 
+
+MI 16.87 0.78 6.18 0.61 
+
+MS 15.73 0.75 5.89 0.60 
+
+MF 16.00 0.76 6.46 0.63 SEWA Arousal Valence 
+
+Modality Model U B U B
+
+Visual 
+
+MI 1.98 1.08 2.35 0.65 
+
+MS 2.03 0.91 2.10 0.87 
+
+MF 2.40 0.78 2.58 0.62 
+
+Fusion 
+
+MI 2.12 1.98 1.77 1.68 
+
+MS 1.77 1.24 1.69 0.98 
+
+MF 2.30 1.64 1.72 1.09 
+
+Table 3. CCC performance for higher-order descriptors on RECOLA and SEWA. B: point-regressor baselines trained sep-arately for each descriptor. M : proposed Beta-based approach deriving descriptors from μ, σ .                                                                                              
+
+> RECOLA Arousal Valence
+> Modality Descriptor BMBM
+> Audio median 0.16 0.18 0.50 0.52
+> q75 0.10 0.13 0.45 0.44 q25 0.12 0.18 0.50 0.53
+> skew -0.02 0.01 -0.01 0.03
+> kurt 0.05 -0.01 0.04 0.02 Fusion median 0.30 0.31 0.44 0.48
+> q75 0.23 0.25 0.39 0.40
+> q25 0.26 0.24 0.48 0.51
+> skew 0.02 0.02 0.01 0.01
+> kurt 0.06 0.01 0.02 0.01
+> SEWA Arousal Valence
+> Modality Model BMBM
+> Visual median 0.24 0.30 0.30 0.32
+> q75 0.35 0.41 0.53 0.51 q25 0.91 0.80 0.90 0.85 skew 0.28 0.30 0.25 0.23 kurt 0.05 0.06 0.07 0.04 Fusion median 0.27 0.27 0.30 0.34
+> q75 0.40 0.38 0.54 0.51 q25 0.90 0.85 0.89 0.83 skew 0.48 0.30 0.33 0.28 kurt 0.10 0.08 0.12 0.10
+
+5.2.1. Prediction of Mean and Deviation 
+
+Table 1 reports CCC results for predicting the mean ( μ)and standard deviation ( σ) of annotation distributions across modalities on RECOLA and SEWA. Across both datasets, multimodal fusion consistently improves performance over unimodal inputs, highlighting the complementary nature of behavioural signals in affect modelling. Emotional expres-sion is inherently multimodal, and combining cues from multiple sources appears particularly beneficial when mod-elling annotator consensus. Dataset-specific modality patterns are also observed. In SEWA, visual features provide the strongest predictive sig-nal. This behaviour is expected given that SEWA captures spontaneous interactions in naturalistic settings where fa-cial behaviour plays a dominant role in conveying affective information. In contrast, RECOLA shows stronger contri-butions from audio features, reflecting the conversational nature of the collaborative task and the importance of vo-cal dynamics in expressing emotional activation during di-alogue. These observations are consistent with previous studies that report modality-dependent performance differ-ences across affect datasets. Predicting the standard deviation σ is notably more chal-lenging than predicting the mean μ, as σ reflects annotator disagreement rather than a single perceptual signal. This suggests that modelling consensus variability requires cap-5turing subtle cues related to emotional ambiguity or percep-tual uncertainty. Nevertheless, the models are able to learn meaningful signals associated with annotation dispersion, indicating that behavioural features contain information not only about the central tendency of emotional perception but also about the degree of agreement among annotators. Performance differences between the three architectures (MI , MS , and MF ) are generally small and often not sta-tistically significant. This suggests that modelling annota-tor consensus through the proposed framework does not re-quire complex architectures and can be achieved with rela-tively lightweight networks. The results therefore indicate that predicting the two distribution parameters (μ, σ ) con-stitutes a stable and tractable learning objective across dif-ferent modalities and datasets. 
+
+5.2.2. Recovery of Higher-Order Distribution Descrip-tors 
+
+Table 3 evaluates the ability of the proposed framework to recover higher-order statistics of the annotation distribution. In this experiment, the Beta-based formulation ( M ) derives descriptors directly from the predicted (μ, σ ) parameters and is compared with point-regressor baselines ( B) trained independently for each descriptor. Overall, the Beta-based approach performs on par with or better than the baseline models for most descriptors. Me-dian and quartile estimates are recovered most reliably, in-dicating that the central structure of the annotation distri-bution can be reconstructed accurately from the predicted parameters. This behaviour is expected because these statis-tics depend primarily on the first moments of the distribu-tion, which are captured directly by μ and σ.Skewness proves moderately more challenging to esti-mate, while kurtosis is the most difficult descriptor to re-cover. Both statistics are highly sensitive to small variations in the underlying distribution and depend strongly on the precise relationship between α and β. As a result, small pre-diction errors in μ or σ can propagate into larger deviations in these higher-order measures. Nevertheless, the proposed approach remains competitive with direct regression base-lines despite requiring only two predicted parameters. This suggests that the Beta parameterisation provides a compact but expressive representation of annotator perception. These results demonstrate that predicting only two pa-rameters is sufficient to reconstruct a broad set of distribu-tional properties. Instead of training separate models for each statistic, the proposed formulation provides a coherent representation of annotation distributions that captures both central tendency and higher-order characteristics. From a modelling perspective, this significantly reduces the number of learning targets while preserving rich information about annotator disagreement. 
+
+5.2.3. Distributional Fidelity 
+
+Finally, Table 2 evaluates how closely the predicted dis-tributions match the empirical annotation distributions us-ing KL divergence. Ground-truth consensus distributions were approximated by fitting Beta distributions to the em-pirical annotation mean and variance, while predicted dis-tributions were obtained by converting the predicted (ˆ μ, ˆσ)
+
+values into Beta parameters. As a reference baseline, we use the uniform distribution U(0 , 1) ≡ Beta(1 , 1) . Across most settings, the predicted distributions are significantly closer to the empirical Beta distributions than to the uni-form baseline. This indicates that the proposed models re-cover meaningful distributional structure rather than pro-ducing trivial or degenerate outputs. The improvement is particularly clear in RECOLA, where predicted distribu-tions closely align with the empirical consensus. This sug-gests that the Beta assumption provides a reasonable ap-proximation of annotation behaviour in controlled interac-tion settings. For SEWA under multimodal fusion, the gap between predicted and empirical distributions is somewhat smaller. This observation is consistent with the slightly larger er-rors observed in the higher-order descriptor estimates. SEWA contains more diverse and spontaneous interactions across multiple cultural contexts, which likely introduces greater variability in emotional perception and annotation behaviour. Consequently, modelling the full structure of an-notator disagreement in such in-the-wild data remains more challenging. Overall, the KL divergence analysis confirms that the proposed framework captures non-trivial distribu-tional patterns in annotator responses. Rather than collaps-ing annotations into a single consensus value, the model learns distributions that reflect both agreement and ambi-guity in emotional perception. 
+
+5.2.4. Qualitative Assessment and Computational Effi-ciency 
+
+To further assess the representational capacity of the Beta-based regression model ( MB ), we qualitatively examine the predicted distribution shapes in comparison with the em-pirical expert consensus in the RECOLA dataset. Since the Beta distribution is defined on the bounded interval 
+
+[0 , 1] , it naturally aligns with the normalised affect anno-tation space. Figure 2 presents representative examples of predicted arousal and valence distributions, illustrating how 
+
+MB approximates the underlying annotator responses. The predicted density functions demonstrate the flexibility of the Beta formulation in modelling different annotation pat-terns. In the valence dimension, the model successfully cap-tures strongly skewed distributions that arise when annota-tors converge toward extreme affective interpretations. In contrast, arousal often exhibits broader and more symmet-ric distributions reflecting greater perceptual ambiguity. By 60.0 0.2 0.4 0.6 0.8 1.0         
+
+> x
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> Density
+> GT
+> MB
+> Mean ( )
+> Median
+> q25
+> q75 (a) RECOLA: Arousal 0.0 0.2 0.4 0.6 0.8 1.0
+> x
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> 60
+> Density
+> GT
+> MB
+> Mean ( )
+> Median
+> q25
+> q75
+> (b) RECOLA: Valence
+> Figure 2. Indicative true and predicted probability density func-tions for Beta-Based Regression ( MB).
+
+reconstructing these patterns, the model provides richer in-formation than a single scalar estimate, revealing not only the perceived emotional state but also the level of agreement among annotators. Despite this representational flexibility, the current opti-misation strategy introduces certain limitations. The model is trained by minimising a joint loss function composed of the Mean Squared Error (MSE) of the predicted mean ( μ)and standard deviation ( σ). This formulation treats the two parameters as independent targets during optimisation, even though they are mathematically coupled in the Beta distri-bution through the relationship between mean and variance. As a result, the model may occasionally produce param-eter combinations that are numerically valid but subopti-mal from a probabilistic perspective, particularly near the boundaries of the affective space where the distribution be-comes highly sensitive to small variations in σ. This issue is further reflected in the empirical results, where the Con-cordance Correlation Coefficient (CCC) for σ tends to be lower than that for μ. Because the loss function assigns equal weight to both objectives, the optimisation process may prioritise the more stable mean prediction while under-fitting subtle variations in annotator disagreement. Future work could address this limitation by designing objective functions that explicitly enforce the structural coupling of Beta parameters or by optimising distributional likelihoods directly. Beyond representational properties, the proposed frame-work remains computationally efficient. The underlying ar-chitecture is intentionally lightweight, consisting of a two-layer bottleneck network with a very small number of train-able parameters. Depending on the input modality configu-ration, the total parameter count ranges from approximately 1.8k to 19.3k. Importantly, extending the baseline regres-sion model to the Beta-based formulation requires only a negligible increase in parameters at the output layer. Empir-ical benchmarking was performed on a standard worksta-tion (11th Gen Intel Core i5 CPU, 16 GB RAM, NVIDIA RTX 3060 GPU). This computational footprint indicates that the model can operate comfortably in real-time set-tings and could be deployed on modest hardware with-out requiring specialised acceleration. Consequently, the framework provides a practical balance between probabilis-tic modelling capability and computational efficiency. 
+
+# 6. Discussion and Future Work 
+
+While the proposed framework demonstrates that distribution-aware modelling can capture meaningful structure in emotion annotations, several limitations remain and open opportunities for future research. First, the current formulation assumes that annotation distributions can be approximated by the Beta family. Although the Beta distribution provides a flexible representation for bounded variables, it is inherently limited to unimodal or U-shaped distributions. In practice, annotator responses may exhibit more complex structures, including multimodal patterns that arise when different annotator groups interpret the same behaviour differently [12]. Extending the framework to mixture-based or non-parametric distributions could therefore provide a more expressive representation of annotator disagreement. Second, the estimation of Beta parameters relies on mo-ment matching from the empirical mean and variance of annotations. While this approach is simple and computa-tionally efficient, it can be sensitive to noise in cases where annotation variance is extremely small or when annotations lie near the boundaries of the label range. Future work could explore alternative parameter estimation techniques, such as likelihood-based optimisation or direct prediction of Beta parameters with appropriate regularisation. Another limita-tion concerns the prediction of the annotation variance σ2,which represents the degree of disagreement between anno-7tators. Unlike the mean, which reflects a central perceptual tendency, disagreement arises from multiple sources, in-cluding stimulus ambiguity, perceptual differences between annotators, and annotation delays. Modelling these fac-tors explicitly—for example through annotator-specific rep-resentations or uncertainty-aware architectures—could im-prove the prediction of distributional dispersion. The current study also collapses annotator responses into aggregate statistics without modelling annotator identity or reliability. In practice, annotators often exhibit system-atic biases or temporal response differences. Incorporat-ing annotator-aware modelling strategies, such as reliabil-ity weighting, annotator embeddings, or hierarchical prob-abilistic models, could provide deeper insights into the sources of disagreement. Another limitation lies in the ex-perimental scope. The proposed framework is evaluated on RECOLA and SEWA, two well-established benchmarks for continuous emotion prediction. While these datasets offer rich multimodal recordings, they contain relatively limited annotator pools and structured interaction scenarios. Eval-uating distribution-aware modelling on larger and more di-verse datasets, such as Aff-Wild2 or MuSe, could provide further evidence of the generality of the approach. Finally, the present study employs lightweight feedfor-ward neural networks and independent temporal windows. While this design emphasises methodological simplicity, emotion perception is inherently dynamic. Future work could integrate temporal modelling architectures such as transformer-based networks to capture longer-range affect dynamics and annotation lag effects. Overall, these limita-tions highlight several promising directions for advancing distribution-aware affect modelling. By combining richer probabilistic representations with improved temporal mod-elling and annotator-aware learning, future research may further enhance the ability of machine learning systems to capture the inherently subjective nature of human emotional perception. Importantly, the proposed framework is not re-stricted to affective computing; its formulation is general and can be readily applied to other domains involving sub-jective, noisy, and multi-annotator signals, such as player and viewer engagement modelling [18, 19], where captur-ing variability and disagreement is equally critical. 
+
+# 7. Conclusions 
+
+This work introduces a Beta-based framework for mod-elling annotator consensus in continuous affect prediction. By predicting the mean and standard deviation of annota-tion signals, the approach reconstructs full probabilistic dis-tributions that capture variability, asymmetry, and higher-order properties such as skewness and quantiles. Experi-ments on the RECOLA and SEWA datasets show that these two parameters are sufficient to recover rich distributional information while maintaining competitive predictive per-formance. The results highlight the importance of mod-elling subjective annotations as distributions rather than single-valued targets and demonstrate that lightweight mod-els can effectively learn such representations. Although evaluated on affective computing tasks, the framework is general and applicable to other domains involving bounded and ambiguous human annotations. 
+
+# Acknowledgements 
+
+This work is co-funded by the HORIZON-CL4-2023-HUMAN-01-CNECT, Grant Agreement number: 101135990 - Human-centric Digital Twin Approaches to Trustworthy AI and Robotics for Improved Working Conditions (AI4Work). 
+
+# References                              
+
+> [1] Haleh Akrami, Omar Zamzam, Anand Joshi, Sergul Ay-dore, and Richard Leahy. Beta quantile regression for ro-bust estimation of uncertainty in the presence of outliers. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 7480–7484. IEEE, 2024. 2 [2] Alexander Amini, Wilko Schwarting, Ava Soleimany, and Daniela Rus. Deep evidential regression. Advances in neural information processing systems , 33:14927–14937, 2020. 2 [3] Roddy Cowie, Ellen Douglas-Cowie, Nicolas Tsapatsoulis, George Votsis, Stefanos Kollias, Winfried Fellenz, and John G Taylor. Emotion recognition in human-computer in-teraction. IEEE Signal processing magazine , 18(1):32–80, 2001. 1 [4] Ting Dang, Vidhyasaharan Sethu, Julien Epps, and Eliathamby Ambikairajah. An investigation of emotion pre-diction uncertainty using gaussian mixture regression. In IN-TERSPEECH , pages 1248–1252, 2017. 2 [5] Abu Zaher Md Faridee and Hannes Gamper. Predicting score distribution to improve non-intrusive speech quality estima-tion. arXiv preprint arXiv:2204.06616 , 2022. 2 [6] Jing Han, Zixing Zhang, Nicholas Cummins, Fabien Ringeval, and Bj¨ orn Schuller. Strength modelling for real-world automatic continuous affect recognition from audiovi-sual signals. Image and Vision Computing , 65:76–86, 2017. 2[7] Dimitrios Kollias and Stefanos Zafeiriou. Affect analysis in-the-wild: Valence-arousal, expressions, action units and a unified framework. arXiv preprint arXiv:2103.15792 , 2021. 2[8] Jean Kossaifi, Robert Walecki, Yannis Panagakis, Jie Shen, Maximilian Schmitt, Fabien Ringeval, Jing Han, Vedhas Pandit, Antoine Toisoul, Bj¨ orn Schuller, et al. Sewa db: A rich database for audio-visual emotion and sentiment re-search in the wild. IEEE transactions on pattern analysis and machine intelligence , 43(3):1022–1040, 2019. 2, 4 [9] Yichong Leng, Xu Tan, Sheng Zhao, Frank Soong, Xiang-Yang Li, and Tao Qin. Mbnet: Mos prediction for synthe-sized speech with mean-bias network. In ICASSP 2021-2021
+
+8IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 391–395. IEEE, 2021. 2[10] Xinyu Liang, Fredrik Cumlin, Christian Sch¨ uldt, and Saikat Chatterjee. Deepmos: deep posterior mean-opinion-score of speech. In Proceedings of INTERSPEECH , pages 526–530, 2023. 2 [11] Ilias Maglogiannis, Filimon Trastelis, Michael Kalogeropou-los, Arsalan Khan, Parisis Gallos, Andreas Menychtas, Christos Panagopoulos, Petros Papachristou, Najmul Islam, Annika Wolff, et al. Ai4work project: Human-centric digital twin approaches to trustworthy ai and robotics for improved working conditions in healthcare and education sectors. In 
+
+Digital Health and Informatics Innovations for Sustainable Health Care Systems , pages 1013–1017. IOS Press, 2024. 1 [12] Konstantinos Makantasis, Kosmas Pinitas, Antonios Liapis, and Georgios N Yannakakis. The invariant ground truth of affect. In 2022 10th International Conference on Affective Computing and Intelligent Interaction Workshops and De-mos (ACIIW) , pages 1–8. IEEE, 2022. 7 [13] Konstantinos Makantasis, Kosmas Pinitas, Antonios Liapis, and Georgios N Yannakakis. From the lab to the wild: Affect modeling via privileged information. IEEE Transactions on Affective Computing , 15(2):380–392, 2023. 4 [14] Mihalis A. Nicolaou, Hatice Gunes, and Maja Pantic. Con-tinuous prediction of spontaneous affect from multiple cues and modalities in valence-arousal space. IEEE Transactions on Affective Computing , 2(2):92–105, 2011. 1 [15] Domenico Parente, Nastaran Darabi, Alex C Stutts, Theja Tulabandhula, and Amit Ranjan Trivedi. Conformalized multimodal uncertainty regression and reasoning. In ICASSP 2024-2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) , pages 6985–6989. IEEE, 2024. 2 [16] Rosalind W Picard. Affective computing . 2000. 1 [17] Kosmas Pinitas, Konstantinos Makantasis, Antonios Liapis, and Georgios N Yannakakis. Supervised contrastive learn-ing for affect modelling. In Proceedings of the 2022 Inter-national Conference on Multimodal Interaction , pages 531– 539, 2022. 4 [18] Kosmas Pinitas, David Renaudie, Mike Thomsen, Matthew Barthet, Konstantinos Makantasis, Antonios Liapis, and Georgios N Yannakakis. Predicting player engagement in tom clancy’s the division 2: A multimodal approach via pix-els and gamepad actions. In Proceedings of the 25th Inter-national Conference on Multimodal Interaction , pages 488– 497, 2023. 8 [19] Kosmas Pinitas, Konstantinos Makantasis, and Georgios N Yannakakis. Across-game engagement modelling via few-shot learning. In European Conference on Computer Vision ,pages 390–406. Springer, 2024. 8 [20] Kosmas Pinitas, Nemanja Rasajski, Matthew Barthet, Maria Kaselimi, Konstantinos Makantasis, Antonios Liapis, and Georgios N Yannakakis. Varying the context to advance affect modelling: A study on game engagement prediction. In 2024 12th International Conference on Affective Comput-ing and Intelligent Interaction (ACII) , pages 194–202. IEEE, 2024. 1 [21] Kosmas Pinitas, Konstantinos Makantasis, and Georgios Yannakakis. Privileged contrastive pretraining for multi-modal affect modelling. In Proceedings of the 27th Inter-national Conference on Multimodal Interaction , pages 317– 325, 2025. 1 [22] Navin Raj Prabhu, Guillaume Carbajal, Nale Lehmann-Willenbrock, and Timo Gerkmann. End-to-end label uncer-tainty modeling for speech-based arousal recognition using bayesian neural networks. arXiv preprint arXiv:2110.03299 ,2021. 2 [23] Fabien Ringeval, Andreas Sonderegger, J¨ urg Sauer, and De-nis Lalanne. Introducing the recola multimodal corpus of remote collaborative and affective interactions. In 2013 10th IEEE International Conference and Workshops on Automatic Face and Gesture Recognition , pages 1–8, 2013. 2, 4 [24] Bj¨ orn Schuller, Stefan Steidl, and Anton Batliner. The inter-speech 2009 emotion challenge. In INTERSPEECH , pages 312–315, 2009. 1 [25] Alexis D Souchet, St´ ephanie Philippe, Domitile Lourdeaux, and Laure Leroy. Measuring visual fatigue and cognitive load via eye tracking while learning with virtual reality head-mounted displays: A review. International Journal of Human–Computer Interaction , 38(9):801–824, 2022. 1 [26] Jiaxin Wu, Mathieu Barthet, David Melhart, and Georgios N. Yannakakis. Emotions as ambiguity-aware ordinal represen-tations. In ACII , 2025. arXiv:2508.19193. 2 [27] Wen Wu, Chao Zhang, and Philip C Woodland. Estimating the uncertainty in emotion attributes using deep evidential regression. arXiv preprint arXiv:2306.06760 , 2023. 2 [28] Lei Yang, Qi Tang, Zhaojin Chen, Shuhan Zhang, Yufeng Mu, Ye Yan, Peng Xu, Dezhong Yao, Fali Li, and Cunbo Li. Eeg based emotion recognition by hierarchical bayesian spectral regression framework. Journal of Neuroscience Methods , 402:110015, 2024. 2 
+
+9

@@ -6,26 +6,26 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-11
-- 运行时间：2026-04-11 20:00:16 UTC
+- 最新运行日期：2026-04-12
+- 运行时间：2026-04-12 19:22:21 UTC
 - 运行状态：成功
 - 本次总论文数：1
-- 精读区：0
-- 速读区：1
+- 精读区：1
+- 速读区：0
 
 ### 今日简报（AI）
-今日深入探讨大模型在定量推理中应对情绪干扰的韧性表现。
-重点关注 TEMPER 评测框架，它揭示了情绪化提示词对模型逻辑计算准确性的显著扰动。
-建议在构建严谨推理任务时，应警惕并测试提示词中的情绪色彩对结果稳定性的影响。
-- 详情：[/202604/11/README](/202604/11/README)
+今日深挖情感预测新范式，探索如何超越均值建模来捕捉标注的分布特征。
+核心结论指出，建模标注分布能更精准地还原人类情感的主观性与不确定性。
+建议在处理强主观性数据时，尝试引入分布建模以提升模型对复杂反馈的理解力。
+- 详情：[/202604/12/README](/202604/12/README)
 
 ### 精读区论文标签
-- 本次无精读推荐。
+1. [Beyond the Mean: Modelling Annotation Distributions in Continuous Affect Prediction](/202604/12/2604.07198v1-beyond-the-mean-modelling-annotation-distributions-in-continuous-affect-prediction)  
+   标签：评分：8.0/10、query:msa
+   evidence：连续情感预测中的标注分布建模
 
 ### 速读区论文标签
-1. [TEMPER: Testing Emotional Perturbation in Quantitative Reasoning](/202604/11/2604.07801v1-temper-testing-emotional-perturbation-in-quantitative-reasoning)  
-   标签：评分：7.0/10、query:msa
-   evidence：测试语言模型中的情感扰动与情感框架
+- 本次无速读推荐。
 
 
 <div class="dpr-home-promo-card">
