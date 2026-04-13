@@ -1,0 +1,643 @@
+Title: ActFER: Agentic Facial Expression Recognition via Active Tool-Augmented Visual Reasoning
+
+URL Source: https://arxiv.org/pdf/2604.08990v1
+
+Published Time: Mon, 13 Apr 2026 00:36:41 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# ActFER: Agentic Facial Expression Recognition via Active Tool-Augmented Visual Reasoning 
+
+## Shifeng Liu 1, Zhengye Zhang 1, Sirui Zhao 1†, Xinglong Mao 1, Zhehan Kan 2,Zhixiang Wei 1, Shiwei Wu 2, Chaoyou Fu 3, Tong Xu 1, Enhong Chen 1†
+
+1University of Science and Technology of China 2Tsinghua University 3Nanjing University 
+
+lsf0619@mail.ustc.edu.cn, siruit@ustc.edu.cn, cheneh@ustc.edu.cn 
+
+> †
+
+Corresponding authors. 
+
+## Abstract 
+
+Recent advances in Multimodal Large Language Models (MLLMs) have created new opportunities for facial expression recognition (FER), moving it beyond pure label prediction toward reasoning-based affect understanding. However, existing MLLM-based FER methods still follow a passive paradigm: they rely on externally prepared facial inputs and perform single-pass reasoning over fixed visual evidence, without the capability for active facial perception. To address this limitation, we propose ActFER, an agentic frame-work that reformulates FER as active visual evidence acquisition followed by multimodal reasoning. Specifically, ActFER dynam-ically invokes tools for face detection and alignment, selectively zooms into informative local regions, and reasons over facial Action Units (AUs) and emotions through a visual Chain-of-Thought. To realize such behavior, we further develop Utility-Calibrated GRPO (UC-GRPO), a reinforcement learning algorithm tailored to agentic FER. UC-GRPO uses AU-grounded multi-level verifiable rewards to densify supervision, query-conditional contrastive utility es-timation to enable sample-aware dynamic credit assignment for local inspection, and emotion-aware EMA calibration to reduce noisy utility estimates while capturing emotion-wise inspection tendencies. This algorithm enables ActFER to learn both when lo-cal inspection is beneficial and how to reason over the acquired evidence. Comprehensive experiments show that ActFER trained with UC-GRPO consistently outperforms passive MLLM-based FER baselines and substantially improves AU prediction accuracy. 
+
+## Keywords 
+
+Facial Expression Recognition, Multimodal Large Language Models, Agentic Reinforcement Learning, Affective Computing 
+
+## 1 Introduction 
+
+Multimodal Large Language Models (MLLMs) have shown strong capabilities in visual understanding and cross-modal reasoning [ 2,13 , 31 , 47 , 51 ], creating new opportunities for facial expression recognition (FER), a core task in affective computing and human-centered interaction [ 5, 37 ]. Unlike conventional image classifi-cation, FER requires inferring human affect from facial behavior. Although overall facial patterns are informative, accurate recog-nition often depends on fine-grained local facial movements. The Facial Action Coding System (FACS) [ 10 ] interprets facial muscle activations using Action Units (AUs). Different emotions are of-ten associated with different AU configurations, and FER therefore requires linking local facial evidence to higher-level affective in-terpretation [ 28 ]. This makes MLLMs a promising paradigm for Input           
+
+> Traditional FER models
+> MLLM-based FER models
+> Emotion
+> Label
+> Text based
+> CoT Reasoning
+> External preprocessing
+> Fixed visual evidence
+> Passive single-pass reasoning
+> Multimodal
+> CoT Reasoning
+> Input
+> Active internal preprocessing
+> Adaptive local inspection
+> Agentic tool-augmented reasoning
+> Our ActFER Agent
+> Answer
+> <answer> emo analysis </answer>
+> AU Reasoning
+> <au> AU1, ... < /au>
+> Input
+> Emotion
+> Label
+> Preprocessed Images
+> Tool Library
+> Face Det&Align
+> Zoom in ROIs
+> Raw Images
+> ❓Whether and where
+
+Figure 1: Comparison of FER paradigms. Previous methods rely on passive reasoning over fixed inputs, while ActFER performs tool-augmented agentic inspection. 
+
+moving beyond black-box label prediction toward reasoning-driven affect understanding [7, 25, 46]. Recent studies have adapted MLLMs to FER through instruction tuning [ 6, 9, 24 , 44 ], Chain-of-Thought (CoT) prompting [ 20 ], and reinforcement learning (RL) with verifiable rewards [ 42 , 49 ]. De-spite this progress, existing MLLM-based FER methods still focus on enhancing textual reasoning and treat visual perception as fixed. As illustrated in Figure 1, they typically rely on externally prepared inputs, such as pre-cropped faces or manually specified local re-gions, and perform single-pass reasoning over the resulting visual evidence. This passive formulation is restrictive for FER. It leaves the model dependent on preprocessing, weakens robustness to raw in-the-wild inputs, and cannot actively determine when and where additional local inspection is worthwhile. To overcome this limitation, we propose ActFER, an agentic framework that reformulates FER as active visual evidence acqui-sition followed by AU-grounded multimodal reasoning. Such a reformulation not only fully leverages the strong language-based reasoning capabilities of MLLMs, but also equips them with the ability to inspect relevant facial evidence, identify meaningful facial movements, and infer emotion from them. Specifically, starting from a raw image, ActFER invokes tools for face detection and alignment to obtain a standardized facial view, then selectively calls a zoom-in tool to inspect informative local regions when finer evidence is needed. This design allows the model to prepare its own analyzable facial evidence instead of relying entirely on external preprocess-ing, while alignment also provides stable landmark-based spatial 
+
+> arXiv:2604.08990v1 [cs.CV] 10 Apr 2026
+
+references for local inspection. Based on the acquired evidence, ActFER performs structured reasoning over AUs and emotions via a visual CoT, making AU perception an interpretable bridge from local facial movements to final emotion recognition. Realizing such agentic behavior is challenging because local in-spection is not uniformly useful. It can be crucial for complicated or easily confused expressions, but unnecessary for clear samples, and even harmful under poor image quality or unstable alignment. Therefore, the key learning problem is not simply to maximize final emotion accuracy, but to learn whether local inspection is worth performing for the current sample, whether it truly improves affect-relevant facial evidence, and when additional observation should give way to concise reasoning. To this end, we develop Utility-Calibrated GRPO (UC-GRPO), an RL algorithm built upon Group Relative Policy Optimization (GRPO) [ 35 ] and tailored to agentic FER. UC-GRPO addresses this challenge through three key designs. First, AU-grounded multi-level verifiable rewards densify supervision beyond terminal emotion labels and provide intermedi-ate feedback on whether the model has captured meaningful local facial evidence. Second, query-conditional contrastive utility esti-mation compares zoomed and non-zoomed trajectories within the same rollout group, enabling sample-aware dynamic credit assign-ment for local inspection. Third, emotion-aware EMA calibration stabilizes noisy query-conditional utility estimates while capturing emotion-wise inspection tendencies. Together, these components allow ActFER to learn both when local inspection is beneficial and how to reason over the acquired facial evidence. Overall, our contributions are summarized as follows: 
+
+• We propose ActFER, a novel agentic framework that reformu-lates MLLM-based FER as active visual evidence acquisition followed by AU-grounded multimodal reasoning. Starting from raw images, ActFER dynamically invokes tools for face detection, alignment, and adaptive local inspection before final emotion prediction. 
+
+• To train this framework effectively, we develop UC-GRPO, an RL algorithm tailored to agentic FER. By combining AU-grounded dense task rewards, query-conditional contrastive utility estimation, and emotion-aware EMA calibration, UC-GRPO enables ActFER to learn both when local inspection is worthwhile and how to reason over the acquired facial evidence. 
+
+• Extensive experiments demonstrate that ActFER consistently outperforms passive MLLM-based FER baselines and sub-stantially improves AU prediction accuracy. These results further confirm the effectiveness of agentic local inspection and multimodal reasoning for FER. 
+
+## 2 Related Work 2.1 MLLMs for Facial Expression Recognition 
+
+Traditional FER methods generally cast the task as a multi-class classification problem, focusing on feature extraction and category prediction with deep learning models [ 8 , 18 , 21 , 26 , 39 , 40 , 43 , 45 , 48 ]. With the rise of MLLMs, recent work has begun to recast FER as a multimodal reasoning problem rather than pure classification. FABA [ 24 ] introduces instruction tuning and specialized datasets to adapt MLLMs for emotion and AU recognition. ExpLLM [ 20 ]integrates CoT reasoning into FER, explicitly incorporating AU in-formation into its reasoning templates as interpretable intermediate cues. FEALLM [ 17 ] constructs a dataset aligning facial emotions with AU descriptions to strengthen local-detail modeling. Building on these supervised approaches, recent studies have introduced RL to further refine reasoning paths. UniFER [ 49 ] utilizes RL with Ver-ifiable Rewards to enhance FER post-training, while Facial-R1 [ 42 ]explicitly optimizes the reasoning process using reward signals derived from joint emotion and AU supervision. Despite these advances, existing methods still lack the capability of active per-ception, such as dynamically deciding when and where to acquire additional local evidence. ActFER addresses this limitation by re-formulating FER as agentic active facial inspection followed by multimodal reasoning. 
+
+## 2.2 Tool-Augmented Multimodal Reinforcement Learning 
+
+A growing body of work equips large language models with ex-ternal tools and trains them via RL to decide when and how to invoke those tools during reasoning. Early efforts such as Tool-former [ 34 ] show that language models can learn to insert API calls autonomously when doing so improves next-token predic-tion. Subsequent systems like ToolkenGPT [ 15 ] and ART [ 32 ] ex-tend this idea by representing tool invocations as special tokens or retrieval-augmented templates that can be end-to-end optimized. In parallel, vision-language agents have begun to adopt RL for multi-step tool use in visual tasks. For example, CogAgent [ 16 ]and VisualWebArena [ 19 ] train multimodal agents to navigate web interfaces through sequential actions, while Search-o1 [ 23 ] and R1-Searcher [ 38 ] use outcome-driven RL to teach reasoning models when to invoke a retrieval tool and when to rely on internal knowl-edge. Despite this progress, existing tool-augmented RL methods mainly target general-purpose tasks and assess tool use only by final task success, making them less suitable for FER, where local zoom-in may be helpful, unnecessary, or even harmful. ActFER ad-dresses this issue with a utility-calibrated policy that learns whether local inspection is worthwhile for each sample. 
+
+## 3 Method 3.1 Overall Agentic Pipeline 
+
+We formulate FER as an agentic, evidence-seeking process rather than a one-shot mapping from images to emotion labels. Given an input face image 𝑥 and a query 𝑞 , the model interacts with the en-vironment through an iterative thought–action–observation loop, progressively acquiring visual evidence and refining its prediction. The episode starts from the initial context 𝑜 1 = {𝑥, 𝑞 }, where 𝑜 𝑡 
+
+denotes the interaction context available at step 𝑡 , consisting of the input and the accumulated action–observation history. At step 𝑡 ,the policy model generates a thought 
+
+𝑟 𝑡 = 𝜋 think (𝑜 𝑡 ), (1) which serves as the current reasoning state over the available con-text. This thought either triggers a tool action 
+
+𝑐 𝑡 = 𝜋 act (𝑜 𝑡 , 𝑟 𝑡 ), 𝑐 𝑡 ∈ C , (2) 
+
+> 2
+
+## (a) Tool-Augmented Thought-Action-0bservation Workflow 
+
+ActFER Agent 
+
+xOriginal  Cropped Face 
+
+Step1: Face Det-Align 
+
+<tool_call>  face detected 
+
+<tool_call>  cropped and  aligned face 
+
+Step2:Adaptive Zoom 
+
+<think>  need zoom in 
+
+<tool_call>  zoom-in local rois 
+
+Step3: Structured  Output               
+
+> <think> Through magni fi ed observation, I can now more clearly analyze the key regions:
+> forehead/eyebrow region (Image 2): I observe that ... The inner brow lift (AU1) is evident from the increased height of the brows .....
+> eye_periorbital region (Image 3): The periorbital region shows a marked elevation of the upper eyelids (AU5) ......
+> mouth/chin region (Image 4): The mouth is open with the lips slightly separated (AU25) , revealing .....
+
+<answer>... Fear ...</answer> 
+
+> ......
+
+<au> Â </au> 
+
+Tool Library 
+
+Zoomed ROIs 
+
+> AU1
+
+2 Summarize and Format  
+
+> AU15 AU25
+
+1 FACS-Grounded  Reasoning 
+
+Stage1:Data synthesis & SFT     
+
+> Datasets Vision Language Model
+> Language
+> Model
+> FACS knowledge
+> Dense Facial Description
+> <tool>
+> <think>
+> <au>
+> Synthesized
+> Trajectories
+> sampling
+> SFT subset
+> RL subset Base
+> model SFT model
+> LSFT
+
+Stage2:UC-GRPO 
+
+Reward       
+
+> UC-GRPO update
+> ... ...
+> RL subset
+> Policy model
+> Group
+> Contrastive
+> Δ(q)
+> Tool Flow Reward ( Rtool )
+> FSM
+> contrasitive
+> utility
+> [⬆Δ>0 Reward ]
+> [⬇Δ<0 Penalty ]
+> Emotion-wise EMA
+> Quality Reward (R qual )
+
+Rollout  o1 
+
+> 🔍 w/ zoom
+
+Rollout  o2 
+
+> 🚫 w/o zoom
+
+Rollout  on 
+
+> 🔍 w/ zoom
+
+(b) Two-Stage Training Paradigm 
+
+> Accuracy Reward (R acc )
+
+Input 
+
+x
+
+q Analyze a single-frame facial image and determine ... Figure 2: Overall architecture of ActFER. The agent combines tool-augmented visual reasoning, perceptual tools, FACS-grounded hierarchical inference, and two-stage SFT+UC-GRPO optimization. 
+
+or directly terminates the episode with a structured prediction 
+
+𝑧 = (𝑟 𝑡 , ˆ𝐴, ˆ𝑦 ), (3) where ˆ𝐴 ⊆ A denotes the predicted AU set and ˆ𝑦 ∈ Y denotes the final emotion label. If an action is executed, the environment returns an observation 
+
+𝜔 𝑡 = Ω(𝑐 𝑡 ), 𝑜 𝑡 +1 = 𝑜 𝑡 ∪ {( 𝑐 𝑡 , 𝜔 𝑡 )} , (4) which is appended to the interaction history and used in the next reasoning step. The loop continues until the model outputs the final answer or reaches a predefined interaction budget. 
+
+Thought 𝑟 𝑡 . In our framework, 𝑟 𝑡 corresponds to the key decision and reasoning stages. Starting from the raw input, the model first determines whether the current context already provides a stan-dardized facial view; if not, it invokes a face normalization tool by default. Once a valid facial view is available, the thought further de-cides whether additional local evidence is needed, i.e., whether and where to zoom in. After new observations are returned, the thought also determines how the available evidence should be processed through Global Analysis , Local Analysis , or their combination. The specific flowchart can be found in the appendix. 
+
+Action 𝑐 𝑡 . The action space C contains two vision tools. (1) Face Detection-Alignment : Performs face detection and landmark-based alignment based on the face analysis toolkit InsightFace [ 11 , 14 ,33 ]. (2) Zoom-In : Crops and magnifies a selected facial region to expose local expression cues that may be difficult to resolve from the holistic view alone. 
+
+Observation 𝜔 𝑡 . The observation 𝜔 𝑡 denotes the feedback returned by tool execution. For Face Detection-Alignment , 𝜔 𝑡 consists of the aligned face crop when face detection succeeds, together with the bounding-box coordinates (𝑥 1, 𝑦 1, 𝑥 2, 𝑦 2) of four semantically mean-ingful facial regions, namely forehead–eyebrow , eye–periorbital , nose ,and mouth–chin . These regions serve as candidate local evidence for subsequent inspection. For the Zoom-In tool, 𝜔 𝑡 consists of mag-nified local ROI images obtained by cropping the input according to the selected region coordinates. 
+
+## 3.2 Training Data Curation 
+
+Synthetic Process. We curate training data from four public FER datasets: AffectNet [ 30 ], FERPlus [ 4], RAF-DB [ 22 ], and SFEW2.0 [ 50 ], covering eight emotion categories. As shown in the Stage 1 block of Figure 2 (b), for each image, we first run the two tools used during agent interaction offline to obtain an aligned face and the associated ROI crops. We then use Qwen3VL-235B-A22B-Instruct [ 2] to generate dense facial descriptions for both the raw image and the processed views. Based on these descriptions, we leaverage another strong language model, gpt-oss-120b [ 1], 
+
+> 3
+
+Figure 3: Statistics of the curated training data. 
+
+together with injected FACS knowledge to extract a pseudo AU set for each sample. Finally, we synthesize multi-turn trajectories that contain tool calls, intermediate reasoning, AU predictions, and final emotion answers. To match the three execution modes of ActFER, the synthetic trajectories explicitly include (i) full trajectories with detection and adaptive zoom, (ii) simplified trajectories with detection but no zoom, and (iii) degraded trajectories that fall back to holistic reasoning when no reliable face can be detected. 
+
+Sampling Strategy. After trajectory construction, we apply qual-ity filtering and class-aware sampling to form disjoint SFT and RL subsets, with 48K samples for SFT and 6.8K for RL. The SFT subset preserves a broader natural label distribution, allowing the model to learn the general tool-use protocol and response format. The RL subset is deliberately re-balanced toward harder low-resource emo-tions. Figure 3 visualizes the data statistics, while detailed templates and filtering rules are provided in the supplementary materials. 
+
+## 3.3 Supervised Fine-Tuning 
+
+The first training stage teaches the model to follow a structured tool-use protocol and produce the expected Visual CoT format. We perform full-parameter fine-tuning of Qwen3VL-4B [ 2] on the multi-turn trajectories. Given a demonstration trajectory 𝜏 ★ =
+
+(𝑎 1, . . . , 𝑎 |𝜏 ★ | ), the SFT objective is the standard autoregressive loss over the full action-and-response sequence: 
+
+LSFT = − 
+
+> |𝜏 ★|
+
+∑︁ 
+
+> 𝑡 =1
+
+log 𝜋 𝜃 (𝑎 𝑡 | 𝑥, 𝑎 <𝑡 ). (5) This objective jointly supervises tool calls, intermediate reasoning, AU prediction, and final emotion output, providing a stable cold start for subsequent UC-GRPO optimization. 
+
+## 3.4 UC-GRPO: Utility-Calibrated GRPO 
+
+The second training stage optimizes the policy with Utility-Calibrated GRPO (UC-GRPO), our task-adaptive extension of GRPO [ 35 ] for agentic FER. Naive reward design has two limitations. First, a reward based only on the final emotion is too sparse and coarse to reveal whether local zooming improves the perception of fine-grained facial movements. Second, a fixed reward or penalty for tool use cannot distinguish two opposite errors: missing a beneficial local inspection and performing an unnecessary one. As shown in the Stage 2 block of Figure 2 (b), we decompose the reward into three terms: (1) an AU-grounded dense task reward 𝑅 acc that combines emotion correctness with AU evidence, (2) a tool reward 𝑅 tool that integrates rule-based structural constraints and utility calibration for local inspection, and (3) a bounded quality reward 𝑅 qual that discourages low-quality outputs. The overall reward is 
+
+R ( 𝜏 𝑖 ) = 𝜆𝑅 acc (𝜏 𝑖 ) + ( 1 − 𝜆 )𝑅 tool (𝜏 𝑖 ) + 𝑅 qual (𝜏 𝑖 ), (6) where 𝜏 𝑖 denotes the 𝑖 -th rollout in the current query group. 
+
+AU-Grounded Dense Task Reward. The direct effect of local inspection is usually not an immediate change in the final emotion label. In fact, it first changes how clearly the model can perceive local facial movements. We therefore densify task supervision by coupling emotion correctness with AU-set quality. For a predicted AU set ˆ𝐴 and target set 𝐴 ★, we use the instance-level AU-set F1: 
+
+𝐹 AU  
+
+> 1
+
+( ˆ𝐴, 𝐴 ★) = 2| ˆ𝐴 ∩ 𝐴 ★|| ˆ𝐴 | + | 𝐴 ★| . (7) The resulting task reward is 
+
+𝑅 acc =
+
+(
+
+𝑤 𝑦 + 𝑤 𝑎𝑢 𝐹 AU  
+
+> 1
+
+( ˆ𝐴, 𝐴 ★), ˆ𝑦 = 𝑦 ★,𝑟 wrong + 12 𝑤 𝑎𝑢 𝐹 AU  
+
+> 1
+
+( ˆ𝐴, 𝐴 ★), ˆ𝑦 ≠ 𝑦 ★, (8) where 𝑦 ★ is the target emotion label, 𝑤 𝑦 and 𝑤 𝑎𝑢 form a convex decomposition of the task reward ( 𝑤 𝑦 = 1 − 𝑤 𝑎𝑢 ), and 𝑟 wrong < 0
+
+penalizes incorrect emotion prediction. Even when the final emo-tion is wrong, we retain half of the AU-based term so that partially correct local evidence is not discarded completely. This shifts su-pervision from asking only whether the final class is correct to asking whether the trajectory captures the facial evidence relevant to emotion recognition. 
+
+FSM-Constrained Structural Reward. We decompose tool-side supervision 𝑅 tool into structural validity 𝑅 fsm and inspection util-ity 𝑅 util . The structural term 𝑅 fsm serves as an executable scaffold, which checks the response format, penalizes parse errors, illegal tool order, repeated or excessive tool calls, and rules out impossible behaviors such as zooming after failed face detection. This keeps utility learning grounded in legal and executable trajectories. 
+
+Utility-Calibrated Inspection Reward. The inspection term 𝑅 util 
+
+determines whether zooming is worthwhile for the current sam-ple and how strongly the resulting decision should be rewarded or penalized. It combines a short-horizon query-level contrastive estimate with a long-horizon emotion-level calibration, and falls back to a symmetric performance-gated signal. 
+
+Query-Conditional Contrastive Utility Estimation. Once dense task reward is available, UC-GRPO estimates the utility of local inspection by comparing rollouts within the same query group. For a query 𝑞 , let {𝜏 1, . . . , 𝜏 𝐺 } be the 𝐺 rollouts sampled for the same image. We first exclude trajectories with face-detection failure and partition the remaining rollouts into those using zoom_in and 
+
+> 4
+
+those not using: 
+
+Z+ (𝑞 ) = {𝑖 | zoom_in ∈ 𝜏 𝑖 }, Z− (𝑞 ) = {𝑖 | zoom_in ∉ 𝜏 𝑖 }. (9) When both subsets are non-empty, we estimate the query-level utility of local inspection directly from the task reward: 
+
+Δ(𝑞 ) = 1
+
+|Z + (𝑞 )| ∑︁ 𝑖 ∈ Z + (𝑞 )
+
+𝑅 acc (𝜏 𝑖 ) − 1
+
+|Z − (𝑞 )| ∑︁ 𝑖 ∈ Z − (𝑞 )
+
+𝑅 acc (𝜏 𝑖 ), (10) where Δ(𝑞 ) > 0 indicates that zooming is beneficial for the current sample, while Δ(𝑞 ) < 0 indicates harmful. Using 𝑅 acc keeps utility estimation aligned with emotion accuracy and AU quality. 
+
+Emotion-Wise EMA Calibration. Although Δ(𝑞 ) provides a sample-aware estimate of zoom utility, it can still be noisy because it is computed from a finite rollout group. Moreover, different emotions may rely on local evidence to different degrees. To capture such category-level tendencies while smoothing noisy sample-level signals, we maintain an exponential moving average (EMA) of query-level utility for each emotion category: 
+
+¯Δ(𝑛 ) 
+
+> 𝑒
+
+= 𝜌 ˆΔ(𝑛 ) 
+
+> 𝑒
+
++ ( 1 − 𝜌 ) ¯Δ(𝑛 −1) 
+
+> 𝑒
+
+, (11) where ˆΔ(𝑛 ) 
+
+> 𝑒
+
+is the mean of all valid Δ(𝑞 ) whose ground-truth emo-tion is 𝑒 at training step 𝑛 . The resulting ¯Δ(𝑛 ) 
+
+> 𝑒
+
+summarizes the historical tendency of zoom to help or hurt emotion 𝑒 . We then convert ¯Δ𝑒 into two bounded modulation factors, 𝜙 lazy  
+
+> 𝑒
+
+and 𝜙 unnec  
+
+> 𝑒
+
+,using a monotone sigmoid-based map: emotions with historically positive zoom utility penalize missed zoom opportunities more strongly, whereas emotions with historically negative utility penal-ize unnecessary zooming more strongly. To avoid early instability, this calibration is activated only after sufficient statistics have been accumulated. Before that, both factors are set to 1. For a rollout 𝜏 𝑖 from query 𝑞 , let 𝑧 𝑖 ∈ { 0, 1} indicate whether the trajectory invokes zoom_in . Given 𝑧 𝑖 and the query-level utility gap Δ(𝑞 ), we define the adaptive utility reward as: 
+
+𝑅 adapt util (𝑧 𝑖 , Δ(𝑞 ), 𝑒 ) =
+
+
+
+𝑟 pos , |Δ(𝑞 ) | <𝜀 or (Δ(𝑞 ) ≥ 𝜀 ∧𝑧 𝑖 =1),  
+
+> or (Δ(𝑞 ) ≤− 𝜀 ∧𝑧 𝑖 =0),
+
+−ℎ(| Δ(𝑞 )|) 𝜙 lazy  
+
+> 𝑒
+
+, Δ(𝑞 ) ≥ 𝜀 and 𝑧 𝑖 = 0,
+
+−ℎ(| Δ(𝑞 )|) 𝜙 unnec  
+
+> 𝑒
+
+, Δ(𝑞 ) ≤ − 𝜀 and 𝑧 𝑖 = 1.
+
+(12) Here, 𝑟 pos > 0 denotes a fixed positive reward for utility-consistent decisions and neutral cases. The margin 𝜀 defines a neutral inter-val around zero, within which zoom and no-zoom are treated as approximately equivalent. The factor 𝜙 lazy  
+
+> 𝑒
+
+is applied only when a beneficial zoom is missed, while 𝜙 unnec  
+
+> 𝑒
+
+is applied only when an unnecessary zoom is taken. The penalty magnitude ℎ(| Δ(𝑞 )|) is a bounded increasing function implemented with a tanh-shaped curve and shared fixed constants. 
+
+Symmetric Fallback Reward. In practice, some rollout groups do not contain sufficient zoom diversity, for example when all rollouts choose zoom or all skip it. In such cases, Δ(𝑞 ) cannot be estimated reliably. Rather than fabricating pseudo-utility, we use a symmetric performance-gated fallback: 
+
+𝑅 fb util (𝑠 𝑖 ) =
+
+(
+
+𝑟 pos , 𝑠 𝑖 ≥ 𝑠 high ,𝑟 neg , otherwise , (13) 
+
+Algorithm 1 ActFER training with UC-GRPO 
+
+Require: input image 𝑥 , group size 𝐺 , maximum turns 𝑇  
+
+> 1:
+
+for each rollout 𝜏 𝑖 , 𝑖 = 1, . . . , 𝐺 do  
+
+> 2:
+
+Initialize the context with 𝑥  
+
+> 3:
+
+for 𝑡 = 1 to 𝑇 do  
+
+> 4:
+
+Sample an action 𝑢 𝑖,𝑡 ∼ 𝜋 𝜃 (· | 𝑜 𝑖,𝑡 ) 
+
+> 5:
+
+if 𝑢 𝑖,𝑡 is a tool invocation then  
+
+> 6:
+
+Execute the tool and update the context  
+
+> 7:
+
+else  
+
+> 8:
+
+Produce AU prediction ˆ𝐴 𝑖 and emotion prediction ˆ𝑦 𝑖 ;terminate rollout  
+
+> 9:
+
+end if  
+
+> 10:
+
+end for  
+
+> 11:
+
+Compute task reward 𝑅 acc (𝜏 𝑖 ) and record zoom usage 𝑧 𝑖  
+
+> 12:
+
+end for  
+
+> 13:
+
+Partition rollouts into groups: Z+ (𝑞 ) and Z− (𝑞 ) 
+
+> 14:
+
+Compute the utility gap Δ(𝑞 ) 
+
+> 15:
+
+for each rollout 𝜏 𝑖 do  
+
+> 16:
+
+Compute utility reward 𝑅 util (𝜏 𝑖 ) by Eq. (14)  
+
+> 17:
+
+Compute total reward R ( 𝜏 𝑖 ) by Eq. (6)  
+
+> 18:
+
+end for  
+
+> 19:
+
+Normalize rewards within the group and update 𝜃 with GRPO  
+
+> 20:
+
+Update emotion-wise EMA statistics where 𝑠 𝑖 = max (I[ ˆ𝑦 𝑖 = 𝑦 ★], 𝐹 AU  
+
+> 1
+
+( ˆ𝐴 𝑖 , 𝐴 ★)) is the coarse task-performance indicator of rollout 𝜏 𝑖 . This fallback does not encode any fixed zoom preference, it only prevents optimization from becoming unstable when direct contrastive evidence is unavailable. The final utility term for rollout 𝜏 𝑖 is therefore 
+
+𝑅 util (𝜏 𝑖 ) =
+
+(
+
+𝑅 adapt util (𝑧 𝑖 , Δ(𝑞 ), 𝑒 ), Δ(𝑞 ) is defined ,𝑅 fb util (𝑠 𝑖 ), otherwise , (14) and the overall tool reward is 
+
+𝑅 tool (𝜏 𝑖 ) = 𝑅 fsm (𝜏 𝑖 ) + 𝑅 util (𝜏 𝑖 ). (15) In implementation, utility calibration is computed in two passes within each GRPO update. We first obtain rollout-level task rewards and tool-use metadata, then estimate Δ(𝑞 ) at the query-group level and inject either the adaptive or fallback reward. EMA statistics are updated after the current step, while reward construction for the current step uses the pre-update EMA state. 
+
+Quality Regularization and GRPO Update. In addition to task and tool rewards, we use a bounded regularizer 𝑅 qual to mildly penalize low-quality outputs such as severe formatting errors, rep-etition, and language mixing. After computing the total reward in Eq. (6), GRPO normalizes rewards within each query group as 
+
+dAdv 𝑖 = R ( 𝜏 𝑖 ) − 𝜇 𝑞 
+
+𝜎 𝑞 
+
+, (16) where 𝜇 𝑞 and 𝜎 𝑞 are the mean and standard deviation of rewards within the rollout group for query 𝑞 . This group-relative ranking is well suited to utility learning, because it encourages the policy to prefer better evidence-acquisition strategies among alternative trajectories for the same face. Algorithm 1 summarizes the overall interaction and optimization procedure at the query-group level. 
+
+> 5
+
+Table 1: Main emotion-recognition results. The left block reports benchmark-level F1 (%), overall Acc (%) and F1 (%) on FERBench; the right block reports per-emotion F1 (%). * InternVL3.5-4B [ 41 ], Qwen3VL-4B [ 2 ], EmoLA [ 24 ], and ExpLLM [ 20 ] are reproduced from official checkpoints, with evaluation strictly following the FERBench protocol. Resultes of other open-source baselines are taken from UniFER [49]. Best results are boldfaced; second best are underlined.                                                                                                                                                                                         
+
+> Model Benchmark F1 Overall Per-emotion F1 RAF-DB FERPlus AffectNet SFEW2.0 Acc F1 Neutral Happiness Sad Surprise Fear Disgust Anger Contempt
+> General-purpose MLLMs
+> InternVL3.5-4B* [41] 60.69 37.87 44.51 33.96 50.40 43.67 55.56 81.89 53.47 55.06 17.44 35.59 46.68 3.70 Qwen3VL-4B* [2] 56.13 47.37 36.12 38.57 55.27 44.03 60.12 81.93 54.01 56.06 22.97 23.47 50.00 3.65 Qwen2.5VL-7B [3] 50.26 46.25 26.97 36.22 53.78 35.34 54.60 67.29 53.91 52.70 3.28 22.26 46.97 0.37 InternVL3-8B [51] 52.69 43.34 39.33 37.27 60.59 44.54 65.08 85.56 61.57 40.02 41.35 38.31 54.41 14.55 LLaVA-Next-34B [27] 60.56 48.43 34.92 37.76 61.20 44.36 60.62 86.11 64.00 53.79 3.01 35.79 51.22 0.36 Gemini-2.5-Flash [12] 55.60 44.95 45.38 37.20 61.55 45.47 62.25 81.53 59.69 63.43 42.52 41.82 48.86 9.14 Gemini-2.5-Pro [13] 50.95 39.78 43.11 36.33 57.17 44.29 47.43 81.22 57.78 63.16 42.42 39.66 46.44 20.49
+> MLLM-based FER methods
+> EmoLA* <7B> [24] 53.46 45.29 35.12 37.91 62.75 43.19 55.13 77.47 47.05 48.67 28.70 33.50 38.37 16.62 ExpLLM* <7B> [20] 84.80 54.37 46.86 43.49 69.33 57.26 68.52 84.78 71.23 69.58 54.79 46.83 62.36 0.00 UniFER-7B RL [49] 81.30 58.55 44.53 39.70 68.84 55.32 72.80 84.32 72.46 51.31 51.57 41.68 65.08 3.31
+> ActFER-SFT <4B> 74.87 51.94 45.53 46.61 65.70 53.37 70.33 84.60 65.44 64.78 41.03 41.54 58.14 1.11
+> ActFER <4B> 82.72 59.92 57.66 51.13 73.89 67.45 79.28 89.34 70.39 70.90 60.00 54.71 63.97 51.00
+
+Table 2: Comparison of zero-shot AU F1 (%) on DISFA under the standard 8-AU protocol. The table lists the F1 score for each individual AU together with the average F1 (Avg F1) over all 8 AUs. * InternVL3.5-4B [ 41 ] and Qwen3VL-4B [ 2 ]are reproduced on DISFA using their official checkpoints.                                                                
+
+> Method 1246912 25 26 Avg. Qwen2.5VL-7B [3] 20.8 19.2 23.0 17.9 17.1 26.3 30.9 21.6 22.1 Qwen3VL-4B* [2] 24.7 27.1 76.7 3.1 0.0 73.7 80.7 18.6 38.1 InternVL3.5-4B* [41] 36.9 40.7 71.8 2.1 35.3 67.6 67.2 4.6 40.8 FEALLM <7B> [17] 36.9 29.7 70.4 30.2 –54.5 51.9 24.7 42.6
+> ActFER-SFT <4B> 30.2 30.8 70.2 51.4 44.1 67.7 82.0 12.5 48.6
+> ActFER <4B> 37.1 38.2 77.3 58.2 52.3 78.0 92.4 32.0 58.2
+
+## 4 Experiments 4.1 Implementation Details 
+
+We build our training framework on VERL [ 36 ], an open-source RL library that supports agent rollouts with tool use. Unless otherwise noted, all variants use the same Qwen3VL-4B [ 2] backbone, the same mixed training split, and the same interaction budget. In SFT, we fine-tune all LLM linear layers on 48K tool-grounded trajectories while freezing the vision encoder. We use AdamW with a base learning rate of 1 × 10 −5 for the LLM and 2 × 10 −5 for the vision-language projector, and weight decay 0.01. We adopt an effective batch size of 16, a maximum sequence length of 8192 tokens, and train for 2 epochs. In RL, we start from the SFT checkpoint and optimize with UC-GRPO on the 6.8K single-turn prompts for policy rollouts. We again use AdamW, reduce the learning rate to 2 × 10 −6,and use a batch size of 32. The interaction horizon is capped at 𝑇 ≤ 4,GRPO uses 𝐺 = 5 rollouts per query, the maximum prompt length is 8192 tokens, and the maximum response length is 4096 tokens. To stabilize training, we apply KL regularization with coefficient 0.1, set the entropy coefficient to 0.01, and normalize advantages 
+
+Figure 4: Emotion-wise comparison between ActFER-SFT and ActFER on FERBench. Bars denote the proportion of invoking zoom, and lines denote the per-emotion F1. 
+
+by the within-group standard deviation. RL runs for 1 epoch. All experiments are conducted on four NVIDIA A800 (80GB) GPUs. 
+
+## 4.2 Comparison on Emotion Recognition 
+
+Following the FERBench protocol introduced in UniFER [ 49 ], we evaluate ActFER on the test sets of AffectNet [ 30 ], RAF-DB [ 22 ], FERPlus [ 4], and SFEW2.0 [ 50 ] without per-dataset tuning. The comparison includes general-purpose MLLMs, MLLM-based FER methods under the same protocol, and our own variants. Table 1 summarizes both benchmark-level and per-emotion results. ActFER achieves the best overall performance, reaching 73.89 Accuracy and 67.45 macro-F1. It surpasses the strongest general-purpose MLLM, Gemini-2.5-Flash [ 12 ], by +12.34 Acc and +21.98 F1, and also out-performs the strongest FER-specific baselines, demonstrating the effectiveness of agentic local inspection. The per-emotion results show clear category-dependent gains. ActFER achieves new best results on neutral, happiness, surprise, fear, disgust, and contempt, with the largest improvement on contempt, where F1 reaches 51.00 versus the previous best of 20.49. Figure 4 further shows that zoom usage varies substantially across emotions, and the resulting F1 
+
+> 6
+
+Table 3: UC-GRPO ablation of ActFER. The configuration columns indicate whether the AU-grounded dense reward R𝑎𝑐𝑐 is enabled and which components are included in the tool-side reward R𝑡𝑜𝑜𝑙 . The FERBench block reports emotion Accuracy/F1 and the zoom ratio (i.e., the percentage of samples that invoke zoom); the DISFA block reports average AU F1 and the zoom ratio. For Zoom-biased RL , the entire utility reward R𝑢𝑡𝑖𝑙 is disabled, including both the adaptive branch and the symmetric fallback, and is replaced by a constant zoom-preference bonus to bias the policy toward using zoom. 
+
+Variant R𝑎𝑐𝑐 R𝑡𝑜𝑜𝑙 FERBench DISFA AU-grounded dense reward Contrastive utility Emotion-EMA Symmetric fallback Acc F1 Zoom Avg.F1 Zoom ActFER-SFT – – – – 65.70 54.83 32.6 48.6 8.4 Emotion-only RL ✗ ✗ – ✓ 69.14 61.49 0.0 47.8 0.0 AU-grounded RL ✓ ✗ – ✓ 68.80 62.72 0.0 50.1 0.0 Zoom-biased RL ✓ ✗ – ✗ 71.86 62.22 100.0 52.0 100.0 w/o Emotion-EMA ✓ ✓ ✗ ✓ 70.01 65.34 90.1 54.2 100.0 
+
+Full ActFER ✓ ✓ ✓ ✓ 73.89 67.45 77.5 58.2 91.9 
+
+Figure 5: Training-time emotion accuracy for three utility-calibration variants. Full ActFER attains the best late-stage accuracy plateau, while removing EMA or utility calibration results in policy collapse during the later stage of training. 
+
+gains are far from uniform. This suggests that the benefit of ActFER does not come from simply zooming more often, but from learning when local inspection is most useful. The especially large gain on contempt is consistent with this interpretation: as a subtle and low-resource category, contempt is more likely to benefit from selective inspection of weak mouth-region cues, while also receiving greater emphasis from the RL split on harder emotions. We therefore at-tribute this result to utility-calibrated, category-aware inspection rather than a generic increase in zoom frequency. 
+
+## 4.3 Comparison on Zero-shot AU Detection 
+
+We further evaluate zero-shot AU transfer on DISFA [ 29 ] under the common 8-AU protocol. Considering that DISFA is annotated from continuous video frames, we perform test-time subsampling for efficiency, keeping at most five frames with the same AU label for each subject. ActFER achieves the best zero-shot transfer result, reaching 58.2 average AU F1 without DISFA training. This is +20.1 over the base Qwen3VL-4B and +15.6 over FEALLM, although FEALLM is explicitly designed to strengthen local-detail perception. Relative to FEALLM, ActFER gains especially on AU6, AU12, and AU25. These AUs rely heavily on localized eye, nose, and especially mouth-region cues, showing that active local magnification is more effective than static single-pass local modeling for structured facial-movement perception. Overall, ActFER delivers state-of-the-art zero-shot AU performance under the no-DISFA-tuning setting. w/ Zoom :                                        
+
+> ... (Image 2): ... slight squint aligns with the activation of
+> AU6 ... (Image 3): ... The right corner of the mouth (viewer’s left)
+> is pulled upward and slightly backward ... reflects activation of
+> AU12 ... a dismissive, superior smirk ... the expression is contempt .
+> w/o Zoom:
+> … pronounced upward lip corners (AU12) point to a genuine
+> expression of happiness . The combination of AU6 and AU12,
+> together with the overall relaxed facial tension ,…as happiness .
+> Image 2 squint Image 3 smirk
+> Image 1
+> w/ Zoom :
+> ... (Image 2): ... This downward pull aligns with the activation
+> of AU 15 (mouth corner depressor) , where the lip corners are
+> visibly lowered and a slight U -shaped crease can be seen ...
+> conveys a gentle, melancholic downturn consistent with sadness .
+> w/o Zoom:
+> … without any obvious tension around the eyelids or brow area ...
+> The corners of the mouth are neither pulled upwards … nor pulled
+> downwards ... a sense of calm ... supports a neutral expression.
+> Image 1
+> Image 2 depressor
+
+Figure 6: Qualitative comparison between ActFER with adap-tive zoom and the same model without zoom on subtle ex-pressions. Adaptive zoom reveals weak local cues and reduces confusion between similar expressions. 
+
+## 4.4 Ablation Study 
+
+Component Ablation of ActFER. Table 3 presents a structured ablation of UC-GRPO. For clarity, we report FERBench emotion recognition and DISFA zero-shot AU transfer separately. The re-sults suggest four main findings. First, comparing ActFER-SFT with all RL variants shows that the gain does not come from tool ground-ing alone; reward-driven optimization already learns a substan-tially stronger policy. Second, adding 𝑅 acc improves macro-F1 and zero-shot AU transfer, indicating that AU-grounded supervision strengthens the learned reasoning signal. However, both Emotion-only RL and AU-grounded RL still remain in a no-zoom regime, showing that stronger end-task supervision alone cannot teach the policy when local inspection is useful. Third, the Zoom-biased RL verifies that zoom itself is beneficial, but also highlights the limitation of indiscriminate tool use: forcing zoom on every sample outperforms the no-zoom RL variants, yet still underperforms the contrastive-utility design. This suggests that the core challenge is not enabling zoom per se but estimating its sample-specific utility. Finally, emotion-wise EMA calibration provides the last missing 
+
+7Raw Input  Aligned Face                                          
+
+> User Prompt ：
+> Analyze asingle -frame facial image and determine
+> which of the following emotions the expression belongs
+> to :neutral, happiness, sadness, surprise, fear, disgust,
+> anger .You need to use tools to identify activated AUs
+> and ultimately infer the emotion label .
+> ActFER :
+> Think: Need perform face detection and alignment
+> on the image to obtain a standardized facial view and
+> the coordinates of key regions.
+> Tool Call: face_detection_alignment ()
+> ActFER :
+> Think: Observe movements in forehead_eyebrow ,
+> eye_periorbital ,mouth_chin .Zoom into ROIs for detail AU patterns.
+> Tool Call: zoom_in (forehead_eyebrow ,eye_periorbital ,
+> mouth_chin .)
+> Zoom_in
+> ROIs
+
+Stage 1 
+
+：Face Detection & Alignment 
+
+Stage 2 
+
+：Zoom -In — Region Magnification       
+
+> Mouth/Chin:
+> Lips slightly apart, corners pulled
+> downward
+> →AU15 + AU25
+> Nose:
+> Smooth, no wrinkling
+> →Neutral (No AU9/20)
+> Eye/Periorbital:
+> Upper eyelids elevated, exposed sclera
+> →AU5
+> Forehead/Eyebrow :
+> Brows lowered & drawn inward
+> →AU4
+> ActFER Think ( Region -by -Region Analysis):
+
+Stage  3
+
+：AU Analysis & Final Reasoning                                                                                                                                         
+
+> ActFER Think (Overall Analysis) :
+> Synthesizing the observations across all facial regions,
+> the lowered, inward -drawn eyebrows (AU 4), the
+> widened, alert eyes with lifted lids (AU 5), and the open
+> mouth with downturned corners (AU 15 )and slight lip
+> separation (AU 25 )collectively form acoherent pattern
+> of anger .No contradictory cues such as nasal wrinkling
+> or raised eyebrows are present .Therefore, the facial
+> expression unequivocally reflects the emotion label
+> 'angry' as indicated by the ground -truth .
+> ActFER Final Answer :
+> By observing the aligned image, the expression features
+> activation of AU 4,AU 5,AU 15 ,AU 25 .Synthesizing the
+> observations across all facial regions, the lowered,
+> inward -drawn eyebrows (AU 4), the widened, alert eyes
+> with lifted lids (AU 5), and the open mouth with
+> downturned corners (AU 15 )and slight lip separation
+> (AU 25 )collectively form acoherent pattern of anger .
+> No contradictory cues such as nasal wrinkling or raised
+> eyebrows are present .Therefore, the facial expression
+> unequivocally reflects the emotion label 'anger' as
+> indicated by the ground -truth .
+> The expression is :anger .
+
+Figure 7: Qualitative case study of ActFER on an anger example. The model first aligns the face, then invokes zoom_in on task-relevant regions, analyzes local AU evidence in a region-by-region manner, and finally synthesizes the observations into the final prediction. More qualitative examples are provided in the supplementary materials. 
+
+piece. Compared with the w/o Emotion-EMA variant, the full model improves both FERBench and DISFA while using zoom less fre-quently, showing that EMA does not merely suppress tool use, but calibrates it toward more task-relevant cases. Overall, the ablation shows that ActFER benefits from the combination of task-aligned dense rewards, utility-aware tool selection, and stable calibration over long-horizon training. 
+
+Zoom-Policy Analysis across Training Strategies. Table 3 also reveals how different training objectives shape the learned zoom policy. Two collapse modes are particularly evident. Without ex-plicit utility modeling, both Emotion-only RL and AU-grounded RL fall into a no-zoom regime, yielding a 0.0% zoom ratio on both FERBench and DISFA. This shows that although the symmetric tool reward does not explicitly favor either using or avoiding zoom, stronger end-task supervision alone is still insufficient to teach the policy when local inspection is worth invoking. At the other extreme, adding contrastive utility without emotion-wise EMA pushes the policy toward aggressive over-zooming. This suggests that query-conditional contrast computed at the individual-sample level can be noisy, and without proper calibration, such noise can easily drive the policy to collapse toward one extreme. This also clarifies why the full model performs best: it avoids both under-exploration and indiscriminate overuse of local inspection. Figure 5 reflects the same issue from the optimization perspective. The w/o Emotion-EMA variant exhibits substantially larger oscillations dur-ing training, whereas Full ActFER converges more smoothly and reaches a higher late-stage accuracy plateau. This pattern indicates that emotion-wise EMA does more than merely reduce tool fre-quency: it prevents the policy from collapsing to either extreme, stabilizes utility learning, and helps the agent settle on a more balanced inspection strategy. As a result, Full ActFER retains sub-stantial zoom usage (77.5% on FERBench and 91.9% on DISFA) while achieving the best FERBench emotion recognition and zero-shot AU transfer among all variants. 
+
+## 4.5 Qualitative Results 
+
+Figure 7 shows a representative successful trajectory of ActFER on a challenging anger sample. From the raw image, the agent performs face detection and alignment, selectively inspects the roi regions, infers local AU evidence, and predicts the correct emo-tion. This illustrates ActFER’s intended inference pattern: global normalization, selective local inspection, AU-grounded evidence accumulation, and final emotion reasoning. Additional examples are provided in the supplementary materials, including correct skip-zoom cases and failure modes. Figure 6 provides a qualitative comparison between ActFER with adaptive zoom and the same model without zoom on subtle and easily confused expressions. In the contempt example, zoom exposes a slight squint and the asymmetric upward pull of the mouth corner, enabling the model to distinguish contempt from a coarse happiness interpretation. In the sadness example, zoom reveals the downward mouth-corner pattern associated with AU15, whereas the no-zoom counterpart misses this weak cue and drifts toward a neutral prediction. These cases show that when decisive evidence is weak and localized, adaptive zoom can turn ambiguous global impressions into more reliable emotion recognition. 
+
+## 5 Conclusion 
+
+We presented ActFER, an agentic framework for MLLM-based facial expression recognition. By combining lightweight perceptual tools, FACS-grounded reasoning, and Utility-Calibrated GRPO, ActFER reformulates FER as utility-aware local inspection followed by struc-tured affective inference, rather than passive single-pass reasoning over fixed inputs. Beyond improving emotion recognition, ActFER promotes a more structured inference process: preparing analyzable facial evidence, inspecting informative local regions, inferring facial movements, and then reasoning to the emotion label. Accordingly, our experiments evaluate not only final predictions but also the quality of the learned evidence preparation and inspection process. 
+
+8References 
+
+[1] Sandhini Agarwal, Lama Ahmad, Jason Ai, Sam Altman, Andy Applebaum, Edwin Arbus, Rahul K Arora, Yu Bai, Bowen Baker, Haiming Bao, et al . 2025. gpt-oss-120b & gpt-oss-20b Model Card. arXiv:2508.10925 [2] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, et al . 2025. Qwen3-VL Technical Report. arXiv:2511.21631 [3] Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang, Shijie Wang, Jun Tang, Humen Zhong, Yuanzhi Zhu, Mingkun Yang, Zhaohai Li, Jianqiang Wan, Pengfei Wang, Wei Ding, Zheren Fu, Yiheng Xu, Jiabo Ye, Xi Zhang, Tianbao Xie, Zesen Cheng, Hang Zhang, Zhibo Yang, Haiyang Xu, and Junyang Lin. 2025. Qwen2.5-VL Technical Report. arXiv:2502.13923 [4] Emad Barsoum, Cha Zhang, Cristian Canton Ferrer, and Zhengyou Zhang. 2016. Training deep networks for facial expression recognition with crowd-sourced label distribution. In Proceedings of the 18th ACM International Conference on Multimodal Interaction . 279–283. [5] Joyati Chattopadhyay, Souvik Kundu, Arpita Chakraborty, and Jyoti Sekhar Banerjee. 2020. Facial Expression Recognition for Human Computer Interaction. In New Trends in Computational Vision and Bio-inspired Computing: Selected works presented at the ICCVBIC 2018, Coimbatore, India . Springer, 1181–1192. [6] Ashutosh Chaubey, Xulang Guan, and Mohammad Soleymani. 2026. Face-LLaVA: Facial Expression and Attribute Understanding through Instruction Tuning. In 
+
+Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV) . 2648–2660. [7] Haodong Chen, Haojian Huang, Junhao Dong, Mingzhe Zheng, and Dian Shao. 2024. FineCLIPER: Multi-modal Fine-grained CLIP for Dynamic Facial Expres-sion Recognition with AdaptERs. In Proceedings of the 32nd ACM International Conference on Multimedia . 2301–2310. [8] Yin Chen, Jia Li, Shiguang Shan, Meng Wang, and Richang Hong. 2025. From Static to Dynamic: Adapting Landmark-Aware Image Models for Facial Expres-sion Recognition in Videos. IEEE Transactions on Affective Computing 16, 2 (2025), 624–638. [9] Zebang Cheng, Zhi-Qi Cheng, Jun-Yan He, Jingdong Sun, Kai Wang, Yuxiang Lin, Zheng Lian, Xiaojiang Peng, and Alexander G Hauptmann. 2024. Emotion-LLaMA: Multimodal Emotion Recognition and Reasoning with Instruction Tun-ing. Advances in Neural Information Processing Systems 37 (2024), 110805–110853. [10] Paul Ekman and Wallace V Friesen. 1978. Facial action coding system. Environ-mental Psychology & Nonverbal Behavior (1978). [11] Baris Gecer, Jiankang Deng, and Stefanos Zafeiriou. 2021. OSTeC: One-Shot Texture Completion. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . 7628–7638. [12] Google. 2025. Gemini 2.5 Flash Preview Model Card. https://storage.googleapis. com/model-cards/documents/gemini-2.5-flash-preview.pdf [13] Google. 2025. Gemini 2.5 Pro Preview Model Card. https://storage.googleapis. com/model-cards/documents/gemini-2.5-pro-preview.pdf [14] Jia Guo, Jiankang Deng, Alexandros Lattas, and Stefanos Zafeiriou. 2021. Sample and Computation Redistribution for Efficient Face Detection. arXiv:2105.04714 [15] Shibo Hao, Tianyang Liu, Zhen Wang, and Zhiting Hu. 2023. ToolkenGPT: Augmenting Frozen Language Models with Massive Tools via Tool Embeddings. In Advances in Neural Information Processing Systems , Vol. 36. 45870–45894. [16] Wenyi Hong, Weihan Wang, Qingsong Lv, Jiazheng Xu, Wenmeng Yu, Junhui Ji, Yan Wang, Zihan Wang, Yuxiao Dong, Ming Ding, and Jie Tang. 2024. CogA-gent: A Visual Language Model for GUI Agents. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . 14281–14290. [17] Zhuozhao Hu, Kaishen Yuan, Xin Liu, Zitong Yu, Yuan Zong, Jingang Shi, Huan-jing Yue, and Jingyu Yang. 2025. FEALLM: Advancing Facial Emotion Analysis in Multimodal Large Language Models with Emotional Synergy and Reasoning. In 
+
+Proceedings of the 33rd ACM International Conference on Multimedia . 5677–5686. [18] Rijin Jin, Sirui Zhao, Zhongkai Hao, Yifan Xu, Tong Xu, and Enhong Chen. 2022. AVT: Au-Assisted Visual Transformer for Facial Expression Recognition. In 2022 IEEE International Conference on Image Processing (ICIP) . IEEE, 2661–2665. [19] Jing Yu Koh, Robert Lo, Lawrence Jang, Vikram Duvvur, Ming Lim, Po-Yu Huang, Graham Neubig, Shuyan Zhou, Russ Salakhutdinov, and Daniel Fried. 2024. Vi-sualWebArena: Evaluating Multimodal Agents on Realistic Visual Web Tasks. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 881–905. [20] Xing Lan, Jian Xue, Ji Qi, Dongmei Jiang, Ke Lu, and Tat-Seng Chua. 2025. Ex-pLLM: Towards Chain of Thought for Facial Expression Recognition. IEEE Transactions on Multimedia 27 (2025), 3069–3081. [21] Hanting Li, Hongjing Niu, Zhaoqing Zhu, and Feng Zhao. 2023. Intensity-Aware Loss for Dynamic Facial Expression Recognition in the Wild. Proceedings of the AAAI Conference on Artificial Intelligence 37, 1 (Jun. 2023), 67–75. [22] Shan Li, Weihong Deng, and JunPing Du. 2017. Reliable Crowdsourcing and Deep Locality-Preserving Learning for Expression Recognition in the Wild. In 
+
+Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) . 2852–2861. [23] Xiaoxi Li, Guanting Dong, Jiajie Jin, Yuyao Zhang, Yujia Zhou, Yutao Zhu, Peitian Zhang, and Zhicheng Dou. 2025. Search-o1: Agentic Search-Enhanced Large Reasoning Models. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing . 5420–5438. [24] Yifan Li, Anh Dao, Wentao Bao, Zhen Tan, Tianlong Chen, Huan Liu, and Yu Kong. 2025. Facial Affective Behavior Analysis with Instruction Tuning. In Computer Vision – ECCV 2024 . Springer Nature Switzerland, 165–186. [25] Zheng Lian, Licai Sun, Haiyang Sun, Kang Chen, Zhuofan Wen, Hao Gu, Bin Liu, and Jianhua Tao. 2024. GPT-4V with emotion: A zero-shot benchmark for Generalized Emotion Recognition. Information Fusion 108 (2024), 102367. [26] Hanwei Liu, Rudong An, Zhimeng Zhang, Bowen Ma, Wei Zhang, Yan Song, Yujing Hu, Wei Chen, and Yu Ding. 2025. Norface: Improving Facial Expression Analysis by Identity Normalization. In Computer Vision – ECCV 2024 . Springer Nature Switzerland, 293–314. [27] Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee. 2024. Improved Baselines with Visual Instruction Tuning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . 26296–26306. [28] Brais Martinez, Michel F Valstar, Bihan Jiang, and Maja Pantic. 2017. Automatic Analysis of Facial Actions: A Survey. IEEE Transactions on Affective Computing 
+
+10, 3 (2017), 325–347. [29] S Mohammad Mavadati, Mohammad H Mahoor, Kevin Bartlett, Philip Trinh, and Jeffrey F Cohn. 2013. DISFA: A Spontaneous Facial Action Intensity Database. 
+
+IEEE Transactions on Affective Computing 4, 2 (2013), 151–160. [30] Ali Mollahosseini, Behzad Hasani, and Mohammad H Mahoor. 2017. AffectNet: A Database for Facial Expression, Valence, and Arousal Computing in the Wild. 
+
+IEEE Transactions on Affective Computing 10, 1 (2017), 18–31. [31] OpenAI. 2025. GPT-5 System Card. https://cdn.openai.com/gpt-5-system-card.pdf [32] Bhargavi Paranjape, Scott Lundberg, Sameer Singh, Hannaneh Hajishirzi, Luke Zettlemoyer, and Marco Tulio Ribeiro. 2023. ART: Automatic multi-step reasoning and tool-use for large language models. arXiv:2303.09014 [33] Xingyu Ren, Alexandros Lattas, Baris Gecer, Jiankang Deng, Chao Ma, and Xi-aokang Yang. 2023. Facial Geometric Detail Recovery via Implicit Representation. In 2023 IEEE 17th International Conference on Automatic Face and Gesture Recog-nition (FG) .[34] Timo Schick, Jane Dwivedi-Yu, Roberto Dessi, Roberta Raileanu, Maria Lomeli, Eric Hambro, Luke Zettlemoyer, Nicola Cancedda, and Thomas Scialom. 2023. Toolformer: Language Models Can Teach Themselves to Use Tools. In Advances in Neural Information Processing Systems , Vol. 36. 68539–68551. [35] Zhihong Shao, Peiyi Wang, Qihao Zhu, Runxin Xu, Junxiao Song, Xiao Bi, Haowei Zhang, Mingchuan Zhang, Y. K. Li, Y. Wu, and Daya Guo. 2024. DeepSeek-Math: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv:2402.03300 [36] Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. 2025. HybridFlow: A Flexible and Efficient RLHF Framework. In Proceedings of the Twentieth European Conference on Computer Systems . 1279–1297. [37] Yan Shi, Zijun Zhang, Kaining Huang, Wudi Ma, and Shanshan Tu. 2020. Human-computer interaction based on face feature localization. Journal of Visual Com-munication and Image Representation 70 (2020), 102740. [38] Huatong Song, Jinhao Jiang, Yingqian Min, Jie Chen, Zhipeng Chen, Wayne Xin Zhao, Lei Fang, and Ji-Rong Wen. 2025. R1-Searcher: Incentivizing the Search Capability in LLMs via Reinforcement Learning. arXiv:2503.05592 [39] Licai Sun, Zheng Lian, Bin Liu, and Jianhua Tao. 2023. MAE-DFER: Efficient Masked Autoencoder for Self-supervised Dynamic Facial Expression Recognition. In Proceedings of the 31st ACM International Conference on Multimedia . 6110–6121. [40] Chengpeng Wang, Li Chen, Lili Wang, Zhaofan Li, and Xuebin Lv. 2025. QCS:Feature Refining from Quadruplet Cross Similarity for Facial Expression Recognition. In Proceedings of the AAAI conference on artificial intelligence , Vol. 39. 7563–7572. [41] Weiyun Wang, Zhangwei Gao, Lixin Gu, Hengjun Pu, Long Cui, Xingguang Wei, Zhaoyang Liu, Linglin Jing, Shenglong Ye, Jie Shao, et al . 2025. InternVL3.5: Ad-vancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. arXiv:2508.18265 [42] Jiulong Wu, Yucheng Shen, Lingyong Yan, Haixin Sun, Deguo Xia, Jizhou Huang, and Min Cao. 2026. Facial-R1: Aligning Reasoning and Recognition for Facial Emotion Analysis. In Proceedings of the AAAI Conference on Artificial Intelligence ,Vol. 40. 26939–26947. [43] Yi Wu, Shangfei Wang, and Yanan Chang. 2023. Patch-Aware Representation Learning for Facial Expression Recognition. In Proceedings of the 31st ACM Inter-national Conference on Multimedia . 6143–6151. [44] Bohao Xing, Zitong Yu, Xin Liu, Kaishen Yuan, Qilang Ye, Weicheng Xie, Huanjing Yue, Jingyu Yang, and Heikki Kälviäinen. 2024. EMO-LLaMA: Enhancing Facial Emotion Understanding with Instruction Tuning. arXiv:2408.11424 [45] Huiyuan Yang, Taoyue Wang, and Lijun Yin. 2020. Adaptive Multimodal Fusion for Facial Action Units Recognition. In Proceedings of the 28th ACM International Conference on Multimedia . 2982–2990. [46] Qu Yang, Mang Ye, and Bo Du. 2024. EmoLLM: Multimodal Emotional Under-standing Meets Large Language Models. arXiv:2406.16442 9[47] Shukang Yin, Chaoyou Fu, Sirui Zhao, Ke Li, Xing Sun, Tong Xu, and Enhong Chen. 2024. A survey on multimodal large language models. National Science Review 11, 12 (11 2024), nwae403. [48] Kaishen Yuan, Zitong Yu, Xin Liu, Weicheng Xie, Huanjing Yue, and Jingyu Yang. 2025. AUFormer: Vision Transformers Are Parameter-Efficient Facial Action Unit Detectors. In Computer Vision – ECCV 2024 . Springer Nature Switzerland, 427–445. [49] Fan Zhang, Haoxuan Li, Shengju Qian, Xin Wang, Zheng Lian, Hao Wu, Zhihong Zhu, Yuan Gao, Qiankun Li, Yefeng Zheng, Zhouchen Lin, and Pheng-Ann Heng. 2025. Rethinking Facial Expression Recognition in the Era of Multimodal Large Language Models: Benchmark, Datasets, and Beyond. arXiv:2511.00389 [50] Yuhang Zhang, Xiuqi Zheng, Chenyi Liang, Jiani Hu, and Weihong Deng. 2025. Generalizable Facial Expression Recognition. In Computer Vision – ECCV 2024 .Springer Nature Switzerland, 231–248. [51] Jinguo Zhu, Weiyun Wang, Zhe Chen, Zhaoyang Liu, Shenglong Ye, Lixin Gu, Hao Tian, Yuchen Duan, Weijie Su, Jie Shao, et al . 2025. InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv:2504.10479 10

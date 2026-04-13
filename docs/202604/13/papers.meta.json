@@ -1,0 +1,65 @@
+{
+  "label": "2026-04-13",
+  "date": "2026-04-13",
+  "generated_at": "2026-04-13T20:45:29",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202604/13/2604.08879v1-grasp-grounded-cot-reasoning-with-dual-stage-optimization-for-multimodal-sarcasm-target-identification",
+      "section": "deep",
+      "title_en": "GRASP: Grounded CoT Reasoning with Dual-Stage Optimization for Multimodal Sarcasm Target Identification",
+      "authors": "Faxian Wan, Xiaocui Yang, Yifan Cao, Shi Feng, Daling Wang, Yifei Zhang",
+      "date": "2026-04-10",
+      "pdf": "https://arxiv.org/pdf/2604.08879v1",
+      "score": "9.0",
+      "evidence": "结合视觉定位和思维链推理的多模态讽刺目标识别",
+      "tldr": "该研究针对多模态讽刺目标识别（MSTI）中定位不准和解释性差的问题，提出了GRASP框架。通过构建更均衡的MSTI-MAX数据集，GRASP引入了视觉扎根的思维链（Grounded CoT）推理，将讽刺相关的视觉区域显式锚定在推理路径中。结合坐标感知加权损失的监督微调和细粒度目标策略优化，该方法在识别文本短语和图像区域的讽刺目标上显著优于现有基准，并提升了推理过程的可解释性。",
+      "tags": "query:msa",
+      "abstract_en": "Moving beyond the traditional binary classification paradigm of Multimodal Sarcasm Detection, Multimodal Sarcasm Target Identification (MSTI) presents a more formidable challenge, requiring precise localization of fine-grained targets such as textual phrases and visual regions. Existing approaches predominantly rely on implicit cross-modal alignment, offering limited interpretability and suboptimal fine-grained localization. To address these limitations, we propose GRASP, Grounded Chain-of-Thought ReAsoning with Dual-Stage Optimization for Multimodal Sarcasm Prediction and Target Identification, a framework that integrates visual grounding with explicit Chain-of-Thought (CoT) reasoning to move beyond black-box MSTI. Specifically, we curate MSTI-MAX, a refined dataset that mitigates class imbalance and enriches multimodal sarcasm cues. We introduce Grounded CoT reasoning, which explicitly anchors sarcasm-related visual regions within the reasoning trajectory and prompts the model to articulate rationales before predicting the final classification labels and sarcasm targets. Furthermore, we employ a dual-stage outcome-supervised joint optimization strategy: Supervised Fine-Tuning with a coordinate-aware weighted loss, followed by Fine-Grained Target Policy Optimization. Extensive experiments demonstrate that GRASP outperforms existing baselines in fine-grained sarcasm target identification across modalities, and an LLM-as-a-Judge evaluation quantitatively measures the quality of internal reasoning chains. Our dataset and source code will be released on GitHub.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/13/2604.08923v1-ncl-bu-at-semeval-2026-task-3-fine-tuning-xlm-roberta-for-multilingual-dimensional-sentiment-regression",
+      "section": "deep",
+      "title_en": "NCL-BU at SemEval-2026 Task 3: Fine-tuning XLM-RoBERTa for Multilingual Dimensional Sentiment Regression",
+      "authors": "Tong Wu, Nicolay Rusnachenko, Huizhi Liang",
+      "date": "2026-04-10",
+      "pdf": "https://arxiv.org/pdf/2604.08923v1",
+      "score": "9.0",
+      "evidence": "针对细粒度分析的多语言维度情感回归",
+      "tldr": "本文针对SemEval-2026维度细粒度情感分析任务，提出了一种基于XLM-RoBERTa-base的微调方法。该方法通过双回归头预测[1, 9]范围内的效价与唤醒度得分。实验对比了GPT-5.2及LLaMA-3等大模型，证明了在多语言多领域场景下，特定任务的微调性能显著优于大模型的少样本学习。",
+      "tags": "query:msa",
+      "abstract_en": "Dimensional Aspect-Based Sentiment Analysis (DimABSA) extends traditional ABSA from categorical polarity labels to continuous valence-arousal (VA) regression. This paper describes a system developed for Track A - Subtask 1 (Dimensional Aspect Sentiment Regression), aiming to predict real-valued VA scores in the [1, 9] range for each given aspect in a text. A fine-tuning approach based on XLM-RoBERTa-base is adopted, constructing the input as [CLS] T [SEP] a_i [SEP] and training dual regression heads with sigmoid-scaled outputs for valence and arousal prediction. Separate models are trained for each language-domain combination (English and Chinese across restaurant, laptop, and finance domains), and training and development sets are merged for final test predictions. In development experiments, the fine-tuning approach is compared against several large language models including GPT-5.2, LLaMA-3-70B, LLaMA-3.3-70B, and LLaMA-4-Maverick under a few-shot prompting setting, demonstrating that task-specific fine-tuning substantially and consistently outperforms these LLM-based methods across all evaluation datasets. The code is publicly available at https://github.com/tongwu17/SemEval-2026-Task3-Track-A.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/13/2604.08990v1-actfer-agentic-facial-expression-recognition-via-active-tool-augmented-visual-reasoning",
+      "section": "deep",
+      "title_en": "ActFER: Agentic Facial Expression Recognition via Active Tool-Augmented Visual Reasoning",
+      "authors": "Shifeng Liu, Zhengye Zhang, Sirui Zhao, Xinglong Mao, Zhehan Kan, Zhixiang Wei, Shiwei Wu, Chaoyou Fu, Tong Xu, Enhong Chen",
+      "date": "2026-04-10",
+      "pdf": "https://arxiv.org/pdf/2604.08990v1",
+      "score": "9.0",
+      "evidence": "通过多模态推理的智能体面部表情识别",
+      "tldr": "针对现有基于多模态大模型（MLLM）的面部表情识别（FER）方法被动依赖固定输入且缺乏主动感知能力的局限，本文提出ActFER框架。该框架将FER重新定义为主动视觉证据获取与多模态推理过程，通过动态调用工具进行人脸检测、对齐及局部缩放，并结合视觉思维链进行推理。此外，开发了UC-GRPO强化学习算法，通过多级可验证奖励和效用校准，使模型学会何时进行局部检查并提升推理准确性。",
+      "tags": "query:msa",
+      "abstract_en": "Recent advances in Multimodal Large Language Models (MLLMs) have created new opportunities for facial expression recognition (FER), moving it beyond pure label prediction toward reasoning-based affect understanding. However, existing MLLM-based FER methods still follow a passive paradigm: they rely on externally prepared facial inputs and perform single-pass reasoning over fixed visual evidence, without the capability for active facial perception. To address this limitation, we propose ActFER, an agentic framework that reformulates FER as active visual evidence acquisition followed by multimodal reasoning. Specifically, ActFER dynamically invokes tools for face detection and alignment, selectively zooms into informative local regions, and reasons over facial Action Units (AUs) and emotions through a visual Chain-of-Thought. To realize such behavior, we further develop Utility-Calibrated GRPO (UC-GRPO), a reinforcement learning algorithm tailored to agentic FER. UC-GRPO uses AU-grounded multi-level verifiable rewards to densify supervision, query-conditional contrastive utility estimation to enable sample-aware dynamic credit assignment for local inspection, and emotion-aware EMA calibration to reduce noisy utility estimates while capturing emotion-wise inspection tendencies. This algorithm enables ActFER to learn both when local inspection is beneficial and how to reason over the acquired evidence. Comprehensive experiments show that ActFER trained with UC-GRPO consistently outperforms passive MLLM-based FER baselines and substantially improves AU prediction accuracy.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202604/13/2604.09123v1-prototype-regularized-federated-learning-for-cross-domain-aspect-sentiment-triplet-extraction",
+      "section": "deep",
+      "title_en": "Prototype-Regularized Federated Learning for Cross-Domain Aspect Sentiment Triplet Extraction",
+      "authors": "Zongming Cai, Jianhang Tang, Zhenyong Zhang, Jinghui Qin, Kebing Jin, Hankz Hankui Zhuo",
+      "date": "2026-04-10",
+      "pdf": "https://arxiv.org/pdf/2604.09123v1",
+      "score": "8.0",
+      "evidence": "使用联邦学习进行跨领域细粒度情感三元组抽取",
+      "tldr": "针对跨域方面情感三元组抽取（ASTE）中数据孤岛和隐私保护问题，本文提出了一种基于原型的正则化联邦学习框架PCD-SpanProto。该框架通过交换类级别原型而非模型参数，结合加权性能感知聚合策略和对比正则化模块，有效捕捉跨域共有特征并提升类间区分度，在降低通信成本的同时显著提升了模型性能。",
+      "tags": "query:msa",
+      "abstract_en": "Aspect Sentiment Triplet Extraction (ASTE) aims to extract all sentiment triplets of aspect terms, opinion terms, and sentiment polarities from a sentence. Existing methods are typically trained on individual datasets in isolation, failing to jointly capture the common feature representations shared across domains. Moreover, data privacy constraints prevent centralized data aggregation. To address these challenges, we propose Prototype-based Cross-Domain Span Prototype extraction (PCD-SpanProto), a prototype-regularized federated learning framework to enable distributed clients to exchange class-level prototypes instead of full model parameters. Specifically, we design a weighted performance-aware aggregation strategy and a contrastive regularization module to improve the global prototype under domain heterogeneity and the promotion between intra-class compactness and inter-class separability across clients. Extensive experiments on four ASTE datasets demonstrate that our method outperforms baselines and reduces communication costs, validating the effectiveness of prototype-based cross-domain knowledge transfer.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

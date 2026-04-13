@@ -1,0 +1,170 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-04-13T20:44:44.576370+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 0,
+    "quick_skim_target": 11,
+    "quick_selected": 0
+  },
+  "deep_dive": [
+    {
+      "id": "2604.08879v1",
+      "title": "GRASP: Grounded CoT Reasoning with Dual-Stage Optimization for Multimodal Sarcasm Target Identification",
+      "abstract": "Moving beyond the traditional binary classification paradigm of Multimodal Sarcasm Detection, Multimodal Sarcasm Target Identification (MSTI) presents a more formidable challenge, requiring precise localization of fine-grained targets such as textual phrases and visual regions. Existing approaches predominantly rely on implicit cross-modal alignment, offering limited interpretability and suboptimal fine-grained localization. To address these limitations, we propose GRASP, Grounded Chain-of-Thought ReAsoning with Dual-Stage Optimization for Multimodal Sarcasm Prediction and Target Identification, a framework that integrates visual grounding with explicit Chain-of-Thought (CoT) reasoning to move beyond black-box MSTI. Specifically, we curate MSTI-MAX, a refined dataset that mitigates class imbalance and enriches multimodal sarcasm cues. We introduce Grounded CoT reasoning, which explicitly anchors sarcasm-related visual regions within the reasoning trajectory and prompts the model to articulate rationales before predicting the final classification labels and sarcasm targets. Furthermore, we employ a dual-stage outcome-supervised joint optimization strategy: Supervised Fine-Tuning with a coordinate-aware weighted loss, followed by Fine-Grained Target Policy Optimization. Extensive experiments demonstrate that GRASP outperforms existing baselines in fine-grained sarcasm target identification across modalities, and an LLM-as-a-Judge evaluation quantitatively measures the quality of internal reasoning chains. Our dataset and source code will be released on GitHub.",
+      "authors": [
+        "Faxian Wan",
+        "Xiaocui Yang",
+        "Yifan Cao",
+        "Shi Feng",
+        "Daling Wang",
+        "Yifei Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-10T02:38:14+00:00",
+      "link": "https://arxiv.org/pdf/2604.08879v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multimodal sarcasm target identification using visual grounding and CoT reasoning",
+      "llm_evidence_cn": "结合视觉定位和思维链推理的多模态讽刺目标识别",
+      "llm_evidence": "结合视觉定位和思维链推理的多模态讽刺目标识别",
+      "canonical_evidence": "结合视觉定位和思维链推理的多模态讽刺目标识别",
+      "llm_tldr_en": "Proposes GRASP for fine-grained multimodal sarcasm target identification using grounded reasoning.",
+      "llm_tldr_cn": "提出GRASP框架，通过视觉定位和显式思维链推理实现精细化的多模态讽刺目标识别。",
+      "llm_tldr": "提出GRASP框架，通过视觉定位和显式思维链推理实现精细化的多模态讽刺目标识别。",
+      "llm_tags": [
+        "query:msa:composite"
+      ],
+      "matched_query_tag": "query:msa:composite",
+      "matched_query_text": "Papers central to 多模态情感分析, especially work that connects or combines: M; analysis of emotional tone and opinion; recent advances in multimodal emotion recognition systems; applications of multimodal sentiment analysis in real world scenarios.",
+      "matched_requirement_id": "req-composite-msa",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.08923v1",
+      "title": "NCL-BU at SemEval-2026 Task 3: Fine-tuning XLM-RoBERTa for Multilingual Dimensional Sentiment Regression",
+      "abstract": "Dimensional Aspect-Based Sentiment Analysis (DimABSA) extends traditional ABSA from categorical polarity labels to continuous valence-arousal (VA) regression. This paper describes a system developed for Track A - Subtask 1 (Dimensional Aspect Sentiment Regression), aiming to predict real-valued VA scores in the [1, 9] range for each given aspect in a text. A fine-tuning approach based on XLM-RoBERTa-base is adopted, constructing the input as [CLS] T [SEP] a_i [SEP] and training dual regression heads with sigmoid-scaled outputs for valence and arousal prediction. Separate models are trained for each language-domain combination (English and Chinese across restaurant, laptop, and finance domains), and training and development sets are merged for final test predictions. In development experiments, the fine-tuning approach is compared against several large language models including GPT-5.2, LLaMA-3-70B, LLaMA-3.3-70B, and LLaMA-4-Maverick under a few-shot prompting setting, demonstrating that task-specific fine-tuning substantially and consistently outperforms these LLM-based methods across all evaluation datasets. The code is publicly available at https://github.com/tongwu17/SemEval-2026-Task3-Track-A.",
+      "authors": [
+        "Tong Wu",
+        "Nicolay Rusnachenko",
+        "Huizhi Liang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-10T03:38:53+00:00",
+      "link": "https://arxiv.org/pdf/2604.08923v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Multilingual dimensional sentiment regression for aspect-based analysis",
+      "llm_evidence_cn": "针对细粒度分析的多语言维度情感回归",
+      "llm_evidence": "针对细粒度分析的多语言维度情感回归",
+      "canonical_evidence": "针对细粒度分析的多语言维度情感回归",
+      "llm_tldr_en": "Fine-tunes XLM-RoBERTa for predicting continuous valence-arousal scores in multilingual aspect sentiment tasks.",
+      "llm_tldr_cn": "微调XLM-RoBERTa以在多语言细粒度情感任务中预测连续的效价-唤醒度分数。",
+      "llm_tldr": "微调XLM-RoBERTa以在多语言细粒度情感任务中预测连续的效价-唤醒度分数。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.08990v1",
+      "title": "ActFER: Agentic Facial Expression Recognition via Active Tool-Augmented Visual Reasoning",
+      "abstract": "Recent advances in Multimodal Large Language Models (MLLMs) have created new opportunities for facial expression recognition (FER), moving it beyond pure label prediction toward reasoning-based affect understanding. However, existing MLLM-based FER methods still follow a passive paradigm: they rely on externally prepared facial inputs and perform single-pass reasoning over fixed visual evidence, without the capability for active facial perception. To address this limitation, we propose ActFER, an agentic framework that reformulates FER as active visual evidence acquisition followed by multimodal reasoning. Specifically, ActFER dynamically invokes tools for face detection and alignment, selectively zooms into informative local regions, and reasons over facial Action Units (AUs) and emotions through a visual Chain-of-Thought. To realize such behavior, we further develop Utility-Calibrated GRPO (UC-GRPO), a reinforcement learning algorithm tailored to agentic FER. UC-GRPO uses AU-grounded multi-level verifiable rewards to densify supervision, query-conditional contrastive utility estimation to enable sample-aware dynamic credit assignment for local inspection, and emotion-aware EMA calibration to reduce noisy utility estimates while capturing emotion-wise inspection tendencies. This algorithm enables ActFER to learn both when local inspection is beneficial and how to reason over the acquired evidence. Comprehensive experiments show that ActFER trained with UC-GRPO consistently outperforms passive MLLM-based FER baselines and substantially improves AU prediction accuracy.",
+      "authors": [
+        "Shifeng Liu",
+        "Zhengye Zhang",
+        "Sirui Zhao",
+        "Xinglong Mao",
+        "Zhehan Kan",
+        "Zhixiang Wei",
+        "Shiwei Wu",
+        "Chaoyou Fu",
+        "Tong Xu",
+        "Enhong Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-04-10T05:53:19+00:00",
+      "link": "https://arxiv.org/pdf/2604.08990v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic facial expression recognition via multimodal reasoning",
+      "llm_evidence_cn": "通过多模态推理的智能体面部表情识别",
+      "llm_evidence": "通过多模态推理的智能体面部表情识别",
+      "canonical_evidence": "通过多模态推理的智能体面部表情识别",
+      "llm_tldr_en": "Proposes an agentic framework for active facial expression recognition using multimodal LLMs.",
+      "llm_tldr_cn": "提出一种基于多模态大模型的智能体框架，实现主动式面部表情识别与推理。",
+      "llm_tldr": "提出一种基于多模态大模型的智能体框架，实现主动式面部表情识别与推理。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "recent advances in multimodal emotion recognition systems",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.09123v1",
+      "title": "Prototype-Regularized Federated Learning for Cross-Domain Aspect Sentiment Triplet Extraction",
+      "abstract": "Aspect Sentiment Triplet Extraction (ASTE) aims to extract all sentiment triplets of aspect terms, opinion terms, and sentiment polarities from a sentence. Existing methods are typically trained on individual datasets in isolation, failing to jointly capture the common feature representations shared across domains. Moreover, data privacy constraints prevent centralized data aggregation. To address these challenges, we propose Prototype-based Cross-Domain Span Prototype extraction (PCD-SpanProto), a prototype-regularized federated learning framework to enable distributed clients to exchange class-level prototypes instead of full model parameters. Specifically, we design a weighted performance-aware aggregation strategy and a contrastive regularization module to improve the global prototype under domain heterogeneity and the promotion between intra-class compactness and inter-class separability across clients. Extensive experiments on four ASTE datasets demonstrate that our method outperforms baselines and reduces communication costs, validating the effectiveness of prototype-based cross-domain knowledge transfer.",
+      "authors": [
+        "Zongming Cai",
+        "Jianhang Tang",
+        "Zhenyong Zhang",
+        "Jinghui Qin",
+        "Kebing Jin",
+        "Hankz Hankui Zhuo"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-10T09:03:44+00:00",
+      "link": "https://arxiv.org/pdf/2604.09123v1",
+      "tags": [
+        "keyword:MSA",
+        "query:MSA"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cross-domain aspect sentiment triplet extraction using federated learning",
+      "llm_evidence_cn": "使用联邦学习进行跨领域细粒度情感三元组抽取",
+      "llm_evidence": "使用联邦学习进行跨领域细粒度情感三元组抽取",
+      "canonical_evidence": "使用联邦学习进行跨领域细粒度情感三元组抽取",
+      "llm_tldr_en": "Proposes a federated learning framework for extracting aspect-sentiment triplets across different domains.",
+      "llm_tldr_cn": "提出一种联邦学习框架，用于跨领域提取方面-意见-情感极性三元组。",
+      "llm_tldr": "提出一种联邦学习框架，用于跨领域提取方面-意见-情感极性三元组。",
+      "llm_tags": [
+        "query:msa"
+      ],
+      "matched_query_tag": "query:msa",
+      "matched_query_text": "analysis of emotional tone and opinion",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": []
+}

@@ -1,0 +1,274 @@
+Title: NCL-BU at SemEval-2026 Task 3: Fine-tuning XLM-RoBERTa for Multilingual Dimensional Sentiment Regression
+
+URL Source: https://arxiv.org/pdf/2604.08923v1
+
+Published Time: Mon, 13 Apr 2026 00:25:23 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# NCL-BU at SemEval-2026 Task 3: Fine-tuning XLM-RoBERTa for Multilingual Dimensional Sentiment Regression 
+
+Tong Wu 1, Nicolay Rusnachenko 2, and Huizhi Liang 3
+
+> 1
+
+Independent Researcher 
+
+> 2
+
+Centre for Applied Creative Technologies (CFACT+), Bournemouth University, UK 
+
+> 3
+
+School of Computing, Newcastle University, Newcastle upon Tyne, UK 
+
+tongwuwhitney@gmail.com , nrusnachenko@bournemouth.ac.uk ,
+
+huizhi.liang@newcastle.ac.uk 
+
+Abstract 
+
+Dimensional Aspect-Based Sentiment Anal-ysis (DimABSA) extends traditional ABSA from categorical polarity labels to continuous valence-arousal (VA) regression. This paper de-scribes a system developed for Track A - Sub-task 1 (Dimensional Aspect Sentiment Regres-sion), aiming to predict real-valued VA scores in the [1 , 9] range for each given aspect in a text. A fine-tuning approach based on XLM-RoBERTa-base is adopted, constructing the in-put as [CLS] T [SEP] ai [SEP] and training dual regression heads with sigmoid-scaled out-puts for valence and arousal prediction. Sep-arate models are trained for each language-domain combination (English and Chinese across restaurant, laptop, and finance domains), and training and development sets are merged for final test predictions. In development ex-periments, the fine-tuning approach is com-pared against several large language models including GPT-5.2, LLaMA-3-70B, LLaMA-3.3-70B, and LLaMA-4-Maverick under a few-shot prompting setting, demonstrating that task-specific fine-tuning substantially and consis-tently outperforms these LLM-based methods across all evaluation datasets. The code is pub-licly available at https://github.com /tongwu17/SemEval-2026-Task3-T rack-A .
+
+1 Introduction 
+
+Aspect-Based Sentiment Analysis (ABSA) aims to identify sentiment expressed toward specific as-pects in text and has been extensively studied in the NLP community (Zhang et al., 2023). Traditional ABSA assigns categorical sentiment labels (e.g., positive, negative, neutral) to each aspect, but such coarse-grained representations fail to capture the nuanced spectrum of human emotion. SemEval-2026 Task 3 - Dimensional ABSA (DimABSA) (Yu et al., 2026; Lee et al., 2026) bridges this gap by extending ABSA from categorical polarity to continuous valence-arousal (VA) regression based on the circumplex model of affect (Russell, 1980). This paper focuses on Track A Subtask 1 (Dimensional Aspect Sentiment Regression, Di-mASR), which requires predicting a pair of real-valued VA scores in the range [1, 9] for each given aspect in a text. This work addresses English and Chinese across multiple domains (restaurant, lap-top, and finance). The approach fine-tunes XLM-RoBERTa-base (Conneau et al., 2020), a multilin-gual pretrained language model, with dual regres-sion heads for valence and arousal prediction. The model takes the concatenation of the input text and the target aspect as input and outputs two real-valued scores via sigmoid-scaled linear heads. LLM-based approaches have shown strong per-formance in ABSA classification tasks (Zhang et al., 2024), raising the question of whether they can similarly excel at continuous VA regres-sion. To investigate this, a comparative study is conducted between task-specific fine-tuning and few-shot prompting with several state-of-the-art large language models (LLMs). The results show that fine-tuning XLM-RoBERTa on modest in-domain annotated data consistently outperforms LLM-based methods by a substantial margin across all language-domain combinations. The system also outperforms both organizer-provided baselines (Kimi-K2 Thinking and QLoRA-fine-tuned Qwen-3 14B) on all five datasets, with relative improve-ments of 31–63%. Error analysis on the test predic-tions further reveals that the model struggles most with strongly negative sentiment, where it tends to predict values closer to the positive training mean, and that valence is consistently harder to predict than arousal across datasets. 
+
+2 Background 
+
+Task Description. This work participates in SemEval-2026 Task 3, Track A Subtask 1 (Lee 1
+
+> arXiv:2604.08923v1 [cs.CL] 10 Apr 2026
+
+et al., 2026). Given a sentence and a target aspect, the system must predict a valence score and an arousal score, both in the range [1 , 9] . For exam-ple, given the sentence “the food was absolutely amazing!” and the aspect “food”, the expected out-put is V = 8 .50 , A = 8 .25 , indicating positive and excited sentiment. The task provides training data in two languages (English and Chinese) and three domains (restaurant, laptop, and finance). 
+
+Aspect-Based Sentiment Analysis. ABSA has been the focus of a series of SemEval shared tasks (Pontiki et al., 2014, 2015, 2016), progressing from aspect sentiment classification to structured extrac-tion tasks such as Aspect Sentiment Triplet Extrac-tion (ASTE) (Peng et al., 2020) and Aspect Sen-timent Quad Prediction (ASQP) (Cai et al., 2021; Zhang et al., 2021). These tasks, however, repre-sent sentiment as discrete categorical labels. 
+
+Dimensional Sentiment Analysis. In prior work, sentence-level dimensional sentiment resources such as EmoBank (Buechel and Hahn, 2017) and Chinese EmoBank (Lee et al., 2022) have enabled valence-arousal prediction. At the aspect level, the SIGHAN 2024 shared task (Lee et al., 2024) introduced dimensional ABSA for Chinese, and SemEval-2026 Task 3 (Lee et al., 2026) further ex-tends it to multilingual and multidomain settings. 
+
+Pretrained Language Models for Regression. 
+
+Transformer-based pretrained models such as BERT (Devlin et al., 2019) produce a [CLS] token representation as a sentence-level encoding that can be augmented with task-specific layers for regres-sion. XLM-RoBERTa (Conneau et al., 2020) ex-tends this paradigm to multilingual settings through large-scale cross-lingual pretraining on 100 lan-guages, outperforming multilingual BERT on cross-lingual benchmarks. 
+
+3 Methodology 
+
+3.1 Task Definition 
+
+Given a text T and a set of aspects {a1, a 2, . . . , a k},the task is to predict a valence-arousal pair (Vi, A i)
+
+for each aspect ai, where Vi, A i ∈ [1 , 9] .
+
+3.2 Model Architecture 
+
+XLM-RoBERTa-base (Conneau et al., 2020) is used as the backbone encoder. For each (text, as-pect) pair, the input is constructed as: [CLS] T [SEP] ai [SEP]                     
+
+> [CLS] T[SEP] ai[SEP]
+> XLM-RoBERTa Encoder
+> [CLS] representation h∈Rd
+> Dropout
+> Valence MLP Arousal MLP
+> σ(·)×8 + 1 σ(·)×8 + 1
+> Model
+> ˆVi∈[1 ,9] ˆAi∈[1 ,9]
+> Figure 1: Model architecture.
+
+where [SEP] denotes the separator token of the pretrained tokenizer. The [CLS] token representa-tion h ∈ Rd, from the encoder is passed through a dropout layer and then fed into two independent regression heads: 
+
+ˆVi = σ(MLP V (h)) × 8 + 1 ˆAi = σ(MLP A(h)) × 8 + 1 
+
+where σ is the sigmoid function and each MLP is a two-layer feedforward network ( d → d/ 2 → 1)with Tanh activation and dropout between layers. Since σ maps to [0 , 1] , the affine transformation 
+
+σ(·)×8+1 constrains predictions to [1 , 9] . Figure 1 illustrates the architecture. 
+
+4 Experimental Setup 
+
+4.1 Dataset and Training Strategy 
+
+For each language-domain pair, the training data comes from the DimABSA dataset (Lee et al., 2026), constructed by annotating VA values on ex-isting ABSA resources. For example, the English restaurant and laptop data are sourced from the ACOS dataset (Cai et al., 2021). Since Subtask 1 only requires VA regression for given aspects, (text, aspect, VA) triples are extracted from the Quadru-plet or Aspect_VA annotations. When a sentence contains multiple aspects, each (text, aspect) pair is treated as an independent sample. Table 1 summarizes the dataset statistics. For the final test submission, the training and devel-opment sets are merged to maximize the available training data, while a 10% random split is reserved for internal validation during training. 2Language Domain Train Dev Test                     
+
+> eng Restaurant 2,284 200 1,000 eng Laptop 4,076 200 1,000 zho Restaurant 6,050 300 1,000 zho Laptop 3,490 300 1,000 zho Finance 1,000 200 842
+
+Table 1: Dataset statistics (number of sentences).              
+
+> Hyperparameter Value
+> Pretrained model XLM-RoBERTa-base Max sequence length 256 Batch size 16 Learning rate 2e-5 Optimizer AdamW Warmup ratio 10% LR scheduler Linear decay Dropout 0.1 Max epochs 10 Early stopping patience 3Gradient clipping 1.0 Random seed 42
+
+Table 2: Hyperparameters for fine-tuning. 
+
+4.2 Training Configuration 
+
+The training loss is the sum of mean squared error (MSE) for valence and arousal: 
+
+L = MSE ( ˆV , V ∗) + MSE ( ˆA, A ∗)
+
+where V ∗ and A∗ are the gold-standard values. Table 2 lists the hyperparameters. Separate mod-els are trained for each language-domain combina-tion: English restaurant, English laptop, Chinese restaurant, Chinese laptop, and Chinese finance. The AdamW optimizer (Loshchilov and Hutter, 2019) is used with a linear learning rate sched-ule including 10% warmup steps. Early stopping with a patience of 3 epochs is applied based on the RMSE V A metric on a held-out validation split (10% of training data). 
+
+4.3 Development Evaluation Protocol 
+
+To compare methods during development, the orig-inal training set is split into 80% for training and 20% for evaluation. This setup allows compari-son of the fine-tuning approach against LLM-based methods on a held-out portion of annotated data. 
+
+4.4 Evaluation Metric 
+
+The evaluation metric for Subtask 1 is RMSE V A ,defined as:                                          
+
+> RMSE V A =
+> vuut1
+> N
+> NX
+> i=1
+> h
+> (V(i)
+> p−V(i)
+> g)2+ ( A(i)
+> p−A(i)
+> g)2
+> i
+> Method eng_lap eng_res zho_lap zho_res zho_fin
+> GPT-5.2 1.9523 1.9041 1.5531 1.6817 1.7311 LLaMA-3-70B 1.6428 1.6738 1.7267 1.9044 2.2312 LLaMA-3.3-70B 1.6826 1.7815 2.0182 1.9494 2.5313 LLaMA-4-Mav. 1.6850 1.7830 1.6239 1.7127 1.7858
+> XLM-RoBERTa 1.1124 1.3546 0.7911 0.6559 0.5118
+
+Table 3: RMSE V A comparison on the 20% held-out evaluation set (lower is better). 
+
+where N is the total number of (text, aspect) in-stances, and subscripts p and g denote predicted and gold values, respectively. Lower values indi-cate better performance. 
+
+5 Results 
+
+5.1 Comparison with LLM-based Methods 
+
+To compare against prompting-based approaches, several LLMs are evaluated under a few-shot set-ting on the same 20% held-out evaluation set: • GPT-5.2 : OpenAI’s latest model, accessed via API. • LLaMA-3-70B-Instruct : A 70B-parameter open-source model by Meta. • LLaMA-3.3-70B-Instruct : An updated ver-sion of LLaMA-3 70B. • LLaMA-4-Maverick-Instruct : Meta’s latest model. For the LLM methods, a structured prompt is used with system instructions defining valence and arousal, followed by 6 few-shot examples sampled from the 80% training portion. A low temperature of 0.1 is used to encourage deterministic outputs. The prompt asks the model to output VA scores in the format V#A. Predicted values are clipped to the [1, 9] range. Table 3 presents the results. 
+
+Fine-tuning vs. LLMs. The fine-tuned model consistently and substantially outperforms all LLM-based methods across every dataset. The average improvement over the best LLM per dataset is 0.77 RMSE V A points (a relative reduction of approxi-mately 46%). The performance gap is particularly striking for Chinese datasets, where the best LLM achieves RMSE V A of 1.5531 on Chinese Laptop while the fine-tuned model achieves 0.7911, and similarly 1.6817 vs. 0.6559 on Chinese Restaurant. 
+
+LLM Comparison. Among the LLMs, no single model dominates across all datasets. LLaMA-3-70B performs best on English datasets, while GPT-5.2 is strongest on Chinese ones. The gap between the best- and worst-performing LLM can be sub-31 2 3 4 5 6 7 8 9 10 
+
+> 0.5
+> 1
+> 1.5
+> 2
+> Epoch
+> RMSE V A
+> eng_lap
+> eng_res
+> zho_lap
+> zho_res
+> zho_fin
+
+Figure 2: Validation RMSE V A across training epochs. 
+
+stantial (e.g., 1.5531 to 2.0182 on Chinese Laptop), suggesting that VA regression performance varies considerably across models and languages. 
+
+Analysis of LLM Limitations. The substan-tial gap between LLM-based approaches and fine-tuning can be attributed to several factors: (1) VA regression requires predicting precise numerical values on a continuous scale, which is inherently challenging for LLMs that generate text token by to-ken; (2) the few-shot setting provides very limited calibration signal (only 6 examples) for the model to learn the dataset-specific distribution; (3) fine-tuning directly optimizes MSE loss, providing a clear gradient signal for regression, while LLMs must infer numerical patterns from text. 
+
+5.2 Training Convergence Analysis 
+
+Figure 2 shows the validation RMSE V A across training epochs for all five datasets when trained on the merged train+dev data. Several observa-tions can be made: (1) Chinese datasets converge to lower error levels than English ones, consistent with the larger training sizes; (2) early stopping effectively prevents overfitting, with most models stopping between epochs 5–9; (3) English Restau-rant requires the most epochs (10) to converge, likely due to its smaller training set combined with higher annotation variability. 
+
+5.3 Main Results 
+
+Models trained on the training set alone (with-out using any development gold labels) achieve RMSE V A of 1.1045, 1.0630, 0.7207, 0.7983, and 0.5389 on the development set for eng_lap, eng_res, zho_lap, zho_res, and zho_fin, respectively. For the test submission, the training and development sets                     
+
+> Method eng_lap eng_res zho_lap zho_res zho_fin
+> Kimi-K2 Thinking 2.1893 2.1461 1.6440 1.8959 1.9652 Qwen-3 14B (QLoRA) 2.8089 2.6427 1.7706 2.0073 1.4707
+> XLM-RoBERTa 1.4562 1.4861 0.7510 0.9553 0.5391
+
+Table 4: Test set RMSE V A (lower is better). 
+
+Figure 3: Training data distribution in VA space. En-glish datasets cluster in the high-valence, high-arousal region, while Chinese datasets are more centered. 
+
+are merged (with development gold labels used as additional training data) to maximize the available data. Table 4 reports the test set results alongside the organizer-provided baselines. 
+
+Cross-lingual Observations. The fine-tuned model performs better on Chinese datasets than on English ones (average test RMSE V A of 0.7485 vs. 1.4712 for Chinese and English, respectively). This may be attributed to the larger training sets avail-able for Chinese domains (e.g., 6,050 sentences for Chinese Restaurant) and potentially more consis-tent annotation patterns. Chinese Finance achieves the lowest error (0.5391), suggesting a regular VA distribution and strong generalization in financial text. 
+
+Error Analysis. Figure 3 shows the training data distribution in the VA space across all five datasets. English datasets are heavily skewed toward positive valence and high arousal (mean V ≈ 6.1, A ≈ 6.8), while Chinese datasets are more centered (mean 
+
+V ≈ 5.7, A ≈ 5.5). This distributional imbalance directly explains several test prediction patterns, as the model tends to predict values closer to the positive training mean, failing to capture extreme negativity. For example, for the sentence “I’m be-ing generous by giving this restaurant 2 stars” (gold 4Figure 4: Test-set RMSE VA heatmap across the VA space. Each cell shows the RMSE and sample count (n) for gold samples in that valence–arousal bin. Red indicates higher error; green indicates lower error. 
+
+V = 2 .17 , A = 7 .67 ), the model predicts V = 7 .08 ,
+
+A = 7 .08 , apparently misled by the positive words “generous” and “giving” while missing the underly-ing negative sentiment. Figure 4 provides a spatially resolved view of these patterns. For English datasets, the highest er-rors concentrate in the low-valence region ( V < 3), with RMSE V A of 2.43 for restaurant and 2.20 for laptop, compared to only 1.09 and 1.08 in the high-valence region [7 , 9] , confirming the distributional bias. Chinese datasets exhibit more uniform er-ror surfaces, with considerably less extreme vari-ation across the entire VA space, consistent with their more balanced training distributions. Notably, the heatmap cells with the fewest training samples (low-valence, high-arousal) consistently show the largest errors, reinforcing that data scarcity in un-derrepresented VA regions is the primary driver of prediction errors. Furthermore, valence is generally harder to pre-dict than arousal. Table 5 shows the per-dimension RMSE: valence RMSE exceeds arousal RMSE in four out of five datasets, with the largest gap on English Laptop (1.25 vs. 0.75); the sole exception is Chinese Restaurant, where arousal error is higher (0.74 vs. 0.61). This suggests that arousal, being more closely tied to surface-level cues such as ex-clamation marks and intensifiers, is easier for the model to capture, while valence requires deeper semantic understanding of sentiment polarity.                    
+
+> Language Domain RMSE VRMSE A
+> eng Laptop 1.25 0.75 eng Restaurant 1.11 0.98 zho Laptop 0.57 0.48 zho Restaurant 0.61 0.74 zho Finance 0.44 0.31
+> Table 5: Test-set RMSE for valence (RMSE V) and arousal (RMSE A).
+
+6 Conclusion 
+
+This paper presented a fine-tuning approach based on XLM-RoBERTa-base with dual regression heads for dimensional aspect sentiment regression. Experiments on five language-domain datasets demonstrate that task-specific fine-tuning substan-tially outperforms few-shot prompting with sev-eral LLMs. Valence is generally harder to predict than arousal. Future work includes using larger pretrained models, multi-task learning across sub-tasks, and incorporating affective lexicons for low-resource domains. 
+
+Limitations 
+
+The model uses only the [CLS] representation with-out aspect-level attention. The LLM comparison uses a single prompt template with 6 examples, which may not fully represent LLM capabilities. The evaluation covers only two languages, leaving generalizability untested. 5Acknowledgments 
+
+Thanks to the organizers for providing the dataset and evaluation infrastructure, and to the review-ers who will review this paper for their valuable feedback. 
+
+References 
+
+Sven Buechel and Udo Hahn. 2017. EmoBank: Study-ing the impact of annotation perspective and repre-sentation format on dimensional emotion analysis. In Proceedings of the 15th Conference of the Euro-pean Chapter of the Association for Computational Linguistics: Volume 2, Short Papers , pages 578–585, Valencia, Spain. Association for Computational Lin-guistics. Hongjie Cai, Rui Xia, and Jianfei Yu. 2021. Aspect-category-opinion-sentiment quadruple extraction with implicit aspects and opinions. In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers) , pages 340–350, Online. Association for Computational Linguistics. Alexis Conneau, Karttikeya Khandelwal, Naman Goyal, Vishrav Chaudhary, Guillaume Wenzek, Francisco Guzmán, Edouard Grave, Marius Ott, Luke Zettle-moyer, and Veselin Stoyanov. 2020. Unsupervised cross-lingual representation learning at scale. In Pro-ceedings of the 58th Annual Meeting of the Asso-ciation for Computational Linguistics , pages 8440– 8451. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language under-standing. arXiv preprint arXiv:1810.04805 .Lung-Hao Lee, Jian-Hong Li, and Liang-Chih Yu. 2022. Chinese emobank: Building valence-arousal resources for dimensional sentiment analysis. ACM Trans. Asian Low-Resour. Lang. Inf. Process. , 21(4). Lung-Hao Lee, Liang-Chih Yu, Natalia Loukashe-vich, Ilseyar Alimova, Alexander Panchenko, Tzu-Mi Lin, Zhe-Yu Xu, Jian-Yu Zhou, Guangmin Zheng, Jin Wang, Sharanya Awasthi, Jonas Becker, Jan Philip Wahle, Terry Ruas, Shamsuddeen Has-san Muhammad, and Saif M. Mohammad. 2026. Dimabsa: Building multilingual and multidomain datasets for dimensional aspect-based sentiment anal-ysis. Preprint , arXiv:2601.23022. Lung-Hao Lee, Liang-Chih Yu, Suge Wang, and Jian Liao. 2024. Overview of the SIGHAN 2024 shared task for Chinese dimensional aspect-based sentiment analysis. In Proceedings of the 10th SIGHAN Work-shop on Chinese Language Processing (SIGHAN-10) ,pages 165–174, Bangkok, Thailand. Association for Computational Linguistics. Ilya Loshchilov and Frank Hutter. 2019. Decoupled weight decay regularization. In International Confer-ence on Learning Representations .Haiyun Peng, Lu Xu, Lidong Bing, Fei Huang, Wei Lu, and Luo Si. 2020. Knowing what, how and why: A near complete solution for aspect-based sentiment analysis. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 34, pages 8600–8607. Maria Pontiki, Dimitris Galanis, Haris Papageorgiou, Ion Androutsopoulos, Suresh Manandhar, Moham-mad AL-Smadi, Mahmoud Al-Ayyoub, Yanyan Zhao, Bing Qin, Orphée De Clercq, Véronique Hoste, Marianna Apidianaki, Xavier Tannier, Na-talia Loukachevitch, Evgeniy Kotelnikov, Nuria Bel, Salud María Jiménez-Zafra, and Gül¸ sen Eryi˘ git. 2016. SemEval-2016 task 5: Aspect based sentiment analysis. In Proceedings of the 10th International Workshop on Semantic Evaluation (SemEval-2016) ,pages 19–30, San Diego, California. Association for Computational Linguistics. Maria Pontiki, Dimitris Galanis, Haris Papageorgiou, Suresh Manandhar, and Ion Androutsopoulos. 2015. SemEval-2015 task 12: Aspect based sentiment anal-ysis. In Proceedings of the 9th International Work-shop on Semantic Evaluation (SemEval 2015) , pages 486–495, Denver, Colorado. Association for Compu-tational Linguistics. Maria Pontiki, Dimitris Galanis, John Pavlopoulos, Har-ris Papageorgiou, Ion Androutsopoulos, and Suresh Manandhar. 2014. SemEval-2014 task 4: Aspect based sentiment analysis. In Proceedings of the 8th International Workshop on Semantic Evaluation (Se-mEval 2014) , pages 27–35, Dublin, Ireland. Associa-tion for Computational Linguistics. James A Russell. 1980. A circumplex model of af-fect. Journal of Personality and Social Psychology ,39(6):1161–1178. Liang-Chih Yu, Jonas Becker, Shamsuddeen Hassan Muhammad, Idris Abdulmumin, Lung-Hao Lee, Ying-Lung Lin, Jin Wang, Jan Philip Wahle, Terry Ruas, Alexander Panchenko, Ilseyar Alimova, Kai-Wei Chang, Lilian Wanzare, Nelson Odhiambo, Bela Gipp, and Saif M. Mohammad. 2026. SemEval-2026 task 3: Dimensional aspect-based sentiment analysis (DimABSA). In Proceedings of the 20th Interna-tional Workshop on Semantic Evaluation (SemEval-2026) . Association for Computational Linguistics. Chen Zhang, Qiuchi Li, Dawei Song, and Linqi Song. 2021. Aspect sentiment quad prediction as para-phrase generation. In Proceedings of the 2021 Con-ference on Empirical Methods in Natural Language Processing , pages 9209–9219. Wenxuan Zhang, Yue Deng, Bing Liu, Sinno Pan, and Lidong Bing. 2024. Sentiment analysis in the era of large language models: A reality check. In Find-ings of the Association for Computational Linguis-tics: NAACL 2024 , pages 3881–3906, Mexico City, Mexico. Association for Computational Linguistics. 
+
+6Wenxuan Zhang, Xin Li, Yang Deng, Lidong Bing, and Wai Lam. 2023. A survey on aspect-based senti-ment analysis: Tasks, methods, and challenges. IEEE Transactions on Knowledge and Data Engineering ,35(11):11019–11038. 
+
+A Prompt 
+
+The following prompt is used for all LLM-based comparison methods. It consists of a system prompt and a set of 6 few-shot examples. 
+
+A.1 System Prompt System Prompt 
+
+You are an expert in sentiment analysis. Your task is to predict Valence and Arousal scores for aspects in sentences. 
+
+Definitions: 
+
+• Valence : emotional positivity/negativity (1.0 = very negative, 5.0 = neutral, 9.0 = very positive) • Arousal : emotional intensity/excitement (1.0 = very calm/sluggish, 5.0 = moderate, 9.0 = very excited) 
+
+Output format: valence#arousal (e.g., 7.50#6.80) 
+
+A.2 Few-shot Examples Few-shot Examples 
+
+1. Text: “the food was absolutely amaz-ing!!” 
+
+Aspect: “food” 
+
+Answer: 8.50#8.25 2. Text: “but the staff was so horrible to us.” 
+
+Aspect: “staff” 
+
+Answer: 1.33#8.67 3. Text: “food was just average... if they lowered the prices just a bit, it would be a bigger draw.” 
+
+Aspect: “food” 
+
+Answer: 5.00#5.00 4. Text: “i love this macbook.” 
+
+Aspect: “macbook” 
+
+Answer: 7.10#6.90 5. Text: “horrible product.” 
+
+Aspect: “product” 
+
+Answer: 2.60#5.70 6. Text: “it has and does everything it should.” 
+
+Aspect: “NULL” 
+
+Answer: 5.67#5.50 
+
+B Prediction Examples 
+
+Table 6 shows selected test predictions. Near-exact cases match gold values closely; failure cases involve sarcasm or implicit negativity where the model predicts positive values.                               
+
+> Text (Aspect) Pred Gold
+> Near-exact predictions
+> “I enjoy real flavor, real fruits” ( fla-vor )V7.75 7.75 A7.75 7.75 “The keyboard is full size and the spacing . . . comfortable” ( keyboard )V6.99 7.00 A7.02 7.00 “We shared the big easy breakfast and it was okay” ( big easy break-fast )V6.49 6.50 A6.31 6.33 “The battery still lasts about 3.5 hours . . . ” ( battery )V5.99 6.00 A5.99 6.00
+> Failure cases
+> “I ordered a burger medium and got a charred, tasteless hockey puck” (burger )V4.03 1.38 A5.22 8.50 “My wife also had the pleasure of adding spoiled creamer” ( creamer )V6.80 1.67 A6.75 8.17 “I’m being generous by giving this restaurant 2 stars” ( restaurant )V7.08 2.17 A7.08 7.67
+
+Table 6: Selected test predictions. 
+
+C Error Distribution 
+
+Table 7 shows the distribution of per-instance RMSE V A errors on the test set, where each error is the Euclidean distance between predicted and gold VA points on the [1 , 9] scale. Over 94% of Chinese Finance predictions fall below 1.0 (accurate), while English datasets have 16–17% with error above 2.0 (large errors).                         
+
+> Lang Domain Median %<1.0 %>2.0
+> eng Laptop 0.87 55.6 16.9 eng Restaurant 0.78 60.1 16.2 zho Laptop 0.44 86.6 2.2 zho Restaurant 0.66 72.2 3.4 zho Finance 0.38 94.8 0.1
+
+Table 7: Per-instance RMSE V A error distribution on the test set. 
+
+7
