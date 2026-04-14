@@ -1,0 +1,185 @@
+Title: Dynamic Summary Generation for Interpretable Multimodal Depression Detection
+
+URL Source: https://arxiv.org/pdf/2604.11334v1
+
+Published Time: Tue, 14 Apr 2026 02:40:46 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+## DYNAMIC SUMMARY GENERATION FOR INTERPRETABLE MULTIMODAL DEPRESSION DETECTION 
+
+## Shiyu Teng 1, Jiaqing Liu 1, Hao Sun 1,2, Yu Li 1, Shurong Chai 1, Ruibo Hou 1, Tomoko Tateyama 3
+
+## Lanfen Lin 2, Yen-Wei Chen 1,∗
+
+1College of Information Science and Engineering, Ritsumeikan University, Shiga, Japan 
+
+2College of Computer Science and Technology, Zhejiang University, Hangzhou, China 
+
+3Faculty of Engineering, University of the Ryukyus, Japan 
+
+ABSTRACT 
+
+Depression remains widely underdiagnosed and undertreated because stigma and subjective symptom ratings hinder re-liable screening. To address this challenge, we propose a coarse-to-fine, multi-stage framework that leverages large language models (LLMs) for accurate and interpretable de-tection. The pipeline performs binary screening, five-class severity classification, and continuous regression. At each stage, an LLM produces progressively richer clinical sum-maries that guide a multimodal fusion module integrating text, audio, and video features, yielding predictions with transparent rationale. The system then consolidates all sum-maries into a concise, human-readable assessment report. Experiments on the E-DAIC and CMDC datasets show sig-nificant improvements over state-of-the-art baselines in both accuracy and interpretability. 
+
+Index Terms — Depression detection, Multimodal learn-ing, Large language model 
+
+1. INTRODUCTION 
+
+As a prevalent and severe mental disorder affecting hundreds of millions worldwide, the early, objective, and accurate as-sessment of depression is crucial for timely intervention [1]. However, traditional diagnostic methods, which rely on clini-cal interviews and self-report questionnaires, have limitations such as strong subjectivity and high resource consumption, making them difficult to apply for large-scale screening [2]. Therefore, exploring automated and scalable computational methods to assist in depression assessment has become a pressing research direction. Early computational pipelines learn directly from interview-derived multimodal signals (text, audio, video), as sketched in Fig. 1(a), and attempt to capture depression-related patterns from raw inputs [3, 4]. Yet these signals contain substantial noise and non-diagnostic content; without explicit guidance,       
+
+> *Corresponding Author: Yen-Wei Chen (chen@is.ritsumei.ac.jp) Data
+> Model Depression Score
+> (a) Traditional depression detection method [3].
+> Emotion Prompt Data
+> Model Depression Score
+> (b) LLM-Guided emotion prompt learning [6].
+> Summary Data
+> Model Depression Score
+> (c) LLM-Generated summary guided depression detection.
+
+Fig. 1 : An Overview of LLM-Driven Methods in Multimodal Depression Detection. models often struggle to isolate clinically salient features, un-dermining robustness. More recently, LLM-based “emotion prompt” methods (Fig. 1(b)) leverage the link between af-fect and depressive symptoms to extract emotional attributes that steer detection [5]. While beneficial, this line of work focuses narrowly on sentiment, overlooking additional clin-ical dimensions (e.g., potential causes), and thereby limits comprehensiveness. To address the limitations of existing methods, we pro-pose a novel LLM-Generated Summary Guided Depression Detection framework, with its core idea illustrated in Fig. 1(c). Our key innovation lies in a multi-stage, coarse-to-fine summary generation process. Instead of creating a single, static analysis, our framework instructs the LLM to gener-ate progressively more detailed summaries tailored to each stage of our hierarchical detection pipeline—from an initial analysis for binary classification to a more nuanced summary incorporating potential causes for fine-grained score regres-                    
+
+> arXiv:2604.11334v1 [cs.AI] 13 Apr 2026 Text �Emotion Analysis
+> �PHQ Aspect Analysis Audio Video
+> Model Text
+> �Emotion Analysis
+> �PHQ Aspect Analysis
+> �Potential Causes of Depression/Health Audio Video
+> Model Minimal/Mild/ …/Severe Text
+> �Emotion Analysis
+> �PHQ Aspect Analysis
+> �Potential Causes of Depression/Health Audio Video
+> Model
+> Textual tokens Visual tokens Acoustic tokens Trainable module Frozen module Report tokens
+> Summary
+> Qwen3 Embedding
+> Transformer Encoder
+> Transformer Encoder Multimodal Fusion Module MLP Depression Score
+> LLM
+> I‘m okay, alittle sleepy right now……
+> Qwen3 Embedding
+> Transformer Encoder 𝑯 𝑻 𝑯 𝑽 𝑯 𝑨 𝒉 𝒔
+> Depressed/ Nondepressed
+> (a) Mul �-Stage Summary Genera �on. (b) Summary-guided mul �modal fusion.
+> 123
+> Report 5-class Depression Level Binary Depression Level
+> 123
+> Depression Score
+
+Fig. 2 : The overview of our proposed method. sion. This dynamic, staged summary provides far more com-prehensive and context-aware guidance than a static ”emotion prompt.” By injecting this evolving summary as a guiding sig-nal, our model can more intelligently locate, correlate, and integrate subtle cues across all modalities, thereby achiev-ing a deeper understanding and more accurate assessment. Evaluations on the Extended Distress Analysis Interview Cor-pus (E-DAIC) [6] and Chinese Multimodal Depression Cor-pus (CMDC) [7] demonstrate that these improvements lead to more robust and accurate depression detection, outperforming current state-of-the-art methods. 
+
+2. METHOD 
+
+Figure 2 overviews our summary-augmented multimodal framework. The pipeline comprises three stages: binary screening (Stage 1), five-class severity classification (Stage 2), and continuous regression (Stage 3). At each stage, an LLM generates a concise text summary, which is embedded alongside raw text, audio, and video by dedicated encoders. A multimodal fusion module integrates these embeddings, and an MLP predictor outputs the stage-specific depression esti-mate. After Stage 3, the final continuous score is combined with all stage-wise LLM summaries to produce a clinically oriented report. 
+
+2.1. Multi-Stage Summary Generation 
+
+Figure 2(a) illustrates the three progressively granular stages. In Stage 1 (binary screening), a pretrained LLM (GPT-o3 [8]) is prompted to produce a brief summary focused on emo-tional state and symptoms related to the Patient Health Questionnaire-8 (PHQ-8) [9], a standard tool assessing de-pression across eight domains. We adopt o3 because it exhibits strong psychology-understanding performance on HealthBench [10], indicating clinically oriented comprehen-sion and suitability for our setting. This summary, together with audio and video features, is used to predict whether the individual is depressed or not. In Stage 2 (five-class clas-sification), the Stage 1 label is included in the prompt, and the LLM returns a more detailed summary that incorporates inferred potential causes of depression as well as indicators of mental well-being, facilitating five-level severity assignment. In Stage 3 (regression), the prompt requests a comprehensive clinical note that integrates emotional cues, inferred causes, and a detailed PHQ-8 aspect analysis; the LLM explicitly evaluates the user against each of the eight PHQ-8 domains, enabling prediction of a continuous depression score. This score is then combined with the stage-wise summaries to form a structured, human-readable report that provides an interpretable rationale for all predictions. 
+
+2.2. Summary-guided multimodal fusion 
+
+We use the Transformer [11] to extract audio and video fea-tures, while a pre-trained Qwen3 Embedding [12] model is employed to extract text and summary features. The extracted features can be mathematically represented as follows: 
+
+
+
+HT = Transformer (Qwen3Embedding (T )) ,
+
+hS = Qwen3Embedding (S) ,
+
+HA = Transformer (A) , HV = Transformer (V ) ,
+
+(1) where T ∈ RLt ×dt , S ∈ RLs×dt , A ∈ RLa×da , V ∈ RLv×dv de-note the input textual, summary, audio, and video data re-spectively, where dm is the embedding dimension, and Lm is the number of tokens in the input, m is modality. To enable joint fusion, we use a modality-specific MLP to project all embeddings into a unified dimension d.Given the modality-specific embeddings HT ∈ RLt ×d ,
+
+HA ∈ RLa×d , HV ∈ RLv×d , and the summary vector hS ∈ Rd ,our fusion module proceeds in three steps: report–guided gating, bidirectional cross–attention, and global aggregation. 
+
+1) Report–guided gating A lightweight MLP takes the summary token and produces modality–wise gate scalars 
+
+gT , gA, gV ∈ (0, 1):
+
+[gT , gA, gV ]⊤ = σ (WghS + bg) , (2) where Wg ∈ R3×d and bg ∈ R3 are trainable and σ (·) is the sigmoid function. The gated features are ˜HT = gT HT , ˜HA =
+
+gAHA, ˜HV = gV HV . We concatenate them to form Hcat =[ ˜HT ; ˜ HV ; ˜ HA] ∈ RL×d , where L = Lt + Lv + La.
+
+2) Bidirectional cross–attention and attention pooling 
+
+Two multi–head attention (MHA) blocks create reciprocal context: 
+
+z1 = MHA (q = hS, k = Hcat , v = Hcat ), (3) 
+
+z2 = MHA (q = Hcat , k = hS, v = hS), (4) with z1, z2 ∈ Rd . In parallel, we prepend a [CLS] token to 
+
+Hcat and pass it through a transformer encoder, obtaining a global representation HCLS ∈ Rd .
+
+3) Global aggregation The final multimodal embedding is the concatenation 
+
+Hfusion = [ hS; HCLS ; z1; z2] ∈ R4d , (5) which is fed to an MLP predictor to output the stage-specific depression target (binary label, five-class label, or continuous score). 
+
+2.3. Loss function 
+
+We adopt a stage-wise objective aligned with the three-stage pipeline: the two classification stages—binary screening (Stage 1) and five-class severity classification (Stage 2)—are optimized with cross-entropy (CE), while the continuous re-gression stage (Stage 3) is optimized with the Concordance Correlation Coefficient (CCC) loss [13]: 
+
+Lccc = 1 − 2 r s t sp
+
+s2 
+
+> t
+
++ s2 
+
+> p
+
++ ( mt − mp)2 , (6) where r denotes the Pearson correlation coefficient, st and sp
+
+represent the standard deviations, and mt and mp denote the means of the target ( t) and predicted ( p) values, respectively. 
+
+3. EXPERIMENTS 3.1. Datasets E-DAIC [6] is a standard multimodal benchmark dataset for computational psychiatry, released as part of AVEC 2019 [14]. This dataset consists of video, audio, and textual modalities, with accompanying annotations such as PHQ-8 scores [9], interview identifiers, depression classifications, and participant gender. E-DAIC includes 275 interview sam-ples, which are split into training (163), development (56), and test (56) sets. 
+
+CMDC [7] is a benchmark dataset consisting of 78 clini-cal interviews, each containing synchronized audio, text tran-scripts, and visual features. Participants include both patients with major depressive disorder and healthy controls. Inter-views follow a fixed twelve-question format aligned with the PHQ-9 scale. 
+
+3.2. Implementation details 
+
+Batch size is set to 24. Learning rates are 7 × 10 −4 for E-DAIC and 5 × 10 −4 for CMDC, decayed by a factor of 0.1 every 50 epochs. Training runs for 150 epochs. All experi-ments are conducted on two RTX5090 GPUs using PyTorch with the AdamW optimizer [15]. 
+
+3.3. Evaluation metrics 
+
+In our assessment of the model’s performance for depres-sion detection, we focus on different metrics for each dataset. For E-DAIC, we use the CCC [13] and Mean Absolute Er-ror (MAE). For CMDC, we use Root Mean Squared Error (RMSE) and MAE. 
+
+Table 1 : The results on the test set of E-DAIC [14] dataset. 
+
+↓: the lower the better; ↑: the higher the better. Method CCC ↑ MAE ↓
+
+AVEC2019 Baseline [14] 0.111 6.37 AFT [3] 0.443 5.66 Wu et al. [16] 0.451 5.44 Teng et al. [17] 0.466 5.21 TensorFormer [18] 0.493 5.13 MIMRL [19] 0.580 4.36 CubeMLP [20] 0.583 4.37 Van Steijn et al. [21] 0.62 -Yuan et al. [22] 0.676 3.98 EP [5] 0.688 3.89 GPT-o3 zero shot [8] 0.698 3.67 Ours 0.717 3.32 3.4. Comparison with State-of-the-art methods 
+
+Tables 1 and 2 compare our approach with recent methods on E-DAIC [6] and CMDC [7]. Relative to EP [5], which Table 2 : The results on the test set of CMDC [7] dataset. Method RMSE ↓ MAE ↓
+
+Bi-LSTM [7] 5.67 4.55 MulT [7] 5.61 4.32 PIE [23] 5.56 4.58 Ours 3.81 2.79 
+
+injects emotion prompts to guide prediction, our framework integrates multiple clinically relevant components—emotion, PHQ aspects, and potential causes—within a unified multi-modal pipeline. Although our generation module leverages GPT-o3 [8], the full model surpasses the GPT-o3 zero-shot baseline, yielding higher CCC and lower MAE on E-DAIC. On CMDC, it attains an RMSE of 3.81 and an MAE of 2.79. Jointly embedding emotion, PHQ-aspect, and causal infor-mation enables the model to capture a broader spectrum of depression-related cues, improving precision, robustness, and interpretability across both datasets. 
+
+3.5. Ablation study 
+
+We conduct three groups of ablations on the E-DAIC test set [14] to quantify the contribution of modalities, fusion modules, and summary composition. Table 3 isolates modality effects for text (T), audio (A), video (V), and the LLM-generated summary (S). Text alone is strongest among single modalities; audio and video contribute less in isolation. Adding the summary yields a marked gain, and fusing all four sources achieves the best performance, un-derscoring the benefit of holistic integration. Table 4 evaluates fusion components. Report-guided gating (Gate), bidirectional cross-attention (BCA), and atten-tion pooling (AP) provide incremental improvements, with all modules combined delivering the highest accuracy. This highlights the roles of adaptive weighting, cross-modal align-ment, and global aggregation. Table 5 examines the semantic richness of the LLM-generated summary across stages. Incorporating progres-sively richer clinical semantics from stage 1 to stage 3 consis-tently improves performance, aligning with the coarse-to-fine design. 
+
+Table 3: Ablation on modality contributions using E-DAIC [6]. “T”: text, “A”: audio, “V”: video, “S”: LLM-generated summary. T A V S CCC ↑ MAE ↓√ 0.577 4.05 √ 0.288 6.41 √ 0.323 5.76 √ 0.653 3.63 √ √ 0.595 3.97 √ √ √ 0.602 3.95 √ √ √ √ 0.717 3.32 Table 4 : Ablation on fusion modules for E-DAIC [6]. “Gate”: report-guided gating; “BCA”: bidirectional cross-attention; “AP”: attention pooling. Gate BCA AP CCC ↑ MAE ↓
+
+0.677 3.88 √ 0.688 3.84 √ √ 0.703 3.51 √ √ √ 0.717 3.32 Table 5 : Effect of summary composition across stages on E-DAIC [6]. Summary Composition CCC ↑ MAE ↓
+
+Stage 1 0.683 3.61 Stage 2 0.708 3.55 Stage 3 0.717 3.32 4. CONCLUSION 
+
+In this work, we proposed a novel summary-guided multi-modal depression detection framework to address the limita-tions of methods that rely on fragmented or narrowly-focused guidance. Our core innovation is a multi-stage, coarse-to-fine summary generation process that provides dynamic and holistic semantic guidance by integrating emotional cues, PHQ-related symptoms, and potential causal factors. Eval-uations on E-DAIC and CMDC datasets demonstrate that our approach significantly outperforms state-of-the-art meth-ods, showcasing its robustness and effectiveness in advancing comprehensive, clinically-aligned depression detection. 
+
+5. ACKNOWLEDGMENT 
+
+This work was supported in part by the Grant-in-Aid for Scientific Research from the Japanese Ministry of Edu-cation, Culture, Sports, Science and Technology (MEXT) under Grant No. 20KK0234; by JSPS KAKENHI Grant No. JP23K16909; by JST CREST (JPMJCR25T4) and JST BOOST (JPMJBS2428); and by the Natural Science Founda-tion of Zhejiang Province (Grant No. LZ22F020012). 
+
+6. COMPLIANCE WITH ETHICAL STANDRDS 
+
+This study is retrospective and uses human-subject data that are publicly available from the DAIC-WOZ database released by USC ICT and the Chinese Multimodal Depression Cor-pus released on IEEE DataPort. Ethical approval was not required as confirmed by the license attached with the open access data. 7. REFERENCES 
+
+[1] F. Cacheda, D. Fernandez, and F. J. Novoa et al., “Early detection of depression: social network analysis and random forest techniques,” Journal of Medical Internet Research , vol. 21, no. 6, pp. e12554, 2019. [2] J. J. Newson, D. Hunter, and T. C. Thiagarajan, “The heterogeneity of mental health assessment,” Frontiers in Psychiatry , vol. 11, pp. 76, 2020. [3] H. Sun, J. Liu, and S. Chai et al., “Multi-modal adaptive fusion transformer network for the estimation of depres-sion level,” Sensors , vol. 21, no. 14, pp. 4764, 2021. [4] S. Teng, S. Chai, and J. Liu et al., “A sentiment pre-trained text-guided multimodal cross-attention trans-former for improved depression detection,” in EMBC ,2024, pp. 1–4. [5] S. Teng, J. Liu, and H. Sun et al., “Enhanced multi-modal depression detection with emotion prompts,” in 
+
+ICASSP , 2025, pp. 1–5. [6] J. Gratch, R. Artstein, and G. Lucas et al., “The dis-tress analysis interview corpus of human and computer interviews,” in LREC , May 2014, pp. 3123–3128. [7] B. Zou, J. Han, and Y. Wang et al., “Semi-structural interview-based chinese multimodal depression corpus towards automatic preliminary screening of depressive disorders,” IEEE Transactions on Affective Computing ,vol. 14, no. 4, pp. 2823–2838, 2023. [8] J. Achiam, S. Adler, and S. Agarwal et al., “Gpt-4 tech-nical report,” arXiv preprint arXiv:2303.08774 , 2023. [9] K. Kroenke, T. W. Strine, and R. L. Spitzer et al., “The phq-8 as a measure of current depression in the general population,” Journal of Affective Disorders , vol. 114, no. 1-3, pp. 163–173, 2009. [10] R. K. Arora, J. Wei, and R. S. Hicks et al., “Health-bench: Evaluating large language models towards im-proved human health,” 2025. [11] A. Vaswani, N. Shazeer, and N. Parmar et al., “Attention is all you need,” in NeurIPS , I. Guyon, U. Von Luxburg, and S. Bengio et al., Eds. 2017, vol. 30, Curran Asso-ciates, Inc. [12] Y. Zhang, M. Li, and D. Long et al., “Qwen3 embed-ding: Advancing text embedding and reranking through foundation models,” 2025. [13] L. I and K. Lin, “A concordance correlation coefficient to evaluate reproducibility,” Biometrics , pp. 255–268, 1989. [14] F. Ringeval, B. Schuller, and M. Valstar et al., “Avec 2019 workshop and challenge: state-of-mind, detect-ing depression with ai, and cross-cultural affect recog-nition,” in AVEC , 2019, pp. 3–12. [15] I. Loshchilov and F. Hutter, “Decoupled weight decay regularization,” arXiv preprint arXiv:1711.05101 , 2017. [16] W. Wu, M. Wu, and K. Yu, “Climate and weather: In-specting depression detection via emotion recognition,” in ICASSP , 2022, pp. 6262–6266. [17] S. Teng, S. Chai, J. Liu, T. Tateyama, L. Lin, and Y.-W. Chen, “Multi-modal and multi-task depression detec-tion with sentiment assistance,” in ICCE , 2024, pp. 1–5. [18] H. Sun, Y.-W. Chen, and L. Lin et al., “Tensorformer: A tensor-based multimodal transformer for multimodal sentiment analysis and depression detection,” IEEE Transactions on Affective Computing , vol. 14, no. 4, pp. 2776–2786, 2023. [19] H. Sun, Z. Niu, and H. Wang et al., “Multimodal senti-ment analysis with mutual information-based disentan-gled representation learning,” IEEE Transactions on Af-fective Computing , pp. 1–12, 2025. [20] H. Sun, H. Wang, and J. Liu et al., “Cubemlp: An mlp-based model for multimodal sentiment analysis and de-pression estimation,” in ACM MM . 2022, p. 3722–3729, Association for Computing Machinery. [21] F. Van Steijn, G. Sogancioglu, and H. Kaya et al., “Text-based interpretable depression severity modeling via symptom predictions,” in ICMI , 2022, p. 139–147. [22] C. Yuan, Q. Xu, and Y. Luo et al., “Depression diagnosis and analysis via multimodal multi-order factor fusion,” 
+
+arXiv preprint arXiv:2301.00254 , 2022. [23] Y. Wu, Z. Liu, and J. Yuan et al., “Pie: A personalized information embedded model for text-based depression detection,” Information Processing & Management , vol. 61, no. 6, pp. 103830, 2024.

@@ -1,0 +1,522 @@
+Title: Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality
+
+URL Source: https://arxiv.org/pdf/2604.09711v1
+
+Published Time: Tue, 14 Apr 2026 00:05:34 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality 
+
+## Kai Qian 
+
+Soochow University China 
+
+## Weijie Shi 
+
+Hong Kong University of Science and Technology China 
+
+## Jiaqi WANG 
+
+Computer Science and Engineering, The Chinese University of Hong Kong China 
+
+## Mengze Li 
+
+The Hong Kong University of Science and Technology China 
+
+## Hao Chen 
+
+FiT, Tencent China 
+
+## Yue Cui 
+
+Alibaba Group China 
+
+## Hanghui Guo 
+
+School of Computer Science and Engineering, Southeast University China 
+
+## Ziyi Liu 
+
+Soochow University China 
+
+## Jia Zhu 
+
+School of Education, Zhejiang Normal University China 
+
+## Jiajie Xu 
+
+Soochow University China 
+
+## Abstract 
+
+Multimodal fake news detection (MFND) aims to verify news credi-bility by jointly exploiting textual and visual evidence. However, real-world news dissemination frequently suffers from missing modality due to deleted images, corrupted screenshots, and similar issues. Thus, robust detection in this scenario requires preserving strong verification ability for each modality, which is challenging in MFND due to insufficient learning of the low-contribution modality and scarce unimodal annotations. To address this issue, we propose Head-wise Modality Specialization within Multimodal Large Lan-guage Models (MLLMs) for robust MFND under missing modality. Specifically, we first systematically study attention heads in MLLMs and their relationship with performance under missing modality, showing that modality-critical heads serve as key carriers of uni-modal verification ability through their modality specialization. Based on this observation, to better preserve verification ability for the low-contribution modality, we introduce a head-wise special-ization mechanism that explicitly allocates these heads to different modalities and preserves their specialization through lower-bound attention constraints. Furthermore, to better exploit scarce uni-modal annotations, we propose a Unimodal Knowledge Retention strategy that prevents these heads from drifting away from the uni-modal knowledge learned from limited supervision. Experiments show that our method improves robustness under missing modality while preserving performance with full multimodal input. 
+
+## CCS Concepts 
+
+• Computing methodologies → Computer vision ; Information extraction .
+
+## Keywords 
+
+Multimodal Fake News Detection, Attention Head, Multimodal Large Language Model 
+
+## 1 Introduction 
+
+In recent years, fake news on social media has caused serious social harm, especially during major public events[ 29 ], political conflicts[ 6 ], and public health[ 21 ]. To curb its spread, automatic fake news detection[ 22 ] has become an important research problem. Existing studies have achieved substantial progress by modeling news content[ 5 ], user responses[ 23 ], and propagation structures[ 20 ]. Among them, multimodal fake news detection[ 24 ] has attracted in-creasing attention, since fake news on real-world platforms is often presented with both text and images, and cross-modal evidence[ 3 ]can provide richer cues for verification. Despite its promise, multimodal fake news detection is still largely developed under the favorable assumption that both modali-ties are available at inference time. In practice, however, real-world news dissemination frequently suffers from missing modality due to deleted images, corrupted screenshots, and similar issues. This makes robustness under missing modality a practically important yet still underexplored problem for multimodal fake news detection. This setting is particularly challenging for two reasons. 1) mul-timodal fake news often exhibits unequal modality contri-bution, yet existing methods mainly optimize overall multi-modal performance . As shown in Fig. 1, the model is encouraged to rely more on the high-contribution modality, while the low-contribution modality is insufficiently learned to support reliable verification on its own. This issue becomes particularly harmful when the dominant modality is missing at test time, often lead-ing to substantial performance degradation. 2) modality-specific unimodal annotations are usually scarce, making it difficult to build robust unimodal verification ability . In multimodal fake news datasets, annotations are typically provided for complete text-image news pairs[ 9], while unimodal annotations for text-only or image-only inputs are scarce or even unavailable. However, once one modality is missing, the model must rely on the remaining   
+
+> arXiv:2604.09711v1 [cs.CV] 8 Apr 2026 Kai Qian, Weijie Shi, Jiaqi WANG, Mengze Li, Hao Chen, Yue Cui, Hanghui Guo, Ziyi Liu, Jia Zhu, and Jiajie Xu High -contribution Text case
+> Fake
+> Missing Text
+> Missing Image
+> Fake
+> ... durian yield by a full 30%
+> compared to before ...
+> high -contribution Text
+> ... durian yield by a full 30%
+> compared to before...
+> Real
+
+Figure 1: Illustration of unequal modality contribution and veracity change under missing modality. 
+
+modality alone for verification. Without adequate unimodal super-vision, it is difficult for the model to learn reliable verification cues from text or image alone, which severely limits robustness under missing modality. A natural direction is to borrow ideas from general missing modality learning[ 36 ]. Existing methods mainly address missing modality through modality recovery, which reconstructs missing modalities[ 43 ] or latent representations[ 11 ] from available ones; through representation completion[ 19 ], which bridges modality gaps by aligning or completing representations across modalities; or through missing-aware model design[ 8][ 4], which adapts to varying modality availability through specialized fusion or archi-tecture design. However, these strategies may not be well suited to multimodal fake news detection. Recovery-based methods usu-ally treat the missing modality as incomplete information[ 44 ] of the original sample and aim to reconstruct it, but in fake news detection removing one modality may substantially change the semantics of the sample and even the basis for verification (see Fig. 1). Representation-completion methods similarly assume that the available modality can provide a reliable proxy for the miss-ing one[ 33 ], which is often too strong in this setting because the remaining unimodal content may no longer support the original multimodal judgment. Meanwhile, missing-aware architectures such as configuration-specific designs[ 40 ] typically require suffi-cient supervision for different modality combinations, which is difficult here because unimodal labels are scarce. Therefore, robust multimodal fake news detection under missing modality requires a task-specific solution. In this paper, we propose Head-wise Modality Specialization within Multimodal Large Language Models for robust fake news detection under missing modality. Our starting point is a systematic analysis of attention heads in MLLMs. We find that some heads exhibit clear modality specialization and serve as important car-riers of unimodal verification ability. However, compared with unimodal training, multimodal finetuning tends to make such spe-cialization more diffuse, which weakens the resulting unimodal verification pathway when one modality is absent. Based on this observation, we introduce a head-wise specialization mechanism that explicitly preserves modality-specific attention for selected heads through a lower-bound attention constraint. In addition, we propose a Unimodal Knowledge Retention strategy that shrinks updates on modality-critical heads when the current training stage does not match their modality, thereby reducing destructive drift of scarce unimodal knowledge. The whole framework is trained in a stage-wise manner with image-only, text-only, and multimodal updates. Our contributions are summarized as follows: 
+
+• We present a systematic study of attention heads in MLLMs for multimodal fake news detection under missing modality, and show that modality-critical heads are closely related to unimodal verification ability. 
+
+• We propose a simple and effective framework with Head-wise Modality Specialization and Unimodal Knowledge Re-tention to preserve modality-specific verification pathways under multimodal training and improve robustness when one modality is missing. 
+
+• Experiments on multimodal fake news detection bench-marks show that our method improves robustness under missing modality while preserving competitive performance under full multimodal input. 
+
+## 2 Related Work 2.1 Multimodal Fake News Detection 
+
+Multimodal fake news detection aims to verify news credibility by jointly modeling textual and visual information. Early studies[ 27 ]mainly adopted straightforward multimodal fusion by extracting text and image features separately and combining them for classifi-cation. Subsequent work moved beyond simple fusion and focused more on cross-modal interaction[ 39 ][ 41 ], introducing attention mechanisms[ 10 ][ 30 ], co-attention networks[ 37 ], shared embedding spaces[ 25 ], and consistency modeling[ 39 ] to better capture seman-tic alignment or discrepancy between text and images. More recent methods further incorporated external knowledge[ 7 ], visual entity reasoning[ 17 ], ambiguity-aware fusion[ 3 ], contrastive learning[ 12 ], and pretrained vision-language models[ 13 ] to improve multimodal representation learning and verification performance. Despite these advances, only a few studies have begun to address missing modality in multimodal fake news detection[ 43 ][ 46 ]. Most of them assume that the original multimodal sample and its missing-modality counterpart remain semantically consistent and share the same verification target. Under this assumption, they mainly adopt reconstruction-based methods[ 43 ] to recover the missing modality or complete the corresponding representation. However, this assumption is often too strong for fake news detection, because removing one modality may substantially change the evidence available for verification. Consequently, robustness under missing modality is still insufficiently studied in current multimodal fake news detection research. 
+
+## 2.2 Missing-Modality Multimodal Learning 
+
+Missing-modality multimodal learning[ 36 ] studies how to main-tain model performance when one or more modalities are un-available. Existing methods typically fall into three categories: modality recovery[ 35 ], which reconstructs missing modalities[ 34 ]or latent representations[ 18 ] from available ones; representation Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality 
+
+completion[ 15 ], which bridges modality gaps through shared la-tent spaces or cross-modal alignment; and missing-aware model design[ 16 ], which adapts to varying modality availability through specialized fusion or architecture design. However, these strategies may not be well suited to multimodal fake news detection. Recovery-based[ 42 ] approaches usually as-sume that removing one modality only makes the original sample incomplete, whereas in fake news detection, missing one modality may substantially change the meaning of the news and even its verification target. Representation-completion methods also rely on the assumption that the available modality can provide a reliable proxy for the missing one[ 33 ], which is often too strong when the remaining unimodal content no longer supports the original multi-modal judgment. Meanwhile, missing-aware architectures such as multi-branch or model-combination[ 36 ] methods typically require sufficient supervision for different modality configurations, which is difficult in fake news detection because unimodal credibility may differ from multimodal credibility and modality-specific unimodal annotations are usually scarce. 
+
+## 2.3 Attention Head Specialization in MLLMs 
+
+Attention head analysis[ 31 ] has been widely used to study how transformer models organize internal computation. Recent work[ 2 ]has extended this line of research to MLLMs and shown that pre-trained models contain heads with clear modality sensitivity, sug-gesting that visual and textual information is processed in a partially specialized manner at the head level. Existing studies, however, are mainly descriptive, with a primary focus on identifying and char-acterizing such modality-sensitive heads in pretrained or frozen models[ 45 ]. In comparison, less attention has been paid to how task finetuning reshapes the modality specialization of these critical heads. 
+
+## 3 Methodology 3.1 Problem Formulation 
+
+We study multimodal fake news detection (MFND), where a news instance consists of textual content 𝑥 𝑡 , visual content 𝑥 𝑣 , and a multimodal veracity label 𝑦 ∈ { 0, 1} indicating whether the news is real or fake. The multimodal training set is denoted as 
+
+D𝑚 = {( 𝑥 𝑡 𝑖 , 𝑥 𝑣 𝑖 , 𝑦 𝑖 )} 𝑁 𝑖 =1. (1) We further denote by 𝑦 𝑡 and 𝑦 𝑣 the veracity labels when only the textual modality or only the visual modality is observed, re-spectively. Accordingly, the complete modality-specific datasets are written as 
+
+D𝑡 = {( 𝑥 𝑡 𝑖 , 𝑦 𝑡 𝑖 )} 𝑁 𝑡 
+
+> 𝑖 =1
+
+, D𝑣 = {( 𝑥 𝑣 𝑖 , 𝑦 𝑣 𝑖 )} 𝑁 𝑣 
+
+> 𝑖 =1
+
+. (2) To explicitly consider the scarce unimodal supervision scenario, we further denote the corresponding limited unimodal labeled sub-sets by 
+
+˜D𝑡 = {( 𝑥 𝑡 𝑗 , 𝑦 𝑡 𝑗 )} ˜𝑁 𝑡 
+
+> 𝑗 =1
+
+, ˜D𝑣 = {( 𝑥 𝑣 𝑘 , 𝑦 𝑣 𝑘 )} ˜𝑁 𝑣 
+
+> 𝑘 =1
+
+, (3) where ˜𝑁 𝑡 ≪ 𝑁 𝑡 and ˜𝑁 𝑣 ≪ 𝑁 𝑣 .Formally, we learn a predictor 𝑓 (·) using multimodal supervision from D𝑚 together with scarce unimodal supervision from ˜D𝑡 and 
+
+˜D𝑣 . The objective is for 𝑓 to perform well on multimodal prediction 
+
+(𝑥 𝑡 , 𝑥 𝑣 ) → 𝑦 , while remaining robust when one modality is absent, 
+
+Table 1: Summary statistics of head-level modality allocation under different training settings. All statistics are computed on the top-50 heads.                             
+
+> Setting Ov. Jac. Mean(ov) Med.(ov) B→M (Img) 0.42 0.27 +0.260 +0.260 B→M (Txt) 0.40 0.25 +0.212 +0.177 B→I (Img) 0.30 0.18 +0.403 +0.449 B→T (Txt) 0.44 0.28 +0.186 +0.156 M→I (Img) 0.52 0.35 +0.131 +0.132 M→T (Txt) 0.54 0.37 +0.022 -0.004
+
+i.e., under text-only prediction 𝑥 𝑡 →𝑦 𝑡 and image-only prediction 
+
+𝑥 𝑣 →𝑦 𝑣 .For clarity, the terms text-only SFT , image-only SFT , and multi-modal SFT used later in the paper refer to finetuning on the com-plete datasets D𝑡 , D𝑣 , and D𝑚 , respectively. They should not be confused with the scarce unimodal subsets ˜D𝑡 and ˜D𝑣 used in our main setting. 
+
+## 3.2 Preliminary Analysis 
+
+To motivate our method, we first analyze how head-level modality specialization emerges and evolves in MLLMs. We begin by quanti-fying how each attention head allocates attention across different token groups, then validate whether the top-ranked modality heads are functionally important for unimodal prediction, and finally summarize the key findings that motivate our design. 
+
+3.2.1 Measuring Head-Level Modality Allocation. We quantify head-level modality allocation by measuring how each attention head dis-tributes attention across token groups when predicting the veracity label. Given an instruction-formatted multimodal input, the visual content 𝑥 𝑣 and textual content 𝑥 𝑡 are inserted into the prompt tem-plate, yielding a composed input sequence with instruction, image, and text tokens at known positions. We denote the corresponding token index sets by Gins , Gimg , and Gtext .MFND is cast as generative classification, where the model pre-dicts the first answer token (e.g., real or fake ) conditioned on the input prompt. We therefore probe each head using the query at the final input position, denoted by 𝑞 ∗, which predicts the first generated label token. For head (ℓ, ℎ ) with attention matrix A(ℓ,ℎ ) ,we define its per-sample attention share over each token group as 
+
+𝑚 (ℓ,ℎ ) 
+
+> 𝑔
+
+(X) =∑︁  
+
+> 𝑗 ∈ G 𝑔
+
+A(ℓ,ℎ ) 
+
+> 𝑞 ∗,𝑗
+
+(X), 𝑔 ∈ { ins , img , text }, (4) where X is the composed input sequence and the three shares sum to 1. To obtain a dataset-level measure of modality allocation, we average the above quantities over samples: 
+
+𝑀 (ℓ,ℎ ) 
+
+> 𝑔
+
+= EX∼D 
+
+𝑚 (ℓ,ℎ ) 
+
+> 𝑔
+
+(X), 𝑔 ∈ { ins , img , text }. (5) We use 𝑀 (ℓ,ℎ ) 
+
+> img
+
+and 𝑀 (ℓ,ℎ ) 
+
+> text
+
+as the image- and text-allocation scores of head (ℓ, ℎ ), respectively, and rank all heads globally according to these scores. The resulting top-𝐾 ranked heads are used in the following analysis. Kai Qian, Weijie Shi, Jiaqi WANG, Mengze Li, Hao Chen, Yue Cui, Hanghui Guo, Ziyi Liu, Jia Zhu, and Jiajie Xu Text attention preservation:          
+
+> Head -wise Modality Specialization
+> Unconstrained heads:
+> Image -head gradient shrinking:
+> Unimodal Knowledge Retention
+> Regular update:
+> γ
+> Forward
+> Loss ②
+> Backward
+> Stage 2: Text -only Training
+> τ
+> Text attention preservation:
+> Head -wise Modality Specialization
+> Unconstrained heads:
+> Text -head gradient shrinking:
+> Unimodal Knowledge Retention
+> Regular update:
+> γ
+> Forward
+> Loss ③
+> Stage 3: Multimodal Training
+> τ
+> Image attention preservation: τ
+> Image -head gradient shrinking: γ
+> Backward
+> Pretrained
+> MLLM
+> Multimodal training data
+> Top -K
+> Head
+> Filter
+> Stage 2
+> Next epoch
+
+(a)  Modality head identification 
+
+> Input
+> Limited Image -only batch
+> Limited Text -only batch
+> Multimodal batch
+> Dataset -level attention
+> allocation
+
+(b)  stage -wise training loop          
+
+> Rank
+> Attention head
+> Image head
+> Text head
+> Image related
+> Text related
+> Gradient related
+> Image Attention Share
+> Text Attention Share
+> Image Attention Ranking
+> Text Attention Ranking
+> Image heads
+> Text heads
+> Current
+> MLLM
+> Modality -
+> head
+> assignments
+> Head -wise Modality Specialization
+> Unconstrained heads
+> Text -head gradient shrinking
+> Unimodal Knowledge Retention
+> Regular update
+> ×
+> γ
+> γgg
+> Forward
+> Loss ①
+> Backward
+> Stage 1: Image -only Training
+> Image attention preservation
+> Lower
+> bound
+> τ
+> Stage 3
+> Stage 1
+> Save
+> Modality -head
+> assignments
+> Input
+> Stage -wise objectives
+> ①Image -only classification + image attention constraint
+> ②Text -only classification + text attention constraint
+> ③Multimodal classification + dual attention constraints
+
+Figure 2: Overview of the proposed framework. (a) Modality head identification. We first run the pretrained MLLM on multimodal training data, compute image and text attention shares for all heads, rank them by modality allocation, and obtain the selected image and text head assignments used in later training. (b) Stage-wise training loop. Each epoch takes the current MLLM together with the modality-head assignments and performs three stages, namely image-only training, text-only training, and multimodal training. In each stage, Head-wise Modality Specialization applies modality-specific lower-bound constraints to the selected heads, while Unimodal Knowledge Retention shrinks updates on mismatched modality-specific heads. 0 10 20 30 40 50 75 100         
+
+> Masked heads
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> Macro F1
+> (a) Text side
+> 010 20 30 40 50 75 100
+> Masked heads
+> 0.4
+> 0.5
+> 0.6
+> 0.7
+> 0.8
+> Macro F1
+> (b) Image side
+> Critical heads Random heads
+
+Figure 3: Head masking analysis on DGM4. For each modality, we progressively mask the top-𝐾 ranked heads identified by modality allocation and compare the resulting unimodal per-formance drop with masking the same number of randomly selected heads. Results are reported on a fixed 5k subset of the test set. 
+
+3.2.2 Validating Modality-Critical Heads. As shown in Fig. 3, mask-ing the ranked heads leads to a much earlier and larger drop in macro F1 than masking random heads for both text and image. This gap is especially clear on the text side, where performance deteriorates sharply once the top-ranked text heads are removed. These results show that the heads identified by modality allocation are not merely associated with a modality at the attention level, but are functionally important for verification under that modality. We therefore refer to them as modality-critical heads in the following sections. 
+
+3.2.3 Key Findings. Based on the analysis above, we obtain two key findings. 
+
+Finding 1. Pretrained MLLMs already contain identifiable modality-critical heads, and training further amplifies such head-level modality specialization. Compared with the pretrained model, trained models exhibit substantially stronger modality allocation in top-ranked heads for both text and image. This trend can be seen qualitatively from the head-layer heatmaps in Fig. 4, where multimodal finetun-ing activates much stronger modality-related head responses than the pretrained model for both image and text. The same pattern is also reflected in the ranked attention-share curves in Fig. 6, where both multimodal and unimodal finetuning consistently dominate the pretrained model. Quantitatively, Table 1 summarizes the top-50 Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality    
+
+> (a) Base (IMG share) (b) Multi-SFT (IMG share) (c) Base (TXT share) (d) Multi-SFT (TXT share)
+
+Figure 4: Head-layer attention-share heatmaps comparing the pretrained model and multimodal finetuning. (a) and (b) show image attention share before and after multimodal finetuning, respectively; (c) and (d) show the corresponding text attention share. Compared with the pretrained model, multimodal finetuning activates substantially stronger modality-related head responses for both image and text.    
+
+> (a) Image-only SFT (IMG share) (b) Multi-SFT (IMG share) (c) Text-only SFT (TXT share) (d) Multi-SFT (TXT share)
+
+Figure 5: Head-layer attention-share heatmaps comparing unimodal and multimodal finetuning. (a) and (b) compare image-side specialization under image-only and multimodal finetuning, respectively; (c) and (d) compare text-side specialization under text-only and multimodal finetuning, respectively. In both modalities, unimodal finetuning shows more concentrated high-response heads, whereas multimodal finetuning exhibits a comparatively broader and more diffuse specialization pattern. 
+
+head statistics, where Ov. and Jac. measure the overlap between two top-50 head sets, and Mean(ov) and Med.(ov) summarize the alloca-tion change on the overlapping heads only. The table shows that finetuning increases the modality allocation strength of top-ranked heads relative to the pretrained model for both image and text. This indicates that modality-relevant head structures are already observable before training and can be further strengthened by task supervision, making pretrained top-ranked heads a meaningful prior for subsequent specialization. 
+
+Finding 2. Compared with unimodal training, multimodal train-ing yields a more diffuse and less concentrated modality-specialized head pattern. Although multimodal training also strengthens modality-specialized heads relative to the pretrained model, its resulting specialization pattern is less concentrated than that produced by unimodal training. This can be seen qualitatively from Fig. 5, where unimodal training forms sharper and more localized high-response heads, while multimodal training shows a broader and more diffuse distribution. The same trend is reflected in Fig. 6, where image-only and text-only training produce consistently higher ranked attention-share curves than multimodal training. Quantitative com-parisons in Table 1 further support this trend. These results suggest that cross-modal interaction tends to dilute modality-specific spe-cialization during multimodal training. Together, these findings suggest that pretrained modality-critical heads provide a useful prior, but conventional multimodal training does not naturally preserve sufficiently sharp modality-specific verification pathways. This motivates us to explicitly preserve such head-level modality specialization during multimodal training. 
+
+## 3.3 Head-wise Modality Specialization 
+
+The preliminary analysis shows that pretrained MLLMs already contain identifiable modality-relevant head structures, and training further amplifies such head-level modality specialization. However, compared with unimodal training, conventional multimodal train-ing tends to yield a more diffuse and less concentrated specialization pattern. Based on this observation, we explicitly preserve modality specialization at the head level using the selected image and text heads identified from the pretrained model. 
+
+Identifying modality-critical heads. Before finetuning, we first run inference on the training data using the pretrained model and compute the head-level modality allocation scores defined in Sec. 3.2. According to the global ranking of 𝑀 (ℓ,ℎ ) 
+
+> img
+
+and 𝑀 (ℓ,ℎ ) 
+
+> text
+
+, we select the top-𝐾 image-allocation heads and top-𝐾 text-allocation heads as the image-critical and text-critical head sets: 
+
+Himg = Top -𝐾  {𝑀 (ℓ,ℎ ) 
+
+> img
+
+}ℓ,ℎ 
+
+, Htext = Top -𝐾  {𝑀 (ℓ,ℎ ) 
+
+> text
+
+}ℓ,ℎ 
+
+. (6) Kai Qian, Weijie Shi, Jiaqi WANG, Mengze Li, Hao Chen, Yue Cui, Hanghui Guo, Ziyi Liu, Jia Zhu, and Jiajie Xu  
+
+> (a) Image modality (b) Text modality
+
+Figure 6: Ranked attention-share distributions of top-ranked heads under different training settings. (a) Image modality; (b) text modality. Finetuning strengthens modality-related top-ranked heads relative to the pretrained model, while unimodal finetuning yields a more concentrated distribution than multimodal finetuning, indicating a less diffuse specialization pattern. 
+
+As shown in Sec. 3.2, pretrained MLLMs already contain identifiable modality-critical heads, and downstream training further amplifies such specialization. We therefore use the pretrained top-𝐾 image and text heads as the critical-head assignments in the subsequent training process. 
+
+Lower-bound attention constraint. Given the reference head sets 
+
+Himg and Htext , our goal is to preserve their modality specializa-tion during finetuning. Instead of forcing exact preservation of pretrained attention patterns or completely isolating these heads from cross-modal interaction, we only require them to maintain a minimum degree of attention allocation to their corresponding modality. For an input X, we use the image and text attention shares 
+
+𝑚 (ℓ,ℎ ) 
+
+> img
+
+(X) and 𝑚 (ℓ,ℎ ) 
+
+> text
+
+(X) defined in Sec. 3.2.1. We introduce a thresh-old 𝜏 ∈ ( 0, 1) and impose the following lower-bound constraint on the two reference head sets: 
+
+Llb img = 1
+
+|H img |∑︁ (ℓ,ℎ ) ∈ H img 
+
+max  0, 𝜏 − 𝑚 (ℓ,ℎ ) 
+
+> img
+
+(X), (7) 
+
+Llb text = 1
+
+|H text |∑︁ (ℓ,ℎ ) ∈ H text 
+
+max  0, 𝜏 − 𝑚 (ℓ,ℎ ) 
+
+> text
+
+(X). (8) The overall specialization loss is then defined as 
+
+Llb = Llb img + L lb text . (9) This design preserves head-wise modality specialization in a soft manner. On the one hand, it prevents modality-critical heads from being overly diluted during multimodal training. On the other hand, it still allows the model to adapt to downstream supervision without enforcing rigid head identity matching or hard modality isolation. In this way, the model is encouraged to retain clearer and more stable modality-specific verification pathways for both text and image. 
+
+## 3.4 Unimodal Knowledge Retention 
+
+Besides preserving attention-level specialization, we further pre-vent modality-critical heads from drifting away from unimodal knowledge during training. This is particularly important in our setting, where modality-specific unimodal annotations are scarce and the knowledge learned from them can be easily overwritten by subsequent updates from other training stages. To this end, we introduce a gradient-based Unimodal Knowledge Retention strategy. Rather than adding another auxiliary loss, UKR is implemented by directly shrinking gradients on the parameters associated with modality-critical heads. Let 𝑠 ∈ { img , text , multi }
+
+denote the current training stage, corresponding to image-only, text-only, and multimodal training, respectively. Let g(ℓ,ℎ ) denote the gradient associated with head (ℓ, ℎ ) in the current update step, and let 𝛾 ∈ [ 0, 1] be a gradient shrinking factor. We modify gradients as 
+
+˜g(ℓ,ℎ ) =
+
+
+
+𝛾 g(ℓ,ℎ ) , (ℓ, ℎ ) ∈ H img and 𝑠 ≠ img ,𝛾 g(ℓ,ℎ ) , (ℓ, ℎ ) ∈ H text and 𝑠 ≠ text ,
+
+g(ℓ,ℎ ) , otherwise .
+
+(10) This design yields the following stage-dependent behavior. In the image-only stage, text-critical heads are protected so that text-side unimodal knowledge is not overwritten by image-only updates. In the text-only stage, image-critical heads are protected for the symmetric reason. In the multimodal stage, both image-critical and text-critical heads are protected, so that multimodal adaptation does not excessively wash out the modality-specific structures identified from scarce unimodal supervision. In implementation, this head-wise gradient shrinking is applied only to the self-attention projections, specifically the LoRA param-eters of 𝑞 proj and 𝑜 proj in each language-model layer. We do not apply the same operation to 𝑘 proj or 𝑣 proj , because under grouped KV multiple query heads share the same key and value projections, whereas our critical-head assignments are defined at the query-head level. For each layer, the gradients of the corresponding LoRA matrices are reshaped into head-wise blocks, and the blocks asso-ciated with protected heads are multiplied by 𝛾 . Therefore, 𝛾 = 0
+
+corresponds to complete freezing of the protected heads, while 
+
+𝛾 ∈ ( 0, 1) performs partial shrinking. In this way, UKR reduces destructive drift on modality-critical heads while still allowing the rest of the model to adapt to the current training stage. 
+
+## 3.5 Training Objective 
+
+Our training proceeds in a stage-wise manner within each epoch. At each epoch, the model takes the current MLLM together with Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality 
+
+the fixed critical-head assignments and performs three stages in sequence, namely image-only training, text-only training, and mul-timodal training. Specifically, let L𝑣 denote the classification loss on image-only samples from D𝑣 , let L𝑡 denote the classification loss on text-only samples from D𝑡 , and let L𝑚 denote the classification loss on multimodal samples from D𝑚 . The stage-dependent task loss is defined as 
+
+L (𝑠 ) 
+
+> task
+
+=
+
+
+
+L𝑣 , 𝑠 = img ,
+
+L𝑡 , 𝑠 = text ,
+
+L𝑚 , 𝑠 = multi .
+
+(11) The lower-bound specialization loss is also stage-dependent. In the image-only stage, only the selected image-critical heads are constrained; in the text-only stage, only the selected text-critical heads are constrained; and in the multimodal stage, both head sets are constrained. The overall objective at stage 𝑠 is therefore 
+
+L (𝑠 ) = L (𝑠 ) 
+
+> task
+
++ 𝜆 lb L (𝑠 ) 
+
+> lb
+
+, (12) where 𝜆 lb is a balancing coefficient. 
+
+## 4 Experiments 4.1 Experimental Setup 
+
+4.1.1 Datasets. We conduct experiments on two multimodal fake news detection benchmarks, Weibo[ 14 ] and DGM4[ 26 ]. Each sam-ple consists of textual content, visual content, and a multimodal veracity label. We evaluate robustness under missing modality by testing the model in two additional settings, namely text-only in-ference and image-only inference. The two benchmarks play complementary roles. Weibo is a medium-scale multimodal fake news dataset with 7,532 training samples and about 1,995 test samples. Although its class distri-bution is nearly balanced, it exhibits strong modality imbalance in practice, with text being much more informative than image, making it suitable for testing whether a method can preserve the weaker modality. Since Weibo does not provide unimodal labels, we manually annotate 100 training samples and 180 test samples for the image-only and text-only settings. During annotation, if the available unimodal content does not itself contain fake information, we label it as real; otherwise we label it as fake. For Weibo, the image-only and text-only results are reported on the corresponding 180 manually annotated unimodal test samples rather than on the full multimodal test split. DGM4, in contrast, is a large-scale multimodal manipulation dataset containing about 230K image-text pairs. We adapt it to our binary setting by assigning the manipulated modality as fake for the corresponding unimodal label while retaining the original multimodal label for the multimodal setting. This gives complete unimodal labels, making it possible to simulate scarce unimodal supervision in a controlled manner. Based on this property, we construct three supervision budgets, namely 0.25%, 1%, and 5%. Due to computational cost, we randomly sample 40k training examples from DGM4, while keeping the validation and test sets unchanged for fair comparison. Unless otherwise stated, the DGM4 results reported in the main experiments are evaluated on this unchanged 
+
+Table 2: Statistics of the datasets and evaluation settings.             
+
+> Dataset Weibo DGM4 Language Chinese English Full test total 1,995 50,705 Full test (real / fake) 996 / 999 16,876 / 33,829 Image-only test (real / fake) 134 / 46 23,801 / 26,904 Text-only test (real / fake) 106 / 74 36,312 / 14,393
+
+full test split after binary adaptation. Detailed dataset statistics are reported in Table 2. 
+
+4.1.2 Evaluation Settings. We evaluate all methods under three inference settings: (1) Multimodal , where both text and image are available; (2) Text-only , where the image modality is missing; and (3) Image-only , where the textual modality is missing. The multimodal setting evaluates standard MFND performance, while the two unimodal settings evaluate robustness under missing modality. Since the class distributions vary across datasets and eval-uation settings, especially in the unimodal cases (see Table 2), we use macro F1 as the main evaluation metric and focus in particular on the text-only and image-only results. 
+
+4.1.3 Baselines. We compare our method with three groups of baselines. (1) Conventional MFND methods. We include repre-sentative non MLLM multimodal fake news detection methods, in-cluding MTS[ 28 ] and COOLANT[ 32 ]. (2) Naive finetuning with the same backbone. We build a strong MLLM baseline on the same Qwen3-VL-2B-Instruct[ 1] backbone as our method. This base-line, denoted as Qwen + SFT , uses the same multimodal data and the same scarce unimodal samples as our method, but removes Head wise Modality Specialization and Unimodal Knowledge Re-tention. (3) Adapted missing modality baseline. We further adapt MoMKE[ 38 ] to our benchmark and report its results under the same multimodal, image only, and text only evaluation settings. 
+
+4.1.4 Implementation Details. We instantiate our method on top of the Qwen3-VL-2B-Instruct backbone and cast MFND as a gener-ative classification task. All MLLM-based methods are trained with LoRA under the same prompt format, data split, and evaluation pro-tocol. The prompt asks the model to judge the news and explicitly ends with “Please reply with: Real/Fake.”, so that the first generated answer token serves as the prediction target. All head analyses and robustness evaluations are performed under this fixed prompting protocol. Following Fig. 2(a), we first identify modality-head as-signments from the pretrained model. Training then follows the stage-wise loop in Fig. 2(b), where each epoch contains image-only, text-only, and multimodal stages. All models are trained for five epochs with batch size 24. We use AdamW with learning rates 
+
+1 × 10 −4 on Weibo and 5 × 10 −5 on DGM4. We set 𝐾 = 50 and 
+
+𝜆 lb = 1 in all experiments. On Weibo, the selected setting is 𝜏 = 0.4
+
+and 𝛾 = 0.7. On DGM4, we fix 𝜏 = 0.2, while 𝛾 is searched from 
+
+{0.2, 0.4, 0.6}.Kai Qian, Weijie Shi, Jiaqi WANG, Mengze Li, Hao Chen, Yue Cui, Hanghui Guo, Ziyi Liu, Jia Zhu, and Jiajie Xu 
+
+Table 3: Main results in terms of macro F1 under full and missing modality inference. For Weibo, the scarce unimodal supervision budget is 100 samples. For DGM4, we report results under three supervision budgets together with their average. The best result in each column is marked in bold, and the second best is underlined.                                                                                               
+
+> Method Weibo DGM4 (0.25%) DGM4 (1%) DGM4 (5%) Avg. DGM4 multi img text multi img text multi img text multi img text multi img text MTS 0.8951 0.4268 0.8543 0.6652 0.6585 0.6635 0.6594 0.6868 0.6272 0.6605 0.6900 0.6500 0.6617 0.6784 0.6469 COOLANT 0.8992 0.2035 0.8755 0.5530 0.5450 0.4393 0.5413 0.5212 0.3401 0.5406 0.5797 0.5197 0.5449 0.5486 0.4330 MoMKE 0.8471 0.5592 0.8374 0.5777 0.5329 0.5892 0.5792 0.5424 0.5818 0.5830 0.5649 0.5883 0.5800 0.5467 0.5864 Qwen + SFT 0.9429 0.3187 0.8924 0.7925 0.7762 0.6533 0.7947 0.7823 0.6588 0.7919 0.7772 0.6669 0.7930 0.7786 0.6597 Ours 0.9353 0.6063 0.8820 0.7966 0.7860 0.6529 0.7914 0.7868 0.6613 0.7934 0.7874 0.6682 0.7938 0.7867 0.6608
+
+## 4.2 Main Results 
+
+4.2.1 Overall Results under Full and Missing Modality. Table 3 shows that our method substantially improves the weaker image-only setting on Weibo and yields stable gains on DGM4, while preserving competitive multimodal performance. On Weibo, where the visual modality is much weaker than text, image-only macro F1 improves from 0.3187 to 0.6063 relative to naive Qwen finetun-ing and also exceeds both conventional MFND baselines and the adapted missing-modality baseline MoMKE. On DGM4, gains over Qwen + SFT are smaller but remain stable across supervision bud-gets. Averaged over the three DGM4 budgets, our method achieves a better trade off between robustness and performance than Qwen + SFT. The unimodal settings are improved, while multimodal per-formance remains effectively unchanged. Moreover, the unimodal performance of our method generally increases with the unimodal supervision budget on DGM4, suggesting that the framework can effectively benefit from additional unimodal supervision. Robustness is particularly clear on Weibo. The gap from multi-modal inference to image-only inference decreases from 0.6242 un-der naive Qwen finetuning to 0.3290 under our method, indicating a much more stable verification pathway for the weaker modality. DGM4 further shows that the method remains stable across all three unimodal supervision budgets, with consistent image-only gains at 0.25%, 1%, and 5%. 
+
+## 4.3 Ablation Study 
+
+We next examine the contribution of each component in our frame-work. All ablations are conducted on DGM4 and averaged over the three unimodal supervision budgets, because DGM4 provides complete unimodal labels and therefore offers a more controlled setting for component analysis. Table 4 shows three main observations. First, the identified modality-critical heads are essential. Replacing them with non-critical ones causes a clear drop across all settings, with multimodal, image-only, and text-only macro F1 decreasing from 0.7938, 0.7867, and 0.6608 to 0.7561, 0.7558, and 0.6388, respectively. This confirms that the gains of our method do not come from applying the same constraints to an arbitrary head set, but from the identified critical heads themselves. Second, HMS and UKR play different roles. Removing HMS causes the most obvious degradation on text, with the average text-only macro F1 dropping from 0.6608 to 0.6430, which suggests that explicit head-level specialization is important for preserving 
+
+Table 4: Ablation results on DGM4 in terms of macro F1, averaged over the three unimodal supervision budgets.                   
+
+> Model Variant multi img text Ours 0.7938 0.7867 0.6608
+> w/o critical heads 0.7560 0.7558 0.6388 w/o HMS 0.7934 0.7833 0.6430 w/o UKR 0.7891 0.7880 0.6514 w/o HMS & UKR 0.7930 0.7786 0.6597
+
+stable modality-specific behavior during stage-wise training. Re-moving UKR yields the highest image-only result, but noticeably reduces multimodal and text performance, indicating that gradient-level protection is important for preventing the model from drifting too far toward one modality during training. Overall, the full model is not the best on every individual metric, but it achieves the best overall balance across multimodal, image-only, and text-only settings. This is consistent with our design goal: HMS strengthens modality-specific specialization, while UKR helps preserve unimodal knowledge and maintain stable performance across different inference conditions. 
+
+## 4.4 Sensitivity Analysis 
+
+We further analyze the sensitivity of our method to two key hy-perparameters, namely the HMS threshold 𝜏 and the UKR factor 
+
+𝛾 . Figure 7 reports the averaged DGM4 results. For 𝜏 , we compare two representative settings in the HMS-only variant. The results show that changing 𝜏 from 0.1 to 0.2 leads to only small differences: a smaller threshold slightly favors multimodal and image-only performance, while a larger threshold slightly improves text-only performance. This suggests that the method is not highly sensitive to the exact threshold value within a reasonable range. For 𝛾 , we fix 𝜏 = 0.2 and vary the UKR factor in the full model. The multimodal and image-only results remain relatively stable across a broad range of values, while the text-only result shows moderate variation and reaches its best region around medium settings. Overall, these results indicate that the proposed method is reasonably robust to hyperparameter choice, and that moderate preservation strength provides a good balance between multimodal adaptation and missing-modality robustness. Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality 0.1 0.2           
+
+> HMS threshold
+> 0.65
+> 0.70
+> 0.75
+> 0.80
+> Macro F1
+> (a) Effect of
+> 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+> UKR factor
+> 0.65
+> 0.70
+> 0.75
+> Macro F1
+> (b) Effect of
+> Multimodal Image only Text only
+
+Figure 7: Sensitivity analysis on DGM4. (a) Effect of 𝜏 . (b) Effect of 𝛾 with 𝜏 = 0.2. Results are averaged over the three unimodal supervision budgets. 
+
+## 5 Conclusion 
+
+We studied multimodal fake news detection under missing modal-ity and showed that conventional multimodal finetuning tends to weaken modality-specific verification pathways, especially for the weaker modality. Based on head-level analysis, we proposed a simple framework with Head-wise Modality Specialization and Uni-modal Knowledge Retention to preserve modality-critical pathways during training. Experiments on Weibo and DGM4 showed that the proposed method improves robustness under missing modality while maintaining competitive multimodal performance. These re-sults suggest that preserving modality-critical head structures is a promising direction for robust multimodal fake news detection. Kai Qian, Weijie Shi, Jiaqi WANG, Mengze Li, Hao Chen, Yue Cui, Hanghui Guo, Ziyi Liu, Jia Zhu, and Jiajie Xu 
+
+## References 
+
+[1] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, et al . 2025. Qwen3-vl technical report. arXiv preprint arXiv:2511.21631 (2025). [2] Jing Bi, Junjia Guo, Yunlong Tang, Lianggong Bruce Wen, Zhang Liu, Bingjie Wang, and Chenliang Xu. 2025. Unveiling visual perception in language models: An attention head analysis approach. In Proceedings of the Computer Vision and Pattern Recognition Conference . 4135–4144. [3] Yixuan Chen, Dongsheng Li, Peng Zhang, Jie Sui, Qin Lv, Lu Tun, and Li Shang. 2022. Cross-modal ambiguity learning for multimodal fake news detection. In 
+
+Proceedings of the ACM web conference 2022 . 2897–2905. [4] Yi-Ting Chen, Jinghao Shi, Zelin Ye, Christoph Mertz, Deva Ramanan, and Shu Kong. 2022. Multimodal object detection via probabilistic ensembling. In Euro-pean Conference on Computer Vision . Springer, 139–158. [5] Marco L Della Vedova, Eugenio Tacchini, Stefano Moret, Gabriele Ballarin, Mas-simo DiPierro, and Luca De Alfaro. 2018. Automatic online fake news detection combining content and social signals. In 2018 22nd conference of open innovations association (FRUCT) . IEEE, 272–279. [6] Marc Fisher, John Woodrow Cox, and Peter Hermann. 2016. Pizzagate: From rumor, to hashtag, to gunfire in DC. Washington Post 6 (2016), 8410–8415. [7] Lifang Fu and Shuai Liu. 2023. Multimodal fake news detection incorporating external knowledge and user interaction feature. Advances in Multimedia 2023, 1 (2023), 8836476. [8] Chongjian Ge, Junsong Chen, Enze Xie, Zhongdao Wang, Lanqing Hong, Huchuan Lu, Zhenguo Li, and Ping Luo. 2023. Metabev: Solving sensor fail-ures for 3d detection and map segmentation. In Proceedings of the IEEE/CVF International Conference on Computer Vision . 8721–8731. [9] Hao Guo, Zihan Ma, Zhi Zeng, Minnan Luo, Weixin Zeng, Jiuyang Tang, and Xiang Zhao. 2025. Each fake news is fake in its own way: An attribution multi-granularity benchmark for multimodal fake news detection. In Proceedings of the AAAI conference on artificial intelligence , Vol. 39. 228–236. [10] Ying Guo, Hong Ge, and Jinhong Li. 2023. A two-branch multimodal fake news detection model based on multimodal bilinear pooling and attention mechanism. 
+
+Frontiers in Computer Science 5 (2023), 1159063. [11] Judy Hoffman, Saurabh Gupta, and Trevor Darrell. 2016. Learning with side information through modality hallucination. In Proceedings of the IEEE conference on computer vision and pattern recognition . 826–834. [12] Jiaheng Hua, Xiaodong Cui, Xianghua Li, Keke Tang, and Peican Zhu. 2023. Multimodal fake news detection through data augmentation-based contrastive learning. Applied Soft Computing 136 (2023), 110125. [13] Ruihan Jin, Ruibo Fu, Zhengqi Wen, Shuai Zhang, Yukun Liu, and Jianhua Tao. 2024. Fake news detection and manipulation reasoning via large vision-language models. arXiv preprint arXiv:2407.02042 (2024). [14] Zhiwei Jin, Juan Cao, Han Guo, Yongdong Zhang, and Jiebo Luo. 2017. Multi-modal fusion with recurrent neural networks for rumor detection on microblogs. In Proceedings of the 25th ACM international conference on Multimedia . 795–816. [15] Guanzhou Ke, Shengfeng He, Xiaoli Wang, Bo Wang, Guoqing Chao, Yuanyang Zhang, Yi Xie, and Hexing Su. 2025. Knowledge bridger: Towards training-free missing modality completion. In Proceedings of the Computer Vision and Pattern Recognition Conference . 25864–25873. [16] Kwanhyung Lee, Soojeong Lee, Sangchul Hahn, Heejung Hyun, Edward Choi, Byungeun Ahn, and Joohyung Lee. 2023. Learning missing modal electronic health records with unified multi-modal data embedding and modality-aware attention. In Machine Learning for Healthcare Conference . PMLR, 423–442. [17] Guoyi Li, Die Hu, Xiaomeng Fu, Qirui Tang, Yulei Wu, Xiaodan Zhang, and Honglei Lyu. 2025. Entity Graph Alignment and Visual Reasoning for Multimodal Fake News Detection. In Proceedings of the 33rd ACM International Conference on Multimedia . 2486–2495. [18] Zhiyuan Li, Yafei Zhang, Huafeng Li, Yi Chai, and Yushi Yang. 2024. Deformation-aware and reconstruction-driven multimodal representation learning for brain tumor segmentation with missing modalities. Biomedical Signal Processing and Control 91 (2024), 106012. [19] Paul Pu Liang, Zhun Liu, Yao-Hung Hubert Tsai, Qibin Zhao, Ruslan Salakhutdi-nov, and Louis-Philippe Morency. 2019. Learning representations from imperfect time series data via tensor rank regularization. In Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics . 1569–1576. [20] Marion Meyers, Gerhard Weiss, and Gerasimos Spanakis. 2020. Fake news detec-tion on twitter using propagation structures. In Multidisciplinary International Symposium on Disinformation in Open Online Media . Springer, 138–158. [21] Salman Bin Naeem and Rubina Bhatti. 2020. The Covid-19 ‘infodemic’: a new front for information professionals. Health Information & Libraries Journal 37, 3 (2020), 233–239. [22] Verónica Pérez-Rosas, Bennett Kleinberg, Alexandra Lefevre, and Rada Mihalcea. 2018. Automatic detection of fake news. In Proceedings of the 27th international conference on computational linguistics . 3391–3401. [23] Feng Qian, Chengyue Gong, Karishma Sharma, and Yan Liu. 2018. Neural user response generator: Fake news detection with collective user intelligence.. In 
+
+IJCAI , Vol. 18. 3834–3840. [24] Isabel Segura-Bedmar and Santiago Alonso-Bartolome. 2022. Multimodal fake news detection. Information 13, 6 (2022), 284. [25] Wenqian Shang, Kang Song, Jialing Ji, Tong Yi, Jiajun Cai, and Xianxian Li. 2025. Semantic space aligned multimodal fake news detection. Information Fusion 
+
+(2025), 103469. [26] Rui Shao, Tianxing Wu, and Ziwei Liu. 2023. Detecting and grounding multi-modal media manipulation. In Proceedings of the IEEE/CVF Conference on Com-puter Vision and Pattern Recognition . 6904–6913. [27] Shivangi Singhal, Rajiv Ratn Shah, Tanmoy Chakraborty, Ponnurangam Ku-maraguru, and Shin’ichi Satoh. 2019. Spotfake: A multi-modal framework for fake news detection. In 2019 IEEE fifth international conference on multimedia big data (BigMM) . IEEE, 39–47. [28] Jiahao Sun, Chen Chen, Chunyan Hou, Yike Wu, and Xiaojie Yuan. 2025. Multi-modal Taylor Series Network for Misinformation Detection. In Proceedings of the ACM on Web Conference 2025 . 2540–2548. [29] Damian Tambini. 2017. Fake news: public policy responses. (2017). [30] Nguyen Manh Duc Tuan and Pham Quang Nhat Minh. 2021. Multimodal fusion with BERT and attention mechanism for fake news detection. In 2021 RIVF international conference on computing and communication technologies (RIVF) .IEEE, 1–6. [31] Elena Voita, David Talbot, Fedor Moiseev, Rico Sennrich, and Ivan Titov. 2019. Analyzing multi-head self-attention: Specialized heads do the heavy lifting, the rest can be pruned. In Proceedings of the 57th annual meeting of the association for computational linguistics . 5797–5808. [32] Longzheng Wang, Chuang Zhang, Hongbo Xu, Yongxiu Xu, Xiaohan Xu, and Siqi Wang. 2023. Cross-modal contrastive learning for multimodal fake news detection. In Proceedings of the 31st ACM international conference on multimedia .5696–5704. [33] Qianqian Wang, Huanhuan Lian, Gan Sun, Quanxue Gao, and Licheng Jiao. 2020. iCmSC: Incomplete cross-modal subspace clustering. IEEE Transactions on Image Processing 30 (2020), 305–317. [34] Shu Wang, Zhe Qu, Yuan Liu, Shichao Kan, Yixiong Liang, and Jianxin Wang. 2024. Fedmmr: Multi-modal federated learning via missing modality reconstruction. In 2024 IEEE International Conference on Multimedia and Expo (ICME) . IEEE, 1–6. [35] Yuanzhi Wang, Zhen Cui, and Yong Li. 2023. Distribution-consistent modal recovering for incomplete multimodal learning. In Proceedings of the IEEE/CVF International Conference on Computer Vision . 22025–22034. [36] Renjie Wu, Hu Wang, Hsiang-Ting Chen, and Gustavo Carneiro. 2024. Deep mul-timodal learning with missing modality: A survey. arXiv preprint arXiv:2409.07825 
+
+(2024). [37] Yang Wu, Pengwei Zhan, Yunjian Zhang, Liming Wang, and Zhen Xu. 2021. Mul-timodal fusion with co-attention networks for fake news detection. In Findings of the association for computational linguistics: ACL-IJCNLP 2021 . 2560–2569. [38] Wenxin Xu, Hexin Jiang, and Xuefeng Liang. 2024. Leveraging knowledge of modality experts for incomplete multimodal learning. In Proceedings of the 32nd ACM International Conference on Multimedia . 438–446. [39] Junxiao Xue, Yabo Wang, Yichen Tian, Yafei Li, Lei Shi, and Lin Wei. 2021. De-tecting fake news by exploring the consistency of multimodal data. Information Processing & Management 58, 5 (2021), 102610. [40] Zihui Xue and Radu Marculescu. 2023. Dynamic multimodal fusion. In Pro-ceedings of the IEEE/CVF conference on computer vision and pattern recognition .2575–2584. [41] Long Ying, Hui Yu, Jinguang Wang, Yongze Ji, and Shengsheng Qian. 2021. Multi-level multi-modal cross-attention network for fake news detection. Ieee Access 9(2021), 132363–132373. [42] Zhilin Zeng, Zelin Peng, Xiaokang Yang, and Wei Shen. 2024. Missing as masking: arbitrary cross-modal feature reconstruction for incomplete multimodal brain tumor segmentation. In International Conference on Medical Image Computing and Computer-Assisted Intervention . Springer, 424–433. [43] Zhi Zeng, Jiaying Wu, Minnan Luo, Herun Wan, Xiangzheng Kong, Zihan Ma, Guang Dai, and Qinghua Zheng. 2025. Imol: Incomplete-modality-tolerant learning for multi-domain fake news video detection. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) . 30921–30933. [44] Yifan Zhan, Rui Yang, Junxian You, Mengjie Huang, Weibo Liu, and Xiaohui Liu. 2025. A systematic literature review on incomplete multimodal learning: techniques and challenges. Systems Science & Control Engineering 13, 1 (2025), 2467083. [45] Hengyuan Zhang, Zhihao Zhang, Mingyang Wang, Zunhai Su, Yiwei Wang, Qianli Wang, Shuzhou Yuan, Ercong Nie, Xufeng Duan, Qibo Xue, et al . 2026. Locate, Steer, and Improve: A Practical Survey of Actionable Mechanistic Inter-pretability in Large Language Models. arXiv preprint arXiv:2601.14004 (2026). [46] HaoChen Zhu. 2025. AdaptiveViTBERT: A Multimodal Fake News Detection Model Integrating Dynamic Gating and Missing Modality Compensation. In 
+
+2025 6th International Conference on Machine Learning and Computer Application (ICMLCA) . IEEE, 1082–1088. Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality 
+
+Received 20 February 2007; revised 12 March 2009; accepted 5 June 2009

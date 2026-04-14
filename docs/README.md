@@ -6,35 +6,58 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-13
-- 运行时间：2026-04-13 20:45:19 UTC
+- 最新运行日期：2026-04-14
+- 运行时间：2026-04-14 19:57:14 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：4
-- 速读区：0
+- 本次总论文数：12
+- 精读区：6
+- 速读区：6
 
 ### 今日简报（AI）
-今日精读 4 篇 9.0 分前沿论文，深度聚焦多模态讽刺识别与多语言情感回归。
-重点关注 GRASP 框架通过双阶段优化提升讽刺目标定位精度，以及 XLM-RoBERTa 在多语言情感维度预测中的卓越表现。
-建议关注 CoT 推理在复杂情感理解中的应用，并尝试在多语言场景下微调预训练模型。
-- 详情：[/202604/13/README](/202604/13/README)
+今日深度解析 12 篇情感计算前沿成果，重点攻克音频语言模型的情商评测与远程教育情感感知。
+满分推荐 HumDial-EIBench 基准，揭示了多轮对话中 AI 理解人类复杂情绪的最新进展。
+建议关注音频模型从语义识别向情感共鸣的范式转变，探索其在心理监测与辅助教学中的应用。
+- 详情：[/202604/14/README](/202604/14/README)
 
 ### 精读区论文标签
-1. [GRASP: Grounded CoT Reasoning with Dual-Stage Optimization for Multimodal Sarcasm Target Identification](/202604/13/2604.08879v1-grasp-grounded-cot-reasoning-with-dual-stage-optimization-for-multimodal-sarcasm-target-identification)  
+1. [HumDial-EIBench: A Human-Recorded Multi-Turn Emotional Intelligence Benchmark for Audio Language Models](/202604/14/2604.11594v1-humdial-eibench-a-human-recorded-multi-turn-emotional-intelligence-benchmark-for-audio-language-models)  
+   标签：评分：10.0/10、query:msa
+   evidence：音频语言模型的多模态情感智能基准
+2. [Toward using Speech to Sense Student Emotion in Remote Learning Environments](/202604/14/2604.09881v1-toward-using-speech-to-sense-student-emotion-in-remote-learning-environments)  
    标签：评分：9.0/10、query:msa
-   evidence：结合视觉定位和思维链推理的多模态讽刺目标识别
-2. [NCL-BU at SemEval-2026 Task 3: Fine-tuning XLM-RoBERTa for Multilingual Dimensional Sentiment Regression](/202604/13/2604.08923v1-ncl-bu-at-semeval-2026-task-3-fine-tuning-xlm-roberta-for-multilingual-dimensional-sentiment-regression)  
+   evidence：在远程学习环境中感知学生情绪
+3. [Product Review Based on Optimized Facial Expression Detection](/202604/14/2604.10885v1-product-review-based-on-optimized-facial-expression-detection)  
    标签：评分：9.0/10、query:msa
-   evidence：针对细粒度分析的多语言维度情感回归
-3. [ActFER: Agentic Facial Expression Recognition via Active Tool-Augmented Visual Reasoning](/202604/13/2604.08990v1-actfer-agentic-facial-expression-recognition-via-active-tool-augmented-visual-reasoning)  
+   evidence：基于超市人脸表情检测的产品评论应用
+4. [Dynamic Summary Generation for Interpretable Multimodal Depression Detection](/202604/14/2604.11334v1-dynamic-summary-generation-for-interpretable-multimodal-depression-detection)  
    标签：评分：9.0/10、query:msa
-   evidence：通过多模态推理的智能体面部表情识别
-4. [Prototype-Regularized Federated Learning for Cross-Domain Aspect Sentiment Triplet Extraction](/202604/13/2604.09123v1-prototype-regularized-federated-learning-for-cross-domain-aspect-sentiment-triplet-extraction)  
+   evidence：整合文本、音频和视频的多模态融合抑郁检测
+5. [Predicting User Satisfaction in Online Education Platforms: A Large Language Model Based Multi-Modal Review Mining Framework](/202604/14/2604.11723v1-predicting-user-satisfaction-in-online-education-platforms-a-large-language-model-based-multi-modal-review-mining-framework)  
+   标签：评分：9.0/10、query:msa
+   evidence：通过多模态评论挖掘预测在线教育平台的用户满意度
+6. [LASQ: A Low-resource Aspect-based Sentiment Quadruple Extraction Dataset](/202604/14/2604.10417v1-lasq-a-low-resource-aspect-based-sentiment-quadruple-extraction-dataset)  
    标签：评分：8.0/10、query:msa
-   evidence：使用联邦学习进行跨领域细粒度情感三元组抽取
+   evidence：细粒度的目标-方面-意见-情感抽取
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [Learning to Attend to Depression-Related Patterns: An Adaptive Cross-Modal Gating Network for Depression Detection](/202604/14/2604.10181v1-learning-to-attend-to-depression-related-patterns-an-adaptive-cross-modal-gating-network-for-depression-detection)  
+   标签：评分：8.0/10、query:msa
+   evidence：用于抑郁检测的自适应跨模态门控
+2. [AIM-Bench: Benchmarking and Improving Affective Image Manipulation via Fine-Grained Hierarchical Control](/202604/14/2604.10454v1-aim-bench-benchmarking-and-improving-affective-image-manipulation-via-fine-grained-hierarchical-control)  
+   标签：评分：7.0/10、query:msa
+   evidence：用于图像编辑的情感建模和情感分类法
+3. [Dynamic Adaptive Attention and Supervised Contrastive Learning: A Novel Hybrid Framework for Text Sentiment Classification](/202604/14/2604.10459v1-dynamic-adaptive-attention-and-supervised-contrastive-learning-a-novel-hybrid-framework-for-text-sentiment-classification)  
+   标签：评分：7.0/10、query:msa
+   evidence：使用动态自适应注意力的文本情感分类
+4. [Bidirectional Learning of Facial Action Units and Expressions via Structured Semantic Mapping across Heterogeneous Datasets](/202604/14/2604.10541v1-bidirectional-learning-of-facial-action-units-and-expressions-via-structured-semantic-mapping-across-heterogeneous-datasets)  
+   标签：评分：7.0/10、query:msa
+   evidence：面部动作单元与表情识别的联合学习
+5. [Efficient Emotion-Aware Iconic Gesture Prediction for Robot Co-Speech](/202604/14/2604.11417v1-efficient-emotion-aware-iconic-gesture-prediction-for-robot-co-speech)  
+   标签：评分：7.0/10、query:msa
+   evidence：利用文本和情感进行机器人协同演讲的情感感知手势预测
+6. [Head-wise Modality Specialization within MLLMs for Robust Fake News Detection under Missing Modality](/202604/14/2604.09711v1-head-wise-modality-specialization-within-mllms-for-robust-fake-news-detection-under-missing-modality)  
+   标签：评分：6.0/10、query:msa
+   evidence：模态缺失下的多模态虚假新闻检测
 
 
 <div class="dpr-home-promo-card">

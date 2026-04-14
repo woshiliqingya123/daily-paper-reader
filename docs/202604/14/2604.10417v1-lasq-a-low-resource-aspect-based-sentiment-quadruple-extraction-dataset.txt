@@ -1,0 +1,787 @@
+Title: LASQ: A Low-resource Aspect-based Sentiment Quadruple Extraction Dataset
+
+URL Source: https://arxiv.org/pdf/2604.10417v1
+
+Published Time: Tue, 14 Apr 2026 00:58:43 GMT
+
+Number of Pages: 29
+
+Markdown Content:
+# LASQ: A Low-resource Aspect-based Sentiment Quadruple Extraction Dataset 
+
+# Aizihaierjiang Yusufu 1 2 , Jiang Liu 2†, Kamran Aziz 3,Abidan Ainiwaer 4, Bobo Li 2, Fei Li 2, Donghong Ji 2,Aizierguli Yusufu 1* 
+
+> 1*
+
+Xinjiang Engineering Technology Research Center for Smart Education and Application, School of Computer Science and Technology, Xinjiang Normal University, Urumqi, 830054, Xinjiang, China. 
+
+> 2
+
+Key Laboratory of Aerospace Information Security and Trusted Computing, School of Cyber Science and Engineering, Wuhan University, Wuhan, 430000,Hubei, China. 
+
+> 3
+
+Hainan Bielefeld University of Applied Sciences, Central Avenue and East 13, Danzhou, 578001, Hainan, China. 
+
+> 4
+
+Journalism & Communication College, Xinjiang University, No. 666 Shengli Road, Urumqi, 830046, Xinjiang, China. *Corresponding author(s). E-mail(s): Azragul2010@126.com; Contributing authors: azhar520abida@gmail.com; wugangliujiang@gmail.com); kamran.aziz@hainan-biuh.edu.cn; abidan@xju.edu.cn; libobo@nus.edu.sg; foxlf823@gmail.com; dhji@whu.edu.cn; 
+
+> †
+
+These authors contributed equally to this work. 
+
+Abstract 
+
+In recent years, aspect-based sentiment analysis (ABSA) has made rapid progress and shown strong practical value. However, existing research and benchmarks are largely concentrated on high-resource languages, leaving fine-grained sen-timent extraction in low-resource languages under-explored. To address this gap, we constructed the first Low-resource languages Aspect-based Sentiment 
+
+Quadruple dataset, named LASQ, which includes two low-resource languages: Uzbek and Uyghur. Secondly, it includes a fine-grained target-aspect-opinion-sentiment quadruple extraction task. To facilitate future research, we designed a grid-tagging model that integrates syntactic knowledge. This model incorporates 
+
+1     
+
+> arXiv:2604.10417v1 [cs.CL] 12 Apr 2026 part-of-speech (POS) and dependency knowledge into the model through our designed Syntax Knowledge Embedding Module (SKEM), thereby alleviating the lexical sparsity problem caused by agglutinative languages. Experiments on LASQ demonstrate consistent gains over competitive baselines, validating both the dataset’s utility and the effectiveness of the proposed modeling approach.
+> Keywords: Low-resource Languages, Aspect-based Sentiment Analysis, Syntax Knowledge, Grid-tagging
+
+# 1 Introduction 
+
+Aspect-based sentiment analysis (ABSA) aims to identify the specific aspects mentioned in text and determine their associated sentiment polarity, offering a more fine-grained and interpretable paradigm for opinion understanding than traditional document- or sentence-level sentiment classification [ 1, 2]. Currently, researchers have proposed many ABSA datasets, and we have summarized the characteristics of these datasets, as shown in Table 1. For ABSA datasets with high-resource languages, from ASTE [ 3] and MAMS [4] to ACOS [ 5], the focus has shifted from extracting aspect-opinion-sentiment triples to extracting more granular target-aspect-opinion-sentiment quadruples. However, they still only focus on English. Later, the proposal of DiaASQ [ 6] extended the monolingual scope to multilingual, including not only English but also Chinese. 
+
+Table 1: Comparison between our dataset and existing ABSA datasets.                                                            
+
+> Target Aspect Opinion Sentiment Multilingual Low-resource ASTE ✗✓✓✓✗✗
+> MAMS ✗✓✓✓✗✗
+> ACOS ✓✓✓✓✗✗
+> DiaASQ ✓✓✓✓✓✗
+> Uzbek ✗✓✗✓✗✓
+> Vietnamese ✗✓✗✓✗✓
+> Telugu ✗✓✗✓✗✓
+> Urdu ✗✓✗✓✗✓
+> Our ✓✓✓✓✓✓
+
+The development of high-resource languages is crucial, but the development of low-resource languages is equally important, as residents of most countries in the world tend to use their native languages. Recently, some ABSA datasets for low-resource languages have begun to emerge, including Uzbek [ 7], Vietnamese [ 8], Telugu [ 9], and Urdu [ 10]. However, these datasets still have two shortcomings. One is that they only focus on aspect-sentiment pair extraction, and the other is that they only contain a single low-resource language. To address these two shortcomings, we constructe Low-resource languages Aspect-based Sentiment Quadruple (LASQ), a new benchmark dataset specifically designed for aspect-based sentiment quadruple detection in under-represented languages. As 2shown in Figure 1, LASQ covers two typologically distinct languages, Uzbek (UZ) and Uyghur (UY), and emphasizes comprehensive structured annotation, including target ,
+
+aspect , opinion , and sentiment .Target                
+
+> appda
+> (app)
+> o'yin
+> (game)
+> Aspect
+> vokal kurslari
+> (voice lessons)
+> interfeys dizayni
+> (interface design)
+> Opinion
+> eng yaxshi
+> (very good)
+> qulay
+> (user-friendly)
+> Sentiment
+> positive
+> positive
+> Bu o'yin interfeys dizayni juda qulay .
+> (This game interface design is very user-friendly. )
+> UZ
+> Bu appda eng yaxshi vokal kurslari bar.
+> (This app has the best voice lessons.)
+> UY
+
+Fig. 1. Input and output examples of our dataset. The text in parentheses represents the corresponding English translation. LASQ consists of naturally occurring user reviews independently collected from Google Play Store applications, forming a bilingual corpus in Uzbek and Uyghur. Due to the extremely limited availability of Uyghur-script user reviews in practice, the Uyghur subset was gathered via targeted crawling and filtering to ensure sufficient quality and diversity for benchmarking. After careful manual cleaning and sentence segmentation, the LASQ corpus includes two subsets: Uzbek and Uyghur. The Uzbek subset contains 3,064 documents with 11,728 sentiment quadruples, while the Uyghur subset contains 3,028 documents with 11,543 sentiment quadruples.To ensure annotation reliability, each sentence was annotated by multiple annotators and further reviewed by experts, achieving a Cohen’s kappa of 0.85, which indicates strong agreement. Overall, LASQ differs from prior datasets by jointly supporting target-aware quadruple annotation and bilingual low-resource coverage under a unified annotation schema, thereby providing a richer and more practical resource for advancing structured sentiment extraction in minor languages. Next, we constructed a benchmark for our LASQ dataset. In the high-resource ABSA field, researchers have proposed various methods: 1) Span-based methods [5, 11, 12 ] extract spans from the text and identify relations between spans to construct quadruples. This method suffers from error propagation and is time-consuming due to the need to enumerate spans. 2) Generative methods [ 13 –15 ] directly utilize pre-trained generative models or large models to generate quadruples. This method is effective in high-resource languages, but suffers from severe illusion problems for low-resource languages like Uzbek. 3) Grid-tagging-based methods [ 6, 16] are favored by researchers. This method converts sentences into two-dimensional tables, thereby simultaneously extracting spans and relations, avoiding error propagation, and eliminating the need for span enumeration. 3Therefore, our benchmark adopts the grid-tagging-based method and has been improved based on the characteristics of low-resource languages. Considering that both Uzbek and Uyghur belong to the Altaic language family and have typical cohesive features: a word stem can be followed by a sequence of derivational and inflectional suffixes to express grammatical information such as case, number, tense, and person. This results in high morphological complexity and severe vocabulary sparsity, where the same lemma may appear in many surface forms across contexts, substantially increasing OOV rates and modeling difficulty, especially when annotated data are limited [ 17 –19 ]. Therefore, our key motivation is to introduce stronger structural inductive bias for low-resource Altaic languages. After text encoding, we incorporate a Syntax 
+
+Knowledge Embedding Module (SKEM) that injects part-of-speech (POS) knowledge and dependency knowledge, alleviating morphology-induced sparsity and enabling the model to more stably capture cross-token semantic and sentiment associations. Specifically, we first encode the input sequence into contextual representations, then use SKEM to map POS tags and dependency structures into learnable structured embeddings and fuse them with semantic representations through interaction, and finally perform unified structured prediction for target–aspect–opinion–sentiment quadruples within a single framework. We compared our approach with eight baseline models, including two large language models (LLMs), and found our method to be the best in both languages. In Uzbek and Uyghur, our method improved the F1 score by 1.28% and 1.86% respectively compared to the best baseline models. We further validated the effectiveness of our proposed module using various analytical methods, including ablation experiments. In summary, our contributions are threefold: 
+
+• We constructed the first Low-resource languages Aspect-based Sentiment Quadruple dataset, named LASQ, which include two low-resource languages: Uzbek and Uyghur, and provides fine-grained target-aspect-opinion-sentiment quadruple annotations. 
+
+• We designe a syntactic knowledge-enriched grid-tagging model by incorporat-ing part-of-speech (POS) and dependency knowledge via a Syntax Knowledge 
+
+Embedding Module (SKEM), introducing effective structural inductive bias to mitigate vocabulary sparsity and improve cross-token sentiment association modeling. 
+
+• Our method outperforms six competitive baseline models and two state-of-the-art LLMs in both Uzbek and Uyghur languages. Furthermore, we conducted additional analytical experiments to validate the effectiveness of the proposed modules. 
+
+# 2 Related work 
+
+# 2.1 ABSA for High-resource Languages 
+
+Sentiment analysis has long been a fundamental task in natural language process-ing [ 20 , 21], with broad applications in sentiment-aware chatbots [ 22 , 23 ], recommender systems [ 24, 25 ], and question answering [ 26 , 27 ]. As a fine-grained branch of sentiment analysis, aspect-based sentiment analysis (ABSA) aims to identify aspect-related senti-ment and has evolved from early polarity classification toward structured prediction involving multiple sentiment components [ 28 –30 ]. For high-resource languages such as 4English and Chinese, abundant annotated data and relatively mature toolchains (e.g., tokenization, parsing, and lexicons) have continuously driven progress. Early ABSA research mainly relied on sentiment lexicons, rule-based patterns, and classical machine learning models such as Naive Bayes and SVM, where handcrafted lexical/syntactic features played a central role [ 31– 33]. Subsequently, deep learning models (e.g., CNN/LSTM with attention) became dominant by learning contextual representations and modeling aspect–sentiment interactions more effectively [ 34 –37]. With the advent of pre-trained language models (e.g., BERT, RoBERTa, ERNIE), ABSA performance in high-resource languages further improved due to stronger contextual modeling and transferability [ 38 – 43 ]. However, these sequence models all suffer from difficulty in capturing complex syntactic interactions. Therefore, some studies have mitigated this problem by incorporating syntactic knowledge to explicitly model long-distance syntactic dependencies between target, aspect, and opinion [ 44 –46 ]. More recently, generative pre-trained models (e.g., T5/BART) have also been explored by reformulating ABSA and related extraction tasks as text generation, enabling unified modeling via prompts or templates [47, 48]. In parallel, instruction-following large language models (LLMs) such as GPT-series and DeepSeek have shown promising zero-/few-shot capabilities for ABSA in high-resource languages through prompting and in-context learning [ 49 , 50 ]. Nevertheless, their advantages do not always transfer to low-resource languages or complex struc-tured ABSA settings, where limited linguistic coverage, weak task grounding, and instability in structured outputs can lead to degraded extraction quality [ 51 –53 ]. These observations motivate our focus on low-resource ABSA quadruple extraction and the need for dedicated benchmarks and structure-aware modeling. 
+
+# 2.2 ABSA for Low-resource Languages 
+
+Despite rapid progress in high-resource languages, ABSA for low-resource languages remains constrained by scarce annotations, limited linguistic tools, and domain mis-match. Therefore, a major research line focuses on resource construction and model adaptation under limited supervision. On the resource side, several datasets and benchmarks have been created to enable aspect-level sentiment modeling in specific low-resource languages. For Vietnamese, Van Thin et al. [8] constructed a span-level ABSA dataset that annotates opinion spans together with aspect–sentiment labels, and provided sequence-tagging baselines for Vietnamese reviews; however, it is not designed for explicit target–aspect–opinion– polarity quadruple extraction. For Telugu, Regatte et al. [9] built an ABSA resource focusing on aspect term extraction and polarity classification, which supports aspect-level sentiment prediction but does not include opinion span extraction. For Urdu, Aziz et al. [10] introduced an ABSA dataset with aspect-related components and evaluated classical as well as neural classifiers on Urdu social media text, yet the annotations remain centered on aspect-level polarity rather than end-to-end extraction of opinion expressions. For Indonesian, Azhar and Khodra [54] adapted a generative multitask prompting framework and reported results on unified ABSA and triplet-style extraction settings, which still differs from our setting by not requiring full quadruple-level supervision with explicit target and opinion spans. 501 
+
+Data Collection 
+
+03 
+
+Establish 
+
+Annotation 
+
+Guidelines 
+
+05 
+
+Data Annotation 
+
+& Statistics 
+
+02 
+
+Data Cleaning 
+
+04 
+
+Review & Quality 
+
+Control 
+
+> https://www.ypppt.com/
+
+Fig. 2. LASQ dataset construction flowchart. On the modeling side, low-resource ABSA commonly relies on transfer learning and structure-aware inductive biases to reduce data demands [ 55 –57 ]. Multilingual pre-trained language models and cross-lingual transfer are frequently adopted to improve generalization across domains and languages [ 55 , 57 ]. In addition, syntactic priors such as dependency-based graph modeling can help stabilize aspect–opinion interactions when supervision is limited [ 58 , 59 ], while end-to-end structured prediction paradigms aim to jointly model multiple sentiment components to mitigate pipeline error propagation [ 60 , 61 ]. These trends highlight the continued need for dedicated low-resource benchmarks and structure-aware approaches for complex ABSA extraction tasks. 
+
+# 3 Dataset construction 
+
+Our dataset construction process is shown in Figure 2, which includes five steps: data collection, data cleaning, establish annotation guidelines, review and quality control, and data annotation and statistics. We will now describe each step in detail. 
+
+# 3.1 Data Collection 
+
+The dataset construction process commenced with the collection of 50,000 user reviews sourced from software and game applications on the Google Play Store platform 1.To support bilingual ABSA research, we independently crawled reviews written in Uzbek and Uyghur, targeting applications frequently used by Uzbek- and Uyghur-speaking users. This design ensures that both language subsets are naturally occurring user-generated content and representative of their respective linguistic and cultural contexts. To ensure diversity and representativeness, reviews were drawn from a wide range of application categories, including productivity tools, entertainment platforms, and utility software. The selection emphasized collecting a balanced corpus that captures 
+
+> 1https://play.google.com
+
+6varying user experiences, sentiments, and app functionalities, covering aspects such as performance, usability, and customer support. The collected reviews served as the foundation for subsequent processing and refinement stages, aimed at creating a high-quality bilingual dataset tailored to fine-grained aspect-based sentiment analysis. 
+
+# 3.2 Data Cleaning 
+
+In the data cleaning phase, we systematically processed the raw reviews in both languages to enhance data quality and consistency. This procedure removed duplicated entries, advertisements, texts containing undesirable characters, and incomplete or overly short sentences. We further filtered out sentences lacking explicit sentiment-bearing components, retaining only samples with identifiable targets/aspects/opinions suitable for ABSA annotation. After cleaning and filtering, we obtained a refined corpus consisting of Uzbek and Uyghur app reviews. Each review was curated to meet the requirements of fine-grained ABSA, providing a robust foundation for subsequent annotation. 
+
+# 3.3 Establish Annotation Guidelines 
+
+To ensure consistent and reproducible sentiment quadruple annotation on app reviews, we established unified annotation guidelines before large-scale labeling. As illustrated in Figure 1, each sentence is annotated with a quadruple consisting of Target, Aspect, Opinion, and Sentiment, where Target denotes the entity being evaluated, Aspect refers to the specific attribute or feature of the target, Opinion is the explicit sentiment-bearing expression describing the aspect, and Sentiment is labeled as positive or negative. The guidelines were designed to be consistent across two typologically different languages, Uzbek and Uyghur, so that the same labeling principles apply despite linguistic variation. We first annotate Target, Aspect, and Opinion, and then annotate Sentiment based on the sentiment expressed by the Opinion. Specifically, for Target, we only annotate the specific entity, the application name or game name (including its full name, abbreviation, nickname, etc.), and do not annotate pronouns. For Aspect, we only annotate aspects of the already annotated targets, and aspects can be missing. For Opinion, we only annotate opinions of the targets or aspects that have been annotated. 
+
+# 3.4 Review and Quality Control 
+
+We implemented a multi-tier quality control mechanism to resolve boundary discrep-ancies and maintain annotation consistency. For each instance, disagreements among annotators were first discussed within the annotation group; unresolved cases were escalated to domain experts for final adjudication. Meanwhile, the annotation guideline was iteratively refined based on recurring disagreement patterns to improve consistency. To quantify inter-annotator reliability, Cohen’s kappa coefficient ( κ) was computed at the quadruple level: 
+
+κ = Po − Pe
+
+1 − Pe
+
+,
+
+7Table 2: Statistics of our dataset. T/A/O represents target, aspect and opinion, and TA/TO/AO represents target-aspect pair, target-opinion pair and aspect-opinion pair. (Doc.: Document, Sent.: Sentence, Quad.: Quadruple).                                                                                            
+
+> # Doc. # Sent. # Token # Entity # Relation #Quad. TAOTA TO AO UZ Train 2,451 6,146 101,061 2,471 7,075 8,697 7,884 8,712 9,348 9,384
+> Dev 306 780 12,705 307 841 1,031 943 1,031 1,097 1,100
+> Test 307 744 12,561 307 955 1,130 1,058 1,130 1,239 1,244
+> Total 3,064 7,670 126,327 3,085 8,871 10,858 9,885 10,873 11,684 11,728
+> UY Train 2,422 8,539 90,184 2,427 6,767 8,248 7,577 8,250 9,202 9,231
+> Dev 302 1,017 11,343 302 845 1,066 954 1,066 1,159 1,161
+> Test 304 1,063 11,203 304 847 1,025 950 1,025 1,149 1,151
+> Total 3,028 10,619 112,730 3,033 8,459 10,339 9,481 10,341 11,510 11,543
+
+where Po denotes the observed agreement and Pe denotes the chance agreement. The observed agreement rates were 90% for targets, 88% for aspects, 87% for opinions, and 85% for polarities, yielding an overall κ score of 85%, indicating substantial inter-annotator consistency. Remaining discrepancies were resolved through expert review and consensus. 
+
+# 3.5 Data Annotation and Statistics 
+
+We used the BRAT annotation tool 2 for annotate targets, aspects, opinions, and sentiment.Specifically, our annotation process consists of two steps: 1) Entity Annotation: We define three entity tags: TAR , ASP , and OPIN , to annotate these entities. 2) Relation Annotation: After entity annotation, we need to annotate sentiment and construct quadruples. Therefore, we define four relation tags: TAR-ASP , ASP-OPIN ,
+
+POS , and NEG .Figure 3 shows an example of annotation on the brat platform and its saved ANN format annotation result, "o’yin (game)" is annotated as TAR , "interfeys dizayni (interface design)" is annotated as ASP , and "qulay (user-friendly)" is annotated as 
+
+OPIN . Then, TAR-ASP relation arc is annotated between "o’yin" and "interfeys dizayni", 
+
+ASP-OPIN relation arc between "interfeys dizayni" and "qulay", and POS relation arc between "o’yin" and "qulay". After the annotation is completed, an annotation result file in ANN format will be generated, which will then be converted to JSON format through post-processing. Finally, we randomly divided the labeled dataset into training, validation, and test sets in an 8:1:1 ratio. Specific dataset statistics are presented in the table 2. The Uzbek and Uyghur datasets have a total sample size of 3,064 and 3,028 respectively, containing 11,728 (7,796 positive and 3,688 negative) and 11,543 (7,763 positive and 3,680 negative) quadruplets. 
+
+> 2https://brat.nlplab.org/index.html
+
+8Fig. 3. An example of annotation on the brat platform and its saved ANN format annotation result (bottom right corner of the figure). The example in the image is in Uzbek and means "This game interface design is very user-friendly." 
+
+# 4 Methodology 
+
+# 4.1 Task Definition 
+
+Our task goal is to extract the aspect-level sentiment quadruple set Q =
+
+{q1, q 2, . . . , q nq } ∈ Rnq from the given text X = {x1, x 2, . . . , x nx } ∈ Rnx . For the i-th quadruple qi includes the target ti = {bti, e ti}, aspect ai = {bai , e ai }, opinion oi = {boi , e oi }
+
+and sentiment si ∈ { pos, neg }, where b∗ 
+
+> i
+
+and e∗ 
+
+> i
+
+represent the start and end indexes, 
+
+∗ = {t, a, o }, pos and neg represent positive and negative sentiments respectively. 
+
+# 4.2 Tagging System 
+
+We transform quadruple extraction into a grid-tagging relation extraction task. Specifi-cally, we construct two grid-tagging systems: one is an entity grid for extracting targets, aspects and opinions, and the other is a relation grid for extracting relations between them and performing sentiment classification. Finally, the final quadruple results are obtained by further decoding the grid. For the entity grid, we define four tags: 
+
+• tgt : It is used to identify the target entity, with the row and column where the tag is located representing the head and tail of the entity, respectively. 
+
+• asp : It is used to identify the aspect entity, with the tag in the grid having the same meaning as tgt .
+
+• opin : It is used to identify the opinion entity, with the tag in the grid having the same meaning as tgt .
+
+• none : Except for the above tags, the rest of the positions in the grid are all this tag. 9Bu o'yin interfeys dizayni juda qulay . 
+
+> aps
+> rel
+> pos
+> tgt opin
+> rel
+> Entity Tag
+> Relation Tag
+> (a)
+> .
+> (b)
+> o'yin
+> interfeys
+> dizayni
+> qulay
+> juda
+> .
+> Bu
+> o'yin
+> interfeys
+> juda
+> qulay
+> dizayni
+> Bu
+> tgt
+> asp
+> opin
+> rel
+> rel
+> pos
+
+Fig. 4. (a) Our grid-tagging system. (b) Grid-tagging system in grid. The example in the image is in Uzbek and means "This game interface design is very user-friendly." For the relation grid, we define five tags: 
+
+• rel : It indicates that when two entities (such as target and aspect, or aspect and opinion) have this relation, they belong to the same quadruple. The row and column where the tag is located represent the heads of the two entities, respectively. 
+
+• pos : It indicates that the sentiment category of the quadruple is positive, with the row and column where the tag is located representing the heads of the target and opinion, respectively. 
+
+• neg : It indicates that the sentiment category of the quadruple is negative, with the tag in the grid having the same meaning as pos .
+
+• none : Except for the above tags, the rest of the positions in the grid are all this tag. As shown in Figure 4, we first decode the target "o’yin (game)" through the tgt 
+
+tag in the entity grid. Similarly, we decode the aspect "interfeys dizayni (interface design)" and the opinion "qulay (user-friendly)" through the asp tag and opi tag. Then we decode the triples (o’yin, interfeys dizayni, qulay) through the rel tag in the relation grid. Finally, we decode the quadruplets (o’yin, interfeys dizayni, qulay, positive) through the pos tag. 
+
+# 4.3 Model Architecture 
+
+Our model architecture is shown in Figure 5, which includes four modules: text encoder, syntax knowledge embedding module , entity extraction, and relation extraction. 
+
+4.3.1 Text Encoder 
+
+We use a pre-trained model to encode the text, such as RoBERTa [ 39 ], and get the text embedding: 
+
+Hx = {hx 
+
+> 1
+
+, hx 
+
+> 2
+
+, . . . , hxnx } ∈ Rnx×hx , (1) Where hxi represents the embedding of the i-th word and hx represents the dimension of the word embedding. 10 𝐀 𝐀       
+
+> GCN GCN
+> POS Tags Embedding  Pretrained Model
+> Input Text 𝐀
+> GCN
+> Syntax Knowledge Embedding Module (SKEM)
+> Quadruple Decoding
+> Entity Grid
+> Relation Grid
+> Triadic Scorer
+> Biaffine
+> MLP
+> MLP
+> 𝐀 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀 ,𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀 ,𝐀
+> 𝐀 𝐀 MLP
+> MLP
+> Triaffine
+> MLP
+> 𝐀 𝐀 ,𝐀 ,𝐀
+> 𝐀 𝐀
+> 𝐀 𝐀
+> o'yin
+> interfeys
+> dizayni
+> qulay
+> juda
+> .
+> Bu
+
+Fig. 5. The overall architecture of our model. L and N represent matrix concatenation and matrix multiplication. The example in the image is in Uzbek and means "This game interface design is very user-friendly." 
+
+4.3.2 Syntax Knowledge Embedding Module (SKEM) 
+
+Since our dataset is multilingual and the underlying syntactic knowledge of different languages is similar, we designed a SKEM to incorporate rich syntactic knowledge into the model. First, for the POS knowledge P = {p1, p 2, . . . , p nx } ∈ Rnx , we get the POS embedding through the POS embedding layer: 
+
+Hp = {hp
+
+> 1
+
+, hp
+
+> 2
+
+, . . . , hpnx } ∈ Rnx×hp , (2) Where hpi represents the POS embedding corresponding to the i-th word, and hp
+
+represents the dimension of the POS embedding. Then we concatenate Hx and Hp to get the word embedding Hx,p that integrates POS knowledge: 
+
+Hx,p = {Hx; Hp} ∈ Rnx×(hx+hp), (3) Where {· ; ·} represents the concatenation operation. Then we use graph convolution network (GCN) [ 62] to integrate dependency knowledge into Hx,p to obtain the word embedding Hs ∈ Rnx×hs with rich syntactic knowledge, as follows: 
+
+Hs = σ(AHx,p WGCN ) = {hs
+
+> 1
+
+, hs
+
+> 2
+
+, . . . , hsnx } (4) Where σ is the activation function and WGCN ∈ R(hx+hp)×hs is the trainable weight. 
+
+A ∈ Rnx×nx is the adjacency matrix containing the dependencies, and its element ai,j 
+
+11 in the i-th row and j-th column is: 
+
+(
+
+ai,j = aj,i = 1 , x i and xj have relations ,ai,j = aj,i = 0 , x i and xj don’t have relations . (5) 
+
+4.3.3 Entity Extraction 
+
+In the entity extraction stage, we first map Hs to the entity space through a linear layer to obtain He ∈ Rnx×he :
+
+He = HsW e + be = {he
+
+> 1
+
+, he
+
+> 2
+
+, . . . , henx }, (6) where W e ∈ Rhs×he and be ∈ Rhe are trainable parameters. Then we use biaffine [ 63 ]to obtain the score of the word pair (hei , hej ) in the entity grid according to the label level: ˆhli = MLP l
+
+> 1
+
+(hei ),
+
+ˆhlj = MLP l
+
+> 2
+
+(hej ),yli,j = ( ˆhli)⊤W l ˆhlj ,
+
+(7) where W l ∈ Rhe×he is trainable parameters, and l ∈ { tgt , asp , opin , none }. Finally, we can get the probability distribution pei,j of the label for each word pair (hei , hej ) in the entity matrix: 
+
+pei,j = Softmax ([ ytgt  
+
+> i,j
+
+; yasp  
+
+> i,j
+
+; yopin  
+
+> i,j
+
+; ynone  
+
+> i,j
+
+]) . (8) 
+
+4.3.4 Relation Extraction 
+
+Similarly, in the entity extraction stage, we first map Hs to the relation space through a linear layer to obtain Hr ∈ Rnx×hr :
+
+Hr = HsW r + br = {hr
+
+> 1
+
+, hr
+
+> 2
+
+, . . . , hrnx }, (9) where W r ∈ Rhs×hr and br ∈ Rhr are trainable parameters. Then we obtain the score 
+
+ˆyqi,j of each word pair (hri , hrj ) in the relation grid: 
+
+ˆhqi = MLP q
+
+> 1
+
+(hri ),
+
+ˆhqj = MLP q
+
+> 2
+
+(hrj ),
+
+ˆyqi,j = ( ˆhqi )⊤W q ˆhqj ,
+
+(10) 12 where q ∈ { rel , pos , neg , none }. Next we use triaffine [ 64 ] at the label level to determine the score of each triple (hri , hrk, hrj ):
+
+˜hqi , ˜hqk, ˜hqj = MLP q
+
+> 3
+
+(hri ), MLP q
+
+> 4
+
+(hrk), MLP q
+
+> 5
+
+(hrj ),
+
+˜yqi,k,j = W r
+
+˜hqi
+
+1
+
+
+
+˜hqk ˜hqj ,yqi,k,j = exp (˜ yqi,k,j )
+
+P 
+
+> q
+
+exp (˜ yqi,k,j ) ,
+
+(11) where W r ∈ Rhr ×hr ×(hr +1) is trainable parameters. We then use the triaffine score as a bridge to calculate the final word pair (hri , hrj ) score: 
+
+yqi,j = ˆ yqi,j + X
+
+> k
+
+(ˆ yqi,k + ˆ yqk,j ) ∗ yqi,k,j (12) Finally, we can get the probability distribution pri,j of the label for each word pair 
+
+(hri , hrj ) in the entity matrix: 
+
+pri,j = Softmax ([ yrel  
+
+> i,j
+
+; ypos  
+
+> i,j
+
+; yneg  
+
+> i,j
+
+; ynone  
+
+> i,j
+
+]) . (13) 
+
+# 4.4 Learning 
+
+We jointly optimize our model by entity and relation grid as follows:: 
+
+Le = − 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+gei,j log pei,j ,
+
+Lr = − 1
+
+n2
+
+> n
+
+X
+
+> i=1
+> n
+
+X
+
+> j=1
+
+gri,j log pri,j ,
+
+L = Le + Lr.
+
+(14) Where gei,j and gri,j represent the golden labels of entities and relations, Le and Lr
+
+represent the losses of entities and relations, and L represents the total loss. 
+
+# 5 Experimental Settings 
+
+# 5.1 Baselines 
+
+We compared eight baseline models, including two state-of-the-art LLMs. EC-ACOS 
+
+[5] is a span-based method that first extracts aspect-opinion pairs and then predicts the category and sentiment of these span pairs. Span-ASTE [12 ] also a span-based method that explicitly considers the interactions between spans to ensure better emotional consistency. ParaPhrase [13 ] is a generative method that transforms the ABSA task into a paraphrase generation process, directly generating quadruples in 13 an end-to-end manner. Meta-WP [ 6] is a grid-tagging-based method that achieves end-to-end quadruple extraction by combining rich dialogue features and discourse features. MRM-STS [11 ] is a span-based method that includes a novel Span-pair Tagging Scheme (STS) and a simple and efficient Multi-level Representation Model (MRM). STS explicitly captures complete span-level semantics by tagging span pairs. MRM efficiently models the dialogue structure information and span-level interactions by constructing multi-level contextual representation. H2DT [16 ] is a grid-tagging-based method that constructs a token-level heterogeneous graph and enhances token interactions through a heterogeneous attention network and utilizes a novel triadic scorer, strengthening weak token relations within a quadruple, thereby enhancing the cohesion of the quadruple extraction. Qwen3-Max [ 65 ] and GPT-5 [66 ] are currently the state-of-the-art LLMs. 
+
+Table 3: Detailed hyperparameter settings. 
+
+Hyperparameter Value 
+
+Learning Rate (LLMs) 1e-5 Learning Rate (Others) 1e-3 Epochs 15 Batch Size 1
+
+hp 20 
+
+hs 512 
+
+he 256 
+
+hr 50 Dropout 0.5 
+
+# 5.2 Evaluation Metrics 
+
+Our evaluation metrics follow [ 6], using the precision (P), recall (R) and F1. These metrics can be used to detect entities, relations and quadruple. For an item to be considered a correct prediction, it needs to match the gold standard exactly. 
+
+# 5.3 Implementation Details 
+
+In our experiments, the backbone models of all baseline models (except ParaPhrase and LLMs) and our model were all built using XLM-RoBERTa-base [67 ]. The backbone model of ParaPhrase used mT5-base [68 ]. For LLMs, we conduct tests under zero-shot and in-context learning settings. Our model is implemented using PyTorch and trained using NVIDIA RTX 3090 GPU. We used the Stanford Stanza toolkit [ 69 ] to extract syntactic knowledge. The hyperparameters are adjusted according to the fine-tuning on the development set, our hyperparameter settings are shown in Table 3. 14 Table 4: Comparison of our method with baseline models on our LASQ dataset. T/A/O represents target, aspect and opinion, and TA/TO/AO represents target-aspect pair, target-opinion pair and aspect-opinion pair. Bold represents the best results for each column under different language settings.The values in parentheses represent the variance of the results under three random numbers. ZS represents the zero-shot settings, and ICL represents the in-context learning settings. 
+
+Entity (F1) Relation (F1) Quadruple 
+
+T A O TA TO AO P R F1 
+
+UZ 
+
+EC-ACOS 64.06 23.32 44.75 16.41 30.92 15.16 16.94 8.72 11.51 Span-ASTE 65.21 24.29 46.81 17.92 32.17 16.83 18.96 10.31 13.36 ParaPhrase 63.16 22.86 47.87 16.91 33.50 15.89 22.27 8.96 12.78 Meta-WP 75.62 25.35 54.51 20.57 40.40 19.29 25.52 11.13 15.50 MRM-STS 73.52 26.52 50.57 21.05 39.70 20.26 18.66 12.82 15.90 H2DT 75.77 25.17 54.65 19.69 40.36 19.96 24.30 11.76 15.85 Qwen3-Max (ZS) 35.51 14.05 26.22 11.01 26.01 12.31 15.53 5.91 8.56 GPT-5 (ZS) 38.32 13.89 27.75 13.71 25.11 14.55 19.30 6.52 9.75 Qwen3-Max (ICL) 40.06 16.86 30.25 14.29 30.21 15.38 18.64 8.04 11.23 PT-5 (ICL) 40.24 16.56 30.53 15.35 27.02 16.30 20.23 9.50 12.93 Our Model 75.90 28.44 54.86 22.27 40.79 20.45 22.71 13.82 17.18 
+
+(1.54) (0.85) (1.20) (0.76) (1.47) (0.41) (0.55) (1.05) (0.97) 
+
+UY 
+
+EC-ACOS 69.32 23.81 37.55 18.21 30.82 15.59 14.29 8.006 10.31 Span-ASTE 68.31 24.76 39.29 18.78 31.83 15.65 15.55 9.36 11.69 ParaPhrase 62.65 20.95 40.26 16.72 31.77 13.57 18.63 7.26 10.45 Meta-WP 79.74 24.68 50.25 20.23 38.45 17.23 23.52 9.77 13.81 MRM-STS 77.51 26.11 47.94 21.21 39.71 16.68 16.04 11.80 13.59 H2DT 80.90 24.63 49.86 20.38 39.80 17.31 20.45 11.05 14.25 Qwen3-Max (ZS) 31.63 12.32 20.57 9.87 20.59 9.54 10.09 6.38 7.82 GPT-5 (ZS) 40.79 14.41 22.83 10.49 22.17 11.00 12.57 6.53 8.59 Qwen3-Max (ICL) 34.21 15.80 24.63 12.15 23.65 11.78 12.40 8.34 9.97 GPT-5 (ICL) 42.83 16.14 25.11 11.85 24.39 12.43 14.20 8.51 10.64 Our Model 80.46 27.75 50.66 23.63 40.01 18.28 19.77 13.60 16.11 
+
+(1.13) (2.38) (2.14) (1.20) (0.83) (2.29) (2.50) (2.24) (1.34) 
+
+# 6 Results and Analysis 
+
+# 6.1 Main Comparisons 
+
+Our main experimental results are shown in Table 4. Regarding the quadruple extrac-tion results, our model achieved optimal performance in both Uzbek and Uyghur languages, with F1 scores improved by 1.28% (17.18% - 15.90%) and 1.86% (16.11% -14.25%) respectively compared to the best baseline model. This is because our model explicitly incorporates part-of-speech and syntactic dependency knowledge, enabling more accurate extraction of entity words and their relations. The extraction results for both entities and relations show improvements in all three types of entity words and relations, which is a direct result of the improved quadruple extraction. Further-more, we compared our model with two powerful LLMs. The results show that, in the zero-shot setting, Qwen3-Max [ 65 ] and GPT-5 [ 66 ] performed poorly, even worse than 15 Table 5: Ablation experiment.                                                                                                             
+
+> Entity (F1) Relation (F1) Quadruple
+> TAOTA TO AO PRF1
+> UZ
+> Our Model 75.90 28.44 54.86 22.27 40.79 20.45 22.71 13.82 17.18
+> w/o POS 76.43 26.56 54.43 21.59 40.60 19.44 24.02 12.54 16.48
+> w/o Dependency 75.95 25.04 54.42 19.77 40.37 18.67 22.53 12.55 16.12
+> w/o SKEM 77.44 26.12 55.19 21.21 42.41 20.54 21.16 12.73 15.90 Random POS 76.32 24.55 53.77 19.96 40.67 18.65 24.00 12.005 16.04 Random Dependency 76.02 24.23 53.94 20.01 40.19 18.93 24.13 11.76 15.81 Random SK 76.62 25.51 54.91 21.28 41.84 19.23 20.19 12.19 15.20
+> w/o Biaffine 75.91 26.41 53.83 21.15 40.33 19.71 26.37 12.25 16.73
+> w/o Triaffine 75.79 23.98 54.28 19.14 39.91 17.91 21.08 13.01 16.09
+> UY
+> Our Model 80.46 27.75 50.66 23.63 40.01 18.28 19.77 13.60 16.11
+> w/o POS 82.13 24.43 50.62 20.63 41.27 17.57 21.06 12.52 15.70
+> w/o Dependency 79.66 23.92 50.96 19.96 39.76 16.96 20.75 12.02 15.22
+> w/o SKEM 81.25 24.23 50.09 21.07 40.42 17.55 20.81 11.81 15.07 Random POS 80.05 24.41 50.19 20.55 39.68 17.24 19.04 11.78 14.55 Random Dependency 79.71 24.42 50.50 19.98 38.97 17.33 19.15 11.32 14.23 Random SK 80.24 24.28 51.05 20.18 40.18 16.47 18.69 10.66 13.58
+> w/o Biaffine 79.65 25.91 50.38 21.24 40.04 18.01 21.30 12.03 15.38
+> w/o Triaffine 81.45 22.87 49.95 19.18 40.27 15.16 20.79 11.58 14.87
+
+earlier methods (EC-ACOS). Compared to our method, they differed by at least 7.43% (17.18% - 9.75%) and 7.52% (16.11% - 8.59%) in F1 scores for quadruple extraction in Uzbek and Uyghur languages. Even with ICL, there is still a gap compared to our model. This performance deficiency is not only due to the inherent limitations of large models in handling fine-grained tasks, coupled with a lack of fine-tuning leading to severe illusion problems, but also because existing LLMs lack a deep understanding of the vocabulary, grammar, and semantics of these two languages, thus failing to effectively extract sentiment quadruples. 
+
+# 6.2 Ablation Experiment 
+
+We also conducted ablation experiments, and the results are shown in Table 5. We first analyzed the effectiveness of our proposed SKEM, including removing the entire SKEM and removing POS and dependency knowledge separately from the SKEM. Regardless of the variant, the model performance declined. Removing the entire SKEM naturally resulted in the largest performance drop, with decreases of 1.29% (17.18% - 15.90%) and 1.05% (16.11% - 15.07%) in Uzbek and Uyghur respectively. Furthermore, we found that removing dependency knowledge caused a greater performance drop than removing POS knowledge. This may be because dependency knowledge characterizes the relations between words (such as subject-verb, verb-object, and modifying relations), which is a global, structured form of knowledge, more useful than POS, which describes part-of-speech categories at the local, lexical level. To more accurately verify the effectiveness of the knowledge we introduced, we no longer removed the modules, but instead directly used randomly generated knowledge. Here, Random POS and Random Dependency 16 represent completely randomly generated POS labels and dependencies, while Random SK contains Random POS and Random Dependency. Experimental results show that randomly generated knowledge leads to a greater performance drop in the model compared to removing the corresponding modules. However, this also demonstrates that our model can extract useful information from this syntactic knowledge, thereby helping the model identify quadruples. Finally, we removed biaffine and triaffine, and the model performance also decreased significantly, indicating their effectiveness. UZ UY      
+
+> 60
+> 15
+> 30
+> 45
+> TAO
+> 8
+> 2
+> 4
+> 6
+> TA AO TO
+> 0.8
+> 0.2
+> 0.4
+> 0.6
+> pos->neg
+> neg->pos
+> Entity Error Relation Error Sentiment Error
+
+Fig. 6. Our method performs error analysis on quadruple extraction. 
+
+# 6.3 Error Analysis 
+
+We performed error analysis 3 on our method, categorizing the error types of the predicted quadruples into three main categories: entity errors, relation errors and sentiment errors. Entity errors were further subdivided into three subcategories: target errors (T), aspect errors (A) and opinion errors (O). Relation errors were also subdivided into three subcategories: target-aspect relation errors (TA), target-opinion relation errors (TO) and aspect-opinion relation errors (AO). Sentiment errors were subdivided into two subcategories: false negative errors (pos->neg) and false positive errors (neg->pos). The specific error analysis results are shown in Figure 6. The results show that on both language datasets, the main errors almost exclusively stemmed from entity errors, with aspect identification errors being the most frequent. This is likely because aspect diversity is far greater than that of target and opinion entities. Furthermore, we found that AO errors were significantly higher than TO and TA errors in relational errors. This is natural, as the high error rates of aspect and opinion entities directly lead to a high error rate in AO relations. Finally, we observed slightly more false positive errors than false negative errors, which may be due to data imbalance. 17 Table 6: Case study on Uzbek reviews about Google applications: effect of syntactic knowledge. 
+
+Case 1 (Gmail) : Gmail interfeysi qulay, lekin sinxronlash ba’zan sekin. 
+
+Gold: (Gmail, interfeys, qulay, pos); (Gmail, sinxronlash, sekin, neg) H2DT: (Gmail, interfeys, qulay, pos); (Gmail, interfeys, sekin, neg) Ours: (Gmail, interfeys, qulay, pos); (Gmail, sinxronlash, sekin, neg) 
+
+Case 2 (Google Maps) : Google Maps yo‘nalishlarni aniq ko‘rsatadi, ammo ovozli navigatsiya tez-tez uzilib qoladi. 
+
+Gold: (Google Maps, yo‘nalishlar, aniq, pos); (Google Maps, ovozli navigatsiya, uzilib qoladi, neg) H2DT: (Google Maps, yo‘nalishlar, aniq, pos); (Google Maps, yo‘nalishlar, uzilib qoladi, neg) Ours: (Google Maps, yo‘nalishlar, aniq, pos); (Google Maps, ovozli navigatsiya, uzilib qoladi, neg) 
+
+# 6.4 Case Studies 
+
+We further present a case study on Uzbek reviews about Google applications to demonstrate the benefit of injecting syntactic knowledge. As shown in Table 6, in both examples, the syntax-agnostic baseline H2DT exhibits aspect–opinion misalignment under adversative constructions (e.g., lekin /ammo “but”), where negative opinions in the second clause are incorrectly attached to an earlier aspect due to surface proximity (e.g., linking “slow” to “interface” instead of “synchronization” in Gmail). By contrast, our syntax-aware model leverages dependency-based cues to align opinion expressions with their syntactically governed targets (predicate–argument or modifier–head relations), thereby producing correct quadruple extraction. These qualitative results highlight that syntactic priors are particularly effective for mitigating cross-clause mismatches and improving robustness under long-range dependencies. 
+
+# 6.5 Efficiency Analysis 
+
+We conducted an efficiency analysis of our method, and the results are shown in Table 7. Our method achieved suboptimal efficiency on both languages, only worse than the Meta-WP model. This may be due to the increased computational overhead brought by the introduction of biaffine and triaffine. Compared to H2DT, our method is more efficient because our syntactic structure is a homomorphic graph, which has lower computational overhead than heteromorphic graphs. Furthermore, we noted that span-based methods (such as EC-ACOS, Span-ASTE and MRM-STS) and generative methods (such as ParaPhrase) are both inefficient. This is mainly because span-based methods require enumerating spans, while generative models are inefficient due to their autoregressive generation mechanism that produces characters sequentially. 
+
+> 3Error rate for each error type = number of quadruples with that error type / total number of quadruples
+
+18 Table 7: Efficiency analysis of our model and baseline models. “doc/s” represents the number of sentences processed per second.                               
+
+> Training Inference (doc/s) (doc/s) UZ
+> EC-ACOS 5.60 14.35 Span-ASTE 5.15 14.79 ParaPhrase 10.36 9.74 Meta-WP 21.31 76.50 MRM-STS 5.06 13.30 H2DT 12.38 23.54 Our Model 13.93 27.82
+> UY
+> EC-ACOS 5.53 10.98 Span-ASTE 5.20 11.43 ParaPhrase 10.71 8.25 Meta-WP 20.70 60.40 MRM-STS 4.50 11.19 H2DT 11.70 18.88 Our Model 13.23 21.57
+
+# 7 In-Depth Analysis of the LASQ Dataset 
+
+We conducted a more in-depth analysis of our LASQ dataset, and the specific results are shown in Figure 7. 
+
+Document Length: We divided the document length into 11 groups and then counted the number of samples contained in each group, as shown in Figure 7(a). We found that the document length of most samples in both languages is concentrated between 10 and 49, and even the longest document is less than 140. For existing pre-trained language models, their self-attention mechanism can capture the associations between all words without hindrance, and there is no problem of "long-distance dependency loss". 
+
+Number of Quadruples: We divided the number of quadruples into 10 groups and then counted the number of samples in each group. The results are shown in Figure 7(b). We found that compared with other low-resource ABSA datasets [ 7, 8] (which typically contain at most three quadruples), our dataset has nearly half of the samples containing at least four quadruples in both languages, and some even contain more than ten quadruples. This is mainly because our dataset is document-level, and longer texts usually have more quadruples. However, this also poses a challenge to the model’s recognition. Specifically, 1) more quadruples indicate more entities such as targets, aspects, and opinions, which makes it easier for the model to miss some entities; 2) more entities lead to more complex relations between them, which manifests as challenges for the model in recognizing TA, TO, and AO relations. 
+
+Cross-Sentence Relations: Figure 7(c) shows the proportion of cross-sentence relations for the three types of relations. We found that relations related to the target entity have a high proportion of cross-sentence relations. This is not a characteristic of low-resource languages, but rather a domain characteristic of our data. Our data comes from user reviews of products, and such data usually only mentions the target entity at the beginning of the review and then omits it, resulting in half of the TA and TO relations being cross-sentence relations. However, cross-sentence relations did not 19 UZ UY         
+
+> 90
+> 15
+> 75
+> 60
+> 45
+> 30
+> >10
+> 8
+> 34567
+> 9
+> 2
+> 1
+> 60
+> 10
+> 50
+> 40
+> 30
+> 20
+> TA TO AO 01>2
+> (a) (b)
+> (c) (d)
+> >100
+> 90~99
+> 0~9
+> 60~69
+> 70~79
+> 80~89
+> 50~59
+> 40~49
+> 30~39
+> 20~29
+> 10~19
+> Document Length
+> Number of Samples
+> Number of Quadruples
+> Percentage (%)
+> Relation Type Number of Suffixes
+
+Fig. 7. We present the results of a more in-depth analysis of our LASQ dataset. Figure (a) shows the statistics for document length; Figure (b) shows the statistics for quadruples; Figure (c) shows the proportion of cross-sentence relations; and Figure (d) shows the proportion of entities with different morphological complexities. have a serious impact on our model, as the results in Table 4 show that the recognition F1 score of the TO relation with a high proportion of cross-sentence relations is much higher than that of the AO relation with a low proportion of cross-sentence relations. 
+
+Morphological Complexity: We analyzed the morphological complexity of entity words, dividing them into three groups according to the number of suffixes they contain, as shown in Figure 7(d). Compared to English, which typically contains at most one suffix, we believe that words containing at least two suffixes have higher morphological complexity. We found that about half of the entity words in both languages have high complexity, which causes the model to split these words into multiple tokens, making it difficult to accurately identify entity boundaries during the final recognition. 
+
+# 8 Future Work 
+
+In this study, we propose an initial method for our LASQ dataset. While its performance surpasses existing baseline models, further improvements are possible from several angles. To facilitate future research in this direction, we attempt to elucidate several potential directions for future work. 20 Exploiting the Semantic Reasoning Capabilities of Large Language Models. 
+
+Compared to static embedding-based methods, large language models (MLMs) offer superior contextual understanding and logical reasoning capabilities. Specifically: 1) As a backbone network, suitable prompt templates can be designed to fine-tune LLMs, either fully or based on LoRA. Given that the ABSA task involves extracting structured sentiment quadruples, we speculate that code-style prompts (e.g., formatting output as JSON or Python objects) will be more effective. 2) As an external knowledge base, large language models can serve as a rich source of implicit world knowledge and common-sense reasoning, generating high-quality synthetic data for data augmentation or providing explicit reasoning chains to explain why specific sentiment polarities are assigned to certain aspects. 
+
+Enhancing Aspect Term Detection under High Lexical Diversity. The LASQ dataset exhibits a high degree of diversity in aspects, posing a challenge to our initial model in recognizing them. We propose two possible improvements: 1) aspect-oriented data augmentation, utilizing generative models to generate synthetic training samples containing diverse aspect paraphrases to enrich the training data distribution; and 2) introducing an external knowledge base to explicitly link different surface forms to a unified semantic concept. By combining these strategies, a more robust representation space can be constructed to capture the full scope of aspect terminology diversity. 
+
+Optimizing Computational Efficiency of High-Order Interaction Scorers. 
+
+Although biaffine and triaffine scorers can achieve rich interactions between word pairs and triples, their quadratic and cubic computational complexity reduces the efficiency of our initial model. Therefore, we plan to explore: (1) low-rank decomposition, which approximates the complete interaction tensor by decomposing it into smaller low-rank matrices, thereby significantly reducing the number of parameters and floating-point operations; and (2) parameter sharing strategies, which share scoring weights across different interaction layers or attention head dimensions to further compress the model size without sacrificing expressive power. By integrating these compression mechanisms, a favorable balance between computational efficiency and prediction accuracy can be achieved. 
+
+Mitigating Error Propagation from External Syntactic Parsers. Our current process relies on readily available part-of-speech taggers and dependency parsers to guide quadruple extraction—a design choice that can lead to error propagation when syntactic tagging is noisy or mismatched with domain-specific syntax. We can consider: 1) Introducing uncertainty estimation and confidence filtering, i.e., adding a confidence score to the parser’s output. Edges or nodes with confidence scores below a threshold are not directly used for subsequent analysis or subjected to secondary processing. 2) Utilizing large language models for self-correction, scoring or reconstructing the generated top-n candidate trees using LLMs to obtain the tree that best conforms to semantic logic. 
+
+Reducing Extraction Errors in Multi-Quadruple Scenarios. Nearly half of the samples in our dataset contain at least four quadruplets, and some even contain more than ten quadruplets. This makes the entities denser and the relations more complex, making it easier for the model to miss or make errors in identifying entities and relations. We believe that a multi-round iterative extraction framework can be 21 designed. Specifically, in each round of model recognition, we mask the entities or relations identified in previous rounds, thereby ensuring that as many new entities and relations as possible are identified and avoiding omissions. 
+
+Tackling the Impact of High Morphological Complexity. Uzbek and Uyghur, as agglutinative languages, have higher morphological complexity compared to English. In our dataset, half of the entity words have at least two suffixes. This high morphological complexity causes the model to segment entity words into multiple words, making it difficult to determine entity word boundaries. Therefore, we believe future models could: 1) perform more fine-grained modeling at the character or sub-word level, for example, using character-level encoders to extract morphological features within words and use them as supplementary information for pre-trained model input; or 2) further enhance our SKEM, specifically by incorporating morphological features such as case markers and person agreement as additional syntactic information into the model. 
+
+# 9 CONCLUSION 
+
+This paper constructs a high-quality low-resource language ABSA dataset, named LASQ, which includes two languages: Uzbek and Uyghur. We then design a grid-tagging-based model for low-resource languages. Through a designed syntax knowledge embedding module (SKEM), we integrate POS and syntactic knowledge into the model, thereby alleviating the sparsity problem caused by morphological variations in these two agglutinative languages. Experimental results demonstrate that our method outperforms several existing baseline models, proving its effectiveness. Furthermore, we conducted more extensive experimental analyses on our dataset and model. Finally, we discuss potential future research directions, including issues related to the diversity of aspect terms, morphological complexity, and efficiency. We hope our work will advance research in the field of low-resource language ABSA and attract more scholars to this area. 
+
+Acknowledgements. This work was supported by the Xinjiang Uygur Autonomous Region Innovation Environment (Talent and Base) Construction Special Program— Natural Science Program (Special Training for Ethnic Minority Scientific and Technological Talents) (Grant No. 2025D03032), the Youth Top-notch Talent Support Program of Xinjiang Normal University (Grant No. XJNUQB2022-22), the Tender Project of the Engineering Research Center of Smart Education of Xinjiang Normal University (Grant No. XJNU-ZHJY202403), the National Natural Science Foundation of China (Grant No. 61662081), and the National Social Science Foundation of China (Grant No. 14AZD11). 
+
+# References 
+
+[1] Yang, J., Yang, R., Wang, C., Xie, J.: Multi-entity aspect-based sentiment analysis with context, entity and aspect memory. In: Proceedings of the AAAI Conference on Artificial Intelligence, vol. 32 (2018) [2] Li, X., Bing, L., Li, P., Lam, W.: A unified model for opinion target extraction and target sentiment prediction. In: Proceedings of the AAAI Conference on 22 Artificial Intelligence, vol. 33, pp. 6714–6721 (2019) [3] Peng, H., Xu, L., Bing, L., Huang, F., Lu, W., Si, L.: Knowing what, how and why: A near complete solution for aspect-based sentiment analysis. In: Proceedings of the AAAI Conference on Artificial Intelligence, vol. 34, pp. 8600–8607 (2020) [4] Jiang, Q., Chen, L., Xu, R., Ao, X., Yang, M.: A challenge dataset and effective models for aspect-based sentiment analysis. In: Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP), pp. 6280– 6285 (2019) [5] Cai, H., Xia, R., Yu, J.: Aspect-category-opinion-sentiment quadruple extraction with implicit aspects and opinions. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), pp. 340–350 (2021) [6] Li, B., Fei, H., Li, F., Wu, Y., Zhang, J., Wu, S., Li, J., Liu, Y., Liao, L., Chua, T.-S., et al. : Diaasq: A benchmark of conversational aspect-based sentiment quadruple analysis. In: Findings of the Association for Computational Linguistics: ACL 2023, pp. 13449–13467 (2023) [7] Matlatipov, S.G., Rajabov, J., Kuriyozov, E., Aripov, M.: Uzabsa: Aspect-based sentiment analysis for the uzbek language. In: Proceedings of the 3rd Annual Meeting of the Special Interest Group on Under-resourced Languages@ LREC-COLING 2024, pp. 394–403 (2024) [8] Van Thin, D., Hao, D.N., Nguyen, N.L.-T.: A systematic literature review on vietnamese aspect-based sentiment analysis. ACM Trans. Asian Low-Resour. Lang. Inf. Process. 22 (8) (2023) https://doi.org/10.1145/3610226 [9] Regatte, Y.R., Gangula, R.R.R., Mamidi, R.: Dataset creation and evaluation of aspect based sentiment analysis in Telugu, a low resource language. In: Calzolari, N., Béchet, F., Blache, P., Choukri, K., Cieri, C., Declerck, T., Goggi, S., Isahara, H., Maegaard, B., Mariani, J., Mazo, H., Moreno, A., Odijk, J., Piperidis, S. (eds.) Proceedings of the Twelfth Language Resources and Evaluation Conference, pp. 5017–5024. European Language Resources Association, Marseille, France (2020). 
+
+https://aclanthology.org/2020.lrec-1.617 
+
+[10] Aziz, K., Yusufu, A., Zhou, J., Ji, D., Iqbal, M.S., Wang, S., Hadi, H.J., Yuan, Z.: Urduaspectnet: Fusing transformers and dual gcn for urdu aspect-based sentiment detection. ACM Trans. Asian Low-Resour. Lang. Inf. Process. (2024) https://doi.org/10.1145/3663367 . Just Accepted [11] Zhou, C., Wu, Z., Song, D., Hu, L., Tian, Y., Xu, J.: Span-pair interaction and tagging for dialogue-level aspect-based sentiment quadruple analysis. In: 23 Proceedings of the ACM on Web Conference 2024, pp. 3995–4005 (2024) [12] Xu, L., Chia, Y.K., Bing, L.: Learning span-level interactions for aspect sentiment triplet extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers), pp. 4755–4766 (2021) [13] Zhang, W., Deng, Y., Li, X., Yuan, Y., Bing, L., Lam, W.: Aspect sentiment quad prediction as paraphrase generation. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pp. 9209–9219 (2021) [14] Ma, T., Wang, Z., Zhou, G.: Transition-based opinion generation for aspect-based sentiment analysis. In: Ku, L.-W., Martins, A., Srikumar, V. (eds.) Findings of the Association for Computational Linguistics: ACL 2024, pp. 3078–3087. Association for Computational Linguistics, Bangkok, Thailand (2024). https://doi.org/10. 18653/v1/2024.findings-acl.182 . https://aclanthology.org/2024.findings-acl.182/ 
+
+[15] Kim, J., Heo, R., Seo, Y., Kang, S., Yeo, J., Lee, D.: Self-consistent reasoning-based aspect-sentiment quad prediction with extract-then-assign strategy. In: Ku, L.-W., Martins, A., Srikumar, V. (eds.) Findings of the Association for Computational Linguistics: ACL 2024, pp. 7295–7303. Association for Computational Linguistics, Bangkok, Thailand (2024). https://doi.org/10.18653/v1/2024.findings-acl.435 . 
+
+https://aclanthology.org/2024.findings-acl.435/ 
+
+[16] Li, B., Fei, H., Liao, L., Zhao, Y., Su, F., Li, F., Ji, D.: Harnessing holistic discourse features and triadic interaction for sentiment quadruple extraction in dialogues. In: Proceedings of the AAAI Conference on Artificial Intelligence, vol. 38, pp. 18462–18470 (2024) [17] Abulimiti, A., Schultz, T.: Building language models for morphological rich low-resource languages using data from related donor languages: the case of Uyghur. In: Beermann, D., Besacier, L., Sakti, S., Soria, C. (eds.) Proceedings of the 1st Joint Workshop on Spoken Language Technologies for Under-resourced Lan-guages (SLTU) and Collaboration and Computing for Under-Resourced Languages (CCURL), pp. 271–276. European Language Resources association, Marseille, France (2020). https://aclanthology.org/2020.sltu-1.38/ 
+
+[18] Oflazer, K.: Two-level description of Turkish morphology. In: Krauwer, S., Moortgat, M., Tombe, L. (eds.) Sixth Conference of the European Chapter of the Association for Computational Linguistics. Association for Computational Linguistics, Utrecht, The Netherlands (1993). https://aclanthology.org/E93-1066/ 
+
+[19] Arnett, C., Bergen, B.: Why do language models perform worse for morphologi-cally complex languages? In: Rambow, O., Wanner, L., Apidianaki, M., Al-Khalifa, H., Eugenio, B.D., Schockaert, S. (eds.) Proceedings of the 31st International 24 Conference on Computational Linguistics, pp. 6607–6623. Association for Compu-tational Linguistics, Abu Dhabi, UAE (2025). https://aclanthology.org/2025.coling-main.441/ 
+
+[20] Liu, B.: Sentiment Analysis: Mining Opinions, Sentiments, and Emotions. Cambridge university press, ??? (2020) [21] Yadav, A., Vishwakarma, D.K.: Sentiment analysis using deep learning architec-tures: a review. Artificial Intelligence Review 53 (6), 4335–4385 (2020) [22] Pearce, K., Alghowinem, S., Breazeal, C.: Build-a-bot: teaching conversational ai using a transformer-based intent recognition and question answering architecture. In: Proceedings of the Thirty-Seventh AAAI Conference on Artificial Intelligence and Thirty-Fifth Conference on Innovative Applications of Artificial Intelligence and Thirteenth Symposium on Educational Advances in Artificial Intelligence. AAAI’23/IAAI’23/EAAI’23. AAAI Press, ??? (2023). https://doi.org/10.1609/ aaai.v37i13.26903 . https://doi.org/10.1609/aaai.v37i13.26903 
+
+[23] Benke, I., Gnewuch, U., Maedche, A.: Understanding the impact of control levels over emotion-aware chatbots. Computers in Human Behavior 129 , 107122 (2022) [24] Karn, A.L., Karna, R.K., Kondamudi, B.R., Bagale, G., Pustokhin, D.A., Pustokhina, I.V., Sengan, S.: Retracted article: Customer centric hybrid recom-mendation system for e-commerce applications by integrating hybrid sentiment analysis. Electronic commerce research 23 (1), 279–314 (2023) [25] Da’u, A., Salim, N., Rabiu, I., Osman, A.: Weighted aspect-based opinion mining using deep learning for recommender system. Expert Systems with Applications 
+
+140 , 112871 (2020) [26] Yu, G., Li, J., Luo, L., Meng, Y., Ao, X., He, Q.: Self question-answering: Aspect-based sentiment analysis by role flipped machine reading comprehension. In: Findings of the Association for Computational Linguistics: EMNLP 2021, pp. 1331–1342 (2021) [27] Sun, R., Tao, H., Chen, Y., Liu, Q.: Hacan: a hierarchical answer-aware and context-aware network for question generation. Frontiers of Computer Science 
+
+18 (5), 185321 (2024) [28] Tang, D., Qin, B., Feng, X., Liu, T.: Effective LSTMs for target-dependent sentiment classification. In: Matsumoto, Y., Prasad, R. (eds.) Proceedings of COLING 2016, the 26th International Conference on Computational Linguistics: Technical Papers, pp. 3298–3307. The COLING 2016 Organizing Committee, Osaka, Japan (2016). https://aclanthology.org/C16-1311 
+
+[29] Chauhan, G.S., Nahta, R., Meena, Y.K., Gopalani, D.: Aspect based sentiment analysis using deep learning approaches: A survey. Computer Science Review 49 ,25 100576 (2023) [30] Zhu, L., Xu, M., Bao, Y., Xu, Y., Kong, X.: Deep learning for aspect-based sentiment analysis: a review. PeerJ Computer Science 8, 1044 (2022) [31] Ghaddar, B., Naoum-Sawaya, J.: High dimensional data classification and fea-ture selection using support vector machines. European Journal of Operational Research 265 (3), 993–1004 (2018) [32] Riloff, E., Wiebe, J.: Learning extraction patterns for subjective expressions. In: Proceedings of the 2003 Conference on Empirical Methods in Natural Language Processing, pp. 105–112 (2003) [33] Alvarez-López, T., Juncal-Martínez, J., Fernández-Gavilanes, M., Costa-Montenegro, E., González-Castano, F.J.: Gti at semeval-2016 task 5: Svm and crf for aspect detection and unsupervised aspect-based sentiment analysis. In: Proceed-ings of the 10th International Workshop on Semantic Evaluation (SemEval-2016), pp. 306–311 (2016) [34] Mulyo, B.M., Widyantoro, D.H.: Aspect-based sentiment analysis approach with cnn. In: 2018 5th International Conference on Electrical Engineering, Computer Science and Informatics (EECSI), pp. 142–147 (2018). IEEE [35] Xing, B., Liao, L., Song, D., Wang, J., Zhang, F., Wang, Z., Huang, H.: Earlier attention? aspect-aware lstm for aspect-based sentiment analysis. arXiv preprint arXiv:1905.07719 (2019) [36] Nguyen, T.H., Shirai, K.: Aspect-based sentiment analysis using tree kernel based relation extraction. In: Computational Linguistics and Intelligent Text Processing: 16th International Conference, CICLing 2015, Cairo, Egypt, April 14-20, 2015, Proceedings, Part II 16, pp. 114–125 (2015). Springer [37] Sun, K., Zhang, R., Mensah, S., Mao, Y., Liu, X.: Aspect-level sentiment analysis via convolution over dependency tree. In: Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP), pp. 5679–5688 (2019) [38] Devlin, J.: Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805 (2018) [39] Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M., Zettlemoyer, L., Stoyanov, V.: Roberta: A robustly optimized bert pretraining approach. arXiv preprint arXiv:1907.11692 (2019) [40] Sun, Y., Wang, S., Li, Y., Feng, S., Tian, H., Wu, H., Wang, H.: Ernie 2.0: A continual pre-training framework for language understanding. In: Proceedings of 26 the AAAI Conference on Artificial Intelligence, vol. 34, pp. 8968–8975 (2020) [41] Song, Y., Wang, J., Jiang, T., Liu, Z., Rao, Y.: Attentional encoder network for targeted sentiment classification. arxiv 2019. arXiv preprint arXiv:1902.09314 (2019) [42] Ma, D., Li, S., Zhang, X., Wang, H.: Interactive attention networks for aspect-level sentiment classification. arXiv preprint arXiv:1709.00893 (2017) [43] Liao, W., Zeng, B., Yin, X., Wei, P.: An improved aspect-category sentiment analysis model for text sentiment analysis based on roberta. Applied Intelligence 
+
+51 , 3522–3533 (2021) [44] Xiang, Y., Zhang, J., Guo, J.: Block-level dependency syntax based model for end-to-end aspect-based sentiment analysis. Neural Networks 166 , 225–235 (2023) [45] Nie, Y., Fu, J., Zhang, Y., Li, C.: Modeling implicit variable and latent structure for aspect-based sentiment quadruple extraction. Neurocomputing 586 , 127642 (2024) [46] Wu, C., Kang, H.: Harnessing syntax gcn and multi-view interaction for conversational aspect-based quadruple sentiment analysis 13 , 73332–73341 (2025) [47] Zhang, W., Li, X., Deng, Y., Bing, L., Lam, W.: Towards generative aspect-based sentiment analysis. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 2: Short Papers), pp. 504–510 (2021) [48] Lee, C., Lee, H., Kim, K., Kim, S., Lee, J.: An efficient fine-tuning of generative language model for aspect-based sentiment analysis. In: 2024 IEEE International Conference on Consumer Electronics (ICCE), pp. 1–4 (2024). IEEE [49] Simmering, P.F., Huoviala, P.: Large language models for aspect-based sentiment analysis. arXiv preprint arXiv:2310.18025 (2023) [50] Zhou, C., et al.: A comprehensive evaluation of large language models on aspect-based sentiment analysis. arXiv preprint arXiv:2412.02279 (2024) [51] Alanazi, S., Liu, X.: Leveraging large language models for aspect-based sentiment classification using gpt-4. In: International Journal of Advanced Information Technology, vol. 14 (2024) [52] Pandit, T., et al.: Multi-domain absa conversation dataset generation via llms for real-world evaluation and model comparison. arXiv preprint arXiv:2505.24701 (2025) [53] Neveditsin, N., Lingras, P., Mago, V.: From annotation to adaptation: Metrics, synthetic data, and aspect extraction for aspect-based sentiment analysis with 27 large language models. arXiv preprint arXiv:2503.20715 (2025) [54] Azhar, A.N., Khodra, M.L.: Fine-tuning pretrained multilingual bert model for indonesian aspect-based sentiment analysis. In: 2020 7th International Conference on Advance Informatics: Concepts, Theory and Applications (ICAICTA), pp. 1–6 (2020). https://doi.org/10.1109/ICAICTA49861.2020.9428882 [55] Nivre, J., Marneffe, M.-C., Ginter, F., Hajič, J., Manning, C.D., Pyysalo, S., Schuster, S., Tyers, F., Zeman, D.: Universal Dependencies v2: An ever-growing multilingual treebank collection. In: Calzolari, N., Béchet, F., Blache, P., Choukri, K., Cieri, C., Declerck, T., Goggi, S., Isahara, H., Maegaard, B., Mariani, J., Mazo, H., Moreno, A., Odijk, J., Piperidis, S. (eds.) Pro-ceedings of the Twelfth Language Resources and Evaluation Conference, pp. 4034–4043. European Language Resources Association, Marseille, France (2020). 
+
+https://aclanthology.org/2020.lrec-1.497/ 
+
+[56] Qi, P., Zhang, Y., Zhang, Y., Bolton, J., Manning, C.D.: Stanza: A python natural language processing toolkit for many human languages. In: Celikyilmaz, A., Wen, T.-H. (eds.) Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics: System Demonstrations, pp. 101–108. Association for Computational Linguistics, Online (2020). https://doi.org/10.18653/v1/2020. acl-demos.14 . https://aclanthology.org/2020.acl-demos.14/ 
+
+[57] Bai, J., Wang, Y., Chen, Y., Yang, Y., Bai, J., Yu, J., Tong, Y.: Syntax-BERT: Improving pre-trained transformers with syntax trees. In: Merlo, P., Tiedemann, J., Tsarfaty, R. (eds.) Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume, pp. 3011–3020. Association for Computational Linguistics, Online (2021). https://doi.org/10. 18653/v1/2021.eacl-main.262 . https://aclanthology.org/2021.eacl-main.262/ 
+
+[58] Zhang, C., Li, Q., Song, D.: Aspect-based sentiment classification with aspect-specific graph convolutional networks. In: Inui, K., Jiang, J., Ng, V., Wan, X. (eds.) Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP), pp. 4568–4578. Association for Computational Linguistics, Hong Kong, China (2019). https://doi.org/10.18653/v1/D19-1464 . 
+
+https://aclanthology.org/D19-1464/ 
+
+[59] Marcheggiani, D., Titov, I.: Encoding sentences with graph convolutional networks for semantic role labeling. In: Palmer, M., Hwa, R., Riedel, S. (eds.) Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing, pp. 1506–1515. Association for Computational Linguistics, Copenhagen, Denmark (2017). https://doi.org/10.18653/v1/D17-1159 . https://aclanthology.org/D17-1159/ 
+
+[60] Wu, Z., Ying, C., Zhao, F., Fan, Z., Dai, X., Xia, R.: Grid tagging scheme for aspect-oriented fine-grained opinion extraction. In: Cohn, T., He, Y., Liu, Y. (eds.) 28 Findings of the Association for Computational Linguistics: EMNLP 2020, pp. 2576–2585. Association for Computational Linguistics, Online (2020). https://doi. org/10.18653/v1/2020.findings-emnlp.234 . https://aclanthology.org/2020.findings-emnlp.234/ 
+
+[61] Yuan, Z., Tan, C., Huang, S., Huang, F.: Fusing heterogeneous factors with tri-affine mechanism for nested named entity recognition. In: Muresan, S., Nakov, P., Villavicencio, A. (eds.) Findings of the Association for Computational Linguistics: ACL 2022, pp. 3174–3186. Association for Computational Linguis-tics, Dublin, Ireland (2022). https://doi.org/10.18653/v1/2022.findings-acl.250 . 
+
+https://aclanthology.org/2022.findings-acl.250/ 
+
+[62] Kipf, T.N., Welling, M.: Semi-supervised classification with graph convolutional networks. In: International Conference on Learning Representations, pp. 1–14 (2016) [63] Dozat, T., Manning, C.D.: Deep biaffine attention for neural dependency parsing. In: International Conference on Learning Representations (2022) [64] Zhang, Y., Li, Z., Zhang, M.: Efficient second-order treecrf for neural dependency parsing. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp. 3295–3305 (2020) [65] Yang, A., Li, A., Yang, B., Zhang, B., Hui, B., Zheng, B., Yu, B., Gao, C., Huang, C., Lv, C., et al.: Qwen3 technical report. arXiv preprint arXiv:2505.09388 (2025) [66] OpenAI: Introducing GPT-5 (2025). https://openai.com/index/ introducing-gpt-5/ [67] Conneau, A., Khandelwal, K., Goyal, N., Chaudhary, V., Wenzek, G., Guzmán, F., Grave, É., Ott, M., Zettlemoyer, L., Stoyanov, V.: Unsupervised cross-lingual representation learning at scale. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp. 8440–8451 (2020) [68] Xue, L., Constant, N., Roberts, A., Kale, M., Al-Rfou, R., Siddhant, A., Barua, A., Raffel, C.: mt5: A massively multilingual pre-trained text-to-text transformer. arXiv preprint arXiv:2010.11934 (2020) [69] Qi, P., Zhang, Y., Zhang, Y., Bolton, J., Manning, C.D.: Stanza: A Python natural language processing toolkit for many human languages. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics: System Demonstrations (2020) 29

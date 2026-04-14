@@ -1,0 +1,183 @@
+Title: Product Review Based on Optimized Facial Expression Detection
+
+URL Source: https://arxiv.org/pdf/2604.10885v1
+
+Published Time: Tue, 14 Apr 2026 01:34:10 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Product Review Based on Optimized Facial Expression Detection 
+
+Vikrant Chaugule, Abhishek D, Aadheeshwar Vijayakumar, Pravin Bhaskar Ramteke, and Shashidhar G. Koolagudi 
+
+National Institute of Technology Karnataka 
+
+Surathkal, Karnataka, India 
+
+{vikrant.chaugule, abhid95, vkaadheeshwar95, ramteke0001 }@gmail.com, koolagudi@nitk.ac.in 
+
+Abstract 
+
+This paper proposes a method to review public acceptance of products based on their brand by analyzing the facial expression of the customer intending to buy the product from a supermarket or hypermarket. In such cases, facial expression recognition plays asignificant role in product review. Here, facial expression detection is performed by extracting feature points using a modified Harris algorithm. The modified Harris algorithm reduced the time complexity of the existing feature extraction Harris Algorithm. A comparison of time complexities of existing algorithms is done with proposed algorithm. The algorithm proved to be significantly faster and nearly accurate for the needed application by reducing the time complexity for corner points detection. 
+
+Index Terms —Gaussian Filter, Feature Extraction, Emotion Detection, Product Review. 
+
+## I. INTRODUCTION 
+
+Human facial expressions are having the strength to express feelings and emotions and control the behaviour among themselves. And facial emotion is an adaptive response which would give a picture of mental state of the person (consumer in particular). The indication of many emotions like happy, sad, interested, curious, excited etc can be done via facial expressions. The fast growing technology has led to the communication between humans and robots, and robots can now be instructed through facial expressions. Machines recognising facial expres-sion of human has been an active area of research. The major problem in facial expression recognition is handling variations in expressions, processing faster and also product specific development. Some products need        
+
+> This paper was published in the 2016 Ninth International Con-ference on Contemporary Computing (IC3). ©2016 IEEE. DOI: 10.1109/IC3.2016.7880213
+
+faster algorithms and some accurate algorithms, and bal-ancing between these two factors is the major concern[1]. Emotion detection has many applications in practice, and one of them is product review. For example, the statistics on the consumers curiousness can be a hint for ”how much interested they are in the product”. One very good example one can cite when one talk about product review is the Ponds toothpaste. Ponds is a product of the very well established and renowned company Hindustan Lever which was founded in 1885. The flagship brands of the company like ‘Ponds’ and ‘Clinic All Clear’ were very successful and had expanded their operations in manufacturing soaps, face wash, age defying creams etc.. However, they were not very careful in which territory they tread and decided to come up with a toothpaste. ‘Ponds’ which was a popular face cream brand had failed miserably when it applied its name to toothpaste. Since for customers, the brand Ponds stood for nothing but fragrance and a product for external use, it missed the required attributes of a toothpaste which is taste. This lead to an instant failure of the product since consumers was very sceptical about buying the product itself. It also led to a lot of loss and damage to their brand image since they realized this a bit late. Hence, in this case, the first reaction of the consumer on seeing the product would have been very valuable and could have saved the company from facing this damage. The paper’s primary focuses are as follows. Sub Di-vision 2 illustrates the background knowledge of existing algorithms for facial detection, and feature points extrac-tion. Sub Division 3 illustrates the problem statement. Sub Division 4 presents the proposed model and technique of product review Sub Division 5 explains in detailed implementation of the approach along with case study. Sub Division 6 provides with the Evaluation of proposed approach through survey. Sub Division 7 concludes our work and also the future work needed 
+
+> arXiv:2604.10885v1 [cs.CV] 13 Apr 2026
+
+## II. LITERATURE REVIEW 
+
+The Literature survey has been done on the methods and algorithms which are already in use for face detec-tion, emotion detection and feature points detection and extraction. 
+
+A. FACE DETECTION 
+
+The proposed algorithm applies the method of face detection on the basis of Viola John algorithm. The inner details of this algorithm is briefed using Integral Image, Adaboost algorithm and Haar like feature to convert weak classifier into a stronger one and to get higher performance than existing face detection algorithms. 
+
+1) Integral Image: Viola John used this for the first time for image processing and it is the intermediate representation of given image. Using this the calculation of integral image rectangle feature became very fast[1]. The integral image at location p, q has the sum of the pixels above and to the left of p, q inclusive: 
+
+ii (p, q ) = X
+
+> p1<=p,q 1<=q
+
+i(p1, q 1); (1) where y(p, q) is the integral image and i(p, q) is original image. The following pair of recurrences are used to compute the Integral Image in one pass. 
+
+x(p, q ) = x(p, q − 1) + i(p, q ) (2) 
+
+ii (p, q ) = ii (p − 1, q ) + x(p, q ) (3) where x(p, q)=cumulative row sum, x(p, -1) = 0 and y(-1, q) = 0. 
+
+2) Haar Like Feature: Before this feature was in-troduced the feature calculation was costly to compute. These features are like wavelet Haar features. One can get these features in the form of intensity through integral image method upon given original image. Pixel sum of white region subtracts pixel sum of black region. But the features calculated (in subwindows) are very larger than pixels itself. To avoid this and to reduce the complexity of feature selection the Adaboost algorithm is used. It is shown in figure 1. 
+
+3) Adaboost: Adaboost for Haar cascade method is used to train by supervised learning to classify negative and positive sample, to classify the results and show how AdaBoost learns weak classifier by converting weak clas-sifier to a stronger classifier and reducing the computation time. At all the stages of cascade, application of more strict rules for adding more or less different Haar feature and the other features are rejected. When an image is passed to a classifier cascade and if the image passes all classifiers then there will be a very  
+
+> Fig. 1. Haar like feature
+
+high probability that face is present and is shown in figure 2. Mouth detection-Mouth is detected in same manner as the face is detected. Eye detection-Eye is detected in same manner as the face is detected. 
+
+B. EMOTION DETECTION 
+
+Emotion recognition is the process of identifying hu-man emotion, most typically from facial expressions. This is both something that humans do automatically but computational methodologies have also been developed. Some of the oftenly used terminologies in the paper related to emotion detection are briefed here. 
+
+1) Gaussian filter: The Operator used for Gaussian filtering does a weighted average of pixels surrounding it based upon Gaussian distribution. This is used in removing Gaussian noise and is a model of realistic defocused lens. Sigma defines amount of blurness. The radius slider controls the largeness of the template. The larger the sigma is larger will be the blurring for larger sizes. How it works is explained below. The Gaussian operator generates a value template that are applied then to the pixel group in the image. Theses values of templates are defined by the equation given below and shown in figure 3. 
+
+wu,v = exp (− 12 (u2 + v2)/δ 2) (4) The figure shows variation in curve in accordance with sigma values. 
+
+2) Beizer curve: In computer graphics the Bezier curves are majorly used for modelling smooth curves. The curve can be manipulated intuitively and the points can also be shown graphically as convex hull of control points contains the curve. Translation and rotation is applicable Fig. 2. Cascade of feature Classifiers  
+
+> Fig. 3. Graph showing high sigma values require significantly more calculations per pixel
+
+to the curve by doing the respective transformations over the control points of the curve. For rasterizing this curve the simple method would be evaluating it in most of the points closely spaced and converting the approximate line segment sequence[2]. 
+
+C. FEATURE POINTS DETECTION AND EX-TRACTION 
+
+Numerous applications require relating two or more pictures to concentrate data from them. For instance, if two progressive edges in a video succession taken from a moving camera can be connected, it is conceivable to extricate data in regards to the profundity of items in the earth and the pace of the camera. The brute force technique for contrasting each pixel in the two pictures is computationally restrictive. Naturally, one can picture relating two pictures by coordinating just areas in the picture that are somehow intriguing. Such points are alluded as interest points and are found utilizing an interest point identifier. Finding a relationship between pictures is then performed utilizing just these points. This definitely lessens the required calculation time. Various interest point locators have been proposed with an exten-sive variety of definitions for what focuses in a picture are fascinating. A few indicators discover purposes of high neighbourhood symmetry, others discover territories of exceedingly fluctuating composition, while others find corner points. Corner points are fascinating as they are shaped from two or more edges and edges more often than not charac-terize the limit between two unique questions or parts of the same item. There are different techniques to extricate the corner points (interest points), however each has its own particular advantages as well as drawbacks. 
+
+1) Susan corner detector: S.M. Smith and M. Brady presented SUSAN operator, and discover the interest point by contrasting nucleus pixel with all pixel inside the circular mask, center pixel have intensity more than every one of the pixels in the mask like center of gravity principles and in the event that we expand limit at certain point it identifies edges rather than corner[3]. 
+
+2) Rostern & Drummond corner detector: It distin-guishes the corner through local intensity comparisons of the pixels and is the quickest corner identifier which takes less time to the various techniques though keeping accuracy at stake(accuracy is reduced by half). 
+
+3) Harris & Stephens corner detector: A selection criteria is used for the detection of corner points. For every pixel, a score is resolved and if this score is greater than the certain value, the pixel is considered as a corner. This algorithm is clarified mathematically in the implementation segment recommending the modifications that the proposed algorithm does[4]. 
+
+4) Shi & Tomasi: This algorithm is based on the Harris Stephens corner detection. The primary difference between the two approaches are that, with Shi and Tomasi, the corner is detected by calculating minimum of two eigenvalues of the matrix rather than computing the score from the function [5]. The paper concentrates on a problem which can be divided into two parts. The first problem is that companies Fig. 4. flow chart of the proposed approach 
+
+take a lot of time to get a feedback of their product. Usually by the time they get a public opinion of their product the brand image of the company goes down. Also for new products there is a delay involved in finding out the consumers perception of the product launched. The proposed approach helps companies to take up quick action to rectify the shortcomings of the product. The pro-posed approach helps in reviewing product (especially for newly launched products in the market) by analysing the facial emotion of all the costumers viewing the product. Hence we intend to give data chart for the company which should provide them the statistics regarding general trend in consumer’s mind pattern. The second problem is that the existing emotion detection algorithms use predefined feature extractors which are slow which might affect the time required to perform Emotion analysis using real time video. The challenge intended to be solved is to accelerate the process of emotion detection such that it is suitable for real time video and also has nearly the same accuracy as previous algorithms[5]. 
+
+## III. METHODOLOGY 
+
+The proposed approach takes a real time video or recorded video as input and takes snapshots at regular in-tervals. In advanced commercial deployments, the insights extracted from these frames can be fed into generative AI frameworks for dynamic video trailer synthesis [6], allowing product advertisements to automatically adapt to viewer reactions. Furthermore, this facial analysis pipeline could be embedded within highly interactive consumer environments, such as those built using Domain Specific Language (DSL) architectures for gaming applications [7]. These snapshots are then analyzed. The face is then detected using Viola-John Algorithm, which is also separated from the snapshot. The face is then processed to detect mouth accurately by only considering lower one-third of the detected face. Similarly, eyes are detected by considering the upper one-third of the face. Then we apply the proposed approach of finding feature points which is done in a much faster manner such that nearly five times more snapshots can be processed and analyzed compared to regular methods used previously. The feature points extracted from both mouth and eyes are then processed (detailed explanation in implementation).The review of the customer is calculated using the curious ratio calculated using eyes and mouth as well as the curve obtained using the feature points of the mouth. The algorithm gives appropriate reviews by giving proper weights to each of the values extracted from eyes and mouth. From these values calculated, expressions like curiousness, dis-interestedness, satisfaction and the excite-ment level of a person can be identified[8]. Hence, the overall rating is calculated for the product being viewed. The approach proposed can be represented in the form of a flow diagram. For clearer understanding, the input to the algorithm and output from the algorithm is shown as well[9]. The second part of the paper emphasizes on accelerating the process of emotion detection by going through the intricacies of existing algorithms( discussed in implementation ). The algorithm manages to keep nearly the same accuracy as the existing algorithms while reducing the time complexity using the approximation algorithmic techniques and is shown in figure 4. 
+
+## IV. IMPLEMENTATION 
+
+The implementation of the algorithm is based on the study of previous existing algorithms and is mostly based on algorithm by Harris. The Harris algorithm for feature extraction involves calculation of gaussian filter matrix which is the major time consuming part of the entire algorithm[10]. The functions such as convolution of matrices and multiplication of matrices can not be optimized further. The only change that the algorithm proposes is to reduce the time complexity by using taylor expansion of exponentiation and cutting down the existing complexity of the algorithm by log (n)A. Product Review implementation 
+
+The complete procedure is as described. Face is de-tected and extracted via Viola Jones algorithm, which is considered a standard algorithm for face detection. Then the lower part of the detected face separated from which the mouth is extracted using vision library of MATLAB. Only the lower one-third of the face is analysed for better accuracy of mouth detection. Similarly upper one-third is separated and eyes are extracted. The optimized algorithm is then used to extract feature points(discussed later). In the next step the construction of Bezier curve from mouth points is done and then the derivative of the curve of the best fit is calculated and the points’ concavity is found, accordingly results are obtained. Bezier Curve-The construction of Bezier curve can be done using four points. They are one starting point, two points for con-trolling and one ending point[11]. But for this approach more than 4 points are taken and hence curve gives better results. Once the curve is found the MATLAB tool for curve fitting is used to fit the curve to a second degree of polynomial and a threshold is set which if met then only considered for various types of emotion detection.  
+
+> Fig. 5. Corner Detection Theory
+
+. For the eyes, we iterate through all feature points y(j) for each x(i) and then maximum and minimum values are appropriately calculated. Using these values, the curious ratio for eyes is calculated. The same procedure followed for feature points of the mouth and the curious ratio for mouth is calculated. Both of these values help in deciding the curiousness level of the person. Also if values of both mouth and eye curious ratio are above a threshold value (after application of proper weights), it helps decide the excitement level of a person. In the same way the weights are assigned to all three factors i.e mouth curious ratio, eye curious ratio and smile curvature.If the overall value is less than a threshold value then it is assumed that the person is disinterested in the particular product. The overall product rating is also calculated based on the above mentioned factors[12]. 
+
+B. Optimized feature extractor 
+
+The algorithm used as a base is Harris algorithm which is explained in detail along with the change we are proposing. The signal point feature extraction is the basis of the algorithm. This algorithm makes the window of the image to move to infinity in any direction[12]. Also the gray variation is defined as follows. 
+
+Ex,y = X
+
+> u,v
+
+wu,v [Ix+u,y +v − Iu, v ]2 (5) 
+
+= X
+
+> u,v
+
+wu,v [xX + yY + O(x2 + y2)] 2 (6) 
+
+= Ax 2 + 2 Cxy + By 2 (7) 
+
+= ( x, y )M (x, y )T (8) where X, Y are the 1-order convoluted gray-level gradient of the image. 
+
+X = ∂I ∂x = I ⊗ (−1, 0, 1) (9) 
+
+Y = ∂I ∂y = I ⊗ (−1, 0, 1) (10) To improve the capabilities of anti-noising, Gaussian window is used to smooth image window[13]. 
+
+wu,v = exp (− 12 (u2 + v2)/δ 2) (11) This is where the gaussian function can be optimized and taylor expansion upto 3 to 4 terms can be applied ( as remaining terms only contribues to 2% of the entire result ) for exponentiation function used to find gauss value. So the algorithm detects feature points by reducing the com-plexity of calculation gauss value atleast by log(MAX) times. (MAX is the maximum value in x and y matrices) 
+
+ex = 1 + x1
+
+1! + x2
+
+2! + x3
+
+3! + x4
+
+4! + x5
+
+5! + ... (12) And define: 
+
+A = X2 ⊗ w, B = Y 2 ⊗ w, C = ( XY ) ⊗ w. (13) It encompasses the function for partial autocorrelation, and at the origin the autocorrelation function shape is described by M. Encloses to the partial autocorrelation function, and M describes the shape of the autocorrelation function at the origin[14]. M’s Eigen values will be λ1 , λ2 . And λ1 , λ2
+
+are in proportion to the are proportional to the curvature of partial autocorrelation function’s curvature and rotational invariance for M is constituted by this[15]. Then this can find the edge, corner point, the flat area, by λ1 and λ2
+
+values ,The following three conditions are possible. a. The flat autocorrelation function is shown if 2 curva-tures’ values are small b. The ridge-like autocorrelation function and small change in E is shown if one curvature is small and other is large. c. A peak is found in autocorrelation function and a large change in E in any direction if both the curvatures are large. This analysis and division can be described by this figure below[16]. Then, the feature point is the maximum value of local area: 
+
+Det (M ) − kT r 2(M ) (14) 
+
+T r (M ) = λ1 + λ2 = A + B (15) 
+
+Det (M ) = λ1λ2 = AB − C2 (16) Where T r (M ) is the trace of matrix M ; Det (M ) is the determinant value of matrix M ; the best results are given by k=0.04 to 0.06 values[17].   
+
+> Fig. 6. Comparison on happy face
+> Fig. 7. Comparison on sad face
+
+## V. Evaluation of proposed approach (Survey) 
+
+The approach for product review using emotion de-tection has been done properly for the first time and hence comparative study is not required. The comparison for feature extraction algorithm over the previous one is required as its a new approach suitable for product review and known for its speed. These following results are verified by running over genki dataset. 
+
+A. Time required for processing 
+
+The Harris algorithm was using n2log (M AX )
+
+whereas in the newly proposed algorithm we propose to do it in n2 time by reducing the time used to calculate gaussian function. Below is the table of time taken by older and proposed approaches run over a video taking 100 snapshots at regular intervals of time. And in the graph we can see that as Max value and size of matrix increases the time taken also increases drastically for older algorithms and in newer algorithm its almost taking 2 to 3 times lesser time. The Harris algorithm uses proper exponential function whose worst case complexity is log(MAX) but by reducing it using approximation algorithm we are able to extract features with almost same accuracy. Comparison table has been provided for same parameters in previous table and results are plotted. Fig. 8. Table showing time required for processing  
+
+> Fig. 9. Graph showing time required for processing
+
+B. Comparison of accuracy over previous algo-rithms 
+
+The Harris algorithm uses proper exponential function whose worst case complexity is log(MAX) but by reduc-ing it using approximation algorithm we are able to extract features with almost same accuracy. Comparison table has been provided for same parameters in previous table and results are plotted which is done in figure 6 and 7. Fig. 10. Table showing comparison of accuracy over previous algorithm 
+
+> Fig. 11. Graph showing comparison of accuracy over previous algorithm
+
+## VI. CONCLUSION AND FUTURE WORK 
+
+The proposed fast feature extractor helps process data faster thereby collecting more data and reducing queuing up of data(snapshots). Also the video after processing need not be stored as it can be done in real time and thereby protecting privacy and security of any consumer. Also large amount of video data storage for each and every product in a supermarket or online shopping sites is huge risk and investment on storage can be reduced to a large extent. So reduction in computational power, storage capacity, security and privacy of consumers are all taken care by the proposed approach. The future work may be to see through other factors along with emotions for product review like the time consumer spends to see a product and it requires us to do facial recognition as well to achieve this task in supermarkets, but it can be achieved easily as far as online shopping is concerned. Today everyone is drawn towards online shopping, such reviews may help in early prediction of failure of product preventing further loss in manufacturing. To elevate the e-commerce ecosystem, real-time facial expression data could act as a critical input signal for multi-agent video recommenders [18]. By synergizing our optimized detection algorithm with reliable trajectories in agentic Information Retrieval (IR) systems [19], platforms can dynamically serve highly personalized product recommendations based on instanta-neous emotional feedback. Finally, as consumer expres-sion data becomes central to product analytics, ensuring the privacy of customer telemetry is paramount; future systems may necessitate secure data-logging techniques analogous to semantic text steganography [20]. Similarly, as these facial analysis metrics are increasingly processed by backend automated reasoning systems, mitigating false positives and ensuring algorithmic factuality much like the ongoing efforts to curb hallucinations in Large Language Models [21] will be essential for reliable market research. 
+
+## References 
+
+[1] Liyanage C De Silva, Tsutomu Miyasato, and Ry-ohei Nakatsu. Facial emotion recognition using multi-modal information. In Information, Com-munications and Signal Processing, 1997. ICICS., Proceedings of 1997 International Conference on ,volume 1, pages 397–401. IEEE, 1997. [2] Erin B McClure, Kayla Pope, Andrea J Hoberman, Daniel S Pine, and Ellen Leibenluft. Facial ex-pression recognition in adolescents with mood and anxiety disorders. American Journal of Psychiatry ,2003. [3] Wan-jin Zhao, Sheng-rong Gong, Chun-ping Liu, and Xiang-jun SHEN. Adaptive harris corner detec-tion algorithm. Computer Engineering , 10(5):212– 215, 2008. [4] Chris Harris and Mike Stephens. A combined corner and edge detector. In Alvey vision conference ,volume 15, page 50. Citeseer, 1988. [5] Peter D Kovesi. Matlab and octave functions for computer vision and image processing. Online: http://www. csse. uwa. edu. au/˜ pk/Research/Mat-labFns/# match , 2000. [6] Abhishek Dharmaratnakar, Srivaths Ranganathan, Debanshu Das, and Anushree Sinha. Generative ai for video trailer synthesis: From extractive heuristics to autoregressive creativity. Authorea Preprints ,2026. [7] Aadheeshwar Vijayakumar, D Abhishek, and K Chandrasekaran. Dsl approach for development of gaming applications. In Information Systems Design and Intelligent Applications: Proceedings of Third International Conference INDIA 2016, Volume 1, pages 199–211. Springer India New Delhi, 2016. [8] Jianbo Shi and Carlo Tomasi. Good features to track. In Computer Vision and Pattern Recognition, 1994. Proceedings CVPR’94., 1994 IEEE Computer Society Conference on , pages 593–600. IEEE, 1994. [9] Paul Viola and Michael J Jones. Robust real-time face detection. International journal of computer vision , 57(2):137–154, 2004. [10] Yan-ming Mao, Mei-hui LAN, Yun-qiong WANG, and Qiao-sheng FENG. An improved corner detec-tion method based on harris [j]. Computer Technol-ogy and Development , 5:036, 2009. [11] Gillian Rhodes. The evolutionary psychology of facial beauty. Annu. Rev. Psychol. , 57:199–226, 2006. [12] Karine Durand, Mathieu Gallay, Alix Seigneuric, Fabrice Robichon, and Jean-Yves Baudouin. The development of facial emotion recognition: The role of configural information. Journal of experimental child psychology , 97(1):14–27, 2007. [13] Andrea Vedaldi and Brian Fulkerson. Vlfeat: An open and portable library of computer vision algo-rithms. In Proceedings of the 18th ACM interna-tional conference on Multimedia , pages 1469–1472. ACM, 2010. [14] Yu-Hao Huang and Chiou-Shann Fuh. Face de-tection and smile detection. In Proceedings of IPPR Conference on Computer Vision, Graphics and Image Porcessing, Shitou, Taiwan, A5-6 , page 108, 2009. [15] Miroslav Trajkovi´ c and Mark Hedley. Fast corner detection. Image and vision computing , 16(2):75– 87, 1998. [16] Han Wang and Michael Brady. Real-time corner detection algorithm for motion estimation. Image and Vision Computing , 13(9):695–703, 1995. [17] Mridul Dixit, Piyush Rai, and Sanjay Silakari. Areview on smiley face recognition. In Communi-cation Systems and Network Technologies (CSNT), 2013 International Conference on , pages 137–139. IEEE, 2013. [18] Srivaths Ranganathan, Abhishek Dharmaratnakar, Anushree Sinha, and Debanshu Das. Multi-agent video recommenders: Evolution, patterns, and open challenges. arXiv preprint arXiv:2604.02211 , 2026. [19] Anushree Sinha, Srivaths Ranganathan, Debanshu Das, and Abhishek Dharmaratnakar. Beyond flu-ency: Toward reliable trajectories in agentic ir. arXiv preprint arXiv:2604.04269 , 2026. [20] K Vaishakh, A Pravalika, DV Abhishek, NP Meghana, and Gaurav Prasad. A semantic approach to text steganography in sanskrit using numerical encoding. In Recent Findings in Intelligent Computing Techniques: Proceedings of the 5th ICACNI 2017, Volume 1 , pages 181–192. Springer Singapore Singapore, 2018. [21] Srivaths Ranganathan, Abhishek Dharmaratnakar, Anushree Sinha, and Debanshu Das. Factuality and hallucinations in large language models: A compre-hensive survey. Authorea Preprints , 2026.

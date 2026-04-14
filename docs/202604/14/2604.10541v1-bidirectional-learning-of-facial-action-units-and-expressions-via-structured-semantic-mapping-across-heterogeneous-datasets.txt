@@ -1,0 +1,1048 @@
+Title: Bidirectional Learning of Facial Action Units and Expressions via Structured Semantic Mapping across Heterogeneous Datasets
+
+URL Source: https://arxiv.org/pdf/2604.10541v1
+
+Published Time: Tue, 14 Apr 2026 01:21:04 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+1
+
+# Bidirectional Learning of Facial Action Units and Expressions via Structured Semantic Mapping across Heterogeneous Datasets 
+
+Jia Li, Yu Zhang, Yin Chen, Zhenzhen Hu, Yong Li, Richang Hong, Member, IEEE, 
+
+Shiguang Shan, Fellow, IEEE, and Meng Wang, Fellow, IEEE 
+
+Abstract —Facial action unit (AU) detection and facial expres-sion (FE) recognition can be jointly viewed as affective facial behavior tasks, representing fine-grained muscular activations and coarse-grained holistic affective states, respectively. Despite their inherent semantic correlation, existing studies predomi-nantly focus on knowledge transfer from AUs to FEs, while bidirectional learning remains insufficiently explored. In practice, this challenge is further compounded by heterogeneous data conditions, where AU and FE datasets differ in annotation paradigms (frame-level vs. clip-level), label granularity, and data availability and diversity, hindering effective joint learning. To address these issues, we propose a Structured Semantic Mapping (SSM) framework for bidirectional AU–FE learning under differ-ent data domains and heterogeneous supervision. SSM consists of three key components: (1) a shared visual backbone that learns unified facial representations from dynamic AU and FE videos; (2) semantic mediation via a Textual Semantic Prototype (TSP) module, which constructs structured semantic prototypes from fixed textual descriptions augmented with learnable context prompts, serving as supervision signals and cross-task alignment anchors in a shared semantic space; and (3) a Dynamic Prior Mapping (DPM) module that incorporates prior knowledge derived from the Facial Action Coding System and learns a data-driven association matrix in a high-level feature space, enabling explicit and bidirectional knowledge transfer. Extensive experi-ments on popular AU detection and FE recognition benchmarks show that SSM achieves state-of-the-art performance on both tasks simultaneously, and demonstrate that holistic expression semantics can in turn enhance fine-grained AU learning even across heterogeneous datasets. 
+
+Index Terms —affective computing, facial action units, dynamic facial expression, cross-dataset learning, semantic mapping 
+
+I. I NTRODUCTION 
+
+# DEEPLY understanding human emotions, intentions, and social signals requires comprehensive analysis of affec-tive facial behaviors, which plays a critical role in applications 
+
+Jia Li, Yu Zhang, Yin Chen, Zhenzhen Hu, Richang Hong and Meng Wang are with the School of Computer Science and Information Engineering, Hefei University of Technology, Hefei 230601, China (e-mail: jiali@hfut.edu.cn; yuz@mail.hfut.edu.cn; chenyin@mail.hfut.edu.cn; huzhen.ice@gmail.com; hongrc.hfut@gmail.com; eric.mengwang@gmail.com). Yong Li is with the School of Computer Science and Engineering, and the Key Laboratory of New Generation Artificial Intelligence Technology and Its Interdisciplinary Applications, Southeast University, Nanjing 210096, China (e-mail: mysee1989@gmail.com). Shiguang Shan is with the Key Laboratory of Intelligent Information Pro-cessing, Institute of Computing Technology, Chinese Academy of Sciences, Beijing 100190, China, and also with the University of Chinese Academy of Sciences, Beijing, 100049, China (e-mail: sgshan@ict.ac.cn). (Corresponding author: Zhenzhen Hu.) Backbone  
+
+> Dataset A Emo labels ：
+> AU labels ：
+
+𝐿 𝐸 mo  𝐿 𝐴𝑈 
+
+Easy to get 
+
+> Massive clips
+> Bidirectional
+
+Backbone  
+
+> Dataset B
+> Emo labels ：
+> AU labels ：✘
+
+𝐿 𝐸 mo  𝐿 𝐴𝑈 
+
+Easy to get 
+
+> Massive clips
+> Bidirectional
+
+Backbone 
+
+𝐿 𝐸 mo  𝐿 𝐴𝑈 
+
+Easy to get 
+
+> Massive clips
+> Bidirectional
+
+(c) Ours (b) Unidirectional (a) MTL  
+
+> Tools
+> Dataset B*
+> Emo labels ：
+> AU labels ：
+> Dataset B
+> Emo labels ：
+> AU labels ：✘
+> Dataset C
+> Emo labels ：✘
+> AU labels ：
+
+Fig. 1. Paradigm comparison of joint AU and FE learning. (a): conventional multi-task learning (MTL) on homogeneous datasets achieves bidirectional gains but suffers from high annotation cost and limited generalization. (b): predominant unidirectional transfer (AU →FE) on heterogeneous datasets, where mismatched annotation paradigms and semantic granularity hinder reverse learning and introduce distribution bias from lab-controlled AU data. (c): our method enables adaptive bidirectional learning by explicitly modeling AU ↔FE relationships via textual mediation in a shared semantic space, improving scalability and generalization under heterogeneous data. 
+
+such as human–computer interaction, social robotics, mental health monitoring, and driver safety. From a psychological perspective, facial expressions (FEs) exhibit a certain degree of universality across cultures [1], [2], while being fundamen-tally driven by coordinated facial muscle movements, namely, Action Units (AUs). The well-known Facial Action Coding System (FACS) [3] provides an anatomically grounded de-scription between AUs and FEs. Accordingly, dynamic facial expression recognition (DFER) and AU detection in videos can be jointly viewed as two core affective facial behavior tasks, corresponding to coarse-grained holistic affective states and fine-grained muscular activations, respectively. Their intrinsic semantic correlation suggests a natural potential for comple-mentary modeling. In recent years, a large number of supervised-learning-based methods have achieved promising performance on AU detection and DFER [4]–[10]. However, existing large-scale datasets often do not overlap in task annotations, modalities, or domains (i.e., only abundant heterogeneous data available), as depicted in Fig. 1. Consequently, the prevailing research paradigm has mostly focused on unidirectional facilitation, which uses AU features or statistics as auxiliary signals to 
+
+> arXiv:2604.10541v1 [cs.CV] 12 Apr 2026 2
+
+improve facial expression recognition. However, this paradigm simply treats facial expressions as mechanical combinations of multiple AU activations. For example, Li et al. [11] have constructed a knowledge matrix from a dataset’s statistics and enhanced the expression task via loss injection, yet the obtained prior is static. This matrix depends on a specific data distribution and is thus susceptible to dataset bias. Additionally, Kollias et al. [12] have improved compound expression recognition by letting the expression branch predict AU distributions to guide the model in learning the association between the two tasks, but its pseudo-label-based learning mainly remains at the level of shallow feature interactions and implicit fusion. With the increasing availability of video-level datasets, it has gradually been recognized that studying AUs or FEs under dynamic settings is more reliable. Notably, AUs not only characterize static muscular configurations but also reflect dynamic variations during expression generation [13]–[15]. Therefore, jointly studying AU detection and DFER in videos and modeling local and global affective semantics together along the spatio-temporal dimension better accords with the natural physiological mechanisms. At present, studies on AU →FE knowledge transfer under dynamic settings have preliminarily verified that local facial actions can effectively support global expression understanding [16]. Hence, a critical question remains: Does a bidirectional promotion effect (AU ↔FE) exist between the two tasks in dynamic videos? 
+
+On the other hand, some works rely on expensive multi-label datasets whose annotations, modalities, and domains over-lap (i.e., homogeneous datasets). And they directly perform multi-task training within the same data domain to achieve bidirectional facilitation between AU detection and DFER [17]–[19]. For instance, Kollias et al. [20], [21] have con-structed Aff-Wild2 dataset, simultaneously providing frame-level expression categories, continuous valence–arousal values, and AU activations. Then, they propose a multi-task learn-ing framework, demonstrating that jointly learning multiple facial affective tasks on the same data domain can yield reciprocal benefits. Based on homogeneous datasets such as Aff-Wild2, existing methods directly perform joint AU–FE learning with multi-task supervision and improve both AU detection and facial expression recognition (FER) [22]–[26]. However, these methods entail substantial annotation costs and suffer from domain limitations: frame-level multi-label annotation requires professional FACS coders to annotate videos frame by frame, which is costly, time-consuming, and difficult to scale. Meanwhile, the synergistic gains obtained on small-scale homogeneous data can not guarantee model’s generalization to real-world scenarios. Hence, it is necessary to explore adaptive mutual-promotion mechanisms between the two tasks under heterogeneous data conditions. Based on this background, and given the availability of large-scale heterogeneous datasets, a more practical question arises: Can these heterogeneous datasets be effectively lever-aged to achieve AU ↔FE bidirectional learning benefits? 
+
+Therefore, we first construct a Baseline model, performing multi-task learning on heterogeneous data, and systematically explore whether there exist stable complementary and recipro-cal effects between AU detection and DFER. However, achiev-ing this goal is non-trivial due to inherent heterogeneity across datasets. First, the two types of datasets differ in collection environments and annotation systems, leading to inconsistent semantic spaces. Second, the correspondence between AUs and FEs is not mechanical, and activation patterns vary sig-nificantly across individuals and laboratory-controlled and in-the-wild scenarios [11], [12], making static priors difficult to generalize to uncontrolled real world. Third, existing multi-task learning based on shared features or joint losses is prone to negative transfer on heterogeneous data [27]–[29]. Thus, a further question arises: Can cross-task knowledge be mediated in a shared semantic space to decouple heterogeneous data distribution bias? 
+
+To this end, we propose a Structured Semantic Mapping (SSM) framework to enable bidirectional learning between AU detection and DFER over heterogeneous datasets. Built upon the aforementioned multi-task learning Baseline, SSM introduces a shared semantic space on the basis of textual embeddings to mediate cross-task knowledge and decouple data heterogeneity. Specifically, SSM further employs two key components: a Dynamic Prior Mapping (DPM) module and a Textual Semantic Prototype (TSP) module. DPM, ini-tialized from FACS priors, learns dynamic and bidirectional correspondences between AUs and FEs in the semantic space explicitly, which are continuously updated during training rather than fixed by dataset statistics. TSP constructs structured semantic prototypes for both tasks, where AU prototypes are directly derived from FACS-defined AU descriptions and FE prototypes are composed based on FACS knowledge, enabling unified semantic encoding and alignment. Unlike prior works that rely on static statistical priors or shallow feature-level interactions [12], [16], our framework performs semantic-level knowledge mediation to adaptively capture asymmetric and context-dependent AU–FE relationships. This design reduces reliance on homogeneous annotations and mitigates dataset bias in heterogeneous learning scenarios. The source code and models are publicly available here 1.Our main contributions are summarized as follows:  
+
+> •
+
+To the best of our knowledge, we present the first systematic study on heterogeneous datasets to investigate bidirectional AU ↔FE learning under dynamic settings, demonstrating consistent mutual gains and revealing the previously underestimated contribution of DFER to AU detection.  
+
+> •
+
+We propose a Structured Semantic Mapping (SSM) framework that enables bidirectional AU ↔FE transfer without multi-task annotations, where a shared semantic space with Dynamic Prior Mapping (DPM) and Textual Semantic Prototypes (TSP) mediates cross-task knowl-edge and mitigates heterogeneity-induced negative trans-fer.  
+
+> •
+
+Extensive experiments on multiple in-the-wild DFER datasets (DFEW [30], MAFW [31], FERV39K [32]) and representative laboratory AU datasets (BP4D [33], DISFA [34]) demonstrate that our method achieves state-of-the-art performance and exhibits strong generalization ability. 
+
+> 1https://github.com/MSA-LMC/SSM 3
+
+II. R ELATED WORK 
+
+A. Dynamic Facial Expression Recognition 
+
+Dynamic Facial Expression Recognition (DFER) aims to model the spatial-temporal evolution of facial expressions from videos (or frame sequences in other words). It is a funda-mental task in facial behavior analysis. Early methods mainly relied on handcrafted features and shallow temporal models. Recent studies increasingly adopt end-to-end deep learning models to jointly capture spatial and temporal dynamics. A mainstream line of research follows the supervised learning paradigm. It combines convolutional neural networks with temporal modeling modules such as LSTM or Transformer to improve recognition performance [35]–[38]. For example, Former-DFER [39] integrates spatial convolutional features with a temporal Transformer. It demonstrates strong robustness under challenging conditions. With the emergence of vision–language pretrained models, recent studies have explored the incorporation of cross-modal semantic knowledge into DFER [40]–[43]. Methods such as CLIPER [44], DFER-CLIP [45], and PE-CLIP [46] leverage the text–vision alignment capability of CLIP [47] to project expression categories into a shared semantic space. This design improves generalization despite the lack of domain-specific pretraining for facial expressions. In parallel, self-supervised and pretraining-based methods have also been investigated [48], [49]. For instance, MAE-DFER learns discriminative temporal representations through masked reconstruction with a local–global interactive Transformer encoder. S2D [50] and S4D [51] transfer knowledge from static expression datasets to dynamic scenarios through self-supervised pretraining and task adaptation. Despite these advances, most existing methods still treat AU detection and DFER as isolated tasks. 
+
+B. Facial Action Unit Detection 
+
+Facial Action Unit (AU) detection aims to recognize local facial muscle activations. It is a fine-grained task in facial behavior analysis. Recent studies on dynamic AU detection mainly focus on three aspects: enhancing feature represen-tations, modeling dependencies among AUs, and improving robustness and generalization. First, several studies introduce structured priors or generative modeling to enhance feature representations. These methods alleviate the disturbance of pose variation, occlusion, and cross-dataset discrepancies [8], [52], [53]. Second, another important research direction is modeling dependencies among AUs. Graph neural networks (GNNs) are widely employed to capture AU co-occurrence relationships and structural constraints [54]–[57]. Third, with the increasing availability of unlabeled data, self-supervised pretraining has been utilized to learn more powerful AU representations [58], [59]. To further improve robustness in real-world scenarios, uncertainty modeling mechanisms have also been introduced to improve robustness [60]. In addition, multimodal and multi-view learning have also been explored to further improve AU detection performance [10], [61]–[65]. Despite these advances, most existing methods still focus on the AU task itself. They seldom exploit coarse-grained expression semantics to provide complementary su-pervision. 
+
+C. AU and FE Relationship Modeling 
+
+Early studies mainly follow a unidirectional paradigm in which AUs are treated as auxiliary supervision or interme-diate representations to facilitate expression recognition. For instance, Kollias et al. [12] guide the expression branch by predicting AU distributions. However, this approach primarily relies on pseudo labels and tends to operate at the level of shallow feature interactions. In contrast, Li et al. [11] introduce a static AU–expression knowledge matrix derived from dataset statistics, which is inherently sensitive to data distributions and thus may generalize poorly across different dataset domains. Another line of work explores homogeneous multi-label datasets, where joint AU detection and FE recognition are achieved via multi-task learning [17]–[19]. Studies based on Aff-Wild2 dataset [20], [21] (contains 558 videos in the wild) have shown that joint optimization on frame-level multi-label annotations can facilitate shared representation learning and lead to mutual performance gains. However, such methods typically rely on densely annotated data [21], which require substantial annotation effort and are not always readily avail-able at scale. Moreover, existing datasets are often constrained in terms of data diversity and accessibility, which may limit their applicability to broader real-world scenarios. Therefore, enabling effective cross-task knowledge sharing between AU detection and expression recognition under het-erogeneous data conditions remains a key problem. III. M ETHOD 
+
+From the perspective of unified semantic modeling of AUs and FEs, this paper proposes a cross-task learning framework on heterogeneous data, which aligns the semantics of fine-grained action units and coarse-grained facial expressions without relying on homogeneous multi-label annotations. In this section, we first introduce a powerful multi-task Baseline model and the basic concept of CLIP-style prompt learning for classification, and then describe the technical details of the proposed SSM framework, depicted in Fig. 2. 
+
+A. Preliminary 1) Baseline Model: Our Baseline, a multi-task model, consists of a shared visual backbone and two independent linear layers. As illustrated in Fig. 3, the shared visual backbone extracts unified dynamic facial representations from heterogeneous video data. It includes a shared CLIP vision encoder with MoE (Mixture of Experts) layers 2, denoted as 
+
+Ev (·), and two task-specific temporal modules: an expression temporal model Φexp (·) and an AU temporal model Φau (·).Both temporal modules are built with standard Transformer blocks. 
+
+> 2Directly sharing the original CLIP vision encoder makes it difficult to learn both tasks effectively according to our experiments. Therefore, we insert MoE layers to enable joint learning of the two tasks, following the mainstream practice [29], [51], [66], [67]. Details are provided in Sec. E of the supplementary material.
+
+4…
+
+> …
+
+ℒ𝑎𝑢 
+
+𝑦 𝑎𝑢 
+
+ℒ𝑑𝑓𝑒 
+
+𝑦 𝑑𝑓𝑒 
+
+Shared 
+
+CLIP Text 
+
+Encoder 
+
+𝑝 1 
+
+> 𝑎𝑢
+
+𝑝 2 
+
+> 𝑎𝑢
+
+𝑝 𝑐 
+
+> 𝑎𝑢
+
+𝑑 𝑒𝑥𝑝 𝑝 1 
+
+> 𝑒𝑥𝑝
+
+𝑝 2
+
+> 𝑒𝑥𝑝
+
+𝑝 𝑐 
+
+> 𝑒𝑥𝑝
+
+𝑑 𝑎𝑢    
+
+> ……𝑇
+> au 𝑇
+> exp
+> 𝑍
+> au 𝑍
+> exp
+> Shared CLIP Vision Encoder
+> with MoE Layers
+> Temporal
+> Model
+> Temporal
+> Model
+> …
+> …
+> Trainable
+> Frozen
+> Exp class words
+> AU class words
+> Exp samples
+> AU samples
+> Visual features
+> Textual features
+
+…
+
+AU1  AU9 AU2  
+
+> Emotion Labels
+
+AU Labels 
+
+FACS Prior Combination 
+
+Emotion text template ( 𝑑 𝑒𝑥𝑝 )
+
+Eg. AU1+AU4+..=sadness 
+
+“inner brow raiser, brow 
+
+lowerer, …” 
+
+AU text template ( 𝑑 𝑎𝑢 )
+
+AU1: “inner brow raiser” 
+
+AU4: “brow lowerer” …
+
+> Dataset A
+> 𝑣 1
+> 𝑎𝑢
+> 𝑣 𝑛
+> 𝑎𝑢
+> 𝑣 1
+> 𝑎𝑢
+> 𝑣 𝑛
+> 𝑎𝑢
+> Dataset B
+> 𝑣 1
+> 𝑒𝑥𝑝
+> 𝑣 𝑛
+> 𝑒𝑥𝑝
+> 𝑣 1
+> 𝑒𝑥𝑝
+> 𝑣 𝑛
+> 𝑒𝑥𝑝
+> …
+> …
+> …
+
+TSP Module  Visual Backbone  Supervision    
+
+> Prior init.
+> Updated ……
+> 𝑇
+> au 𝑇
+> exp
+> ……𝑇
+> au 𝑇
+> exp
+
+DPM Module    
+
+> BF
+> ECE
+> A
+> D
+> C
+> Updated
+
+AU → Exp ( 𝑊 𝑎𝑢 →𝑒𝑥𝑝 )
+
+Exp → AU ( 𝑊 𝑒𝑥𝑝 →𝑎𝑢 ) 
+
+> Similarity score Similarity score
+
+FACS AU Descriptions 
+
+Composed FE Descriptions 
+
+AU7  AU6 AU5 
+
+AU4  AU10  …
+
+Fig. 2. Overview of the Structured Semantic Mapping (SSM) framework. SSM reformulates joint AU detection and DFER in a unified vision–text semantic space. The visual branch employs a shared CLIP vision encoder with MoE layers (i.e., our Baseline model) and two task-specific temporal models, producing a clip-level representation for DFER and a temporally enhanced center-frame representation for AU detection from heterogeneous datasets. In the textual branch, the Textual Semantic Prototype (TSP) module constructs AU prototypes from FACS-guided descriptions and composes expression prototypes based on FACS priors, which are then encoded by a shared CLIP text encoder. Built upon these representations, the Dynamic Prior Mapping (DPM) module performs prior-initialized bidirectional semantic mapping via two learnable association matrices, generating dynamically updated textual representations for cross-task knowledge transfer and contrastive supervision. Shared CLIP Vision Encoder 
+
+> with MoE Layers
+> Temporal
+> Model
+> Linear
+> Temporal
+> Model
+> …
+> …
+> Linear
+> …
+> …
+> …
+
+𝛷 𝑒𝑥𝑝 ⋅
+
+𝛷 𝑎𝑢 ⋅𝐸 𝑣 ⋅
+
+𝒗 1
+
+> 𝑎𝑢
+
+𝒗 𝑛 
+
+> 𝑎𝑢
+
+𝒗 1
+
+> 𝑒𝑥𝑝
+
+𝒗 𝑛       
+
+> 𝑒𝑥𝑝
+> ……
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> …
+> ……
+> …
+> 𝒗 1
+> 𝑎𝑢 𝒗 𝑛
+> 𝑎𝑢
+> 𝒗 1
+> 𝑒𝑥𝑝 𝒗 𝑛
+> 𝑒𝑥𝑝 𝒇 1
+> 𝑒𝑥𝑝 𝒇 𝑛
+> 𝑒𝑥𝑝
+> 𝒇 1
+> 𝑎𝑢 𝒇 𝑛
+> 𝑎𝑢
+> …
+> … …
+> …
+> …
+> …
+> 𝒁 𝑒𝑥𝑝
+> 𝒁 1
+> 𝑎𝑢 𝒁 𝑛
+> 𝑎𝑢
+> …
+> 𝒐 𝑒𝑥𝑝
+> 𝒐 𝑎𝑢
+
+Fig. 3. Our Baseline model for learning dynamic AUs and FEs jointly. A shared CLIP vision encoder with MoE layers first extracts frame-wise features from FE or AU videos. Then, these features are fed into two Transformer-based temporal models, Φexp (·) and Φau (·), for task-specific temporal modeling. The DFER branch aggregates sequential features into a clip-level representation Zexp . In contrast, the AU branch performs temporal interaction among the input frames and selects the temporally enhanced feature of the center frame as the AU representation Zau . Finally, Zexp and 
+
+Zau are fed into independent linear heads for classification. This Baseline model corresponds to the visual backbone in Fig. 2. 
+
+Specifically, given an expression video sequence 
+
+{vexp 1 , vexp 2 , . . . , vexp 
+
+n } and an AU video sequence 
+
+{vau 1 , vau 2 , . . . , vau 
+
+n }, the shared vision encoder first extracts visual features as: 
+
+{f exp 1 , f exp 2 , . . . , f exp 
+
+n } = Ev ({vexp 1 , vexp 2 , . . . , vexp 
+
+n }), (1) 
+
+{f au 1 , f au 2 , . . . , f au 
+
+n } = Ev ({vau 1 , vau 2 , . . . , vau 
+
+n }). (2) The frame-level features are then fed into their correspond-ing temporal modules, yielding the task-specific representa-tions for DFER and AU detection, respectively: 
+
+Zexp = Φ exp ({f exp 1 , f exp 2 , . . . , f exp 
+
+n }), (3) 
+
+{ ˜Zau 1 , ˜Zau 2 , . . . , ˜Zau 
+
+n } = Φ au ({f au 1 , f au 2 , . . . , f au 
+
+n }), (4) 
+
+Zau = ˜Zau 
+
+t , t = ⌊ n
+
+2 ⌋, (5) where t denotes the index of the center frame in the video clip. We use the temporally enhanced feature of the center frame to predict its AU activations, while the remaining frames provide temporal context. Finally, the task-specific representations are mapped to pre-diction logits through their corresponding classification heads: 
+
+oexp = W exp cls Zexp + bexp cls , oau = W au cls Zau + bau cls , (6) where oexp ∈ RK denotes the prediction over the K expres-sion categories for the DFER task, and oau ∈ RM denotes the prediction over the M AU labels for the AU detection task. W exp cls and W au cls denote the weight matrices of the linear classification heads for DFER and AU detection. bexp cls and bau cls 
+
+denote the corresponding bias terms. DFER is a single-label multi-class classification task, thus the softmax cross-entropy loss is adopted: 
+
+Ldfe = − 1
+
+B
+
+BX
+
+m=1 
+
+KX
+
+n=1 
+
+ym,n log exp  oexp 
+
+m,n 
+
+PKj=1 exp  oexp 
+
+m,j 
+
+ , (7) where B denotes the batch size, and ym,n ∈ { 0, 1} indicates the ground-truth label of the m-th sample for the n-th expres-sion category, satisfying PKn=1 ym,n = 1 .AU detection is a multi-label binary classification task, thus the binary cross-entropy loss is employed: 
+
+Lau = − 1
+
+B
+
+BX
+
+m=1 
+
+MX
+
+n=1 
+
+h
+
+ym,n log σ  oau 
+
+m,n 
+
+
+
++ (1 − ym,n ) log  1 − σ  oau 
+
+m,n 
+
+ i
+
+,
+
+(8) 5
+
+where ym,n ∈ {0, 1} indicates whether the n-th AU is activated in the m-th sample, and σ(·) denotes the sigmoid function. 
+
+2) CLIP-Style Prompt Learning: Vision language models, represented by CLIP [47], achieve cross-modal alignment through large-scale image–text contrastive learning. Given a set of images and class labels, i.e. I and y, by first constructing a textual description T y for the label y, CLIP formulates the classification task as matching the similarity between the image feature f I = EI (I) and the text feature f T = ET (T y ):
+
+p (y|I) = exp 
+
+
+
+cos 
+
+
+
+f I , f Ty
+
+
+
+/τ 
+
+Pyi=1 exp  cos  f I , f Ti
+
+ /τ  , (9) where EI and ET denote the image and text encoders respec-tively, and τ is the temperature hyperparameter. Building on this formulation, CoOp [68] further introduces learnable context vectors v = ( v1, v 2, . . . , v M ), expanding the textual representation of a class to 
+
+T y = [ v1, v 2, . . . , v M , "class name of y"] , (10) which enables the model to automatically adapt to the task context and to optimize the prompt representation. Therefore, we continue to follow this scheme in our method. 
+
+B. Framework Overview 
+
+As illustrated in Fig. 2, the proposed SSM framework is built upon the Baseline introduced in Sec. III-A1. SSM retains the same shared visual backbone. It produces the task-specific visual representations Zexp for DFER and Zau for AU detection. Different from the Baseline model, which performs clas-sification using two independent linear heads, SSM reformu-lates both DFER and AU detection within a unified vision-text alignment space. In this space, predictions are made by measuring the similarity between task-specific visual features and the corresponding textual embeddings. In the textual domain, we do not rely on bare class names. Instead, we construct K expression-related natural language descriptions and M facial-action natural language descriptions using FACS priors. Here, K and M denote the numbers of classes for DFER and AU detection, respectively. The AU semantic descriptions serve as the basic units for composing the dynamic expression text prompts, i.e., tau ⊂ texp . Here, 
+
+texp ∈ R1×K and tau ∈ R1×M . After encoding with the shared CLIP text encoder Et(·), the two sets of textual descriptions become 
+
+T exp = Et(texp ) ∈ RK×d, T au = Et(tau ) ∈ RM ×d,
+
+(11) where d is the dimensionality of the encoded text embeddings. Finally, we perform joint text-driven classification training for both tasks. Concretely, the DFER loss is defined as 
+
+Ldfe = − 1
+
+B
+
+> B
+
+X
+
+> m=1
+> K
+
+X
+
+> n=1
+
+ym,n log 
+
+ exp   Zexp  
+
+> m
+
+· T exp  
+
+> n
+
+/τ  
+
+> K
+
+X
+
+> j=1
+
+exp  Zexp  
+
+> m
+
+· T exp  
+
+> j
+
+/τ  , (12) where ym,n ∈ { 0, 1} denotes the ground-truth label of the m-th sample for the n-th expression category, and PKn=1 ym,n =1.The AU detection loss is given by the average binary cross-entropy over the M AUs: 
+
+Lau = − 1
+
+B
+
+> B
+
+X
+
+> m=1
+> M
+
+X
+
+> n=1
+
+
+
+ym,n log  σ(Zau  
+
+> m
+
+·T au  
+
+> n
+
+/τ )
+
++ (1 − ym,n ) log  1 − σ(Zau  
+
+> m
+
+·T au  
+
+> n
+
+/τ )
+
+,
+
+(13) where ym,n ∈ { 0, 1} denotes whether the n-th AU is activated in the m-th sample. The total loss for joint training is then 
+
+Ltotal = 11 + λ Ldfe + λ
+
+1 + λ Lau , (14) with λ as a task-balancing hyperparameter. 
+
+C. Textual Semantic Prototype Module 
+
+This subsection introduces how task-specific textual descrip-tions are constructed in the Textual Semantic Prototype (TSP) module. As shown in the left part of Fig. 2, we first construct fixed text templates for the tasks based on FACS knowledge [3]. For AU detection, the template is defined using the corresponding FACS AU descriptions. Based on the AU template, we then construct the FE template according to FACS AU–FE corre-spondences [3]. These templates are denoted as dk 
+
+> exp
+
+and dm
+
+> au
+
+,where k ∈ { 1, 2, . . . , K } and m ∈ { 1, 2, . . . , M }. We then map them into token sequences through a tokenizer: 
+
+dk 
+
+> exp
+
+= {wexp 1 , w exp 2 , . . . , w exp  
+
+> l
+
+}, (15) 
+
+dm 
+
+> au
+
+= {wau 1 , w au 2 , . . . , w au  
+
+> l
+
+}. (16) Thus, the final text descriptions can be expressed as: 
+
+texp = [ pexp 1 , p exp 2 , . . . , p exp  
+
+> c
+
+, d exp ], (17) 
+
+tau = [ pau 1 , p au 2 , . . . , p au  
+
+> c
+
+, d au ], (18) where [pexp 1 , . . . , p exp  
+
+> c
+
+] and [pau 1 , . . . , p au  
+
+> c
+
+] denote learnable context prompts. However, static textual descriptions alone cannot explicitly model the hierarchical relationships between AUs and facial expression categories. As shown in Fig. 4, we further design the Dynamic Prior Mapping (DPM) module to dynamically model the semantic dependencies between the two tasks through a learnable prior mapping matrix. This module serves as a bridge in the high-level textual semantic space. It ex-plicitly captures the implicit associations between AUs and expression categories. 
+
+D. Dynamic Prior Mapping Module 
+
+We propose Dynamic Prior Mapping (DPM), a learnable, bidirectional, and differentiable mapping mechanism in the textual semantic space. Its main objective is to establish a dynamic correspondence bridge between local AU semantics 6AU Descriptions  Matrix C  (M ×D)                                                                                          
+
+> 𝐶 11 𝐶 12…𝐶 1𝐷
+> 𝐶 21 𝐶 22…𝐶 2𝐷
+> …………
+> 𝐶 𝑀 1𝐶 𝑀 1…𝐶 𝑀𝐷
+> Learnable Matrix A (K ×M)
+> 𝐴 11 𝐴 12…𝐴 1𝑀
+> 𝐴 21 𝐴 22…𝐴 2𝑀
+> …………
+> 𝐴 𝐾 1𝐴 𝐾 1…𝐴 𝐾𝑀
+> FE Descriptions Matrix D (K ×D)
+> 𝐷 11 𝐷 12…𝐷 1𝐷
+> 𝐷 21 𝐷 22…𝐷 2𝐷
+> …………
+> 𝐷 𝐾 1𝐷 𝐾 1…𝐷 𝐾𝐷
+> FE Descriptions Matrix E (K ×D)
+> 𝐸 11 𝐸 12 …𝐸 1𝐷
+> 𝐸 21 𝐸 22 …𝐸 2𝐷
+> …………
+> 𝐸 𝐾1 𝐸 𝐾1 …𝐸 𝐾𝐷
+> Learnable Matrix B (M ×K)
+> 𝐵 11 𝐵 12…𝐵 1𝐾
+> 𝐵 21 𝐵 22…𝐵 2𝐾
+> …………
+> 𝐵 𝑀 1𝐵 𝑀 1…𝐵 𝑀𝐾
+> AU Descriptions Matrix F (M ×D)
+> 𝐹 11 𝐹 12 …𝐹 1𝐷
+> 𝐹 21 𝐹 22 …𝐹 2𝐷
+> …………
+> 𝐹 𝑀1 𝐹 𝑀1 …𝐹 𝑀𝐷
+> FE Samples
+> AU Samples
+> FE Samples
+> AU Samples
+> DPM: AU →FE （compose ）
+> DPM: FE →AU （decompose ）
+
+# →
+
+# →
+
+×
+
+× 
+
+> FE  Weight  AU Weight
+> AU Weight  FE Weight
+
+Fig. 4. The linear feature transformation in DPM module is to multiply a learnable weight matrix with a task-specific semantic matrix. Composition transformation combines the semantics of multiple AUs into the semantics of a single FE. Hence, the AU semantic matrix is transformed into a new FE semantic matrix. Decomposition transformation decomposes the semantics of a single FE into the semantics of multiple AUs. Hence, the FE semantic matrix is transformed into a new AU semantic matrix. Matrices A, B, C, D, E,and F denote W au →exp , W exp →au , T au , ˜T exp , T exp , and ˜T au , respectively. 
+
+and global FE semantics. This design enhances discriminabil-ity and implicitly mitigates dataset bias. As illustrated in Fig. 4, the DPM module consists of two learnable mapping matrices: W au →exp ∈ RK×M and 
+
+W exp →au ∈ RM ×K . These matrices are initialized from FACS priors and model the semantic mappings AU detection →
+
+DFER and DFER → AU detection. To be specific, we construct a binary correspondence matrix according to FACS [3], which encodes the anatomical relation-ships between AUs and basic expressions. Let P ∈ RK×M
+
+denote the prior matrix. Here, Pk,m = 1 if AU m is typically involved in the prototypical configuration of expression k, and 
+
+Pk,m = 0 otherwise. To avoid overly hard constraints, we normalize the prior matrix row-wise and use it to initialize the learnable mapping matrix as: 
+
+W au →exp  
+
+> 0
+
+= Normalize row (P ), (19) the reverse-direction matrix is initialized as its transpose: 
+
+W exp →au  
+
+> 0
+
+=  W au →exp 
+
+> 0
+
+⊤ . (20) During training, these two matrices are updated indepen-dently via backpropagation. This design preserves mapping asymmetry and allows the model to gradually move away from the manually constructed priors and adapt to data-driven statistical distributions. As a consequence, the FACS prior serves as a semantic anchor rather than a fixed structural constraint. Given the DFER textual embedding matrix T exp ∈ RK×d
+
+and the AU textual embedding matrix T au ∈ RM ×d, the DPM bidirectional mappings are defined as: 
+
+˜T exp = Softmax row (W au →exp /τ m) T au , (21) 
+
+˜T au = Softmax row (W exp →au /τ m) T exp , (22) where Softmax row (·) refers to a row-wise softmax, temperature-scaled by τm, to ensure numerical stability and introduce a non-linear normalization over the mapping weights. This normalization makes the associations more interpretable. Here, ˜T exp is the expression-semantic mapping generated from AU descriptions, whereas ˜T au is the reverse mapping from expression descriptions to AU semantics. Through this bidirectional association, our model explicitly captures the complementary relationships between the AU and DFER tasks. The final semantically enhanced representations for DFER and AU detection tasks are obtained through residual-style updates: 
+
+T exp = T exp + α ˜T exp , (23) 
+
+T au = T au + β ˜T au , (24) where α and β are two learnable weighting factors. The cosine similarities between the visual features and all candidate textual prototypes are first computed as 
+
+S(Z, T ) = Z · T
+
+∥Z∥ ∥ T ∥ , (25) where Z and T denote the visual and textual feature vec-tors, respectively. The final predictions are then obtained by selecting the prototype with the highest similarity score for DFER, while for AU detection, the similarity scores are used as confidence values for each AU. IV. E XPERIMENTS 
+
+A. Datasets 
+
+We evaluate the proposed method on two laboratory dynamic AU detection datasets, BP4D [33], DISFA [34], and three in-the-wild dynamic facial expression recognition datasets, DFEW [30], MAFW [31], and FERV39K [32]. All of them are publicly available and widely used benchmarks. For each dataset, we follow the official split protocol. For AU detection, we use F1 score as the evaluation metric. For DFER, following prior studies [35]–[37], [39], we use Unweighted Average Recall (UAR) and Weighted Average Recall (WAR) as the evaluation metrics. 
+
+1) AU Datasets: BP4D [33] is a laboratory-collected 3D dynamic spontaneous facial expression dataset with 41 sub-jects and 328 high-resolution videos. Twelve AUs are an-notated at the frame level, yielding approximately 146,000 labeled frames. The dataset follows a 3-fold cross-validation protocol. DISFA [34] is a laboratory-collected dynamic facial expression dataset with 27 subjects and approximately 130,000 frames. Twelve AUs are annotated at the frame level with intensity levels from 0 to 5. Following common practice [8], we select eight AUs for activation detection and adopt a 3-fold cross-validation protocol. 
+
+2) DFER Datasets: DFEW [30] is a large-scale in-the-wild dynamic facial expression dataset with 16,372 video clips col-lected from approximately 1,500 movies. It covers seven basic expression categories and follows a 5-fold cross-validation protocol. Each clip is annotated at the video level by multiple annotators to ensure label reliability. MAFW [31] is a large-scale in-the-wild multimodal (video-audio) compound emotion dataset with 10,045 clips and 11 emotion categories. Each clip 7         
+
+> TABLE I F1 SCORES OVER 12 AU S ON THE BP4D DATASET ,USING JOINT LEARNING BASED ON THE DFEW DATASET . T HE BEST RESULTS ARE HIGHLIGHTED IN BOLD ,AND THE SECOND -BEST UNDERLINED . STL REFERS TO THE SINGLE -TASK COUNTERPART .
+
+Methods Backbone AU1 AU2 AU4 AU6 AU7 AU10 AU12 AU14 AU15 AU17 AU23 AU24 Avg KSRL [10] ResNet-50 53.3 47.4 56.2 79.4 80.7 85.1 89.0 67.4 55.9 61.9 48.5 49.0 64.5 KS [69] ResNet-18 55.3 48.6 57.1 77.5 81.8 83.3 86.4 62.8 52.3 61.3 51.6 58.3 64.7 MDHR [70] Swin-B 58.3 50.9 58.9 78.4 80.3 84.9 88.2 69.5 56.0 65.5 49.5 59.3 66.6 CLEF [64] CLIP-ViT-B/16 55.8 46.8 63.3 79.5 77.6 83.6 87.8 67.3 55.2 63.5 53.0 57.8 65.9 AUFormer [71] ViT-B/16 - - - - - - - - - - - - 66.2 FMAE [58] ViT-L/16 59.2 50.0 62.7 80.0 79.2 84.7 89.8 63.5 52.8 65.1 55.3 56.9 66.6 FMAE-IAT [58] ViT-L/16 62.7 51.9 62.7 79.8 80.1 84.8 89.9 64.6 54.9 65.4 53.1 54.7 67.1 MAE-Face [59] ViT-B/16 62.5 56.4 66.3 79.6 79.6 85.6 89.1 64.2 54.5 65.0 53.8 51.8 67.4 AU-TTT [72] ViT-S/16 - - - - - - - - - - - - 65.6 CausalAffect [57] ResNet-50 67.1 43.6 66.0 80.1 79.1 84.8 88.9 71.1 55.6 66.6 47.5 58.8 67.4 FLCM [56] ResNet-50 60.6 50.3 64.2 80.7 80.5 85.9 88.6 68.0 57.3 63.4 52.0 60.5 67.7 HiVA [65] Swin-B 54.3 49.7 63.3 79.3 79.8 84.5 88.8 68.5 57.0 62.6 53.1 56.8 66.5 
+
+STL (Ours) CLIP-ViT-B/16 58.8 48.0 60.5 78.4 79.6 84.3 88.8 69.5 51.7 65.7 53.1 55.7 66.2 
+
+SSM (Ours) CLIP-ViT-B/16 61.0 48.4 56.0 81.8 83.1 84.9 88.7 70.7 59.5 68.0 60.1 59.8 68.5          
+
+> TABLE II F1 SCORES OVER 8 AU S ON THE DISFA DATASET ,USING JOINT LEARNING BASED ON THE DFEW DATASET . T HE BEST RESULTS ARE HIGHLIGHTED IN BOLD ,AND THE SECOND -BEST UNDERLINED . STL REFERS TO THE SINGLE -TASK COUNTERPART .
+
+Methods Backbone AU1 AU2 AU4 AU6 AU9 AU12 AU25 AU26 Avg KSRL [10] ResNet-50 60.4 59.2 67.5 52.7 51.5 76.1 71.3 57.7 64.5 KS [69] ResNet-18 53.8 59.9 69.2 54.2 50.8 75.8 92.2 46.8 62.8 MDHR [70] Swin-B 65.4 60.2 75.2 50.2 52.4 74.3 93.7 58.2 66.2 CLEF [64] CLIP-ViT-B/16 64.3 61.8 68.4 49.0 55.2 72.9 89.9 57.0 64.8 AUFormer [71] ViT-B/16 – – – – – – – – 66.4 FMAE [58] ViT-L/16 62.7 59.5 67.3 55.6 61.8 77.9 95.0 69.8 68.7 FMAE-IAT [58] ViT-L/16 64.7 61.3 70.8 58.1 59.4 79.9 95.2 71.3 70.1 MAE-Face [59] ViT-B/16 68.4 59.4 76.5 58.4 56.7 78.5 96.6 71.7 70.8 AU-TTT [72] ViT-S/16 - - - - - - - - 66.4 CausalAffect [57] ResNet-50 68.1 63.2 77.6 64.1 74.0 69.3 83.7 68.7 71.1 FLCM [56] ResNet-50 59.3 62.1 73.7 55.3 56.3 79.1 93.9 62.4 67.8 HiVA [65] Swin-B 60.6 58.4 75.4 51.0 61.2 74.8 93.9 63.8 67.4 
+
+STL (Ours) CLIP-ViT-B/16 61.4 70.9 69.8 57.1 56.0 77.3 95.8 68.7 69.6 
+
+SSM (Ours) CLIP-ViT-B/16 68.6 74.6 73.9 56.1 57.6 79.4 95.6 69.8 71.9 
+
+is annotated at the video level by multiple annotators. The dataset provides both single-label and multi-label splits. The dataset follows a 5-fold cross-validation protocol. FERV39K 
+
+[32] is a large-scale multi-scene in-the-wild video expression recognition dataset with 38,935 clips. It covers seven basic expression categories across diverse scene types. It adopts the official train/test split, with 31,088 clips for training and 7,847 for testing. 
+
+B. Implementation Details 
+
+Facial images are aligned and cropped to a resolution of 224 ×224. Data augmentation includes random cropping, random erasing, horizontal flipping, and color jittering. The encoder is based on CLIP-ViT-B/16 [47]. MoE layers are inserted into the FFNs of the last six layers of the CLIP vision encoder, whose top-k is set to 2 and number of private experts is set to 4. The input and output dimensions of MoE layers are both 768, and the hidden feature dimension is 512. For the DFER task, following previous works [36], [39], [45], [50], we uniformly sample video clips. Each sample contains 16 frames. For the temporal model Φexp (·), the numbers of Transformer layers and attention heads are set to 1 and 8 by default, respectively, to avoid overfitting. For the AU detection task, the video sampling strategy and the hyperparameters of the temporal model Φau (·) are kept consistent with those of the DFER task. On the text side, we adopt the CoOp design [68]. It includes 8 learnable context tokens and a fixed textual template. By default, the fixed textual template is placed after the learnable context tokens. In addition, the loss weighting coefficient λ in Eqn. 14 is set to 2 by default to balance the losses between tasks. The initial values of α and β in Eqn. 23 and Eqn. 24 are both set to 0.1. The temperature hyperparameters τ and τm are both set to 0.01. During training, the AdamW optimizer is used. The learning rate for the visual encoder branch is set to 1 × 10 −6. The learning rate for the remaining branches is set to 1 × 10 −4.The weight decay is uniformly set to 1 × 10 −4. We adopt a multi-step decay schedule. The learning rate of all components is reduced to 0.1 times the previous value every 10 epochs. The batch sizes for the DFER and AU tasks are set to 12 and 128, respectively, and one batch from each task is sampled at every training step. Joint training is performed for 30 epochs. 8          
+
+> TABLE III COMPARISON WITH STATE -OF -THE -ART METHODS ON DFEW, FERV39K, AND MAFW. UAR: U NWEIGHTED AVERAGE RECALL ; WAR: W EIGHTED
+> AVERAGE RECALL . U SING JOINT LEARNING BASED ON THE BP4D DATASET . T HE BEST RESULTS ARE HIGHLIGHTED IN BOLD ,AND THE SECOND -BEST UNDERLINED . STL REFERS TO THE SINGLE -TASK COUNTERPART .
+
+Method Backbone DFEW FERV39K MAFW UAR WAR UAR WAR UAR WAR 
+
+Supervised learning models 
+
+Former-DFER [39] Transformer 53.69 65.70 37.20 46.85 31.16 43.27 NR-DFERNet [73] CNN-Transformer 54.21 68.19 33.99 45.97 - -EST [37] ResNet-18 53.94 65.85 - - - -Freq-HD [74] VGG13-LSTM 46.85 55.68 33.07 45.26 - -IAL [36] ResNet-18 55.71 69.24 35.82 48.54 - -M3DFEL [75] ResNet-18-3D 56.10 69.25 35.94 47.67 - -IFDD-3DViT [38] ViT-B/16 61.19 73.82 39.15 51.09 39.31 53.92 
+
+Self-supervised learning models 
+
+SVFAP [76] ViT-B/16 62.83 74.27 42.14 52.29 41.19 54.28 MAE-DFER [48] ViT-B/16 63.41 74.43 43.12 52.07 41.62 54.31 
+
+Vision-language models 
+
+CLIPER [44] CLIP-ViT-B/16 57.56 70.84 41.23 51.34 - -EmoCLIP [77] CLIP-ViT-B/32 58.04 62.12 31.41 36.18 34.24 41.46 DFER-CLIP [45] CLIP-ViT-B/32 59.61 71.25 41.27 51.65 39.89 52.55 DFLM [78] CLIP-ViT-B/32 59.77 71.40 41.25 51.31 41.23 53.65 CLIP-Guided-DFER [41] CLIP-ViT-B/32 60.85 72.58 41.43 51.83 41.06 54.38 A3lign-DFER [40] CLIP-ViT-L/14 64.09 74.20 41.87 51.77 42.07 53.24 OUS [79] CLIP-ViT-L/14 60.94 74.10 42.23 53.30 - -PE-CLIP [46] CLIP-ViT-B/16 62.82 74.04 41.57 51.26 - -CLVSR [43] CLIP-ViT-B/16 64.33 71.58 43.52 50.66 42.51 52.69 
+
+STL (Ours) CLIP-ViT-B/16 61.85 74.43 41.10 51.71 41.81 56.15 
+
+SSM (Ours) CLIP-ViT-B/16 64.83 75.37 43.21 53.28 43.38 57.26   
+
+> TABLE IV DETAILED COMPARISON OF ACCURACY ACROSS VARIOUS EMOTION CATEGORIES ON DFEW. T HE BEST RESULTS ARE HIGHLIGHTED IN BOLD ,AND THE SECOND -BEST UNDERLINED .
+
+Method Accuracy of Each Emotion DFEW Happy Sad Neutral Angry Surprise Disgust Fear UAR WAR EC-STFL [30] 79.18 49.05 57.85 60.98 46.15 2.76 21.51 45.35 56.51 Former-DFER [39] 84.05 62.57 67.52 70.03 56.43 3.45 31.78 53.69 65.70 NR-DFERNet [73] 88.47 64.84 70.03 75.09 61.60 0.00 19.43 54.21 68.19 EST [37] 86.87 66.58 67.18 71.84 47.53 5.52 28.49 53.43 65.85 IAL [36] 87.95 67.21 70.10 76.06 62.22 0.00 36.44 55.71 69.24 M3DFEL [75] 89.59 68.38 67.88 74.24 59.69 0.00 31.64 56.10 69.25 SVFAP [76] 93.13 76.98 72.31 77.54 65.42 15.17 39.25 62.83 74.27 MAE-DFER [48] 92.92 77.46 74.56 76.94 60.99 18.62 42.35 63.41 74.43 
+
+SSM (Ours) 92.64 79.83 73.55 79.24 61.81 20.95 45.80 64.83 75.37 
+
+All experiments are conducted on 8 Nvidia 4090 GPUs. Additionally, to verify the advantage of our framework, we also trained a single-task learning model, which is referred to as STL. The visual backbone is also the standard CLIP-ViT-B/16 [47], and the two tasks are trained separately, with a temporal module and a linear layer for each task. Other model configurations are kept the same. 
+
+C. Comparison with the State of the Art 1) Facial Action Unit Detection: To validate the effective-ness of our method, we compare it with several state-of-the-art methods on BP4D and DISFA, including FMAE-IAT [58], MAE-Face [59], CausalAffect [57], and HiVA [65]. We select DFEW as the paired dataset because it yields the best DFER performance when jointly learned with AU detection. Table I reports the comparison of F1 scores over 12 AUs on BP4D. The results show that SSM performs favorably on multiple AUs. The improvements are particularly notable on AU15, AU17, and AU23. SSM also achieves the highest average F1 score among all compared methods. Table II presents the results on DISFA. SSM achieves the highest average F1 score over 8 AUs among all compared methods. The most pronounced improvement is observed on AU2. In addition, joint learning with a DFER dataset outperforms single-task learning (SSM vs. STL) significantly on both BP4D and DISFA, with gains of +2.3% on each dataset. This result shows that fine-grained local AUs can benefit from coarse-grained global expressions. 
+
+2) Dynamic Facial Expression Recognition: To verify the multi-task learning capability of our method, we also conduct experiments on the dynamic facial expression recognition task. We compare our method with the advanced methods on 9
+
+DFEW, FERV39K, and MAFW, which can be divided into three paradigms: supervised learning methods, self-supervised learning methods, and vision–language models. They include IFDD-3DViT [38], SVFAP [76], MAE-DFER [48], A 3lign-DFER [40], OUS [79], PE-CLIP [46], and CLVSR [43]. Similarly, we select BP4D as the paired dataset because it yields the best AU detection performance when jointly learned with DFER. The results are shown in Table III. SSM achieves performance on par with state-of-the-art methods across all three datasets. Moreover, SSM outperforms the single-task model, STL, on all three datasets: DFEW (UAR: +2.98%, WAR: +0.97%), FERV39K (UAR: +2.11%, WAR: +1.57%), and MAFW (UAR: +1.57%, WAR: +1.11%). This result indi-cates that AUs collected under laboratory conditions can also facilitate in-the-wild expression recognition. Together with the results in Table I and Table II, this finding answers our earlier question. Under dynamic settings, heterogeneous datasets can be leveraged to establish a bidirectional reciprocal relationship (AU ↔FE) between the two tasks. In addition, Table IV reports the recognition accuracy for each of the seven expression categories in DFEW. The results show that the accuracy of the two low-sample classes, fear and disgust, is also improved. 
+
+D. Ablation Studies 
+
+Key Component Ablation : To evaluate the effectiveness of each component in SSM, we conduct extensive ablation studies. To avoid the enormous computational cost caused by Cartesian-product-style dataset combinations 3, and to cover a broader range of data, we perform all ablation experiments on three folds of BP4D and DISFA and one fold of DFEW. We use BP4D+DFEW as one multi-task learning group and DISFA+DFEW as the other. We validate the Baseline model (Baseline), the Textual Semantic Prototype (TSP) module, and the adaptive Dynamic Prior Mapping (DPM) module. Notably, the text encoder is used only when TSP is enabled, and TSP is indispensable for DPM.            
+
+> TABLE V INVESTIGATION OF THE CONTRIBUTIONS OF EACH COMPONENT IN THE
+> SSM FRAMEWORK . B ASELINE : B ASELINE MODEL IN FIG . 3 TRAINED JOINTLY ON HETEROGENEOUS DATASETS ; TSP: TEXTUAL SEMANTIC PROTOTYPE MODULE ; DPM: DYNAMIC PRIOR MAPPING MODULE . N OTE THAT THE SSM FRAMEWORK IS ALWAYS BUILT ON TOP OF THE BASELINE MODEL . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+
+Baseline TSP DPM BP4D DFEW DISFA DFEW 66.2 63.98/76.16 69.6 63.98/76.16 
+
+✓ 67.2 65.25/76.97 70.4 65.93/77.53 
+
+✓ ✓ 67.7 66.75/77.35 70.6 66.03/77.78 
+
+✓ ✓ ✓ 68.5 68.59 /77.88 71.3 66.64 /78.09 
+
+Table V reports the performance of different component combinations. The results show that our model can effectively acquire beneficial knowledge from the counterpart task under heterogeneous datasets, thereby improving recognition perfor-mance. Specifically, the Baseline model alone already yields clear gains, i.e., BP4D (F1 score: +1.0%) and DFEW (UAR: 
+
+> 3The experimental results of the Cartesian-product-based dataset combina-tions under the SSM framework are listed in Table XI in Sec. IV-F.
+
++1.27%, WAR: +0.81%), as well as DISFA (F1 score: +0.8%) and DFEW (UAR: +1.95%, WAR: +1.37%). DPM transfers knowledge through a textual medium and dynamically ad-justs during training, making cross-task transfer effective. It brings noticeable improvements on BP4D (F1 score: +0.8%) and DFEW (UAR: +1.84%, WAR: +0.53%), as well as on DISFA (F1 score: +0.7%) and DFEW (UAR: +0.61%, WAR: +0.31%). TSP directly supports the DPM module. Compared with traditional one-hot labels, TSP provides a more unified deep semantic space for the two tasks. For instance, the two AU labels “brow lowerer” and “brow raiser” are completely unrelated in a discrete one-hot label space, whereas in a textual semantic space they are pulled closer because they share the word “brow”. Obvious performance increase can be seen on BP4D (F1 score: +0.5%) and DFEW (UAR: +1.50%, WAR: +0.38%), as well as on DISFA (F1 score: +0.2%) and DFEW (UAR: +0.10%, WAR: +0.25%), brought by TSP.             
+
+> TABLE VI HOW TO CONSTRUCT AN EFFECTIVE DPM MODULE . W E FURTHER PROBE ITS WORKING MECHANISM BY CONSTRUCTING THE DPM IN DIFFERENT WAYS . R INIT .: RANDOM INITIALIZATION ; P INIT .: PRIOR INITIALIZATION ;DUAL :WHETHER BIDIRECTIONAL INDEPENDENT LEARNING IS PERFORMED . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+
+R init. P init. Dual BP4D DFEW DISFA DFEW 
+
+✓ 67.0 65.35/77.35 69.6 64.52/76.88 
+
+✓ ✓ 67.2 65.75/77.53 70.2 65.20/76.84 
+
+✓ 68.1 67.00/77.01 70.9 66.37/77.23 
+
+✓ ✓ 68.5 68.59 /77.88 71.3 66.64 /78.09 
+
+Dynamic Prior Mapping (DPM) : To better understand the working mechanism of DPM, we conduct a deeper ablation analysis, as shown in Table VI. The experimental results indicate that prior-guided DPM can significantly improve task performance (R init. vs. P init.). It also reduces the perfor-mance degradation caused by misleading guidance from incor-rect knowledge. Moreover, our bidirectional learning strategy differs from a simple matrix transpose. It can effectively alleviate the domain gap between laboratory and in-the-wild datasets and improve model performance (w/ Dual vs. w/o Dual). Under the prior-initialized setting, the bidirectional learning strategy brings clear gains, i.e., BP4D (F1 score: +0.4%) and DFEW (UAR: +1.59%, WAR: +0.87%), as well as DISFA (F1 score: +0.4%) and DFEW (UAR: +0.27%, WAR: +0.86%). This result is consistent with prior findings [11].                                     
+
+> TABLE VII EFFECTIVENESS OF THE DPM MODULE . B ECAUSE THE DPM
+> ESSENTIALLY PERFORMS A TWO -DIMENSIONAL MAPPING ,WE COMPARE
+> LINEAR , MLP, DPM (R ANDOM , F ROZEN )AND DPM (P RIOR , F ROZEN ). “F ROZEN ”INDICATES THAT THE DPM WEIGHT MATRIX IS NO LONGER LEARNED . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+> Setting BP4D DFEW DISFA DFEW Linear 66.8 64.79/76.87 69.7 64.77/76.88 MLP 67.5 65.26/77.23 70.6 65.89/77.18 DPM(Random, Frozen) 66.9 65.12/76.61 69.7 64.73/76.84 DPM(Prior, Frozen) 67.3 66.62/77.05 70.2 65.47/77.53 DPM 68.5 68.59 /77.88 71.3 66.64 /78.09
+
+In addition, we conduct replacement-style ablation studies 10 
+
+for DPM. We compare three groups of results, namely Linear, MLP, and DPM, as reported in Table VII. The results show that prior-guided DPM is clearly superior to the other two groups. They also show that MLP performs better than Linear. This further confirms that simple mappings are insufficient to capture complex correspondences and therefore degrade model performance. Furthermore, to verify that DPM can effectively mitigate the interference of data bias, we set up a control comparison between learnable and non-learnable DPM, namely, (Prior, Frozen) vs. DPM in Table VII. The non-learnable DPM is entirely guided by FACS and cannot be dynamically adjusted according to data characteristics. As a result, it leads to performance drops on BP4D (F1 score: -1.2%) and DFEW (UAR: -1.97%, WAR: -0.83%), as well as on DISFA (F1 score: -1.1%) and DFEW (UAR: -1.17%, WAR: -0.56%). From the comparison between the two dataset combinations, we observe that the negative effect of using a non-learnable mapping becomes more pronounced as the data scale increases. 
+
+Textual Semantic Prototype (TSP) : It is necessary to investigate the impact of different text descriptions. We have tried three types of text descriptions, i.e., Compound (e.g., “cheek raiser, lip corner puller”), Standalone (e.g., “a facial expression of happiness”), and Words (e.g., “happiness”). 4 Ta-ble VIII shows the effects of different label description forms. The results indicate that Compound descriptions improve task performance the most. Since CLIP’s text encoder is always kept frozen, the learn-able tokens become the medium through which DPM connects the text and vision branches. We further explore the number of such tokens, as shown in Table IX. Using either too many or too few tokens leads to performance degradation. 
+
+TABLE VIII HOW TO CONSTRUCT AN EFFECTIVE TEXTUAL SEMANTIC PROTOTYPE MODULE (TSP). S INCE DPM IS ALWAYS BASED ON TSP, THE EFFECT OF KNOWLEDGE TRANSFER ALSO INDIRECTLY DEPENDS ON THE TYPE OF TEXT . W E USE DIFFERENT TEXTUAL DESCRIPTIONS TO INVESTIGATE THEIR IMPACT ON THE MODEL . W ORDS : WORD DESCRIPTIONS ;STANDALONE : STANDALONE DESCRIPTIONS ; C OMPOUND : COMPOSITE DESCRIPTIONS . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR. 
+
+Setting BP4D DFEW DISFA DFEW Words 68.2 64.56/77.87 68.1 67.24 /77.40 Standalone 68.1 65.33/77.31 69.7 65.60/77.53 Compound 68.5 68.59 /77.88 71.3 66.64/ 78.09 
+
+Data Scaling Study : Finally, we quantitatively study how the data scale of one task affects the other under joint learning. For the AU detection task, we use 100% of the AU data and progressively use 20%, 40%, 60%, 80%, and 100% of the FE data to investigate the effect of FE →AU. The same protocol is applied to the DFER task. The upper part of Fig. 5 presents the quantitative analysis of FE →AU, while the lower part presents the quantitative analysis of AU →FE. 5 We observe that positive 
+
+> 4
+
+Specifically, the detailed compound descriptions are listed in Table S4 in Sec. D of the supplementary material. 
+
+> 5
+
+The specific metrics are provided in Table S1 and Table S2 in Sec. A of the supplementary material. 
+
+Fig. 5. The analysis of data scale, where 0% data scale indicates single-task training. In the left panel (Expression → AU), BP4D and DISFA denote joint learning with DFEW. In the right panel (AU → Expression), DFEW col1 denotes joint learning with BP4D, and DFEW col2 denotes joint learning with DISFA. 
+
+gains already appear when only 20% of the paired-task data are used, and these gains are generally maintained as the data scale increases. This effect becomes more pronounced as the data scale increases. This result suggests that the gains brought by SSM cannot be explained solely by an increase in the amount of paired-task data. 
+
+TABLE IX ANALYSIS OF THE NUMBER OF LEARNABLE TOKENS IN TEXT DESCRIPTIONS . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR. 
+
+Prompt Count BP4D DFEW DISFA DFEW 0 67.9 63.70/77.23 70.2 63.84/76.67 4 66.8 67.49/77.05 68.6 64.95/77.06 8 68.5 68.59 /77.88 71.3 66.64 /78.09 
+
+12 67.0 66.15/77.48 69.6 66.50/77.19 16 66.6 65.96/77.53 69.5 64.82/77.05 
+
+E. Cross-Domain Evaluation 
+
+We evaluate our model in a zero-shot setting. Specifically, we train on the combination of BP4D and DFEW. We then conduct zero-shot testing on the combination of DISFA and FERV39K. For testing on DISFA, we index the output distri-bution of BP4D to match the shared labels in DISFA. This results in five AUs in total, namely AU1, AU2, AU4, AU6, and AU12, and we report their average F1 score. For testing on FERV39K, its label distribution is consistent with DFEW, so we directly conduct the evaluation. 
+
+TABLE X CROSS -DATASET TESTING . W E TRAIN ON THE BP4D+DFEW 
+
+> COMBINATION AND PERFORM ZERO
+
+-SHOT TESTING ON THE 
+
+DISFA+FERV39K COMBINATION . W E COMPARE STL, B ASELINE , AND 
+
+SSM. F OR THE DISFA TEST , WE SELECT THE FIVE AU S SHARED BY 
+
+BP4D AND DISFA AND REPORT THEIR AVERAGE F1 SCORE . BP4D AND 
+
+DISFA: F1 SCORE . DFEW AND FERV39K: UAR/WAR. 
+
+Train Test BP4D DFEW DISFA FERV39K STL 66.2 63.98/76.16 46.5 29.91/39.17 Baseline 67.2 65.25/76.97 59.4 31.55/41.98 SSM 68.5 68.59 /77.88 67.1 32.10 /43.52 11 input 
+
+Frame 
+
+number 
+
+STL 
+
+Baseline 
+
+SSM 
+
+input 
+
+STL 
+
+Baseline 
+
+SSM 
+
+1 2 3 4 5 6 7 8 1 2 3 4 5 6 7 8
+
+Fig. 6. Visualization of the input facial frame sequences. The left side shows samples from the DFER task. The right side shows samples from the AU detection task. Each subfigure presents an overlay of the original face frame and the attention heatmap. Warmer colors indicate regions with higher responses. The attention maps are computed from the multi-head self-attention of the CLIP-ViT-B/16 visual encoder using the attention rollout method [80]. From top to bottom, the attention overlays correspond to STL, Baseline, and SSM, respectively. Compared with STL, Baseline attends to more facial regions. Compared with Baseline, SSM shows denser and more spatially organized responses across frames. 
+
+Fig. 7. The upper part shows the weight matrix activation maps from AUs to facial expressions on DISFA and DFEW(fd5). From left to right, the three matrices correspond to the initial matrix, the matrix learned from random initialization, and the matrix learned from prior-based initialization. The lower part shows the corresponding weight matrices from facial expressions to AUs. 
+
+The results are shown on the right side of Table X. We compare the single-task model, our Baseline model, and the final SSM framework. Cross-domain zero-shot testing is chal-lenging. The performance drop is much larger on DFER than on AU detection, which is expected because BP4D and DISFA are relatively closer in domain characteristics and label space, whereas DFEW and FERV39K differ more substantially in both data domain and annotation protocol [50], [51]. Neverthe-less, the results exhibit a consistent trend. The SSM framework clearly outperforms our Baseline model, i.e., DISFA (F1 12 
+
+TABLE XI SUMMARY OF RESULTS ACROSS DIFFERENT DATASET COMBINATIONS . F OR DATASETS WITH VARYING NUMBERS OF FOLDS , WE ADOPT A 
+
+CARTESIAN -PRODUCT -BASED COMBINATION STRATEGY FOR EXHAUSTIVE TRAINING , THEREBY MINIMIZING THE RANDOMNESS INTRODUCED BY SPECIFIC DATASET PAIRINGS . BP4D AND DISFA: F1 SCORE . FERV39K, DFEW, AND MAFW: UAR/WAR.                 
+
+> FERV39K DFEW fd1 DFEW fd2 DFEW fd3 DFEW fd4 DFEW fd5 MAFW fd1 MAFW fd2 MAFW fd3 MAFW fd4 MAFW fd5 BP4D fd1 64.3 42.63/53.46 67.0 61.38/75.98 66.9 60.83/72.39 66.4 62.37/74.27 66.4 64.10/75.34 67.5 68.59/77.88 68.2 36.8/49.40 67.8 42.14/54.48 67.7 45.47/58.84 67.7 47.50/61.30 67.6 44.06/59.48 BP4D fd2 67.8 42.62/53.19 70.3 61.21/76.03 70.5 60.85/72.39 70.0 61.44/74.06 69.7 62.71/75.26 70.4 67.11/77.79 69.6 37.18/50.05 68.6 41.64/54.48 68.6 45.58/59.33 69.0 47.76/61.08 69.0 44.57/59.87 BP4D fd3 66.9 43.21/53.28 68.1 64.97/76.32 68.1 64.11/73.03 67.9 61.14/74.27 67.8 62.43/75.17 67.6 67.24/77.62 63.9 36.78/49.95 65.2 42.25/55.35 63.6 45.19/58.84 64.5 47.34/61.68 64.0 44.30/59.54 DISFA fd1 73.9 42.27/52.53 74.6 62.32/75.60 74.4 63.38/73.33 74.8 62.89/74.96 74.0 63.28/74.79 74.8 66.64/78.09 72.0 36.35/49.07 73.5 39.73/54.64 73.6 46.17/59.84 73.5 44.61/60.60 73.9 44.84/60.38 DISFA fd2 70.7 41.18/51.87 71.9 62.24/75.73 71.5 62.88/73.12 72.5 60.69/74.40 71.1 63.28/75.52 71.4 66.11/77.84 73.6 36.09/48.63 72.4 42.28/54.70 71.9 45.97/60.33 72.7 44.78/60.44 73.9 44.69/60.27 DISFA fd3 67.1 41.29/51.79 67.1 62.27/75.56 67.6 62.03/73.08 68.5 62.12/74.57 66.8 60.93/74.87 67.7 66.55/77.75 63.9 36.37/49.02 63.8 40.60/54.43 65.2 46.08/59.73 63.8 46.43/60.87 63.9 45.49/61.26
+
+score: +7.7%) and FERV39K (UAR: +0.55%, WAR: +1.54%). Moreover, our Baseline model also significantly outperforms the single-task model, i.e., DISFA (F1 score: +12.9%) and FERV39K (UAR: +1.64%, WAR: +2.81%). These results show better cross-dataset transfer under joint learning, with SSM giving the strongest results among the three settings. 
+
+F. Exhaustive Results over Different Dataset Pairings 
+
+Table XI provides a more comprehensive summary of joint-learning results across different dataset and fold combinations. For datasets with different numbers of folds, we adopt an exhaustive training strategy based on the Cartesian product of fold pairings. This reduces the randomness introduced by specific pairing choices. The overall trends remain consistent with the main results reported in the paper. DFEW generally provides stronger complementary gains for AU detection. FERV39K also yields stable transfer effects. Owing to its more complex category setting and in-the-wild conditions, MAFW is relatively more challenging. Nevertheless, it still maintains competitive joint-learning performance. These results indicate that the advantage of SSM does not depend on a single dataset combination. Instead, it shows favorable stability and reproducibility across diverse pairings. 
+
+G. Visualization 1) Attention Visualization: Fig. 6 presents the attention heatmaps of the single-task model, the Baseline model, and SSM on image samples from several datasets. From STL →
+
+Baseline → SSM, the attention pattern evolves from “few and local (coarse-grained)” to “more and structured (fine-grained).” Specifically, STL mainly focuses on a few salient regions, such as the mouth or local eyebrow–eye regions. This indicates a reliance on a single discriminative cue. In DFER, such attention may overlook the coordinated dynamics of expression-related muscle groups. In AU detection, it may also miss auxiliary regions that co-occur with the target AU. The Baseline introduces cross-task supervision. It encourages the model to shift from single-point evidence to multi-region evidence fusion. As a result, the attention coverage expands, although it is often broader and more scattered. Building on the Baseline, SSM further improves the cross-task semantic transfer mechanism by leveraging TSP and DPM, leading to stronger and more coordinated attention responses. Unlike the Baseline, which mainly broadens the attended regions, SSM better emphasizes informative facial cues while preserving multi-region attention. This results in a more refined attention pattern and facilitates knowledge transfer between FEs and AUs. Importantly, this “dispersion” does not indicate inef-fective diffusion. Instead, it reflects a shift from dependence on single-point features to joint modeling of multiple muscle groups. This response pattern is more consistent with the local muscle semantics of AUs and the global configurational characteristics of DFER. It is also consistent with the trend of quantitative performance improvement. 
+
+2) Weight Matrix Visualization: We visualize the bidirec-tional weight contribution matrices between AUs and expres-sions on the combined DISFA and DFEW datasets, as shown in Fig. 7. The prior-initialized matrices are not identical to the initially defined weights. Moreover, the two matrices learned bidirectionally are not transposes of each other. This indicates that SSM has already learned to adapt to actual heterogeneous data conditions. Notably, because the weights can be adjusted freely, even randomly initialized matrices can eventually learn some correct weights. This is sufficient to demonstrate the strong capability of SSM. 6
+
+3) Analysis of the Initial Weighting Factor: We further analyze the influence of the initial weighting factor in Fig. 8. 7
+
+Specifically, the coefficients α and β in the DPM module are varied over {0.01, 0.05, 0.1, 0.5, 1.0 }. The results show that the performance trends of both tasks remain stable across different settings. V. D ISCUSSION 
+
+Cognitive Perspective. The experimental results suggest that AU detection and facial expression recognition can pro-vide complementary information under heterogeneous joint learning. In our setting, the two tasks improve together rather than only in one direction. This indicates that semantic re-lations between global expressions and local facial actions 
+
+> 6
+
+Additionally, we visualize the weight matrices for each dataset combina-tion. Details are illustrated in Figs. S1 and S2 in Sec. C of the supplementary material. 
+
+> 7
+
+The specific metrics are listed in Table S3 in Sec. B of the supplementary material. 13 
+
+Fig. 8. Sensitivity analysis of the initial values of α and β in Eqn. 23 and Eqn. 24. Left: performance on AU datasets (BP4D and DISFA), measured by F1 score. Right: performance on DFEW, measured by UAR and WAR. The dashed lines indicate the average performance across datasets. The results show that SSM maintains stable performance over a wide range of α = β.The performance shows a mild peak around 0.1. DFEW col1: jointly learned with BP4D. DFEW col2: jointly learned with DISFA. 
+
+can still be useful even when the datasets are collected under different conditions and have unaligned annotations. From this perspective, the main value of SSM is that it offers a practical way to connect the two tasks through semantic-level interactions instead of requiring aligned labels or shared dataset design. 
+
+Model Perspective. From a modeling perspective, the final gains come from the combination of several components rather than from a single design choice. The ablation studies show that the baseline joint-learning setting already brings improve-ments, while the full framework gives more consistent gains. The results further support the role of semantic descriptions, adaptive prior mapping, and bidirectional optimization in the final model behavior. In addition, the comparison with simpler mapping variants suggests that the proposed semantic mapping design is more suitable for this heterogeneous setting than direct or fixed alternatives. 
+
+Limitations. Despite these results, the proposed framework still has several limitations. First, the method remains sensitive to how the text semantics are constructed, because different text forms and prompt settings lead to different results. Second, although the framework improves cross-dataset transfer, the zero-shot setting is still challenging, which means that domain differences are not fully resolved. Third, the current design models cross-task relations mainly at the semantic and dataset levels. It does not explicitly model finer sample-level corre-spondences or more complex multimodal interactions. These issues should be studied further in future work. VI. C ONCLUSION 
+
+In this work, we study joint learning of facial action units (AUs) and facial expressions (FEs) from heterogeneous datasets with unaligned annotations and domain differences. To address this setting, we propose the Structured Seman-tic Mapping (SSM) framework, which builds semantic-level interactions between the two tasks through textual semantic prototypes and dynamic prior mapping. Experimental results show that the proposed framework improves both AU detection and dynamic facial expression recognition under joint learning. The ablation results further indicate that the performance gains come from the combined effect of semantic descriptions, adap-tive mapping, and bidirectional optimization. In addition, the cross-dataset results suggest that the proposed framework has better transfer ability than the compared baselines in the zero-shot setting. Overall, this work shows that heterogeneous facial behavior datasets with non-overlapping annotations can still be used jointly through semantic-level mapping. In future work, we will further study finer-grained sample-level interactions and extend the framework to more complex temporal and multimodal settings. REFERENCES [1] P. Ekman and W. V. Friesen, “Constants across cultures in the face and emotion.” Journal of personality and social psychology , vol. 17, no. 2, p. 124, 1971. [2] D. Matsumoto, “More evidence for the universality of a contempt expression,” Motivation and Emotion , vol. 16, no. 4, pp. 363–368, 1992. [3] P. Ekman and W. V. Friesen, “Facial action coding system,” Environ-mental Psychology & Nonverbal Behavior , 1978. [4] H. Yang, U. Ciftci, and L. Yin, “Facial expression recognition by de-expression residue learning,” in Proceedings of the IEEE conference on computer vision and pattern recognition , 2018, pp. 2168–2177. [5] P. Liu and L. Yin, “Spontaneous facial expression analysis based on tem-perature changes and head motions,” in 2015 11th IEEE International Conference and Workshops on Automatic Face and Gesture Recognition (FG) , vol. 1. IEEE, 2015, pp. 1–6. [6] D. Ruan, Y. Yan, S. Chen, J.-H. Xue, and H. Wang, “Deep disturbance-disentangled learning for facial expression recognition,” in Proceedings of the 28th ACM International Conference on Multimedia , 2020, pp. 2833–2841. [7] J. She, Y. Hu, H. Shi, J. Wang, Q. Shen, and T. Mei, “Dive into ambiguity: Latent distribution mining and pairwise uncertainty estima-tion for facial expression recognition,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2021, pp. 6248– 6257. [8] H. Yang, L. Yin, Y. Zhou, and J. Gu, “Exploiting semantic embedding and visual feature for facial action unit detection,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2021, pp. 10 482–10 491. [9] G. M. Jacob and B. Stenger, “Facial action unit detection with transform-ers,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2021, pp. 7680–7689. [10] Y. Chang and S. Wang, “Knowledge-driven self-supervised representa-tion learning for facial action unit recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2022, pp. 20 417–20 426. [11] X. Li, W. Deng, S. Li, and Y. Li, “Compound expression recognition in-the-wild with au-assisted meta multi-task learning,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2023, pp. 5735–5744. [12] D. Kollias, “Multi-label compound expression recognition: C-expr database & network,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 5589–5598. [13] W. Chen and A. Wang, “Enhanced facial expression recognition based on facial action unit intensity and region,” in 2023 IEEE International Conference on Systems, Man, and Cybernetics (SMC) . IEEE, 2023, pp. 1939–1944. [14] S. Mao, X. Li, Q. Wu, and X. Peng, “Au-aware vision transformers for biased facial expression recognition,” arXiv preprint arXiv:2211.06609 ,2022. [15] Y.-I. Tian, T. Kanade, and J. F. Cohn, “Recognizing action units for facial expression analysis,” IEEE Transactions on pattern analysis and machine intelligence , vol. 23, no. 2, pp. 97–115, 2001. [16] F. Liu, L. Gu, C. Shi, and X. Fu, “Action unit enhance dynamic facial expression recognition,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5597–5606. [17] B. Ma, W. Zhang, F. Qiu, and Y. Ding, “A unified approach to facial affect analysis: the mae-face visual representation,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition ,2023, pp. 5924–5933. [18] W. Zhang, F. Qiu, C. Liu, L. Li, H. Du, T. Guo, and X. Yu, “An effective ensemble learning framework for affective behaviour analysis,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 4761–4772. 14 
+
+[19] J.-H. Kim, N. Kim, M. Hong, and C. S. Won, “Advanced facial analysis in multi-modal data with cascaded cross-attention based transformer,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 7870–7877. [20] D. Kollias and S. Zafeiriou, “Expression, affect, action unit recog-nition: Aff-wild2, multi-task learning and arcface,” arXiv preprint arXiv:1910.04855 , 2019. [21] D. Kollias, “Abaw: Valence-arousal estimation, expression recognition, action unit detection & multi-task learning challenges,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2022, pp. 2328–2336. [22] W. Zhang, Z. Guo, K. Chen, L. Li, Z. Zhang, Y. Ding, R. Wu, T. Lv, and C. Fan, “Prior aided streaming network for multi-task affective analysis,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2021, pp. 3539–3549. [23] Y. Jin, T. Zheng, C. Gao, and G. Xu, “Mtmsn: Multi-task and multi-modal sequence network for facial action unit and expression recog-nition,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2021, pp. 3597–3602. [24] E. Jeong, G. Oh, and S. Lim, “Multi-task learning for human affect prediction with auditory-visual synchronized representation,” in Pro-ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2022, pp. 2438–2445. [25] W. Zhang, F. Qiu, S. Wang, H. Zeng, Z. Zhang, R. An, B. Ma, and Y. Ding, “Transformer-based multimodal information fusion for facial expression analysis,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2022, pp. 2428–2437. [26] A. V. Savchenko, “Hsemotion team at the 7th abaw challenge: multi-task learning and compound facial expression recognition,” arXiv preprint arXiv:2407.13184 , 2024. [27] Y. Lu, S. Huang, Y. Yang, S. Sirejiding, Y. Ding, and H. Lu, “Fedhca2: Towards hetero-client federated multi-task learning,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition ,2024, pp. 5599–5609. [28] S. Khan, P. Yin, Y. Guo, M. Asim, and A. A. Abd El-Latif, “Het-erogeneous transfer learning: recent developments, applications, and challenges,” Multimedia Tools and Applications , vol. 83, no. 27, pp. 69 759–69 795, 2024. [29] Y. Jain, H. Behl, Z. Kira, and V. Vineet, “Damex: Dataset-aware mixture-of-experts for visual understanding of mixture-of-datasets,” Advances in Neural Information Processing Systems , vol. 36, pp. 69 625–69 637, 2023. [30] X. Jiang, Y. Zong, W. Zheng, C. Tang, W. Xia, C. Lu, and J. Liu, “Dfew: A large-scale database for recognizing dynamic facial expressions in the wild,” in Proceedings of the 28th ACM international conference on multimedia , 2020, pp. 2881–2889. [31] Y. Liu, W. Dai, C. Feng, W. Wang, G. Yin, J. Zeng, and S. Shan, “Mafw: A large-scale, multi-modal, compound affective database for dynamic facial expression recognition in the wild,” in Proceedings of the 30th ACM international conference on multimedia , 2022, pp. 24–32. [32] Y. Wang, Y. Sun, Y. Huang, Z. Liu, S. Gao, W. Zhang, W. Ge, and W. Zhang, “Ferv39k: A large-scale multi-scene dataset for facial expres-sion recognition in videos,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2022, pp. 20 922–20 931. [33] X. Zhang, L. Yin, J. F. Cohn, S. Canavan, M. Reale, A. Horowitz, P. Liu, and J. M. Girard, “Bp4d-spontaneous: a high-resolution spontaneous 3d dynamic facial expression database,” Image and Vision Computing ,vol. 32, no. 10, pp. 692–706, 2014. [34] S. M. Mavadati, M. H. Mahoor, K. Bartlett, P. Trinh, and J. F. Cohn, “Disfa: A spontaneous facial action intensity database,” IEEE Transactions on Affective Computing , vol. 4, no. 2, pp. 151–160, 2013. [35] F. Ma, B. Sun, and S. Li, “Logo-former: Local-global spatio-temporal transformer for dynamic facial expression recognition,” in ICASSP 2023-2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP) . IEEE, 2023, pp. 1–5. [36] H. Li, H. Niu, Z. Zhu, and F. Zhao, “Intensity-aware loss for dynamic facial expression recognition in the wild,” in Proceedings of the AAAI conference on artificial intelligence , vol. 37, no. 1, 2023, pp. 67–75. [37] Y. Liu, W. Wang, C. Feng, H. Zhang, Z. Chen, and Y. Zhan, “Ex-pression snippet transformer for robust video-based facial expression recognition,” Pattern Recognition , vol. 138, p. 109368, 2023. [38] X. Wang and L. Chai, “Lifting scheme-based implicit disentanglement of emotion-related facial dynamics in the wild,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 39, no. 8, 2025, pp. 7970–7978. [39] Z. Zhao and Q. Liu, “Former-dfer: Dynamic facial expression recog-nition transformer,” in Proceedings of the 29th ACM international conference on multimedia , 2021, pp. 1553–1561. [40] Z. Tao, Y. Wang, J. Lin, H. Wang, X. Mai, J. Yu, X. Tong, Z. Zhou, S. Yan, Q. Zhao et al. , “A 3Lign-DFER: Pioneering comprehensive dynamic affective alignment for dynamic facial expression recognition with clip,” arXiv preprint arXiv:2403.04294 , 2024. [41] J. Zhang, X. Liu, Y. Liang, X. Xian, W. Xie, L. Shen, and S. Song, “Clip-guided bidirectional prompt and semantic supervision for dynamic facial expression recognition,” in 2024 IEEE International Joint Conference on Biometrics (IJCB) . IEEE, 2024, pp. 1–10. [42] H. Chen, H. Huang, J. Dong, M. Zheng, and D. Shao, “Finecliper: Multi-modal fine-grained clip for dynamic facial expression recognition with adapters,” in Proceedings of the 32nd ACM International Conference on Multimedia , 2024, pp. 2301–2310. [43] Z. Liang, H. Xia, Y. Tan, and S. Song, “Clvsr: Concept-guided language-visual feature learning and sample rebalance for dynamic facial expres-sion recognition,” Cognitive Computation , vol. 18, no. 1, p. 11, 2026. [44] H. Li, H. Niu, Z. Zhu, and F. Zhao, “Cliper: A unified vision-language framework for in-the-wild facial expression recognition,” in 2024 IEEE International Conference on Multimedia and Expo (ICME) . IEEE, 2024, pp. 1–6. [45] Z. Zhao and I. Patras, “Prompting visual-language models for dynamic facial expression recognition,” in British Machine Vision Conference (BMVC) , 2023, pp. 1–14. [46] I. Saadi, A. Hadid, D. W. Cunningham, A. Taleb-Ahmed, and Y. El Hillali, “Pe-clip: A parameter-efficient fine-tuning of vision lan-guage models for dynamic facial expression recognition,” ACM Trans-actions on Multimedia Computing, Communications and Applications ,2025. [47] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark et al. , “Learning transferable visual models from natural language supervision,” in International conference on machine learning . PmLR, 2021, pp. 8748–8763. [48] L. Sun, Z. Lian, B. Liu, and J. Tao, “Mae-dfer: Efficient masked au-toencoder for self-supervised dynamic facial expression recognition,” in 
+
+Proceedings of the 31st ACM International Conference on Multimedia ,2023, pp. 6110–6121. [49] H. Cheng, Z. Zhao, Y. He, Z. Hu, J. Li, M. Wang, and R. Hong, “Vaemo: Efficient representation learning for visual-audio emotion with knowledge injection,” in Proceedings of the 33rd ACM International Conference on Multimedia , 2025, pp. 5547–5556. [50] Y. Chen, J. Li, S. Shan, M. Wang, and R. Hong, “From static to dynamic: Adapting landmark-aware image models for facial expression recognition in videos,” IEEE Transactions on Affective Computing ,vol. 16, no. 2, pp. 624–638, 2024. [51] Y. Chen, J. Li, Y. Zhang, Z. Hu, S. Shan, M. Wang, and R. Hong, “Static for dynamic: Towards a deeper understanding of dynamic facial expressions using static expression data,” IEEE Transactions on Affective Computing , vol. 17, no. 1, pp. 438–451, 2025. [52] T. Song, Z. Cui, W. Zheng, and Q. Ji, “Hybrid message passing with performance-driven structures for facial action unit detection,” in 
+
+Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2021, pp. 6267–6276. [53] Y. Tang, W. Zeng, D. Zhao, and H. Zhang, “Piap-df: Pixel-interested and anti person-specific facial action unit detection net with discrete feedback learning,” in Proceedings of the IEEE/CVF International Conference on Computer Vision , 2021, pp. 12 899–12 908. [54] G. Li, X. Zhu, Y. Zeng, Q. Wang, and L. Lin, “Semantic relationships guided representation learning for facial action unit recognition,” in 
+
+Proceedings of the AAAI conference on artificial intelligence , vol. 33, no. 01, 2019, pp. 8594–8601. [55] C. Luo, S. Song, W. Xie, L. Shen, and H. Gunes, “Learning multi-dimensional edge feature-based au relation graph for facial action unit recognition,” in Proceedings of the Thirty-First International Joint Conference on Artificial Intelligence (IJCAI) , 2022, pp. 1239–1246. [56] Z. Huang, J. Gao, W. Cai, Y. Chen, X. Hu, P. Gao, and Y. Gao, “Facial au recognition with feature-based au localization and confidence-based relation mining,” IEEE Transactions on Affective Computing , vol. 17, no. 1, pp. 616–629, 2025. [57] G. Hu, T. Lian, D. Kollias, O. Celiktutan, and X. Yang, “Causalaffect: Causal discovery for facial affective understanding,” arXiv preprint arXiv:2512.00456 , 2025. [58] M. Ning, A. A. Salah, and I. O. Ertugrul, “Revisiting representation learning and identity adversarial training for facial behavior understand-ing,” in 2025 IEEE 19th International Conference on Automatic Face and Gesture Recognition (FG) . IEEE, 2025, pp. 1–10. 15 
+
+[59] B. Ma, R. An, W. Zhang, Y. Ding, Z. Zhao, R. Zhang, T. Lv, C. Fan, and Z. Hu, “Facial action unit detection and intensity estimation from self-supervised representation,” IEEE Transactions on Affective Computing ,vol. 15, no. 3, pp. 1669–1683, 2024. [60] T. Song, L. Chen, W. Zheng, and Q. Ji, “Uncertain graph neural networks for facial action unit detection,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 35, no. 7, 2021, pp. 5993–6001. [61] H. Yang, T. Wang, and L. Yin, “Adaptive multimodal fusion for facial action units recognition,” in Proceedings of the 28th ACM International Conference on Multimedia , 2020, pp. 2982–2990. [62] X. Zhang and L. Yin, “Multi-modal learning for au detection based on multi-head fused transformers,” in 2021 16th IEEE international conference on automatic face and gesture recognition (FG 2021) . IEEE, 2021, pp. 1–8. [63] X. Li, Z. Zhang, X. Zhang, T. Wang, Z. Li, H. Yang, U. Ciftci, Q. Ji, J. Cohn, and L. Yin, “Disagreement matters: Exploring internal diversification for redundant attention in generic facial action analysis,” 
+
+IEEE Transactions on Affective Computing , vol. 15, no. 2, pp. 620–631, 2023. [64] X. Zhang, T. Wang, X. Li, H. Yang, and L. Yin, “Weakly-supervised text-driven contrastive learning for facial behavior understanding,” in 
+
+Proceedings of the IEEE/CVF International Conference on Computer Vision , 2023, pp. 20 751–20 762. [65] Y. Li, Y. Ren, Y. Zhang, W. Zhang, T. Zhang, M. Jiang, G.-S. Xie, and C. Guan, “Hierarchical vision-language interaction for facial action unit detection,” IEEE Transactions on Affective Computing , 2026. [66] D. Dai, C. Deng, C. Zhao, R. Xu, H. Gao, D. Chen, J. Li, W. Zeng, X. Yu et al. , “Deepseekmoe: Towards ultimate expert specialization in mixture-of-experts language models,” in Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , 2024, pp. 1280–1297. [67] T. Chen, X. Chen, X. Du, A. Rashwan, F. Yang, H. Chen, Z. Wang, and Y. Li, “Adamv-moe: Adaptive multi-task vision mixture-of-experts,” in proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 17 346–17 357. [68] K. Zhou, J. Yang, C. C. Loy, and Z. Liu, “Learning to prompt for vision-language models,” International Journal of Computer Vision , vol. 130, no. 9, pp. 2337–2348, 2022. [69] X. Li, X. Zhang, T. Wang, and L. Yin, “Knowledge-spreader: Learning semi-supervised facial action dynamics by consistifying knowledge granularity,” in Proceedings of the IEEE/CVF international conference on computer vision , 2023, pp. 20 979–20 989. [70] Z. Wang, S. Song, C. Luo, S. Deng, W. Xie, and L. Shen, “Multi-scale dynamic and hierarchical relationship modeling for facial action units recognition,” in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , 2024, pp. 1270–1280. [71] K. Yuan, Z. Yu, X. Liu, W. Xie, H. Yue, and J. Yang, “Auformer: Vision transformers are parameter-efficient facial action unit detectors,” in European Conference on Computer Vision . Springer, 2024, pp. 427– 445. [72] B. Xing, K. Yuan, Z. Yu, X. Liu, and H. K¨ alvi¨ ainen, “Au-ttt: Vision test-time training model for facial action unit detection,” in 2025 IEEE International Conference on Multimedia and Expo (ICME) . IEEE, 2025, pp. 1–6. [73] H. Li, M. Sui, Z. Zhu et al. , “Nr-dfernet: Noise-robust network for dy-namic facial expression recognition,” arXiv preprint arXiv:2206.04975 ,2022. [74] Z. Tao, Y. Wang, Z. Chen, B. Wang, S. Yan, K. Jiang, S. Gao, and W. Zhang, “Freq-hd: An interpretable frequency-based high-dynamics affective clip selection method for in-the-wild facial expression recogni-tion in videos,” in Proceedings of the 31st ACM International Conference on Multimedia , 2023, pp. 843–852. [75] H. Wang, B. Li, S. Wu, S. Shen, F. Liu, S. Ding, and A. Zhou, “Rethink-ing the learning paradigm for dynamic facial expression recognition,” in Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 2023, pp. 17 958–17 968. [76] L. Sun, Z. Lian, K. Wang, Y. He, M. Xu, H. Sun, B. Liu, and J. Tao, “Svfap: Self-supervised video facial affect perceiver,” IEEE Transactions on Affective Computing , 2024. [77] N. M. Foteinopoulou and I. Patras, “Emoclip: A vision-language method for zero-shot video facial expression recognition,” in 2024 IEEE 18th International Conference on Automatic Face and Gesture Recognition (FG) . IEEE, 2024, pp. 1–10. [78] Y. Han and Q. Li, “Dflm: A dynamic facial-language model based on clip,” in 2024 9th International Conference on Intelligent Computing and Signal Processing (ICSP) . IEEE, 2024, pp. 1132–1137. [79] X. Mai, H. Wang, Z. Tao, J. Lin, S. Yan, Y. Wang, J. Liu, J. Yu, X. Tong, Y. Li et al. , “Ous: scene-guided dynamic facial expression recognition,” 
+
+arXiv preprint arXiv:2405.18769 , 2024. [80] S. Abnar and W. Zuidema, “Quantifying attention flow in transformers,” in Proceedings of the 58th annual meeting of the association for computational linguistics , 2020, pp. 4190–4197. 1
+
+APPENDIX 
+
+A. Data Scaling Study 
+
+Tables S1 and S2 investigate how the scale of auxiliary-task data affects the target task from two opposite directions. The former corresponds to the Expression → AU setting, whereas the latter corresponds to the AU → Expression setting. As the amount of expression data gradually increases, AU detection performance on both BP4D and DISFA improves steadily. The paired DFEW branch also shows consistent gains. In the reverse setting, expression recognition also benefits from the gradual introduction of AU data. However, the best perfor-mance does not strictly coincide with the largest AU data scale. This phenomenon suggests that the gains of SSM cannot be simply attributed to scaling up the auxiliary-task data. Instead, they are more consistent with effective cross-task semantic transfer. Overall, coarse-grained expression semantics provide complementary constraints for local AU modeling. In turn, fine-grained AU information enhances expression discrimina-tion.          
+
+> TABLE S1 STUDY OF DATA SCALING (E XPRESSION →AU). W E EXAMINE HOW EXPRESSION DATASETS OF DIFFERENT SCALES AFFECT AU DETECTION .THIS ANALYSIS SHOWS THAT THE IMPROVEMENT OF THE FRAMEWORK ON
+> AU DETECTION IS NOT MERELY CAUSED BY THE INCREASED SCALE OF EXPRESSION DATA . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+
+FE data scaling BP4D DFEW DISFA DFEW 0% 66.2 - 69.6 -20% 67.6 57.79/71.40 70.8 59.05/71.36 40% 67.8 60.76/73.50 70.2 62.71/74.19 60% 67.9 63.42/75.39 70.7 64.64/75.39 80% 68.2 65.23/77.31 71.0 65.12/76.33 100% 68.5 68.59 /77.88 71.3 66.64 /78.09          
+
+> TABLE S2 STUDY OF DATA SCALING (AU →EXPRESSION ). W E EXAMINE HOW AU
+> DATASETS OF DIFFERENT SCALES AFFECT EXPRESSION RECOGNITION .THIS ANALYSIS SHOWS THAT THE FRAMEWORK ’S PERFORMANCE GAINS ON EXPRESSION RECOGNITION ARE NOT MERELY CAUSED BY THE INCREASED SCALE OF AU DATA . BP4D AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+
+AU data scaling BP4D DFEW DISFA DFEW 0% - 63.98/76.16 - 63.98/76.16 20% 67.4 66.95/77.57 70.5 66.69/ 78.52 
+
+40% 68.3 64.92/77.53 70.8 65.88/77.31 60% 67.9 67.06/77.23 70.5 67.55 /77.31 80% 68.0 67.83/ 78.52 71.1 65.50/77.91 100% 68.5 68.59 /77.88 71.3 66.64/78.09 
+
+B. Analysis of the Initial Weighting Factor 
+
+Table S3 further analyzes the influence of the initial values of α and β. These two coefficients control the injection strength of cross-task mapped textual semantics in the residual update. They therefore determine the fusion ratio between the original task semantics and the transferred semantics. The results show only limited performance variation on BP4D, DISFA, and DFEW over a relatively wide value range. This indicates that DPM has favorable robustness. Overall, the most balanced performance is achieved around α = β = 0 .1. This suggests that moderate semantic injection better preserves the discriminability of the original textual representations while still incorporating complementary information from the other task. If the weights are too small, the mapped semantics cannot be fully exploited. If they are too large, the stability of the task-specific semantic representations may be weakened.        
+
+> TABLE S3 ANALYSIS OF THE INITIAL VALUES OF WEIGHTING FACTORS ,αAND β,
+> WHICH DIRECTLY REGULATE THE STRENGTH OF DPM MODULE . BP4D
+> AND DISFA: F1 SCORE . DFEW: UAR/WAR.
+
+α, β BP4D DFEW DISFA DFEW 0.01 68.4 69.05 /77.83 71.2 65.74/77.74 0.05 68.5 67.49/77.57 71.1 65.72/77.70 0.1 68.5 68.59/ 77.88 71.3 66.64 /78.09 
+
+0.5 68.4 67.64/77.83 70.9 65.50/77.83 1.0 68.1 67.63/77.44 70.6 66.04/77.87 
+
+C. Visualization of Bidirectional Weight Matrices 
+
+Figs. S1 and S2 visualize the bidirectional semantic map-ping weights learned by DPM. The first row shows the contribution of AUs to expressions. The second row shows the contribution of expressions to AUs. The activation patterns in the two directions are not simple transposes of each other. This indicates that SSM learns directional and dynamic semantic mappings rather than static and symmetric prior correspon-dences. Meanwhile, several associations consistent with FACS priors remain stable across different dataset combinations. For example, happiness is associated with AU6 and AU12, surprise with AU1, AU2, AU25, and AU26, and disgust with AU9 and AU10. In contrast, the reverse-direction mappings exhibit stronger distributional characteristics and context dependence. This suggests that the constraints from expressions to AUs involve richer compositional structures. These visualizations qualitatively support the ability of DPM to preserve prior structure while achieving data-driven adaptation. 
+
+D. Semantic Label Descriptions 
+
+Table S4 provides the textual construction basis of TSP. AU descriptions are directly adopted from canonical FACS action-unit descriptions and therefore correspond to localized and atomic semantic units with explicit muscular-action mean-ings. In contrast, expression descriptions are compositionally constructed on the basis of AU-related semantics and FACS-based AU–FE correspondences. 
+
+E. Mixture of Private Experts Module 
+
+As illustrated in Fig. S3, let the input to a Transformer layer be x ∈ Rd, we first apply layer normalization ex =LN( x). The router computes a score vector over m experts via a linear projection l = R ex, and normalizes these scores with a softmax to obtain the gating vector g = softmax( l).To guarantee sparse computation and activate only a small 2
+
+Fig. S1. The weight matrix activation maps, from left to right, represent the joint learning of DISFA and DFEW, FERV39K, and MAFW. The first row shows the weights of AU on expressions, and the second row shows the weights of expressions on AU. They are not transposed relationships. 
+
+Fig. S2. The weight matrix activation maps, from left to right, represent the joint learning of BP4D and DFEW, FERV39K, and MAFW. The first row shows the weights of AU on expressions, and the second row shows the weights of expressions on AU. They are not transposed relationships. MHSA     
+
+> Add&Norm
+> FFN
+> Add&Norm
+> MHSA
+> Add&Norm
+> MoE
+> Add&Norm
+> Copied
+> FFN E1 E2 E3 En
+> Router
+
+…      
+
+> 𝑳
+> 𝟐 ×𝑳
+> 𝟐 ×
+> 𝑻𝒐𝒑𝒌 =𝟐 GELU
+> FC Down
+> FC Up
+> Private Expert
+> Shared Expert
+> Private Expert
+
+Fig. S3. Proposed MoE in the CLIP visual encoder. Each Transformer block replaces the original FFN with an MoE layer containing one shared pretrained CLIP expert and multiple private experts. 
+
+subset of experts, we adopt a top-K selection strategy (in the figure K = 2 ), and denote the selected expert set by S =TopK( g, K ). The j-th expert is implemented as a compact FFN: 
+
+yj = Ej (ex) = W (2) 
+
+j
+
+ W (1) 
+
+j ex + b(1) 
+
+j
+
+ + b(2) 
+
+j . (S1) To stabilize training, the expert pool contains a shared expert Es (initialized by copying CLIP’s original FFN to preserve pretrained knowledge) and several private experts Ej
+
+(maintained separately for each task). The gating weights of the selected experts are re-normalized and their outputs are fused by a weighted sum: 
+
+y = Es(ex) + γ X
+
+j
+
+yj , (S2) where γ denotes a learnable vector. 3
+
+TABLE S4 SEMANTIC LABEL DESCRIPTIONS USED IN TSP FOR AU AND EXPRESSION CATEGORIES . T HE UPPER SECTION LISTS AU LABELS AND THEIR 
+
+FACS-CONSISTENT ATOMIC DESCRIPTIONS . T HE LOWER SECTION PRESENTS EXPRESSION LABELS , THEIR AU COMBINATIONS , AND COMPOSITIONAL SEMANTIC DESCRIPTIONS . T HE AU COMBINATIONS ARE DERIVED FROM THE AU S AVAILABLE IN BP4D AND DISFA, AND THUS PROVIDE DATASET -CONSTRAINED APPROXIMATIONS RATHER THAN FULL FACS PROTOTYPES .
+
+Label Description AU1 inner brow raiser AU2 outer brow raiser AU4 brow lowerer AU5 upper lid raiser AU6 cheek raiser AU7 lid tightener AU9 nose wrinkler AU10 upper lip raiser AU12 lip corner puller AU14 dimpler AU15 lip corner depressor AU17 chin raiser AU20 lip stretcher AU23 lip tightener AU24 lip pressor AU25 lips part AU26 jaw drop Label AU Combination Description Happiness AU6+AU12 cheek raiser, lip corner puller Sadness AU1+AU4+AU15 inner brow raiser, brow lowerer, lip corner depressor Neutral None relaxed facial muscles, no significant action units Anger AU4+AU5+AU7+AU23 brow lowerer, upper lid raiser, lid tightener, lip tightener Surprise AU1+AU2+AU5+AU26 inner brow raiser, outer brow raiser, upper lid raiser, jaw drop Disgust AU9+AU10+AU15 nose wrinkler, upper lip raiser, lip corner depressor Fear AU1+AU2+AU4+AU5+AU7+AU20+AU26 inner brow raiser, outer brow raiser, brow lowerer, upper lid raiser, lid tightener, lip stretcher, jaw drop Contempt AU12+AU14 lip corner puller, dimpler Anxiety AU1+AU4+AU20+AU25 inner brow raiser, brow lowerer, lip stretcher, lips part Helplessness AU1+AU4+AU15+AU26 inner brow raiser, brow lowerer, lip corner depressor, jaw drop Disappointment AU1+AU4+AU15+AU25 inner brow raiser, brow lowerer, slight lip corner depressor, lips part
