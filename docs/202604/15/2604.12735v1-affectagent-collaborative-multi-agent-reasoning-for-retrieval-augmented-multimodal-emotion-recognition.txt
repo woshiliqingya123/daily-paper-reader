@@ -1,0 +1,558 @@
+Title: AffectAgent: Collaborative Multi-Agent Reasoning for Retrieval-Augmented Multimodal Emotion Recognition
+
+URL Source: https://arxiv.org/pdf/2604.12735v1
+
+Published Time: Wed, 15 Apr 2026 01:09:48 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+# AffectAgent: Collaborative Multi-Agent Reasoning for Retrieval-Augmented Multimodal Emotion Recognition 
+
+## Zeheng Wang 
+
+Great Bay University 
+
+## Zitong Yu ∗
+
+Great Bay University 
+
+## Yijie Zhu 
+
+Great Bay University 
+
+## Bo Zhao 
+
+Great Bay University 
+
+## Haochen Liang 
+
+Great Bay University 
+
+## Taorui Wang 
+
+Great Bay University 
+
+## Wei Xia 
+
+Great Bay University 
+
+## Jiayu Zhang 
+
+Great Bay University 
+
+## Zhishu Liu 
+
+Great Bay University 
+
+## Hui Ma 
+
+Great Bay University 
+
+## Fei Ma 
+
+Guangming Laboratory 
+
+## Qi Tian 
+
+Guangming Laboratory 
+
+Abstract 
+
+LLM-based multimodal emotion recognition relies on static parametric memory and often hallucinates when interpret-ing nuanced affective states. In this paper, given that single-round retrieval-augmented generation is highly suscepti-ble to modal ambiguity and therefore struggles to capture complex affective dependencies across modalities, we intro-duce AffectAgent , an affect-oriented multi-agent retrieval-augmented generation framework that leverages collabo-rative decision-making among agents for fine-grained af-fective understanding. Specifically, AffectAgent comprises three jointly optimized specialized agents, namely a query planner, an evidence filter, and an emotion generator, which collaboratively perform analytical reasoning to retrieve cross-modal samples, assess evidence, and generate predictions. These agents are optimized end-to-end using Multi-Agent Proximal Policy Optimization (MAPPO) with a shared af-fective reward to ensure consistent emotion understand-ing. Furthermore, we introduce Modality-Balancing Mix-ture of Experts ( MB-MoE ) and Retrieval-Augmented Adap-tive Fusion ( RAAF ), where MB-MoE dynamically regu-lates the contributions of different modalities to mitigate representation mismatch caused by cross-modal hetero-geneity, while RAAF enhances semantic completion un-der missing-modality conditions by incorporating retrieved audiovisual embeddings. Extensive experiments on MER-UniBench demonstrate that AffectAgent achieves superior performance across complex scenarios. Our code will be released at: https://github.com/Wz1h1NG/AffectAgent. 
+
+CCS Concepts 
+
+• Affective computing → Multimodal Emotion Recog-nition .
+
+Keywords 
+
+AffectAgent, Modality-Balancing Mixture of Experts, Retrieval-Augmented Adaptive Fusion 
+
+1 Introduction 
+
+“Love is the one thing we’re capable of perceiving that tran-scends dimensions of time and space.” Beyond its context 
+
+> ∗
+
+Corrsponding Author Large Language Model    
+
+> (a) Vanilla LLM for MER Planner Retriever Filter Generator (c) AffectAgent for MER
+> Large Language Model
+> (b) RAG-Enhanced MER Retriever
+> LIMITATION: Hallucinations
+> Input: Upset face, tearful Output: System Hallucinations, Very happy Incorrect & Uncertain Output: Confusion Moderate Accuracy
+> LIMITATION: Simple Similarity
+> Retrieval based only on simple similarity matching; cannot handle complex scenarios
+> ADVANTAGE: Deep Reasoning
+> Agents collaborate: Multimodal analysis Disambiguation Precise Output Complex Reasoning
+
+Figure 1: (a) Vanilla LLMs [ 6 , 24 ] rely on static memory, struggling with nuanced emotion understanding. (b) Traditional RAG-enhanced models [ 32 , 44 ] follow a linear retrieve-then-generate pipeline, which is inade-quate for complex emotional reasoning. (c) Our Affec-tAgent adopts a collaborative multi-agent architecture that orchestrates query planning, retrieval, filtering, and generation for emotion recognition. 
+
+in the film Interstellar , this quote reflects a fundamental divide between algorithmic computation and human cog-nition: the perception of genuine emotion. Human affect is inherently complex, and accurately perceiving and rea-soning about human emotions is crucial for applications such as personalized education and psychological counsel-ing [ 6 , 9, 31 , 33 , 38 , 55 ]. Early unimodal methods [ 10 , 11 ,15 , 20 , 22 , 35 , 41 , 59 ] and multimodal fusion frameworks [8 , 13 , 26 , 34 , 40 , 54 , 57 , 62 –65 ] struggle with this complexity, constrained by mechanical feature-level mappings lacking semantic understanding. Recently, multimodal large language models have intro-duced a new paradigm for multimodal affective understand-ing by aligning different modalities into a shared linguis-tic space, yet despite their strong performance on certain vision-language tasks, their ability to interpret nuanced emotions remains constrained by static parametric mem-ory, as shown in Fig. 1(a). When confronted with severe cross-modal conflicts or dynamic conversational contexts, static pre-trained knowledge often defaults to ingrained language priors, leading to emotion hallucinations and com-promising recognition accuracy [ 3]. To address this, multi-modal retrieval-augmented generation has been proposed,  
+
+> arXiv:2604.12735v1 [cs.CV] 14 Apr 2026 Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Trovato et al.
+
+which retrieves relevant cross-modal examples from exter-nal knowledge bases and updates contextual grounding with dynamic evidence [ 1 , 19 , 27 , 28 , 32 , 43 , 44 , 47 , 48 , 53 ] as shown in Fig. 1 (b). Nevertheless, single-round retrieval-augmented generation is highly susceptible to cross-modal ambiguity and struggles to model complex affective depen-dencies across modalities. Collaborative multi-agent architectures [ 25 , 45 ], such as MMOA [ 5], employ multi-agent reinforcement learning to jointly optimize retrieval, filtering and generation, thereby addressing the limitations of isolated supervised fine-tuning [2 , 12 ]. However, these joint optimization systems are pri-marily designed for objective, text-centric tasks. Human emotions are typically manifested through cross-modal cues. Existing multi-agent strategies primarily opti-mize for surface-level semantic relevance or explicit factual matching. If retrievers are trained to retrieve the semanti-cally closest samples, they overlook the complex intrinsic cues that define real human affect. Without aligning spe-cialized agents with the final emotion recognition goal, the retrieved samples fail to capture complex emotional cues. In this paper, we propose AffectAgent, an affect-oriented multi-agent retrieval-augmented generation framework for fine-grained affective understanding based on inter-agent collaborative decision-making. We formulate the task as a collaborative analytical reasoning process involving three specialized agents, namely a query planner, an evidence filter, and an emotion generator. Specifically, the query plan-ner constructs three categories of targeted queries based on the latent affective states implied by the input, namely sup-portive queries, confusing queries, and countering queries. Supportive queries are designed to retrieve cross-modal samples whose affective expressions are highly consistent with the original input, thereby providing positive evidence for the current emotion judgment. Confusing queries aim to retrieve samples that are similar to the input in surface semantics or local cues but are likely to induce affective confusion, thereby exposing discriminative challenges in fine-grained emotion recognition. Countering queries are used to retrieve samples with opposite affective tendencies, providing contrastive evidence that helps suppress incor-rect affective attribution. The evidence filter then evaluates the retrieved candidates in terms of relevance and discrim-inability to retain informative evidence, and the emotion generator finally integrates the original input with the fil-tered evidence to produce the final emotion prediction. Furthermore, to address representation mismatch caused by cross-modal heterogeneity in multimodal training, we design Modality-Balancing Mixture of Experts (MB-MoE), which dynamically calibrates modality contributions in joint modeling to alleviate fusion interference from statistical dis-crepancies and representation shifts. Finally, considering that missing modalities can easily undermine the semantic completeness of the input and lead to severe performance degradation, we propose Retrieval-Augmented Adaptive Fu-sion (RAAF), which supplements the critical information of missing modalities by injecting retrieved audiovisual embed-dings, thereby improving semantic recovery and emotion recognition robustness under missing-modality conditions. To prevent these modules and agents from degenerating into isolated components, we optimize the entire pipeline end-to-end using the Multi-Agent Proximal Policy Optimization (MAPPO) algorithm [ 37 , 52 ]. Guided by multiple charac-teristics and a shared affective reward, MAPPO aligns all agents and modules to a unified objective, ensuring the re-trieved evidence leads the emotion generator to understand genuine emotions. Our main contributions are as follows: 
+
+• We propose AffectAgent , the first affect-oriented multi-agent retrieval-augmented generation framework for multimodal emotion recognition. 
+
+• We introduce MB-MoE and RAAF : MB-MoE mitigates cross-modal mismatch by balancing modalities, while RAAF enhances semantic completion with retrieved audiovisual embeddings under missing modalities. 
+
+• Experiments on MER-UniBench [ 24 ] show AffectAgent generalizes across complex emotional scenarios. 
+
+2 Related Works 
+
+Multimodal Emotion Recognition. Multimodal Emotion Recognition (MER) infers human affective states from text, audio, and visual signals. Traditional methods mainly rely on feature-level alignment [ 40 , 54 ], while MLLMs [ 56 , 61 ] and instruction-tuned variants such as AffectGPT [ 24 ], EmoLLM [49 ], and EmoLLaVA [ 60 ] provide a unified semantic space for cross-modal understanding. However, they still depend on static parametric memory and may fall back on language priors when handling dynamic or conflicting multimodal signals, leading to emotion hallucinations [ 3 ]. AffectAgent addresses this issue by retrieving and adaptively fusing ex-ternal cross-modal evidence. 
+
+Multimodal Retrieval-Augmented Generation. Retrieval-Augmented Generation (RAG) mitigates the limitations of static memory by incorporating external knowledge. Ex-tending text RAG, Multimodal RAG (M-RAG) retrieves cross-modal samples to ground model generation [ 4, 14 , 51 ]. In affective computing, retrieved historical or external samples can provide useful reference anchors for emotion under-standing [ 1 , 32 ]. However, standard M-RAG typically fol-lows a linear “retrieve-and-read” pipeline [ 16 , 53 ], which lacks explicit reasoning and is less effective at capturing subtle affective cues [ 46 ]. In contrast, AffectAgent turns retrieval into a collaborative reasoning process through tar-geted query generation and dynamic evidence filtering. 
+
+Agentic Retrieval-Augmented Generation. To overcome the limitations of linear RAG pipelines, Agentic RAG in-troduces autonomous agents for planning, retrieval, and evaluation. Frameworks based on ReAct [ 50 ] or multi-agent collaboration [ 25 , 45 ] turn retrieval into an iterative reason-ing process. Methods such as Self-RAG [ 2 ], Modular RAG [ 12 ], and MMOA [ 5] further improve retrieval through re-flection, dynamic routing, and reinforcement learning. How-ever, existing Agentic RAG methods are mainly designed for semantic relevance and factual accuracy, making them less suitable for MER, which depends on subtle and implicit affective cues. In contrast, AffectAgent introduces affect-oriented agents and jointly optimizes them with a shared affective reward to better support emotion understanding. AffectAgent: Multi-Agent Reasoning for Multimodal Emotion Recognition Conference acronym ’XX, June 03–05, 2018, Woodstock, NY They've been able to find solutions or at least bring some answers …   
+
+> Planner “support": {"query_text":“…The speaker expresses approval and satisfaction about progress made, with an optimistic and…“} "confusion": {"query_text": “…The speaker calmly reports factual outcomes in a matter-of-fact tone without emotional…”} "counter": {"query_text": "The speaker expresses frustration or disappointment about…”} Support Query Confusion Query Counter Query
+> Modality-Balancing Mixture of Experts (MB-MoE) Retrieval-Augmented Adaptive Fusion (RAAF)
+> Generator
+> Retriever Datastore
+> [Support Evidence] "I'm really glad we managed to work… <Video><VideoHere></Video> <Audio><AudioHere></Audio> Support Evidence [Confusion Evidence] "So basically what happened is they went… <Video><VideoHere></Video> <Audio><AudioHere></Audio> Confusion Evidence [Counter Evidence] "We've been trying for weeks and…." <Video><VideoHere></Video> <Audio><AudioHere></Audio> Counter Evidence
+> Filter Datastore
+> Retriever
+> Language Visual
+> By continually seeking new clients you build a …
+> Acoustic Language
+> It‘s important for teachers to understand their legal, ethical…
+> Acoustic Visual Language
+> I‘ve been able to walk, for the first time…
+> Visual Acoustic Language
+> System: You are a multimodal emotion analyzer. You will see a sample to be analyzed and several reference evidence items. Each evidence… ###Human: [Evidence] … [Current Sample] "They've been able to find solutions or at least…" <Video><VideoHere></Video> <Audio><AudioHere></Audio> Candidate Label Pool: positive, negative, neutral… Please comprehensively judge the emotion… - Support evidence describes a similar emotional pattern… - Confusion evidence is used to distinguish easily confused emotions. - Counter evidence is used to test whether the main hypothesis holds .Output prediction ###Assistant:
+
+Cognitive Semantic Retrieval Queries Generation Evidence Adjudication 
+
+𝑅 𝑃 𝑅 𝐹 𝑅 𝑠 ℎ𝑎𝑟𝑒𝑑 
+
+Figure 2: Overview of AffectAgent. AffectAgent performs multimodal emotion recognition through collaborative multi-agent reasoning, including affect-oriented query planning, evidence adjudication, and emotion generation. Meanwhile, RAAF and MB-MoE improve cross-modal fusion by recovering missing information and balancing modality contributions. 
+
+3 Proposed Method 3.1 Overview of the framework 
+
+In this work, we propose AffectAgent, a multimodal retrieval-augmented generation framework for emotion understand-ing built on a collaborative multi-agent paradigm, where multiple components work in tandem. At each interactive step, the trainable components make joint decisions based on the current multimodal state to produce the final emo-tion recognition result. To coordinate these components for emotion understanding, we optimize the entire framework using Multi-Agent Proximal Policy Optimization (MAPPO). Rather than relying on disjoint local supervisory signals, MAPPO maximizes a shared affective objective across the whole system. This shared global reward enforces strict col-laboration among components, ensuring that intermediate retrieval, filtering, and fusion operations genuinely sup-port deep emotion understanding and preventing the model from degenerating into superficial lexical matching. As il-lustrated in Fig. 2, AffectAgent consists of five core modules: a Query Planner, an Evidence Filter, an Emotion Genera-tor, Modality-Balancing Mixture of Experts (MB-MoE), and Retrieval-Augmented Adaptive Fusion (RAAF): 
+
+• Query Planner analyzes the initial multimodal input 
+
+𝑋 𝑚 , where 𝑚 ∈ { 𝑡, 𝑣, 𝑎 } denotes the text, visual, and au-dio modalities. Direct retrieval from 𝑋 𝑚 only returns su-perficially similar evidence, which is insufficient for the Generator in complex emotional scenarios. The Planner therefore formulates a set of targeted cognitive hypothe-ses 𝑄 = {𝑞 𝑠𝑢𝑝 , 𝑞 𝑐𝑜𝑛𝑓 , 𝑞 𝑐𝑜𝑢𝑛𝑡 }.
+
+• Retriever fetches relevant multimodal evidence from external corpora and produces two outputs: cognitive evidence 𝐸 𝑐𝑜𝑔 = 𝐸 𝑡 𝑐𝑜𝑔 , 𝐸 𝑣 𝑐𝑜𝑔 , 𝐸 𝑎 𝑐𝑜𝑔 and perceptual evidence 
+
+𝐸 𝑝𝑒𝑟𝑐 = 𝐸 𝑡 𝑝𝑒𝑟𝑐 , 𝐸 𝑣 𝑝𝑒𝑟𝑐 , 𝐸 𝑎 𝑝𝑒𝑟𝑐 , which are retrieved from the three formulated queries and from samples similar to the original input, respectively. 
+
+• Evidence Filter cross-verifies the cognitive evidence 
+
+𝐸 𝑐𝑜𝑔 against the original multimodal input to obtain a refined subset 𝐸 𝑐𝑜𝑔 = 𝐸 𝑡 𝑐𝑜𝑔 , 𝐸 𝑣 𝑐𝑜𝑔 , 𝐸 𝑎 𝑐𝑜𝑔 that is highly aligned with the input and thereby provides reliable support for final emotion recognition. 
+
+• Modality-Balancing Mixture of Experts (MB-MoE) 
+
+balances cross-modal contributions to mitigate represen-tation mismatch caused by cross-modal heterogeneity. 
+
+• Retrieval-Augmented Adaptive Fusion (RAAF) effec-tively combines retrieved perceptual embeddings with raw signals to enhance semantic completion, especially under missing-modality conditions. 
+
+• Emotion Generator leverages 𝐸 𝑐𝑜𝑔 together with the fused representation from RAAF and MB-MoE to pro-duce the predicted emotion label 𝑦 and the explanatory rationale 𝑟 for the initial multimodal input. We treat the Query Planner, Evidence Filter, and Emotion Generator as reinforcement learning agents. In this work, all three are implemented as multimodal large language mod-els whose parameters are updated through reward signals. For computational efficiency, they share a single MLLM. In contrast, the Retriever involves a non-differentiable ex-ternal search process and is therefore kept fixed as part of the environment. Unlike the Retriever, the MB-MoE and RAAF modules remain in the computation graph and are continuously updated through gradient backpropagation. To align all agents and modules with the overall goal of genuine emotion understanding, we optimize them col-laboratively. We define a shared reward function 𝑅 𝑠ℎ𝑎𝑟𝑒𝑑 
+
+based on evaluation metrics of the Emotion Generator’s output, such as F1 score, and apply it to all agents, following common practice in multi-agent reinforcement learning. To Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Trovato et al. 
+
+maintain the stability of each agent’s specialized capability, we further design specific reward functions for the Planner and Filter. Detailed descriptions of these components are provided in the following subsections. 
+
+3.2 Multi-Agent RL Formulation 
+
+We formulate AffectAgent as a partially observable multi-agent decision process. Since the agents sequentially operate on different modalities and intermediate artifacts, each agent observes only its local state rather than the full global state. Accordingly, the system is optimized end-to-end with multi-agent proximal policy optimization. We define the shared reward by the F1 score between the Generator’s predicted emotion label and the ground-truth label. Let ˆ𝑦 𝑓 𝑢𝑙𝑙 denote the prediction of the full system, ˆ𝑦 𝑙𝑎𝑏𝑒𝑙 
+
+the prediction when the Query Planner output is replaced with a simple emotion label while the rest of the pipeline remains unchanged, and ˆ𝑦 𝑟𝑎𝑛𝑘 the prediction when the Evi-dence Filter is bypassed and the TopK retrieved items from each candidate group are directly passed to the Generator. The unified task scores are: Score ★ = F1 ( ˆ𝑦 ★, 𝑦 ∗), ★ ∈ { 𝑓 𝑢𝑙𝑙, 𝑙𝑎𝑏𝑒𝑙, 𝑟𝑎𝑛𝑘 }. (1) All agents then jointly optimize the shared reward: 
+
+𝑅 𝑠ℎ𝑎𝑟𝑒𝑑 = Score 𝑓 𝑢𝑙𝑙 . (2) This means that all modules share the same optimization target: the final emotion prediction quality of the complete system. To provide clearer and timelier signals for agents other than the Generator, we introduce local incremental rewards in addition to the shared reward. Each local reward is defined by the gain in final F1 score over a simplified baseline, so that it reflects the contribution of the agent’s specific function and is granted only when the agent truly improves the final performance. 
+
+Environment. The environment includes the multimodal sample, the external evidence repository, the dual-pathway retriever, the modality-balancing mixture of experts (MB-MoE), the retrieval-augmented adaptive fusion module (RAAF), and the intermediate artifacts produced by the agents. 
+
+State Transition. The global state evolves over three deci-sion stages. It is initialized with the raw multimodal inputs and the candidate label set, then updated with the queries generated by the query planner and the candidate evidence returned by the retriever, and finally augmented with the refined evidence selected by the evidence filter and the fused multimodal representation produced by MB-MoE and RAAF. 
+
+Observation Space. The agents observe different informa-tion across the three stages. In the first stage, the query planner observes the raw multimodal features 𝑥 𝑡 , 𝑥 𝑎 , and 
+
+𝑥 𝑣 , together with the candidate emotion label set C. In the second stage, the evidence filter observes these raw features and the retrieved cognitive evidence 𝐸 𝑐𝑜𝑔 . In the third stage, the emotion generator observes 𝑥 𝑡 , the refined cognitive evidence set 𝐸 ∗
+
+> 𝑐𝑜𝑔
+
+, the fused multimodal representation from MB-MoE and RAAF, and the candidate label set C.
+
+Action Space. All three agents act in the shared multimodal large language model vocabulary V, but with different out-put formats. The query planner generates a token sequence 
+
+𝑎 𝑃 = [𝑎 1 
+
+> 𝑃
+
+, . . . , 𝑎 𝑇 𝑃  
+
+> 𝑃
+
+] (𝑎 𝑗 𝑃 ∈ V ) representing 𝑞 𝑠𝑢𝑝 , 𝑞 𝑐𝑜𝑛𝑓 , and 
+
+𝑞 𝑐𝑜𝑢𝑛𝑡 . For the 𝐾 items in 𝐸 𝑐𝑜𝑔 , the evidence filter outputs a decision sequence 𝑎 𝐹 = [𝑎 1 
+
+> 𝐹
+
+, . . . , 𝑎 𝐾 𝐹 ] (𝑎 𝑖 𝐹 ∈ { Yes , No }) to obtain 𝐸 ∗
+
+> 𝑐𝑜𝑔
+
+. The emotion generator produces a final token sequence 𝑎 𝐺 = [𝑎 1 
+
+> 𝐺
+
+, . . . , 𝑎 𝑇 𝐺  
+
+> 𝐺
+
+] (𝑎 𝑗 𝐺 ∈ V ) as the rationale 𝑟 
+
+and the predicted label ˆ𝑦 𝑓 𝑢𝑙𝑙 .
+
+Reward Functions. The emotion generator is optimized only by the shared reward, i.e., 𝑅 𝐺 = 𝑅 𝑠ℎ𝑎𝑟𝑒𝑑 . To provide clearer signals for upstream agents, we further define local incremental rewards. For the query planner, we compare Score 𝑓 𝑢𝑙𝑙 with Score 𝑙𝑎𝑏𝑒𝑙 , yielding: 
+
+𝑅 𝑃 = 𝑅 𝑠ℎ𝑎𝑟𝑒𝑑 + 𝜆 𝑃 · ( Score 𝑓 𝑢𝑙𝑙 − Score 𝑙𝑎𝑏𝑒𝑙 ) (3) For the evidence filter, we compare Score 𝑓 𝑢𝑙𝑙 with Score 𝑟𝑎𝑛𝑘 ,yielding 
+
+𝑅 𝐹 = 𝑅 𝑠ℎ𝑎𝑟𝑒𝑑 + 𝜆 𝐹 · ( Score 𝑓 𝑢𝑙𝑙 − Score 𝑟𝑎𝑛𝑘 ) (4) 
+
+3.3 Retrieval-Augmented Adaptive Fusion 
+
+To address the issues of modality imbalance and modality missing, AffectAgent further exploits the perceptual evi-dence 𝐸 𝑝𝑒𝑟𝑐 from the retrieval branch. To avoid interfer-ing with the cognitive evidence selection, we only enhance the audiovisual features. Specifically, given the sample fea-tures 𝑥 𝑣 and 𝑥 𝑎 , we denote the visual and audio features of the retrieved support sample as 𝐸 𝑣 𝑝𝑒𝑟𝑐 and 𝐸 𝑎 𝑝𝑒𝑟𝑐 , respec-tively. Retrieval-Augmented Adaptive Fusion (RAAF) then enhances them through gated cross-attention. For modality 
+
+𝑚 ∈ { 𝑣, 𝑎 }, the fusion process is defined as 
+
+ℎ𝑚 = Attn (𝑥 𝑚 , 𝐸 𝑚 𝑝𝑒𝑟𝑐 , 𝐸 𝑚 𝑝𝑒𝑟𝑐 ), (5) 
+
+ˆ𝑥 𝑚 = 𝑥 𝑚 + 𝜎 (𝑊 𝑚 [𝑥 𝑚 ; ℎ𝑚 ]) ⊙ ℎ𝑚 . (6) where [· ; ·] denotes concatenation and ⊙ denotes element-wise multiplication. In this way, RAAF injects only use-ful complementary cues from the retrieved support sample while preserving the dominant content of the current input. 
+
+3.4 Modality-Balancing MoE 
+
+Although RAAF enhances the perceptual representation, the relative reliability of video and audio may still vary across samples due to modality imbalance. To address this issue, we introduce a Modality-Balancing Mixture of Experts (MB-MoE), which adaptively refines the two modalities based on the overall audiovisual information. Specifically, MB-MoE first pools the RAAF-enhanced fea-tures ˆ𝑥 𝑣 and ˆ𝑥 𝑎 into a global state 𝑔 . A router then takes 𝑔 
+
+to compute expert scores, selects the top-𝐾 experts K, and applies softmax function to obtain the normalized weights 𝛼 .Finally, the selected experts are applied to both modalities: 
+
+˜𝑥 𝑚 =∑︁  
+
+> 𝑗 ∈ K
+
+𝛼 𝑗 𝑓 𝑗 ( ˆ𝑥 𝑚 ), 𝑚 ∈ { 𝑣, 𝑎 }, (7) where 𝑓 𝑗 (·) denotes the 𝑗 -th expert transformation. By sharing the same routing weights 𝛼 derived from the global state 𝑔 , expert selection is coordinated across modalities. Rather than simply assigning scalar weights to video and au-dio, this shared mechanism applies the most suitable feature transformations to pull both modalities into a coordinated and balanced representation space. The final fused multi-modal representation is denoted by 𝑧 𝑓 𝑢𝑠𝑒 = { ˜𝑥 𝑣 , ˜𝑥 𝑎 }. The Emotion Generator then conditions on the raw text input 
+
+𝑥 𝑡 , the refined cognitive evidence 𝐸 ′
+
+> 𝑐𝑜𝑔
+
+, and 𝑧 𝑓 𝑢𝑠𝑒 to produce the final emotion label and rationale. AffectAgent: Multi-Agent Reasoning for Multimodal Emotion Recognition Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+3.5 Warm Start with SFT 
+
+Before performing reinforcement learning, we first conduct supervised fine-tuning to provide a stable warm start for the trainable decision agents. This stage improves role-specific instruction following, reduces exploration difficulty of multi-agent optimization, and mitigates error propagation caused by unstable early-stage decisions. In AffectAgent, the trainable multimodal large language model-based decision agents include the Query Planner, the Evidence Filter, and the Emotion Generator. Therefore, we construct role-specific supervision data for these three agents and warm them up on the shared multimodal large language model using different prompt templates. Specifi-cally, the Query Planner is trained to generate three struc-tured queries from the reasoned multimodal description and the candidate label set, including supportive, confusing, and counter-direction queries. The Evidence Filter is trained to select the TopK evidence items from each candidate group produced by the retriever. The Emotion Generator is trained to integrate the refined textual evidence with the raw multi-modal features, and then output the final emotion prediction together with the reasoning rationale. In this way, the shared multimodal large language model acquires basic role aware-ness before entering the joint optimization stage. MB-MoE is not instruction-tuned and is instead optimized during reinforcement learning. For further details, please refer to the supplementary material. 
+
+3.6 Multi-Agent Optimization 
+
+After the warm start in Section 3.5, the trainable multi-modal large language model-based decision agents in Af-fectAgent, namely the Query Planner, the Evidence Fil-ter, and the Emotion Generator, already acquire basic role-specific instruction-following ability. To further enhance the performance of the framework, which is modeled as a fully cooperative multi-agent system, we optimize it with a Multi-Agent PPO (MAPPO) style joint training strategy [ 52 ]to strengthen their collaboration. Following Sections 3.1 and 3.2, these agents share a single MLLM to reduce compu-tational overhead, the Retriever is kept fixed as part of the environment because it is non-differentiable, and the MB-MoE and RAAF modules remain trainable and are updated jointly with the shared MLLM. In the multi-agent optimization process, three models are considered: the Actor, the Critic, and the frozen SFT model, whose parameters are denoted by 𝜃 , 𝜙 , and 𝜃 SFT , respectively. For each agent 𝑖 ∈ { 𝑄, 𝐹, 𝐺 }, the Actor is responsible for providing the collaborative decision policy (generating the complete output sequence 𝐴 𝑖 ) based on the observation 
+
+𝑜 𝑖 . The Critic model estimates the state-value function to stabilize the optimization process, a classic setup in the Actor-Critic architecture within RL algorithms. The SFT model serves as a reference baseline for the Actor model for KL regularization [ 30 ]. The overall objective to update the parameters of both the Actor and Critic models, L( 𝜃, 𝜙 ),consists of two terms, where 𝛼 is the coefficient balancing policy optimization and value fitting: 
+
+L( 𝜃, 𝜙 ) = LActor (𝜃 ) + 𝛼 LCritic (𝜙 ) (8) The Actor loss is similar to that used in the standard single-agent PPO algorithm [ 37 ], with the main difference that, in our setting, multiple agents are optimized jointly. Specifically, 𝑖 ∈ { 𝑄, 𝐹, 𝐺 } denotes the three agents con-sidered in our framework. For each agent, 𝑟 𝑖 𝑡 denotes the importance sampling ratio, which measures the discrepancy between the updated policy and the old rollout policy pa-rameterized by 𝜃 old . As in PPO, this ratio is introduced to constrain policy updates and improve training stability. The term ˆ𝐴 𝑖 𝑡 denotes the advantage estimate for agent 𝑖 ,which is computed using Generalized Advantage Estimation (GAE) [ 36 ]. This estimation provides a practical balance between bias and variance in policy gradient optimization. In addition, 𝛿 𝑖 𝑡 represents the temporal-difference (TD) error at time step 𝑡 , which is used to recursively compute the advantage. Here, 𝛾 and 𝜆 denote the discount factor and the GAE coefficient, respectively: 
+
+
+
+LActor (𝜃 ) = −∑︁ 
+
+> 𝑖
+
+∑︁ 𝑡 
+
+min 
+
+
+
+𝑟 𝑖 𝑡 ˆ𝐴 𝑖 𝑡 , clip (𝑟 𝑖 𝑡 , 1 − 𝜖, 1 + 𝜖 ) ˆ𝐴 𝑖 𝑡 
+
+
+
+𝑟 𝑖 𝑡 = 𝜋 𝜃 (𝑎 𝑖 𝑡 | 𝑠 𝑖 𝑡 )
+
+𝜋 𝜃 old (𝑎 𝑖 𝑡 | 𝑠 𝑖 𝑡 )
+
+ˆ𝐴 𝑖 𝑡 = 𝛿 𝑖 𝑡 + 𝛾𝜆 ˆ𝐴 𝑖 𝑡 +1
+
+𝛿 𝑖 𝑡 = 𝑅 (𝑠 𝑖 𝑡 , 𝑎 𝑖 𝑡 ) + 𝛾𝑉 𝜙 (𝑠 𝑖 𝑡 +1) − 𝑉 𝜙 (𝑠 𝑖 𝑡 )
+
+(9) Similar to InstructGPT [ 30 ], the final reward function 
+
+𝑅 (𝑠 𝑖 𝑡 , 𝑎 𝑖 𝑡 ) incorporates a sequence-level KL regularization penalty. The distinction is that our approach does not re-quire an additionally trained reward model; instead, we directly use the predefined task rewards 𝑅 𝑖 introduced in Section 3.2. Since reliable supervision becomes available only after the complete collaborative process is finished, this terminal reward is assigned only at the end of the tra-jectory (i.e., 𝑡 = 𝑇 𝑖 ). Here, 𝛽 controls the strength of the KL regularization to keep the updated policy close to the SFT initialization: 
+
+𝑅 (𝑠 𝑖 𝑡 , 𝑎 𝑖 𝑡 ) =
+
+
+
+0, if 𝑡 < 𝑇 𝑖 ,𝑅 𝑖 − 𝛽 log 𝜋 𝜃 old (𝐴 𝑖 | 𝑜 𝑖 )
+
+𝜋 𝜃 SFT (𝐴 𝑖 | 𝑜 𝑖 ) , if 𝑡 = 𝑇 𝑖 . (10) The Critic loss also adopts a clipping strategy similar to that used in the Actor objective, with the goal of stabiliz-ing value function optimization and preventing excessively large updates between successive training iterations. Specif-ically, we define the value target as 𝑉 𝑖,𝑡  
+
+> target
+
+= ˆ𝐴 𝑖 𝑡 + 𝑉 𝜙 (𝑠 𝑖 𝑡 ),where ˆ𝐴 𝑖 𝑡 is the estimated advantage and 𝑉 𝜙 (𝑠 𝑖 𝑡 ) is the cur-rent value prediction. To further improve training stability, we introduce a clipped value estimate 
+
+˜𝑉 𝜙 (𝑠 𝑖 𝑡 ) = clip  𝑉 𝜙 (𝑠 𝑖 𝑡 ), 𝑉 𝜙 old (𝑠 𝑖 𝑡 ) − 𝜖, 𝑉 𝜙 old (𝑠 𝑖 𝑡 ) + 𝜖  , (11) where the clipping range is centered at the prediction of the old value network parameterized by 𝜙 old . This design constrains the change in value prediction within a local trust region and makes the regression objective more robust during training: 
+
+LCritic (𝜙 ) =∑︁ 
+
+> 𝑖
+
+∑︁ 𝑡 
+
+max 
+
+( 
+
+𝑉 𝜙 (𝑠 𝑖 𝑡 ) − 𝑉 𝑖,𝑡 
+
+> target
+
+2
+
+,
+
+ ˜𝑉 𝜙 (𝑠 𝑖 𝑡 ) − 𝑉 𝑖,𝑡 
+
+> target
+
+2
+
+)
+
+. (12) Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Trovato et al. 
+
+Regarding the execution flow of the multi-agent optimiza-tion: in each training iteration, we first execute a complete rollout data collection process. This process passes sequen-tially through the Query Planner, Retriever, Evidence Filter, MB-MoE, RAAF, and Emotion Generator, and the collected trajectory data is stored in the replay buffer. Subsequently, the policy and value optimization process is executed, where the rewards, advantage estimates, and value targets for all three agents are computed. Finally, several PPO epochs are performed to jointly update the parameters of the Actor and Critic in parallel. After training, the Critic and the SFT ref-erence model are discarded, and only the optimized shared Actor, together with the updated MB-MoE and RAAF mod-ules, is retained for subsequent inference and evaluation. 
+
+4 Experiments 
+
+We structure our comprehensive experiments into three main parts: (1) evaluating AffectAgent’s robustness across varying MLLM and missing-modality scenarios, and its su-periority over existing RAG methods; (2) validating the-contributions of it s core designs; (3) presenting parameter sensitivity analysis and case studies. 
+
+4.1 Experimental Setup 
+
+Datasets and Evaluation. We evaluate our method on the MER-UniBench benchmark [ 24 ], which covers three representative multimodal emotion understanding settings: Basic Emotion Recognition, Sentiment Analysis, and Fine-grained Emotion Recognition. Following the benchmark protocol, we report the primary metric for each dataset: 
+
+HIT for MER2023, MER2024, MELD, and IEMOCAP; WAF 
+
+for MOSI, MOSEI, SIMS, and SIMS v2; and 𝐹 𝑠 for OV-MERD+. In addition, we build a multimodal retrieval library from the MER2025 [ 24 ] training set and jointly train on this dataset, which serves as the external evidence source for retrieval-augmented emotion reasoning. All methods are evaluated under the same protocol for fair comparison. 
+
+Implementation Details. We use E5 [ 42 ] for text re-trieval and a FAISS-based nearest-neighbor retriever [ 17 ]for multimodal retrieval. The selector receives 𝐾 evi-dence samples as input. We evaluate seven MLLMs, in-cluding emotion-oriented models, i.e., AffectGPT [ 24 ] and Emotion-LLaMA [ 6 ], and general-purpose models, i.e., Video-LLaMA [ 56 ], Video-LLaMA2 [ 7], VideoChat [ 21 ], ChatBridge[ 58 ], and PandaGPT[ 39 ]. We further compare with three RAG baselines: Rewrite-Retrieve-Read [ 29 ], BGM [18], and RAG-DDR [23]. 
+
+4.2 Main Results across Different MLLMs 
+
+Table 1 reports the full-modality results across different MLLM backbones. AffectAgent consistently improves all compared models on MER-UniBench, covering Basic Emo-tion Recognition, Sentiment Analysis, and Fine-grained Emo-tion Recognition. The gains are observed in both overall mean scores and most individual datasets, demonstrating its broad compatibility with diverse multimodal large language models and effectiveness for multimodal emotion reasoning. The improvements are pronounced on general-purpose MLLMs, including Video-LLaMA, VideoChat, ChatBridge, Video-LLaMA2 and PandaGPT. Compared with stronger backbones, these models benefit more from AffectAgent, with mean scores increasing from 32.37 to 38.75, 34.01 to 40.15, 35.24 to 42.03, 35.99 to 42.74, and 52.92 to 58.66, re-spectively. Similar gains are observed across Basic Emotion Recognition, Sentiment Analysis, and Fine-grained Emotion Recognition, indicating that AffectAgent is especially effec-tive for general-purpose MLLMs with lower performance. Stable gains are also observed on stronger affect-oriented backbones, including Emotion-LLaMA and AffectGPT. Al-though the absolute improvements are smaller on these models, the gains remain consistent across datasets and task settings. This indicates that AffectAgent is not only useful for weaker backbones, but can also provide additional bene-fits for models that already have strong affective knowledge. Moreover, the improvements are observed across all three task groups in MER-UniBench, rather than being limited to a single benchmark. This suggests that the proposed frame-work generalizes well across affective tasks with different label granularity and reasoning difficulty, and works as a generally effective retrieval-augmented reasoning frame-work rather than a backbone-specific add-on. 
+
+4.3 Robustness to Missing Modalities 
+
+Table 2 presents the experimental results under missing-modality settings. When a modality is missing, we directly supplement it with retrieved multimodal perceptual evi-dence. Overall, AffectAgent consistently improves the per-formance of all compared models across different modality combinations, including A+V , A+T , and V+T . This demon-strates that the proposed framework remains effective when a single modality is unavailable, showing strong robustness to incomplete multimodal inputs. We observe that the improvement margins vary across modality combinations. In general, larger gains occur when the missing modality leads to a more severe loss of emotional evidence, while stable improvements are still maintained un-der relatively stronger modality combinations. These results indicate that AffectAgent not only enhances performance in the full-modality setting, but also improves the robustness of MLLMs under missing-modality conditions. 
+
+4.4 Comparison with RAG Methods 
+
+Table 3 compares AffectAgent with existing RAG meth-ods under the same full-modality setting. Overall, AffectA-gent achieves the best results on all datasets and obtains the highest mean score of 76.78, consistently outperform-ing Rewrite-Retrieve-Read, BGM, and RAG-DDR. This in-dicates that directly applying general RAG strategies to multimodal emotion recognition is insufficient, since the task requires not only semantically relevant retrieval but also affect-aware evidence selection and reasoning. The con-sistent gains across Basic Emotion Recognition, Sentiment Analysis, and Fine-grained Emotion Recognition further ver-ify that AffectAgent can more effectively exploit external evidence for multimodal emotion understanding. 
+
+4.5 Ablation Study 
+
+Table 4 shows the stepwise gains of our framework on MER2023 and MER2024, which with Video-LLaMA2 as the backbone. SFT already improves the zero-shot baseline by AffectAgent: Multi-Agent Reasoning for Multimodal Emotion Recognition Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+Table 1: Results on MER-UniBench. For each dataset, we report its primary evaluation metric. The gray-shaded columns denote the primary ranking metrics, the best results are highlighted in bold, and the second-best results are underlined. Our AffectAgent consistently outperforms different baseline models. Model Modality Basic Sentiment Fine-grained Mean 
+
+A V T MER2023 MER2024 MELD IEMOCAP MOSI MOSEI SIMS SIMS v2 OV-MERD+ Video-LLaMA [56] ✓ ✓ ✓ 14.52 13.56 17.65 15.68 54.55 46.52 58.56 56.32 13.98 32.37 
+
++ AffectAgent 22.75 ↑8.23 22.71 ↑9.15 24.07 ↑6.42 23.49 ↑7.81 58.90 ↑4.35 52.14 ↑5.62 61.70 ↑3.14 60.40 ↑4.08 22.65 ↑8.67 38.75 ↑6.38 
+
+VideoChat [21] ✓ ✓ ✓ 16.89 15.65 19.55 16.98 56.02 48.65 59.68 57.65 15.02 34.01 
+
++ AffectAgent 24.30 ↑7.41 23.87 ↑8.22 25.38 ↑5.83 23.93 ↑6.95 61.14 ↑5.12 54.96 ↑6.31 63.93 ↑4.25 61.53 ↑3.88 22.36 ↑7.34 40.15 ↑6.14 
+
+ChatBridge [58] ✓ ✓ ✓ 18.06 16.89 20.35 25.02 56.66 49.68 58.62 56.55 15.35 35.24 
+
++ AffectAgent 27.18 ↑9.12 24.54 ↑7.65 28.39 ↑8.04 30.23 ↑5.21 61.53 ↑4.87 55.60 ↑5.92 64.73 ↑6.11 62.29 ↑5.74 23.80 ↑8.45 42.03 ↑6.79 
+
+Video-LLaMA 2 [7] ✓ ✓ ✓ 20.24 18.32 22.08 23.32 54.38 50.12 60.23 58.69 16.58 35.99 
+
++ AffectAgent 28.80 ↑8.56 27.53 ↑9.21 29.41 ↑7.33 29.80 ↑6.48 60.13 ↑5.75 56.26 ↑6.14 64.75 ↑4.52 63.60 ↑4.91 24.44 ↑7.86 42.74 ↑6.75 
+
+PandaGPT [39] ✓ ✓ ✓ 40.21 51.89 37.88 44.04 61.92 67.61 68.38 67.23 37.12 52.92 
+
++ AffectAgent 46.33 ↑6.12 56.24 ↑4.35 45.29 ↑7.41 49.92 ↑5.88 65.16 ↑3.24 70.56 ↑2.95 70.52 ↑2.14 70.31 ↑3.08 43.67 ↑6.55 58.66 ↑5.74 
+
+Emotion-LLaMA [6] ✓ ✓ ✓ 59.38 73.62 46.76 55.47 66.13 67.66 78.32 77.23 52.97 64.17 
+
++ AffectAgent 63.59 ↑4.21 76.46 ↑2.84 52.38 ↑5.62 59.80 ↑4.33 69.54 ↑3.41 71.54 ↑3.88 80.27 ↑1.95 79.35 ↑2.12 57.72 ↑4.75 67.85 ↑3.68 
+
+AffectGPT [24] ✓ ✓ ✓ 78.54 78.80 55.65 60.54 81.30 80.90 88.49 86.18 62.52 74.77 
+
++ AffectAgent 80.69 ↑2.15 80.66 ↑1.86 59.07 ↑3.42 63.39 ↑2.85 82.73 ↑1.43 82.67 ↑1.77 89.43 ↑0.94 87.33 ↑1.15 65.13 ↑2.61 76.78 ↑2.01 
+
+Table 2: Robustness evaluation under missing-modality settings. A, V, and T denote audio, video, and text, respectively. Results show that AffectAgent consistently improves performance across different backbone models under various missing-modality conditions. Model Modality Basic Sentiment Fine-grained Mean 
+
+A V T MER2023 MER2024 MELD IEMOCAP MOSI MOSEI SIMS SIMS v2 OV-MERD+ PandaGPT [39] ✓ ✓ × 28.15 32.40 26.50 31.20 55.30 52.10 54.20 50.50 25.40 39.53 
+
++ AffectAgent 32.27 ↑4.12 35.95 ↑3.55 31.71 ↑5.21 36.03 ↑4.83 57.45 ↑2.15 54.94 ↑2.84 56.12 ↑1.92 52.91 ↑2.41 29.76 ↑4.36 43.01 ↑3.48 
+
+Emotion-LLaMA [6] ✓ ✓ × 45.20 56.80 35.40 42.10 56.50 58.20 65.30 64.10 40.50 51.57 
+
++ AffectAgent 49.01 ↑3.81 58.94 ↑2.14 39.52 ↑4.12 45.66 ↑3.56 58.73 ↑2.23 60.65 ↑2.45 67.16 ↑1.86 66.02 ↑1.92 44.35 ↑3.85 54.44 ↑2.87 
+
+AffectGPT [24] ✓ ✓ × 65.20 66.80 48.50 52.40 72.10 70.30 78.40 76.50 52.60 64.76 
+
++ AffectAgent 68.05 ↑2.85 68.92 ↑2.12 51.64 ↑3.14 55.15 ↑2.75 74.02 ↑1.92 72.15 ↑1.85 79.81 ↑1.41 78.02 ↑1.52 55.53 ↑2.93 67.03 ↑2.27 
+
+PandaGPT [39] ✓ × ✓ 33.57 39.04 31.91 36.55 66.06 61.33 62.93 58.88 31.33 46.84 
+
++ AffectAgent 37.72 ↑4.15 42.46 ↑3.42 35.76 ↑3.85 40.67 ↑4.12 66.71 ↑0.65 63.17 ↑1.84 65.08 ↑2.15 60.93 ↑2.05 35.01 ↑3.68 49.72 ↑2.88 
+
+Emotion-LLaMA [6] ✓ × ✓ 52.15 64.30 41.25 49.60 62.40 63.80 72.15 70.40 48.20 58.25 
+
++ AffectAgent 55.56 ↑3.41 67.15 ↑2.85 44.89 ↑3.64 52.82 ↑3.22 64.55 ↑2.15 65.88 ↑2.08 74.07 ↑1.92 72.54 ↑2.14 51.55 ↑3.35 61.00 ↑2.75 
+
+AffectGPT [24] ✓ × ✓ 72.94 73.41 56.63 55.68 83.46 80.74 82.99 83.75 59.98 72.18 
+
++ AffectAgent 74.79 ↑1.85 74.93 ↑1.52 57.87 ↑1.24 57.83 ↑2.15 83.81 ↑0.35 81.86 ↑1.12 84.44 ↑1.45 84.93 ↑1.18 62.02 ↑2.04 73.61 ↑1.43 
+
+PandaGPT [39] × ✓ ✓ 39.13 47.16 38.33 47.21 58.50 64.25 62.07 65.25 35.07 50.77 
+
++ AffectAgent 42.98 ↑3.85 50.28 ↑3.12 41.98 ↑3.65 49.75 ↑2.54 61.35 ↑2.85 66.86 ↑2.61 64.41 ↑2.34 67.47 ↑2.22 39.22 ↑4.15 53.81 ↑3.04 
+
+Emotion-LLaMA [6] × ✓ ✓ 55.40 68.10 44.50 52.30 64.50 65.20 75.60 74.10 50.80 61.17 
+
++ AffectAgent 58.35 ↑2.95 70.44 ↑2.34 47.65 ↑3.15 55.12 ↑2.82 66.85 ↑2.35 67.71 ↑2.51 77.44 ↑1.84 76.05 ↑1.95 53.92 ↑3.12 63.73 ↑2.56 
+
+AffectGPT [24] × ✓ ✓ 74.58 75.29 57.63 62.19 82.39 81.57 87.20 86.29 61.65 74.31 
+
++ AffectAgent 76.23 ↑1.65 76.71 ↑1.42 58.78 ↑1.15 63.27 ↑1.08 82.87 ↑0.48 82.42 ↑0.85 88.42 ↑1.22 87.23 ↑0.94 63.50 ↑1.85 75.49 ↑1.18 
+
+Table 3: Performance comparison of different RAG methods on emotion recognition datasets. To ensure a fair comparison, all RAG methods are applied to the same MLLM using full-modality inputs (audio, video, and text). Our proposed AffectAgent consistently outperforms existing RAG baselines across all datasets. Method Basic Sentiment Fine-grained Mean 
+
+MER2023 MER2024 MELD IEMOCAP MOSI MOSEI SIMS SIMS v2 OV-MERD+ No RAG 78.54 78.80 55.65 60.54 81.30 80.90 88.49 86.18 62.52 74.77 Rewrite-Retrieve-Read [29] 78.39 78.76 55.58 60.42 81.36 80.83 88.52 86.13 62.47 74.72 BGM [18] 78.68 79.03 55.88 60.77 81.62 81.18 88.73 86.41 62.81 75.01 RAG-DDR [23] 79.12 79.38 56.33 61.27 81.98 81.54 89.13 86.82 63.21 75.42 
+
+AffectAgent (Ours) 80.69 ↑2.15 80.66 ↑1.86 59.07 ↑3.42 63.39 ↑2.85 82.73 ↑1.43 82.67 ↑1.77 89.43 ↑0.94 87.33 ↑1.15 65.13 ↑2.61 76.78 ↑2.01 
+
++3.88 and +4.13 HIT, and naive retrieval further boosts per-formance to +6.34 and +6.39, confirming the value of exter-nal evidence. Our full AffectAgent achieves the best results on both datasets, reaching 28.80 and 27.53 HIT, which means +8.56 and +9.21 over zero-shot. These results indicate that the gain comes not only from retrieval itself, but also from the proposed affect-oriented retrieval and reasoning frame-work. Table 5 further examines the roles of multi-agent coor-dination and evidence structures, where all variants retain primary evidence. Removing either the Planner or the Filter degrades performance, with a larger drop from removing the Planner (-1.65/-1.67) than the Filter (-0.86/-0.88), while removing both causes the largest loss and reduces the model exactly to the naive retrieval setting in Table 4. Likewise, removing confusion or counter evidence also hurts perfor-mance, with confusion evidence contributing more than counter evidence. This shows that primary evidence alone is insufficient for robust emotion reasoning, and the full model performs best only when both agents and all evidence structures are jointly enabled. More ablation experiments can be found in the supplementary material. Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Trovato et al. Multimodal Input 
+
+> What’s the trouble with this? You are helping the little puppy. I’m also very happy that you trust us so much.
+> The speaker expresses warm happiness, appreciation, and support…
+> The speaker sounds polite, calm, and encouraging, but the emotion…
+> Although the utterance contains positive interpersonal language…
+> Thank you, Manager Siqin, for your care for me…
+> Hao Liangping, Xiao Ai Liangping, you can rest assured.
+> Don't worry, Caiying is fine. I will make decisions for you.
+
+happy 
+
+Multimodal Input 
+
+> If you're really feeling unwell, you should go to the hospital immediately.
+> The speaker is worried about the other person's condition…
+> The speaker may also be interpreted as caring for and advising…
+> The speaker may also simply be giving practical and rational advice…
+> I'm worried that if you know about this. Just Jier will be implicated.
+> If the emperor is happy, just say a few more words to him.
+> So I advise you to speak as little as possible, if you can bear it…
+
+Sad 
+
+Multimodal Input 
+
+> No, absolutely not! I am your father, I have to be responsible for your future..
+> The speaker shows strong rejection, parental authority…
+> The speaker may be issuing a stern warning or forceful dissuasion…
+> The speaker may also be interpreted as expressing parental protection…
+> I'm arresting you right now, you're so tough. You are not me who…
+> This way, I'm telling you that you will get into trouble sooner or later.
+> Since you want to protect others, I will do my best to protect you.
+
+Sad 
+
+Figure 3: Illustration of three representative case studies, showing smooth success, query deviation with a correct final prediction, and query deviation with an incorrect final prediction. Table 4: Stepwise effectiveness of our components. We utilize the generic MLLM Video-LLaMA2 as the base model. ΔHIT indicates the absolute improvement over the zero-shot baseline. SFT Retrieval MER2023 MER2024 HIT ↑ ΔHIT HIT ↑ ΔHIT 
+
+× × 20.24 — 18.32 —
+
+✓ × 24.12 +3.88 22.45 +4.13 
+
+✓ Naive RAG 26.58 +6.34 24.71 +6.39 
+
+✓ AffectAgent 28.80 +8.56 27.53 +9.21 Table 5: Ablation on Multi-Agent coordination and Evi-dence Structures based on Video-LLaMA2. All variants retain primary evidence. ΔHIT indicates the perfor-mance drop compared to the full framework. Planner Filter Confuse Evid. Counter Evid. MER2023 MER2024 HIT ↑ ΔHIT HIT ↑ ΔHIT 
+
+× ✓ ✓ ✓ 27.15 −1.65 25.86 −1.67 
+
+✓ × ✓ ✓ 27.94 −0.86 26.65 −0.88 
+
+× × ✓ ✓ 26.58 −2.22 24.71 −2.82 
+
+✓ ✓ × × 27.42 −1.38 26.11 −1.42 
+
+✓ ✓ ✓ × 28.11 −0.69 26.75 −0.78 
+
+✓ ✓ ✓ ✓ 28.80 — 27.53 —
+
+4.6 Visualization Experiments 
+
+To further examine the behaviors of RAAF and MB-MoE in AffectAgent, we visualize them on a randomly sampled subset of the MER2023 evaluation set using AffectGPT as the MLLM. Fig. 4(a) compares the performance gain (pp) of direct use of retrieved perceptual evidence (Retrieved) and RAAF with the same evidence under three retrieval conditions: helpful (Help), ordinary (Ord.), and conflicting (Conf.). Fig. 4(b) shows the average expert routing weights of MB-MoE under four input states: balanced (Bal.), video-led Help Ord. Conf. 
+
+0
+
+1
+
+2
+
+> Gain (pp)
+
+(a) RAAF 
+
+Retrieved 
+
+RAAF 
+
+E1 E2 E3 E4 
+
+Bal. 
+
+V
+
+A
+
+Conf. 
+
+0.15 0.14 0.47 0.24 
+
+0.30 0.06 0.42 0.23 
+
+0.06 0.28 0.44 0.22 
+
+0.11 0.09 0.36 0.43 
+
+(b) MB-MoE 
+
+Figure 4: Visualization of RAAF and MB-MoE in Af-fectAgent on sampled MER2023 data with AffectGPT as the backbone. (a) Performance gain (pp) under dif-ferent retrieval conditions. (b) Average expert routing weights under different input states. 
+
+(V ), audio-led ( A), and cross-modal conflict (Conf.), where E1–E4 denote the four experts. As shown in Fig. 4(a), RAAF consistently yields larger gains than directly using retrieved perceptual evidence across all three conditions, with the largest advantage in the Help case and clear gains in the Ord. and Conf. cases, indicating that it selectively incorporates complementary perceptual cues rather than uniformly amplifying retrieved informa-tion. Fig. 4(b) further shows that the routing behavior of MB-MoE varies systematically with the input state: E3 re-mains dominant across all conditions, while E1, E2, and E4 become more active in the video-led, audio-led, and conflict cases, respectively. These results indicate that RAAF and MB-MoE play important roles in AffectAgent. 
+
+4.7 Case Study 
+
+As shown in Figure 3, the three cases reveal both the robust-ness and the limitations of our framework. In the left case, AffectAgent: Multi-Agent Reasoning for Multimodal Emotion Recognition Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+the generated queries are highly consistent with the un-derlying emotional cues, which leads to relevant retrieved evidence and ultimately a correct prediction. In the mid-dle case, although a certain degree of query drift appears during the reasoning process, the retrieved evidence still retains the dominant emotional signal, allowing the model to recover the correct result. In contrast, in the right case, the query drift brings in misleading evidence that gradually biases subsequent evidence selection and reasoning, finally resulting in an incorrect prediction. These examples indicate that the framework shows reasonable tolerance to moderate intermediate errors, but its performance can still degrade when the retrieved emotional evidence is seriously distorted or misaligned with the true affective state. 
+
+5 Conclusion 
+
+We propose AffectAgent, an affect-oriented multi-agent retrieval-augmented framework for multimodal emotion recognition. By coordinating query planning, evidence fil-tering, and emotion generation, AffectAgent enables more reliable retrieval and reasoning for fine-grained emotion understanding in complex multimodal scenarios. In addi-tion, MB-MoE and RAAF improve cross-modal fusion by balancing modality contributions and supplementing miss-ing information, which further enhances robustness under incomplete-modality conditions. Overall, the framework provides an effective retrieval-augmented solution for more accurate and robust multimodal emotion recognition. 
+
+References 
+
+[1] Mohammad Mahdi Abootorabi, Amirhosein Zobeiri, Mahdi Dehghani, Mohammadali Mohammadkhani, Bardia Mohammadi, Omid Ghahroodi, and Mahdieh Baghshah. 2025. Ask in Any Modality: A Comprehensive Survey on Multimodal Retrieval-Augmented Generation. In Findings of the Association for Computational Linguistics: ACL 2025 .[2] Akari Asai, Zeqiu Wu, Yizhong Wang, Avirup Sil, and Hannaneh Ha-jishirzi. 2024. Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection. In Proceedings of the 12th International Confer-ence on Learning Representations (ICLR) .[3] Julia Belikova et al . 2024. DeepPavlov at SemEval-2024 Task 3: Multi-modal Large Language Models in Emotion Reasoning. In Proceedings of the 18th International Workshop on Semantic Evaluation (SemEval-2024) .[4] Wenhu Chen, Hexiang Hu, Chitwan Saharia, and William W. Co-hen. 2022. MuRAG: Multimodal Retrieval-Augmented Generator for Open Question Answering over Images and Text. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing (EMNLP) . 5558–5570. [5] Yiqun Chen, Lingyong Yan, Weiwei Sun, Xinyu Ma, Yi Zhang, Shuaiqiang Wang, Dawei Yin, Yiming Yang, and Jiaxin Mao. 2025. MMoA: Improving Retrieval-Augmented Generation through Multi-Agent Reinforcement Learning. In Advances in Neural Information Pro-cessing Systems (NeurIPS) .[6] Zebang Cheng, Zhi-Qi Cheng, Jun-Yan He, Kai Wang, Yuxiang Lin, Zheng Lian, Xiaojiang Peng, and Alexander G. Hauptmann. 2024. Emotion-LLaMA: Multimodal Emotion Recognition and Reasoning with Instruction Tuning. In Advances in Neural Information Processing Sys-tems .[7] Zesen Cheng, Sicong Li, Jiaming Chen, Fuzhao Chen, Hang Zhang, Yuzi Dong, Mude Sun, Xin Li, Mingyu Gao, Jianwei Liu, et al . 2024. VideoLLaMA 2: Advancing Spatial-Temporal Modeling and Audio Un-derstanding in Video-LLMs. arXiv preprint arXiv:2406.07476 (2024). [8] Zebang Cheng, Yuxiang Lin, Zhiqi Chen, Xiang Li, Shuyi Mao, Fan Zhang, Dongdong Ding, Bowen Zhang, and Xiaojiang Peng. 2023. Semi-supervised multimodal emotion recognition with expression MAE. In 
+
+Proceedings of the 31st ACM International Conference on Multimedia .9436–9440. [9] Roddy Cowie, Ellen Douglas-Cowie, Nicolas Tsapatsoulis, George Votsis, Stefanos Kollias, Winfried Fellenz, and John G Taylor. 2001. Emotion recognition in human-computer interaction. IEEE Signal Processing Magazine 18, 1 (2001), 32–80. [10] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for lan-guage understanding. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Hu-man Language Technologies . 4171–4186. [11] Moataz El Ayadi, Mohamed S Kamel, and Fakhri Karray. 2011. Survey on speech emotion recognition: Features, classification schemes, and databases. Pattern Recognition 44, 3 (2011), 572–587. [12] Yun Gao, Yun Xiong, Meng Wang, and Haofen Wang. 2024. Modu-lar RAG: Transforming RAG Systems into Lego-like Reconfigurable Frameworks. arXiv preprint arXiv:2407.21059 (2024). [13] Wei Han, Hui Chen, and Soujanya Poria. 2021. Improving multimodal fusion with hierarchical mutual information maximization for mul-timodal sentiment analysis. In Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing . 9180–9192. [14] Ziniu Hu, Ahmet Iscen, Chen Sun, Kai-Wei Chang, Yizhou Sun, David A. Ross, Cordelia Schmid, and Karteek Alahari. 2023. REVEAL: Retrieval-Augmented Visual-Language Pre-Training with Multi-Source Multi-modal Knowledge Memory. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) . 23369–23379. [15] Ao Jia, Yu He, Yazhou Zhang, Sagar Uprety, Dawei Song, and Christina Lioma. 2022. Beyond emotion: A multi-modal dataset for human desire understanding. In Proceedings of the 2022 Conference of the North Amer-ican Chapter of the Association for Computational Linguistics: Human Language Technologies . 1512–1522. [16] Zhengbao Jiang, Frank F. Xu, Luyu Gao, Zhiqing Sun, Qiao Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, and Graham Neubig. 2023. Active Retrieval Augmented Generation. In Proceedings of the 2023 Con-ference on Empirical Methods in Natural Language Processing (EMNLP) .7969–7992. [17] Jeff Johnson, Matthijs Douze, and Hervé Jégou. 2019. Billion-scale similarity search with GPUs. IEEE Transactions on Big Data 7, 3 (2019), 535–547. [18] Zixuan Ke, Weize Kong, Cheng Li, Mingyang Zhang, Qiaozhu Mei, and Michael Bendersky. 2024. Bridging the Preference Gap between Retrievers and LLMs. arXiv preprint arXiv:2401.06954 (2024). [19] Zhenglun Kong, Yize Li, Fanhu Zeng, Lei Xin, Shvat Messica, Xue Lin, Pu Zhao, Manolis Kellis, Hao Tang, and Marinka Zitnik. 2026. Token Reduction Should Go Beyond Efficiency in Generative Models – From Vision, Language to Multimodality. arXiv:2505.18227 [cs.LG] https://arxiv.org/abs/2505.18227 [20] Shanglin Lei, Guanting Dong, Xiaoping Wang, Keheng Wang, and Sirui Wang. 2023. InstructERC: Reforming emotion recognition in conver-sation with a retrieval multi-task LLMs framework. arXiv preprint arXiv:2309.11911 (2023). [21] Kunchang Li, Yinan He, Yi Wang, Yizhuo Li, Wenhai Wang, Ping Luo, Yali Wang, Limin Wang, and Yu Qiao. 2025. VideoChat: Chat-centric video understanding. Science China Information Sciences 68, 10 (2025), 200102. [22] Shan Li and Weihong Deng. 2022. Deep facial expression recognition: A survey. IEEE Transactions on Affective Computing 13, 3 (2022), 1195– 1215. [23] Xinze Li, Sen Mei, Zhenghao Liu, Yukun Yan, Shuo Wang, Shi Yu, Zheni Zeng, Hao Chen, Ge Yu, Zhiyuan Liu, Maosong Sun, and Chenyan Xiong. 2025. RAG-DDR: Optimizing Retrieval-Augmented Generation Using Differentiable Data Rewards. In Proceedings of the 13th International Conference on Learning Representations (ICLR) .[24] Zheng Lian, Haoyu Chen, Lan Chen, Haiyang Sun, Licai Sun, Yong Ren, Zebang Cheng, Bin Liu, Rui Liu, Xiaojiang Peng, Jiangyan Yi, and Jianhua Tao. 2025. AffectGPT: A New Dataset, Model, and Benchmark for Emotion Understanding with Multimodal Large Language Models. In Proceedings of the 42nd International Conference on Machine Learning .[25] Tian Liang, Zhiwei He, Wenxiang Jiao, Xing Wang, Yan Wang, Rui Ru, Zhaopeng Tu, Shuming Shi, and Xing Xu. 2024. Encouraging Divergent Thinking in Large Language Models through Multi-Agent Debate. In 
+
+Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing (EMNLP) .[26] Zhun Liu, Ying Shen, Varun Bharadhwaj Lakshminarasimhan, Paul Pu Liang, Amir Zadeh, and Louis-Philippe Morency. 2018. Efficient low-rank multimodal fusion with modality-specific factors. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics .2247–2256. [27] Zhishu Liu, Kaishen Yuan, Bo Zhao, Hui Ma, and Zitong Yu. 2026. AULLM++: Structural Reasoning with Large Language Models for Micro-Expression Recognition. arXiv:2603.08387 [cs.CV] https://arxiv. org/abs/2603.08387 [28] Zhishu Liu, Kaishen Yuan, Bo Zhao, Yong Xu, and Zitong Yu. 2025. Au-llm: Micro-expression action unit detection via enhanced llm-based feature fusion. In Chinese Conference on Biometric Recognition . Springer, 355–365. [29] Xinxi Ma, Yeyun Gong, Pengcheng He, Hai Zhao, and Nan Duan. 2023. Query rewriting for retrieval-augmented large language models. arXiv Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Trovato et al. 
+
+preprint arXiv:2305.14283 (2023). [30] Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll L. Wain-wright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul F. Chris-tiano, Jan Leike, and Ryan Lowe. 2022. Training Language Models to Follow Instructions with Human Feedback. In Advances in Neural Information Processing Systems , Vol. 35. 27730–27744. [31] Rosalind W Picard, Elias Vyzas, and Jennifer Healey. 2001. Toward machine emotional intelligence: Analysis of affective physiological state. IEEE Transactions on Pattern Analysis and Machine Intelligence 23, 10 (2001), 1175–1191. [32] Vittorio Pipoli, Alessia Saporita, Federico Bolelli, Marcella Cornia, Lorenzo Baraldi, Costantino Grana, Rita Cucchiara, and Elisa Ficarra. 2025. MISSRAG: Addressing the Missing Modality Challenge in Multi-modal Large Language Models. In Proceedings of the IEEE/CVF Interna-tional Conference on Computer Vision (ICCV) .[33] Soujanya Poria, Erik Cambria, Rajiv Bajpai, and Amir Hussain. 2017. A review of affective computing: From unimodal analysis to multimodal emotion recognition. Information Fusion 37 (2017), 98–125. [34] Wasifur Rahman, Md Kamrul Hasan, Sangwu Lee, AmirAli Bagher Zadeh, Chengfeng Mao, Louis-Philippe Morency, and Ehsan Hoque. 2020. Integrating multimodal information in large pretrained trans-formers. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics . 2359–2369. [35] Björn W Schuller. 2018. Speech emotion recognition: Two decades in a nutshell, benchmarks, and ongoing trends. Commun. ACM 61, 5 (2018), 90–99. [36] John Schulman, Philipp Moritz, Sergey Levine, Michael I. Jordan, and Pieter Abbeel. 2016. High-Dimensional Continuous Control Using Generalized Advantage Estimation. In Proc. Int. Conf. Learn. Represent. (ICLR) . https://arxiv.org/abs/1506.02438 [37] John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. 2017. Proximal Policy Optimization Algorithms (PPO). arXiv preprint arXiv:1707.06347 (2017). [38] Mohammad Soleymani, David Garcia, Brendan Jou, Björn Schuller, Shih-Fu Chang, and Maja Pantic. 2017. A survey of multimodal emotion recognition. Image and Vision Computing 65 (2017), 1–14. [39] Yixuan Su, Tian Lan, Huayang Li, Jialu Xu, Yan Wang, and Deng Cai. 2023. Pandagpt: One model to instruction-follow them all. arXiv preprint arXiv:2305.16355 (2023). [40] Yao-Hung Hubert Tsai, Martin Q. Ma, Muqiao Yang, Ruslan Salakhutdi-nov, and Louis-Philippe Morency. 2020. Multimodal routing: Improving local and global interpretability of multimodal language analysis. In 
+
+Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing .[41] Kai Wang, Xiaojiang Peng, Jianfei Yang, Debin Meng, and Yu Qiao. 2020. Region attention networks for pose and occlusion robust facial expression recognition. IEEE Transactions on Image Processing 29 (2020), 4057–4069. [42] Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Ma-jumder, and Furu Wei. 2024. Multilingual E5 Text Embeddings: A Technical Report. arXiv preprint arXiv:2402.05672 (2024). [43] Tao Wang, X. Lin, Y. Xu, Q. Ye, D. Guo, Sergio Escalera, G. Khoriba, and Z. Yu. 2026. Micro-gesture Recognition: A Comprehensive Survey of Datasets, Methods, and Challenges. Machine Intelligence Research 23, 2 (2026), 308–331. doi:10.1007/s11633-025-1629-x [44] Zhuofan Wen, Zheng Lian, Shun Chen, Hailiang Yao, Longjiang Yang, Bin Liu, and Jianhua Tao. 2025. Listen, Watch, and Learn to Feel: Retrieval-Augmented Emotion Reasoning for Compound Emotion Gen-eration. In Findings of the Association for Computational Linguistics: ACL 2025 .[45] Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, and Chi Wang. 2023. AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation. arXiv preprint arXiv:2308.08155 (2023). [46] Peng Xia, Guilin Qi, et al . 2024. Multimodal Retrieval-Augmented Generation: A Survey. arXiv preprint arXiv:2402.03573 (2024). [47] Lei Xin, Caiyun Huang, Hao Li, Shihong Huang, Yuling Feng, Zhenglun Kong, Zicheng Liu, Siyuan Li, Chang Yu, Fei Shen, and Hao Tang. 2024. Artificial Intelligence for Central Dogma-Centric Multi-Omics: Challenges and Breakthroughs. arXiv:2412.12668 [q-bio.GN] https: //arxiv.org/abs/2412.12668 [48] Lei Xin, Yuhao Zheng, Ke Cheng, Changjiang Jiang, Zifan Zhang, and Fanhu Zeng. 2026. HyTRec: A Hybrid Temporal-Aware Atten-tion Architecture for Long Behavior Sequential Recommendation. arXiv:2602.18283 [cs.IR] https://arxiv.org/abs/2602.18283 [49] Qu Yang, M. Ye, and B. Du. 2024. EmoLLM: Multimodal Emo-tional Understanding Meets Large Language Models. arXiv preprint arXiv:2406.16442 (2024). [50] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik Narasimhan, and Yuan Cao. 2023. ReAct: Synergizing Reasoning and Acting in Language Models. In Proceedings of the 11th International Conference on Learning Representations (ICLR) .[51] Michihiro Yasunaga, Armen Aghajanyan, Weijia Shi, Richard James, Jure Leskovec, Percy Liang, Mike Lewis, Luke Zettlemoyer, and Wen-tau Yih. 2023. Retrieval-Augmented Multimodal Language Modeling. In Proceedings of the 40th International Conference on Machine Learning (ICML) . 39755–39769. [52] Chao Yu, Akash Velu, Eugene Vinitsky, Jiaxuan Gao, Yu Wang, Alexan-dre Bayen, and Yi Wu. 2022. The Surprising Effectiveness of PPO in Cooperative Multi-Agent Games. In Advances in Neural Information Processing Systems (NeurIPS) , Vol. 35. 24611–24624. [53] Zheng Yuan, Haotian Liu, Chunyuan Li, et al . 2025. A Survey on Multi-modal Retrieval-Augmented Generation. arXiv preprint arXiv:2504.08748 
+
+(2025). [54] Amir Zadeh, Minghai Chen, Soujanya Poria, Erik Cambria, and Louis-Philippe Morency. 2017. Tensor fusion network for multimodal sen-timent analysis. In Proceedings of the 2017 Conference on Empirical Methods in Natural Language Processing . 1103–1114. [55] AmirAli Bagher Zadeh, Paul Pu Liang, Jonathan Vanbriesen, Soujanya Poria, Edmund Tong, Erik Cambria, Minghai Chen, and Louis-Philippe Morency. 2018. Multimodal language analysis in the wild: CMU-MOSEI dataset and interpretable dynamic fusion graph. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics .2236–2246. [56] Hang Zhang, Xin Li, and Lidong Bing. 2023. Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understand-ing. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP): System Demonstrations . 443–453. [57] Sitao Zhang, Yimu Pan, and James Z. Wang. 2023. Learning emotion rep-resentations from verbal and nonverbal communication. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition .18993–19004. [58] Dongming Zhao, Weian Liu, Haisong Zhang, Zhengyuan Wei, Sihuang Zhao, Mingwei Xu, Jun Yin, Jinpeng Lu, and Yu Qiao. 2023. Chat-bridge: Bridging modalities to large language models via object-centric representations. arXiv preprint arXiv:2305.13101 (2023). [59] Zengqun Zhao, Qingshan Liu, and Feng Zhou. 2022. Robust facial expression recognition: A survey. IEEE Transactions on Affective Com-puting 13, 4 (2022), 1805–1823. [60] Ziwang Zheng, Tangli Jiao, Zebang Cheng, et al . 2023. EmoLLaVA: A Large Vision-Language Model for Emotion Recognition. arXiv preprint arXiv:2312.14415 (2023). [61] Deyao Zhu, Jun Chen, Xiaoqian Shen, Xiang Li, and Mohamed Elho-seiny. 2024. MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. In International Conference on Learning Representations .[62] Yijie Zhu, Jie He, Rui Shao, Kaishen Yuan, Tao Tan, Xiaochen Yuan, and Zitong Yu. 2026. ΔVLA: Prior-Guided Vision-Language-Action Models via World Knowledge Variation. arXiv preprint arXiv:2603.08361 (2026). [63] Yijie Zhu, Yibo Lyu, Zitong Yu, Rui Shao, Kaiyang Zhou, and Liqiang Nie. 2025. EmoSym: A Symbiotic Framework for Unified Emotional Understanding and Generation via Latent Reasoning. In Proceedings of the 33nd ACM International Conference on Multimedia .[64] Yijie Zhu, Rui Shao, Ziyang Liu, Jie He, Jizhihui Liu, Jiuru Wang, and Zitong Yu. 2026. H-GAR: A Hierarchical Interaction Framework via Goal-Driven Observation-Action Refinement for Robotic Manipulation. In Proceedings of the AAAI Conference on Artificial Intelligence .[65] Yijie Zhu, Lingsen Zhang, Zitong Yu, Rui Shao, Tao Tan, and Liqiang Nie. 2025. UniEmo: Unifying Emotional Understanding and Generation with Learnable Expert Queries. arXiv preprint arXiv:2507.23372 (2025).
