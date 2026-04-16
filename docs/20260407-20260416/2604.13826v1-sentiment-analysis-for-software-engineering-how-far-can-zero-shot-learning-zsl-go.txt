@@ -1,0 +1,441 @@
+Title: Sentiment analysis for software engineering: How far can zero-shot learning (ZSL) go?
+
+URL Source: https://arxiv.org/pdf/2604.13826v1
+
+Published Time: Thu, 16 Apr 2026 01:06:48 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# Sentiment analysis for software engineering: How far can zero-shot learning (ZSL) go? 
+
+Reem Alfayez Manal Binkhonain Department of Software Engineering, College of Computer and Information Sciences, King Saud University, P.O. Box 51178, Riyadh 11543, Saudi Arabia 
+
+reealfayez@ksu.edu.sa 
+
+Received: date / Accepted: date 
+
+Abstract Context: Sentiment analysis in software engineering focuses on understanding emotions expressed in software artifacts. Previous re-search highlighted the limitations of applying general off-the-shelf sen-timent analysis tools within the software engineering domain and indicated the need for specialized tools tailored to various software engineering contexts. The development of such tools heavily relies on supervised machine learning techniques that necessitate annotated datasets. Acquiring such datasets is a substantial challenge, as it requires domain-specific expertise and significant effort. Objective :This study explores the potential of zero-shot learning (ZSL) to ad-dress the scarcity of annotated datasets in sentiment analysis within software engineering Method: We conducted an empirical experi-ment to evaluate the performance of various ZSL techniques, including embedding-based, natural language inference (NLI)-based, task-aware representation of sentences (TARS)-based, and generative-based ZSL techniques. We assessed the performance of these techniques under different labels setups to examine the impact of label configurations. Additionally, we compared the results of the ZSL techniques with 
+
+1     
+
+> arXiv:2604.13826v1 [cs.SE] 15 Apr 2026 state-of-the-art fine-tuned transformer-based models. Finally, we per-formed an error analysis to identify the primary causes of misclassifica-tions. Results: Our findings demonstrate that ZSL techniques, par-ticularly those combining expert-curated labels with embedding-based or generative-based models, can achieve macro-F1 scores comparable to fine-tuned transformer-based models. The error analysis revealed that subjectivity in annotation and polar facts are the main contribu-tors to ZSL misclassifications. Conclusion: This study demonstrates the potential of ZSL for sentiment analysis in software engineering. ZSL can provide a solution to the challenge of annotated dataset scarcity by reducing reliance on annotated dataset.
+
+Keywords: Sentiment Analysis, Software Engineering, Natural Lan-guage Processing, Zero-shot Learning, Text Classification 
+
+# 1 Introduction 
+
+Over the years, sentiment analysis has evolved as a powerful tool for ex-tracting subjective information from text data [1]. In software engineering, it provides insights into software development and usage by analyzing app reviews, developer communications, discussions on technical Q&A websites, and more [1, 2, 3, 4, 5, 6, 7, 8]. Utilizing sentiment analysis within the software engineering domain presents significant challenges. General-purpose sentiment analysis tools often demon-strate suboptimal performance when used in software engineering contexts [9, 10]. This limitation has led researchers to develop specialized tools tailored to the unique characteristics of software engineering contexts. Despite these efforts, it has been observed that even sentiment analysis tools that perform well in one software engineering context lack generalizability across different contexts, where they underperform in the new contexts. The context-bound limitation highlights the need for context-specific tools [3, 4, 11]. Developing context-based tools is not an easy feat, as most sentiment analysis tools in software engineering are based on supervised machine learn-ing techniques that frame sentiment analysis tasks as text classification prob-lems. These tools are heavily reliant on annotated datasets for training, which is costly, time-consuming, error-prone, and requires domain-specific expertise to obtain [2, 4, 11, 12]. This reliance on annotated datasets is particularly problematic due to the context-bound limitation that requires the development of separate models and datasets for each specific context [4, 11]. The need to curate anno-tated dataset for training in each context further intensifies the challenge 2of datasets scarcity and complicates the development of effective sentiment analysis models [2, 4, 11]. Zero-shot learning (ZSL) is a promising approach that has the potential to address the challenge of requiring context-specific training data for classi-fication tasks. A ZSL-based model can classify data without prior exposure to specific labels, where it instead relies on its understanding of relationships between words, phrases, and concepts to make classifications. In the context of ZSL, a model generates predictions for tasks it has not been explicitly trained on by leveraging data from other, related tasks to aid its learning process. The model utilizes knowledge acquired through pre-training on other datasets and transfers relevant information to the new classification task [13, 14]. This study explores the potential of ZSL for sentiment analysis in soft-ware engineering by evaluating embedding-based, natural language infer-ence (NLI)-based, task-aware representation of sentences (TARS)-based, and generative-based ZSL techniques across various contexts. We assess the im-pact of label configurations on model performance and compare the best-performing ZSL models with state-of-the-art fine-tuned transformer models. An error analysis is also conducted to understand misclassification causes. The rest of the paper is organized as follows: Section 2 summarizes ZSL for text classification. Section 3 reviews related studies. Section 4 describes the study setup. Section 5 presents the results, and Section 6 discusses them. Section 7 outlines potential validity threats, and Section 8 concludes the paper. 
+
+# 2 Zero-shot learning (ZSL) text classification 
+
+ZSL text classification is a natural language processing (NLP) approach that enables models to classify text into unseen classes during training. As op-posed to traditional supervised learning, which requires labeled data for each class, ZSL leverages transfer learning and semantic understanding to pre-dict previously unseen classes. This capability is particularly useful when labeled data is scarce [13, 14]. ZSL text classification can be achieved through four main techniques: embedding-based, NLI-based, TARS-based, and generative-based techniques. Below is a brief description of each tech-nique. 32.1 Embedding-based ZSL 
+
+Embedding-based ZSL text classification uses word embeddings to measure the semantic similarity between input text and potential class labels [15]. While the original approach [15] relied on skip-gram static embeddings, we opted for transformer-based large language models (LLMs) embeddings, as these models generate contextual word embeddings that capture both the syntactic and semantic properties of words, along with their context [13, 14, 16]. Figure 1 illustrates the process of embedding-based ZSL text classifica-tion. Both the input text and potential class labels are passed through a pre-trained LLM to generate embeddings. Classification is performed by cal-culating the cosine similarity between the input text embedding and each class label embedding. The class with the highest similarity score is then selected as the predicted label (i.e., label 1 in the example). LLM Cosine similarity 
+
+> Text and label 1 = .96
+> Text and label 2 = .04
+> Resulting scores
+> Text embedding
+> Label 1 embedding
+> Resulting embeddings
+> Label 2 embedding
+> Input
+> Set of labels Label 1 Label 2
+> Text
+
+Figure 1: An illustration of embedding-based ZSL 
+
+2.2 Natural language inference (NLI)-based ZSL 
+
+NLI-based ZSL frames text classification as a textual entailment problem, where it determines whether a given text (i.e., premise) logically follows an-other hypothesis. The input text is treated as the NLI premise, and each candidate label forms a hypothesis. The model calculates probabilities for en-tailment and contradiction, which are then converted into label probabilities. The text is classified under the label with the highest entailment probability [14, 17]. As Figure 2 presents, the input text serves as the premise, and potential class labels are hypotheses. The NLI model assesses whether the premise entails or contradicts each hypothesis and assigns a probability to each case. The input text is classified based on the label with the highest entailment probability, in this case, label 1. 4NLI model 
+
+> Text and label 1 = .96
+> Text and label 2 = .04
+> Resulting probabilities Input
+> Hypothesis 1: label 1 Hypothesis 2: label 2
+> Premise: text
+
+Figure 2: An illustration of NLI-based ZSL 
+
+2.3 Task-aware representation of sentences (TARS)-based ZSL 
+
+TARS formulates the classification task as a universal binary classification problem, where the model learns to predict whether a given text belongs to a particular label or not. Instead of training separate models for each label, TARS simultaneously evaluates the relevance of the text for all labels by adapting LLM representations through label-conditioned embeddings [18]. As Figure 3 illustrates, the input to TARS consists of the text to be classified and a set of candidate labels. TARS generates embeddings condi-tioned on both the text and each label by appending the label to the text to form queries. These queries are processed by a shared transformer encoder to produce task-specific embeddings that capture the semantic relationships between the text and the labels. A binary prediction of true or false is then performed for each label. The label with the highest true confidence is se-lected as the final classification (i.e., label 1 in the example) [18]. Transformer-based encoder 
+
+> Q1 = .96
+> Q2 = .04
+> Resulting true scores
+> Q1: < Label 1, text>
+> Queries
+> Q2: < Label 2, text>
+> Input
+> Set of labels Label 1 Label 2
+> Text
+
+Figure 3: An illustration of TARS-based ZSL 
+
+2.4 Generative-based ZSL 
+
+Transformer-based generative models, such as OpenAI ’s Generative Pre-Trained Transformers (GPTs) 1, are capable to perform ZSL text classifica-
+
+> 1
+
+https://openai.com/ 
+
+5tion by generating text in response to provided input [19]. In this approach, as Figure 4 depicts, the model receives a prompt that provides specific instructions on how to classify input text and the input text. The provided instruction is in natural language, and it may not include any demonstrations. The model then generates a response that indicates the most appropriate class based on the provided prompt [14, 19]. Generative model 
+
+> Output
+> Generated label
+> Input
+> Prompt
+
+Figure 4: An illustration of generative-based ZSL 
+
+# 3 Related work 
+
+Many studies have assessed sentiment analysis tools, explored the impact of sentiment on software development practices, and more. Due to space constraints, we focus on summarizing (1) systematic reviews related to sen-timent analysis tools in software engineering and (2) research efforts on the development of such tools. 
+
+3.1 Systematic reviews on sentiment analysis tools for software engineering 
+
+S´ anchez-Gord´ on and Colomo-Palacios [20] conducted a systematic literature review (SLR) on software developers’ emotions. The study highlighted the limited research in this domain and noted that although current approaches are recognized as unreliable, many techniques with the potential to enhance the detection of developers’ emotions remain underutilized or unexplored. Obaidi and Kl¨ under [3] conducted an SLR on software engineering sen-timent analysis tools. The study found that most research relies on using existing tools, support vector machine (SVM) is the most utilized technique, and open-source software (OSS) projects are the main data source. The study highlighted the challenges of training data scarcity, inconsistent tool performance, and the subjectivity of annotated data. The study also noted that sarcasm and irony detection remains a major challenge in sentiment analysis for software engineering. 6In a follow-up systematic mapping review (SMR), Obaidi et al. [21] expanded the previous analysis to include recent sentiment analysis studies in software engineering. The study confirmed that research still predominantly applies existing sentiment analysis tools rather than developing new ones, OSS data remains the most used soure, SVM and gradient boosting tree (GBT) were identified as the most common supervised learning techniques, and that fine-tuned transformer models outperform other approaches. The study also highlighted the unreliability of general sentiment analysis tools and the need for customization to specific software engineering contexts. Lin et al. [12] conducted an SLR that identified sentiment analysis tools currently in use and raised concerns about their application in unintended domains without proper validation. The review summarized comparisons of these tools, identified publicly available datasets, and highlighted challenges in software engineering sentiment analysis, such as identifying neutral senti-ment. The study emphasized that model quality depends on training dataset quality and noted the considerable effort needed to train supervised machine learning models. 
+
+3.2 Sentiment analysis tools for software engineering 
+
+Several sentiment analysis tools have been developed for software engineering utilizing a variety of NLP and machine learning approaches. Heuristic-based methods were employed by Islam et al. [22] and Islam and Zibran [23]. SVM were utilized by Calefato et al. [8], Islam et al. [24], Murgia et al. [25], and Cagnoni et al. [26]. Ensemble approaches were adopted by Uddin et al. [27], Ahmed et al. [28], and Ding et al. [29]. Aiming to leverage transformer-based models, Biswas et al. [30] intro-duced BERT4SentiSE, a BERT-based sentiment classifier fine-tuned on Stack Overflow (SO) posts. Zhang et al. [1] assessed the performance of BERT, RoBERTa, XLNet, and ALBERT pre-trained transformer models across var-ious software engineering contexts, and they found that fine-tuning these models outperforms state-of-the-art sentiment analysis tools. Similarly, Ba-tra et al. [31] evaluated fine-tuned BERT, ensemble BERT models, and compressed BERT for sentiment analysis on SO posts, GitHub commit com-ments, and Jira issue comments. The study found that compressed BERT and ensemble BERT produced better similar results, with the compressed version recommended for resource conservation. Bleyl et al. [32] developed a fine-tuned BERT model for detecting emotions in SO posts. Additionally, Sun et al. [33] introduced EASTER, a sentiment analysis tool that integrates RoBERTa as the embedding layer in TextCNN. EASTER was evaluated on app reviews, Jira issue comments, and SO posts. 7Shafikuzzaman et al. [34] evaluated the performance of twelve pretrained language models, including fine-tuned models, SentiStrength-SE, and Sen-tiCR [28] on the Gerrit, GitHub, Google Play, Jira, and SO posts datasets. The study found that model performance varied across datasets, with fine-tuned models performing better on larger datasets. To better understand models’ behavior, the study used Shapley Additive Explanations (SHAP) to conduct error analysis. Leveraging generative-based models, Zhang et al. [2] explored the potential of Llama 2-Chat; Vicuna; and WizardLM, re-ferred to as larger language models (bLLMs), for sentiment analysis. The study assessed their performance using ZSL and few-shot learning (FSL) on sentiment analysis tasks across five datasets: Gerrit, GitHub, Google Play, Jira, and SO. Due to cost concerns, the study was conducted on a strati-fied representative sample drawn from 10% of each dataset that represents the test set. The findings indicated no significant performance difference between ZSL and FSL and that FSL did not necessarily outperform ZSL. The analysis was extended by fine-tuning BERT, RoBERTa, ALBERT, XL-Net, and DistilBERT, referred to as smaller language models (sLLMs). The comparison of the sLLMs to the bLLMs revealed that bLLMs outperformed sLLMs on imbalanced datasets or those with limited training data, while fine-tuned sLLMs performed better when ample training data and balanced distributions were available. 
+
+# 4 Study setup 
+
+This section describes the setup of the study, including the goal and research questions (RQs), datasets, selected LLMs, label curation and configuration, performance measures, statistical analysis, and implementation details. 
+
+4.1 Goal and research questions (RQs) 
+
+The goal of this study is defined using the Goal-Question-Metric (GQM) template [35], as follows: Assessing the performance of ZSL in sentiment classification within the context of API reviews, code review comments, pull requests and commit comments, developer messages, mobile app reviews, issue comments, and posts on technical question-and-answer websites in the software engineering domain. To achieve this goal, we formulated the following RQs: 
+
+• RQ1: Which ZSL technique is most effective for sentiment classifica-tion, and among the techniques that evaluate multiple models, which model demonstrates the best performance? 8• RQ2: Do different label configurations have an impact on the perfor-mance of ZSL-based sentiment classification? 
+
+• RQ3: How does the performance of ZSL-based models compare with that of the state-of-the-art fine-tuned transformer-based models in sen-timent classification? 
+
+• RQ4: What factors contribute to the misclassification of sentiment labels in ZSL-based models, and how do these compare with those shared with the state-of-the-art fine-tuned transformer-based models? 
+
+4.2 Datasets 
+
+To address the RQs, we utilized seven publicly available datasets commonly used for sentiment analysis in software engineering. Table 1 summarizes these datasets, and a description of each is provided below. 
+
+API reviews: The dataset, curated by Uddin and Khomh [7], contains 4,522 sentences from 1,338 SO posts across 71 threads tagged with 18 Java API-related keywords. The dataset includes 890 positive, 496 negative, and 3,136 neutral sentences. 
+
+Gerrit: The dataset, curated by Ahmed et al. [28], includes 1,600 code review comments mined from the code review repositories of 20 open-source projects, with 398 labeled as negative and 1,202 as non-negative. 
+
+GitHub: The dataset, curated by Novielli et al. [6], consists of 7,122 GitHub pull request and commit comments, labeled as 2,013 positive, 2,087 negative, and 3,022 neutral. 
+
+Gitter: The dataset, curated by Sajadi et al. [5], contains 400 developer messages from 10 Gitter communities. Messages were annotated for six basic emotions (i.e., anger, love, fear, joy, sadness, and surprise) and subcategories based on Shaver’s emotion taxonomy [36]. Following the approach of [4], we mapped love and joy to positive, and anger and sadness to negative, resulting in 201 messages with 127 positive and 74 negative. 
+
+Google Play: The dataset, curated by Lin et al. [4], contains 341 Android app reviews from Google Play, with 186 labeled as positive, 130 as negative, and 25 as neutral. 
+
+Jira: The dataset, curated by Lin et al. [4], contains 926 sentences from Jira issue comments, with 636 labeled as negative and 290 as positive. 
+
+SO: The dataset, curated by Calefato et al. [8], includes 4,423 SO posts, with 1,527 positive, 1,202 negative, and 1,694 neutral. 9Table 1: Summary of utilized datasets                 
+
+> Dataset Name Total Polarity distribution
+> API reviews 4,522 Positive (890), negative (496), and neutral (3,136) Gerrit 1,600 Negative (398) and non-negative (1,202) GitHub 7,122 Positive (2,013), negative (2,087), and neutral (3,022) Gitter 201 Positive (127) and negative (74) Google Play 341 Positive (186), negative (130), and neutral (25) Jira 926 Positive (290) and negative (636) SO 4,423 Positive (1,527), negative (1,202), and neutral (1,694)
+
+4.3 Large language model (LLM) selection 
+
+To address the aforementioned research questions (RQs), we selected the models below. Table 2 summarizes these models, with unique identifier for easy reference throughout the study. Our selection was guided by four key considerations. First, we prior-itized reproducibility and accessibility by including publicly available and widely adopted pretrained models such as BERT, RoBERTa, and ALBERT, which are well-established benchmarks in ZSL and transfer learning research [2, 16]. Second, to ensure architectural diversity, we selected transformer vari-ants trained with distinct pretraining objectives, including masked language modeling, permutation modeling, and next-sentence prediction. Third, we sought domain variation by incorporating both generic and domain-specific models. For instance, BERTOverflow for technical Q&A, RoBERTa-base-go emotions for emotions, and Twitter-RoBERTa for social media sentiment analysis. Finally, to capture a broad availability spectrum, we included both paid and unpaid models. 
+
+• Embedding-based ZSL :We selected the following unpaid, generic-embeddings: BERT-base-uncased 2, RoBERTa-base 3, DistilBERT-base-uncased 4, ALBERT-base-v2 5, XLNet-base-cased: 6, and All-MiniLM-L12-v2 7.Besides the aforementioned unpaid, generic models, we utilized the following unpaid, domain-specific models: BERTOverflow 8,RoBERTa-
+
+> 2
+
+https://huggingface.co/google-bert/bert-base-uncased 
+
+> 3
+
+https://huggingface.co/FacebookAI/roberta-base 
+
+> 4
+
+https://huggingface.co/distilbert/distilbert-base-uncased 
+
+> 5
+
+https://huggingface.co/albert/albert-base-v2 
+
+> 6
+
+https://huggingface.co/xlnet/xlnet-base-cased 
+
+> 7
+
+https://huggingface.co/sentence-transformers/all-MiniLM-L12-v2 
+
+> 8
+
+https://huggingface.co/jeniya/BERTOverflow 
+
+10 base-go emotions 9, and Twitter-RoBERTa-base-sentiment 10 .We also included three paid OpenAI embeddings 11 : Text-embedding-ada-002, Text-embedding-3-small, and Text-embedding-3-large. 
+
+• NLI-based ZSL : To evaluate the performance of NLI-based ZSL, we selected the following four models that are specialized for NLI tasks: RoBERTa-large-mnli 12 ,Cross-encoder/nli-deberta-base 13 , BART-large-mnli 14 , and DeBERTa-v3-large-mnli-fever-anli-ling-wanli 15 .
+
+• TARS : We used the model implementation from the original paper that introduced the technique [18]. 
+
+• Generative-based ZSL : For generative-based ZSL, we used GPT-3.5 Turbo (gpt-3.5-turbo-0125 16 ), as it was the most viable option in terms of efficiency and cost at the time of conducting the study (i.e., May 2024). Table 2: Selected models for each ZSL technique                         
+
+> Approach Model Identifier
+> Embedding-based ZSL BERT-base-uncased E M1 RoBERTa-base E M2 DistilBERT-base-uncased E M3 ALBERT-base-v2 E M4 XLNet-base-cased E M5 All-MiniLM-L12-v2 E M6 BERTOverflow E M7 RoBERTa-base-go emotions E M8 Twitter-RoBERTa-base-sentiment E M9 Text-embedding-ada-002 E M10 Text-embedding-3-small E M11 Text-embedding-3-large E M12 NLI-based ZSL RoBERTa-large-mnli N M1 Cross-encoder/nli-deberta-base N M2 BART-large-mnli N M3 DeBERTa-v3-large-mnli-fever-anli-ling-wanli N M4 TARS-based ZSL TARS T M1 Generative-based ZSL GPT-3.5 Turbo (gpt-3.5-turbo-0125) G M1
+> 9
+
+https://huggingface.co/SamLowe/roberta-base-go emotions 
+
+> 10
+
+https://huggingface.co/cardiffnlp/twitter-roberta-base-sentiment 
+
+> 11
+
+https://openai.com/index/new-embedding-models-and-api-updates/ 
+
+> 12
+
+https://huggingface.co/FacebookAI/roberta-large-mnli 
+
+> 13
+
+https://huggingface.co/cross-encoder/nli-deberta-base 
+
+> 14
+
+https://huggingface.co/facebook/bart-large-mnli 
+
+> 15
+
+https://huggingface.co/MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli 
+
+> 16
+
+https://platform.openai.com/docs/models#gpt-3-5-turbo 
+
+11 4.4 Label curation and configuration 
+
+To investigate the impact of label configurations on sentiment analysis, we compare three distinct types: the original dataset, expert-curated, and LLM-generated labels. These configurations differ in phrasing, contextual speci-ficity, and descriptive granularity. While the original labels perform well on standard benchmarks, we aim to explore whether enriching them with descriptions and contextual cues can improve model performance in a ZSL setting. Specifically, including contextual information about the dataset in-stance type may help models better interpret the input, while adding senti-ment descriptors can enhance the semantic richness of the labels and improve embedding quality. We include both expert-curated and LLM-generated labels to investigate two approaches to enriching label semantics. Expert-curated labels offer human-level domain insight, with the potential to capture subtle distinctions and contextual relevance that may be overlooked in the original labels. In contrast, LLM-generated labels provide a scalable, automated alternative that reflects the model’s own interpretation of sentiment. Comparing both approaches allows us to assess the trade-offs between human judgment and automated label generation and to examine whether either leads to improved performance in ZSL settings over the original labels. Table 3 summarizes these labels with identifiers and examples. Moreover, our online appendix includes the full set of utilized labels 17 . It is important to note that all alternative labels were derived by mapping to the original label set, with no reannotation of the dataset instances involved. 
+
+• Original labels: We used the original sentiment labels from the datasets as described in Section 4.2. 
+
+• Expert-curated labels: The two authors independently created la-bels based on their understanding of the sentiment classes and dataset context. These labels were then reviewed and consolidated in a joint meeting, where two types of disagreements emerged. Phrase disagree-ments, in which one author used “with” while the other used “has” to describe instances. After discussion, the authors decided that using “with” was more appropriate. The other type is content disagreements, where one author used the original set of emotions mapped to senti-ments, while the other did not. The authors decided to retain these labels, as they could improve understanding of the impact of labels. 
+
+> 17 https://osf.io/gzt9r/?view_only=afd4a24f2d724413aa5423eac0cdcfa6
+
+12 • LLM-generated labels: We used ChatGPT-3.5 to generate labels us-ing the following prompt: “Generate a list of words that best describe positive sentiment.” . The term “positive” was replaced with “nega-tive” to generate words for negative sentiment, and the results of both were negated to generate neutral labels. The result formed two label configurations: L6 using ChatGPT-suggested words and L7 using a combination of suggested words and corresponding sentiment classes. 
+
+4.5 Performance measures 
+
+To evaluate the performance of the models, we calculated both macro-F1 and micro-F1 scores, which are variations of the F1 score [37], following the approach of previous, related work [2, 6]. Macro-F1 calculates the F1 score for each class independently and averages them, while micro-F1 aggregates the contributions of all classes to compute the average. 
+
+4.6 Statistical analysis 
+
+Merely comparing performance measures is insufficient, as observed differ-ences may arise due to random variability [38]. To assess the significance of these differences, we use the non-parametric Scott-Knott Effect Size Differ-ence (ESD) test, which produces distinct, non-overlapping groups and quan-tifies the magnitude of meaningful median differences [39]. The test is robust against outliers and does not assume homogeneity, normality, or sample size [40], and it has been successfully applied in similar contexts [39]. While we report both macro-F1 and micro-F1 scores for comprehensive evaluation, we base our comparisons on the macro-F1 score, as it better handles imbalanced datasets by giving equal weight to all classes, aligning with previous studies [2, 6, 37]. 
+
+4.7 Implementation 
+
+To implement the empirical assessment, we followed a series of steps for each RQ. For RQ1 and RQ2, we used all datasets, models, and label configurations as described above. For the generative-based ZSL, we used the template: 
+
+“What is the sentiment of the following app review, which is delimited with triple backticks?” Give your answer as either ‘positive’, ‘negative’, or ‘neu-tral’.” We replaced the term “app review” with the type of each examined dataset and substituted the labels “positive,” “negative,” or “neutral” with 13 Table 3: Summary of label configurations 
+
+Identifier Category Description Example 
+
+L1 Original Labels used as originally described in each dataset, where emotions were mapped to corresponding sentiments (i.e., joy and love to positive; anger and sadness to neg-ative). Positive L2 Expert-curated Labels that use the term sentiment to describe the type of instances in each dataset, where neutral is described using negations of both sentiments. A positive app review L3 Expert-curated Labels describing the type of dataset in-stances with attached sentiment using “with” along with the term “sentiment”, where neutral is described using negations of both sentiments. An app review with posi-tive sentiment L4 Expert-curated Labels describing the type of dataset in-stances with attached sentiment and as-sociated original emotions mapped to the sentiment (i.e., joy and love for posi-tive; anger and sadness for negative) us-ing “with” and the term “sentiment” ,where neutral is described using negations of both sentiments and their associated emotions. An app review with pos-itive, joy, or love senti-ments L5 Expert-curated Labels describing the type of dataset in-stances with only the emotions mapped to the sentiment (i.e., joy and love for posi-tive; anger and sadness for negative) us-ing “with”, where neutral is described by negating both the sentiments associated emotions. An app review with joy or love sentiments L6 LLM-generated Labels describing the type of dataset in-stances with only words generated by the LLM using “with”, where neutral is de-scribed by negating both sentiments asso-ciated words. An app review with cheer-fulness, happiness, amuse-ment, satisfaction, bliss, gaiety, glee, jolliness, jovi-ality, joy, delight, enjoy-ment, gladness, jubilation, elation, ecstasy, euphoria, zest, enthusiasm, excite-ment, thrill, zeal, exhila-ration, contentment, plea-sure, and optimism senti-ments L7 LLM-generated Labels describing the type of dataset in-stances with sentiment and words gener-ated by the LLM using “with”, where neu-tral is described by negating both the sen-timents and their associated words. An app review with positive, cheerfulness, happiness, amusement, satisfaction, bliss, gaiety, glee, jolliness, joviality, joy, delight, enjoyment, gladness, jubilation, ela-tion, ecstasy, euphoria, zest, enthusiasm, ex-citement, thrill, zeal, exhilaration, contentment, pleasure, and optimism sentiments 
+
+14 the specific labels being assessed. We used the default parameters provided by the generative model’s API, with the exception of setting the temperature to zero to reduce variability in the outputs. To ensure consistency between the model outputs and the gold labels, we applied simple post-processing rules. For the shorter labels, we checked whether the generated output explicitly mentioned the sentiment name (i.e., positive, negative, neutral) and mapped it to the corresponding label. For the longer labels (i.e., L6 and L7), the model occasionally produced partial matches by omitting certain parts; in these cases, we post-processed the outputs to align them with the original labels. For RQ3, following [2], we partitioned each dataset into training, valida-tion, and test sets in an 8:1:1 ratio with stratified splitting. We fine-tuned state-of-the-art transformer models listed in Table 4. We note that our evaluation does not include earlier SE-specific sentiment analysis tools, such as SentiStrength-SE. This decision is supported by the findings of Zhang et al. [1], who demonstrated that fine-tuned transformer-based models outperform these tools and concluded that such models should be regarded as the state of the art for sentiment analysis in the SE domain. Furthermore, in a more recent work [2], Zhang et al. followed this conclusion by excluding these earlier tools entirely and focusing their evaluation solely on fine-tuned transformer-based models. In line with this direction, we adopt a similar approach and benchmark our results against state-of-the-art trans-former models. We used a learning rate of 2 × 10 −5, 5 epochs, batch size of 32, and a max sequence length of 256 tokens. The model with the highest macro-F1 score on the validation set was evaluated on the test set with original labels (i.e., L1). We compared the performance of fine-tuned models with the best-performing ZSL model-label combinations and the best-performing model for each ZSL technique when paired with L1. For RQ4, we conducted quantitative and qualitative analyses on misclas-sifications from RQ3. The quantitative analysis identified common misclas-sified instances among ZSL-based and fine-tuned models. The qualitative analysis categorized these misclassifications using the framework of Novielli et al. [11]. We independently categorized the commonly misclassified in-stances of the ZSL-based models. Then we compared the results in a joint session and calculated Cohen’s kappa coefficient, which was 0.71, indicating moderate agreement [41]. Disagreements were resolved through discussion, with each author providing justification until consensus was reached. 15 Table 4: Selected models for fine-tuning       
+
+> Model Identifier
+> BERT-base-cased F M1 RoBERTa-base F M2 DistilBERT-base-uncased F M3 ALBERT-base-v1 F M4 XLNet-base-cased F M5
+
+# 5 Results 
+
+This section summarizes the results of the study, and our online appendix includes more detailed results for each RQ. 
+
+5.1 RQ1: Which ZSL technique is most effective for sentiment classification, and among the techniques that evaluate multiple models, which model demon-strates the best performance? 
+
+The results of the examined ZSL techniques on each dataset are summarized in Table 5. The “Mac” and “Mic” columns refer to the macro-F1 score and micro-F1 score values, respectively, with the highest values of the macro-F1 and micro-F1 scores for each dataset are bolded. As presented in the table, generative-based ZSL achieved the highest macro-F1 scores across most datasets, with exceptions in the Gitter, Google Play, and Jira datasets. N M4 and N M2 outperformed others on the Git-ter and Google Play datasets, respectively, and E M9 achieved the highest macro-F1 score for the Jira dataset. Within the embedding-based ZSL models, E M9 achieved the highest macro-F1 scores across most datasets (i.e., 5 out of 7). Among the NLI-based models, N M2 can be considered the best performer, where it achieved the highest macro-F1 score in 5 out of 7 datasets. The results of the statistical test confirmed the above findings, where Figure 5 depicts the results. The generative-based ZSL model was ranked as the best performing model among all examined models. The second rank predominantly comprised NLI-based ZSL models and one embedding-based ZSL model (i.e., E M9). The third rank included the remaining NLI-based ZSL model (i.e., N M3), the TARS-based model, and another embedding-based model (i.e., E M11). The rest of the embedding-based models were distributed from the fourth rank to the last rank (i.e., rank 9). The results highlight the dominance of generative-based and NLI-based 16 ZSL techniques, with a few embedding-based models demonstrating compet-itive performance. Table 5: Summary of the performance of ZSL-based models 
+
+Model API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic 
+
+Embedding-based ZSL E M1 0.37 0.48 0.2 0.25 0.26 0.39 0.29 0.38 0.27 0.36 0.61 0.75 0.33 0.4 E M2 0.12 0.13 0.43 0.75 0.18 0.3 0.33 0.39 0.19 0.38 0.48 0.7 0.17 0.28 E M3 0.37 0.48 0.21 0.26 0.4 0.41 0.47 0.52 0.27 0.36 0.59 0.6 0.5 0.5 E M4 0.08 0.12 0.43 0.75 0.16 0.3 0.29 0.38 0.18 0.38 0.41 0.69 0.14 0.27 E M5 0.22 0.24 0.5 0.62 0.29 0.31 0.29 0.38 0.27 0.36 0.52 0.58 0.28 0.33 E M6 0.29 0.34 0.49 0.53 0.42 0.42 0.62 0.62 0.38 0.48 0.67 0.73 0.35 0.36 E M7 0.26 0.33 0.21 0.25 0.32 0.36 0.84 0.86 0.28 0.44 0.42 0.42 0.3 0.38 E M8 0.41 0.49 0.43 0.63 0.56 0.57 0.86 0.86 0.54 0.69 0.7 0.75 0.66 0.67 E M9 0.48 0.5 0.43 0.75 0.6 0.61 0.9 0.9 0.62 0.87 0.96 0.96 0.67 0.69 E M10 0.34 0.35 0.5 0.51 0.52 0.52 0.82 0.84 0.63 0.75 0.81 0.82 0.57 0.58 E M11 0.41 0.49 0.55 0.72 0.54 0.54 0.84 0.85 0.57 0.7 0.85 0.86 0.57 0.57 E M12 0.36 0.4 0.46 0.47 0.48 0.49 0.79 0.81 0.62 0.77 0.8 0.81 0.54 0.56 NLI-based ZSL N M1 0.41 0.42 0.66 0.71 0.56 0.57 0.89 0.9 0.61 0.85 0.93 0.94 0.63 0.65 N M2 0.4 0.43 0.69 0.76 0.58 0.58 0.88 0.88 0.71 0.87 0.94 0.95 0.64 0.67 N M3 0.35 0.35 0.62 0.7 0.5 0.53 0.9 0.9 0.63 0.88 0.91 0.92 0.58 0.62 N M4 0.43 0.46 0.65 0.69 0.56 0.59 0.91 0.91 0.64 0.89 0.94 0.94 0.63 0.66 TARS-based ZSL T M1 0.49 0.63 0.64 0.7 0.49 0.52 0.77 0.78 0.59 0.67 0.89 0.9 0.62 0.62 Generative-based ZSL G M1 0.52 0.58 0.75 0.8 0.73 0.73 0.9 0.91 0.67 0.89 0.88 0.89 0.72 0.73 
+
+5.2 RQ2: Do different label configurations have an im-pact on the performance of ZSL-based sentiment classification? 
+
+The results of varying the utilized labels within each embedding-based model are presented in Table 6, where the highest values for both macro-F1 and micro-F1 scores for each dataset are bolded. We note that, due to space limitations, the table only includes model-label combinations that yielded the highest macro-F1 score for a dataset within each model. We provide the results of all model-label combinations in our online appendix. Two label combinations of E M9 achieved the highest macro-F1 scores in the majority of datasets, with the exception of Google Play, where the combination E M12 L3 attained the highest macro-F1 score. Specifically, E M9 L1 achieved the highest value on the Jira dataset, while E M9 L3 17 1 2 3 4 5 6 7 8 9
+
+> G_M1
+> E_M9 N_M1 N_M2 N_M4
+> E_M11 N_M3 T_M1
+> E_M8 E_M10 E_M12
+> E_M6
+> E_M3 E_M7
+> E_M1 E_M5
+> E_M2
+> E_M4
+> 0.00 0.25 0.50 0.75 1.00
+> Model
+> Macro−F1 score
+> Rank
+
+Figure 5: Scott-Knott ESD ranking for ZSL models based on macro-F1 score achieved the highest macro-F1 scores across the remaining five datasets. To identify the overall best embedding-based model-label combination, we conducted a statistical analysis. Figure 6 presents the results, where only the top five ranked combinations are included due to space constraints. As the figure demonstrates, the analysis confirms the superiority of E M9 L3, as it was ranked as the top-preformer along with E M9 L2. Additionally, E M8 L2, E M8 L3, E M9 L4, and E M9 L5 were ranked in second place while E M9 L1 was ranked third. Other combinations followed in the re-maining ranks. The analysis revealed that both E M8 and E M9 achieved higher results with varying label combinations compared to others. Table 7 summarizes the results of combining each NLI-based model with label configurations, where the highest macro-F1 and micro-F1 scores for each dataset are bolded. N M2 L1 has contributed to the highest macro-F1 score across all NLI-model-label combinations in 3 out of 7 datasets. Moreover, N M4 L3 achieved the highest values in 2 datasets. The combinations of N M3 L2, N M3 L3, N M3 L5, N M4 L2, and N M4 L5 were able to achieve the highest macro-F1 score on a dataset. Figure 7 presents the results of the Scott-Knott ESD test, where only the top 5 ranks are included due to space limitations. The results demonstrate the superiority of the N M4 L3 combination, which was ranked first among all NLI-based combinations. Both the combinations of N M4 with L2 and L5 labels were ranked second, along with the N M1 L2 and N M2 L1 combi-nations. The remaining combinations were distributed across the remaining ranks. 18 Table 6: Summary of the performance of best-performing model-label com-binations of each embedding-based model across each dataset 
+
+M&L API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic 
+
+E M1 L2 0.22 0.25 0.2 0.25 0.23 0.44 0.54 0.55 0.05 0.07 0.72 0.72 0.28 0.38 E M1 L3 0.45 0.57 0.2 0.25 0.49 0.5 0.43 0.46 0.04 0.07 0.9 0.92 0.48 0.53 E M1 L4 0.22 0.23 0.43 0.75 0.27 0.33 0.29 0.38 0.37 0.47 0.59 0.74 0.32 0.33 E M1 L7 0.16 0.21 0.45 0.71 0.15 0.28 0.39 0.63 0.27 0.55 0.24 0.31 0.27 0.39 E M2 L2 0.34 0.43 0.45 0.68 0.34 0.37 0.62 0.71 0.28 0.52 0.45 0.49 0.33 0.37 E M2 L3 0.16 0.19 0.44 0.74 0.44 0.51 0.65 0.68 0.38 0.47 0.43 0.68 0.32 0.36 E M2 L4 0.2 0.22 0.44 0.55 0.4 0.46 0.63 0.64 0.29 0.38 0.65 0.66 0.35 0.39 E M2 L5 0.28 0.4 0.47 0.72 0.35 0.46 0.42 0.43 0.24 0.29 0.64 0.68 0.28 0.37 E M3 L1 0.37 0.48 0.21 0.26 0.4 0.41 0.47 0.52 0.27 0.36 0.59 0.6 0.5 0.5 E M3 L2 0.27 0.26 0.43 0.75 0.59 0.59 0.56 0.57 0.05 0.07 0.74 0.75 0.56 0.56 E M3 L5 0.25 0.24 0.44 0.68 0.26 0.34 0.73 0.75 0.52 0.67 0.38 0.41 0.37 0.42 E M4 L2 0.37 0.48 0.44 0.72 0.6 0.62 0.86 0.86 0.16 0.16 0.38 0.38 0.44 0.44 E M4 L3 0.19 0.18 0.28 0.28 0.17 0.3 0.28 0.37 0.06 0.09 0.41 0.69 0.48 0.53 E M4 L4 0.22 0.21 0.2 0.25 0.28 0.34 0.29 0.38 0.58 0.72 0.66 0.67 0.32 0.33 E M4 L5 0.09 0.12 0.2 0.25 0.31 0.34 0.61 0.62 0.56 0.7 0.37 0.4 0.29 0.32 E M5 L2 0.32 0.65 0.29 0.3 0.27 0.31 0.34 0.37 0.33 0.47 0.56 0.6 0.35 0.39 E M5 L3 0.35 0.45 0.36 0.36 0.4 0.41 0.55 0.56 0.29 0.35 0.53 0.61 0.38 0.38 E M5 L5 0.23 0.22 0.24 0.27 0.25 0.27 0.47 0.47 0.33 0.38 0.44 0.68 0.25 0.28 E M5 L6 0.34 0.56 0.51 0.69 0.27 0.4 0.44 0.45 0.18 0.17 0.49 0.55 0.3 0.39 E M5 L7 0.34 0.55 0.49 0.7 0.28 0.39 0.38 0.62 0.18 0.18 0.48 0.55 0.31 0.38 E M6 L3 0.36 0.39 0.5 0.56 0.53 0.53 0.74 0.77 0.38 0.56 0.74 0.75 0.44 0.44 E M6 L4 0.39 0.48 0.47 0.69 0.43 0.44 0.76 0.78 0.31 0.35 0.73 0.74 0.42 0.44 E M6 L7 0.33 0.54 0.46 0.5 0.46 0.46 0.72 0.74 0.51 0.68 0.8 0.82 0.43 0.46 E M7 L1 0.26 0.33 0.21 0.25 0.32 0.36 0.84 0.86 0.28 0.44 0.42 0.42 0.3 0.38 E M7 L2 0.17 0.24 0.48 0.69 0.2 0.3 0.55 0.66 0.32 0.46 0.44 0.44 0.27 0.35 E M7 L3 0.22 0.28 0.43 0.75 0.27 0.44 0.58 0.65 0.23 0.36 0.47 0.47 0.31 0.39 E M7 L4 0.27 0.29 0.48 0.64 0.32 0.42 0.43 0.43 0.14 0.15 0.42 0.47 0.29 0.31 E M7 L5 0.28 0.44 0.46 0.64 0.31 0.43 0.46 0.46 0.15 0.15 0.46 0.47 0.27 0.34 E M8 L2 0.53 0.65 0.61 0.77 0.68 0.69 0.9 0.91 0.62 0.75 0.7 0.74 0.74 0.75 E M8 L3 0.52 0.69 0.56 0.78 0.67 0.68 0.91 0.91 0.61 0.74 0.86 0.87 0.78 0.79 
+
+E M9 L1 0.48 0.5 0.43 0.75 0.6 0.61 0.9 0.9 0.62 0.87 0.96 0.96 0.67 0.69 E M9 L2 0.52 0.65 0.74 0.79 0.72 0.71 0.91 0.92 0.63 0.85 0.92 0.93 0.77 0.77 E M9 L3 0.55 0.66 0.74 0.82 0.76 0.76 0.91 0.92 0.64 0.85 0.92 0.93 0.79 0.79 E M9 L4 0.48 0.54 0.67 0.8 0.7 0.7 0.91 0.92 0.68 0.79 0.93 0.93 0.73 0.73 E M9 L6 0.24 0.24 0.43 0.75 0.45 0.53 0.91 0.92 0.64 0.86 0.92 0.93 0.48 0.59 E M9 L7 0.24 0.24 0.44 0.75 0.45 0.53 0.91 0.92 0.62 0.86 0.92 0.93 0.48 0.59 E M10 L1 0.34 0.35 0.5 0.51 0.52 0.52 0.82 0.84 0.63 0.75 0.81 0.82 0.57 0.58 E M10 L2 0.4 0.43 0.5 0.52 0.64 0.64 0.87 0.89 0.58 0.74 0.82 0.83 0.52 0.55 E M10 L3 0.39 0.41 0.57 0.6 0.46 0.51 0.87 0.88 0.61 0.79 0.85 0.86 0.6 0.61 E M10 L4 0.33 0.33 0.51 0.53 0.45 0.51 0.89 0.89 0.6 0.82 0.89 0.9 0.49 0.57 E M10 L5 0.26 0.25 0.42 0.43 0.46 0.51 0.83 0.83 0.61 0.85 0.93 0.93 0.46 0.53 E M10 L6 0.3 0.29 0.48 0.54 0.49 0.5 0.89 0.9 0.63 0.81 0.72 0.73 0.48 0.53 E M11 L1 0.41 0.49 0.55 0.72 0.54 0.54 0.84 0.85 0.57 0.7 0.85 0.86 0.57 0.57 E M11 L2 0.36 0.39 0.52 0.72 0.58 0.59 0.89 0.9 0.64 0.81 0.83 0.84 0.58 0.6 E M11 L3 0.37 0.42 0.44 0.45 0.51 0.52 0.9 0.91 0.65 0.86 0.78 0.78 0.58 0.6 E M11 L4 0.34 0.36 0.49 0.54 0.55 0.56 0.85 0.86 0.61 0.81 0.87 0.88 0.58 0.6 E M12 L2 0.42 0.49 0.52 0.72 0.6 0.6 0.89 0.9 0.62 0.84 0.75 0.75 0.55 0.57 E M12 L3 0.08 0.12 0.54 0.55 0.54 0.56 0.88 0.89 0.69 0.84 0.84 0.85 0.65 0.66 E M12 L4 0.4 0.45 0.57 0.66 0.58 0.58 0.89 0.9 0.6 0.77 0.81 0.82 0.55 0.58 E M12 L5 0.4 0.54 0.54 0.59 0.63 0.63 0.87 0.88 0.62 0.82 0.9 0.91 0.57 0.61 E M12 L6 0.34 0.36 0.48 0.54 0.55 0.57 0.88 0.88 0.62 0.82 0.92 0.93 0.55 0.58 
+
+19 1 2 3 4 5
+
+> E_M9_L2 E_M9_L3
+> E_M8_L2 E_M8_L3 E_M9_L4 E_M9_L5
+> E_M9_L1
+> E_M8_L1 E_M8_L4 E_M10_L2 E_M10_L3 E_M11_L1 E_M11_L2 E_M12_L2 E_M12_L4 E_M12_L5 E_M12_L6
+> E_M11_L3 E_M11_L4 E_M12_L3 E_M12_L7
+
+0.00 0.25 0.50 0.75 1.00 
+
+Model 
+
+> Macro−F1 score
+
+Rank Figure 6: Scott-Knott ESD ranking for embedding-based model-label com-binations based on macro-F1 score 1 2 3 4 5
+
+> N_M4_L3
+> N_M1_L2 N_M2_L1 N_M4_L2 N_M4_L5
+> N_M1_L1 N_M1_L3 N_M2_L2 N_M3_L2 N_M4_L1
+> N_M2_L3 N_M3_L1
+> N_M3_L3 N_M4_L4
+
+0.00 0.25 0.50 0.75 1.00 
+
+Model 
+
+> Macro−F1 score
+
+Rank 
+
+Figure 7: Scott-Knott ESD ranking for NLI-based model-label combinations based on macro-F1 score 20 Table 7: Summary of the performance of best-performing model-label com-binations of each NLI-based model across each dataset 
+
+M&L API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic 
+
+N M1 L1 0.41 0.42 0.66 0.71 0.56 0.57 0.89 0.9 0.61 0.85 0.93 0.94 0.63 0.65 N M1 L2 0.4 0.41 0.68 0.74 0.58 0.59 0.92 0.93 0.68 0.83 0.92 0.93 0.68 0.69 N M1 L3 0.47 0.61 0.49 0.49 0.47 0.53 0.92 0.92 0.66 0.83 0.9 0.91 0.73 0.74 N M1 L4 0.22 0.22 0.27 0.3 0.46 0.52 0.89 0.9 0.59 0.82 0.9 0.91 0.47 0.56 N M1 L5 0.22 0.23 0.26 0.29 0.47 0.52 0.88 0.89 0.62 0.83 0.92 0.93 0.48 0.57 N M1 L6 0.09 0.12 0.2 0.25 0.3 0.37 0.69 0.69 0.57 0.79 0.76 0.83 0.32 0.38 N M1 L7 0.11 0.13 0.2 0.25 0.33 0.39 0.7 0.7 0.58 0.8 0.8 0.85 0.36 0.43 N M2 L1 0.4 0.43 0.69 0.76 0.58 0.58 0.88 0.88 0.71 0.87 0.94 0.95 0.64 0.67 N M2 L2 0.47 0.55 0.58 0.76 0.58 0.57 0.88 0.89 0.6 0.75 0.93 0.94 0.67 0.67 N M2 L3 0.42 0.62 0.58 0.61 0.63 0.63 0.85 0.87 0.52 0.65 0.91 0.92 0.66 0.66 N M2 L4 0.25 0.26 0.52 0.54 0.46 0.49 0.81 0.84 0.52 0.65 0.76 0.76 0.5 0.53 N M2 L5 0.29 0.32 0.45 0.45 0.45 0.48 0.78 0.83 0.43 0.62 0.62 0.62 0.48 0.51 N M2 L6 0.14 0.13 0.22 0.26 0.3 0.35 0.67 0.7 0.29 0.57 0.52 0.52 0.3 0.36 N M2 L7 0.17 0.16 0.24 0.27 0.34 0.39 0.6 0.7 0.35 0.61 0.6 0.6 0.33 0.41 N M3 L1 0.35 0.35 0.62 0.7 0.5 0.53 0.9 0.9 0.63 0.88 0.91 0.92 0.58 0.62 N M3 L2 0.42 0.44 0.59 0.72 0.55 0.57 0.91 0.92 0.68 0.86 0.94 0.95 0.69 0.69 N M3 L3 0.31 0.3 0.23 0.27 0.44 0.51 0.9 0.91 0.63 0.85 0.94 0.95 0.65 0.67 N M3 L4 0.24 0.23 0.21 0.26 0.43 0.5 0.91 0.92 0.61 0.85 0.93 0.94 0.46 0.56 N M3 L5 0.23 0.23 0.21 0.25 0.43 0.5 0.93 0.93 0.65 0.85 0.93 0.94 0.47 0.57 N M3 L6 0.17 0.19 0.2 0.25 0.23 0.32 0.76 0.77 0.48 0.69 0.47 0.48 0.36 0.45 N M3 L7 0.18 0.19 0.21 0.25 0.19 0.31 0.75 0.76 0.53 0.77 0.63 0.63 0.31 0.37 N M4 L1 0.43 0.46 0.65 0.69 0.56 0.59 0.91 0.91 0.64 0.89 0.94 0.94 0.63 0.66 N M4 L2 0.42 0.44 0.62 0.78 0.74 0.73 0.91 0.92 0.65 0.84 0.84 0.85 0.74 0.74 N M4 L3 0.48 0.55 0.63 0.65 0.71 0.71 0.92 0.93 0.65 0.85 0.91 0.92 0.8 0.81 
+
+N M4 L4 0.33 0.33 0.5 0.51 0.57 0.59 0.83 0.86 0.62 0.82 0.78 0.79 0.64 0.65 N M4 L5 0.45 0.61 0.65 0.69 0.74 0.73 0.87 0.88 0.6 0.84 0.86 0.87 0.72 0.71 N M4 L6 0.13 0.13 0.55 0.72 0.19 0.3 0.67 0.7 0.46 0.68 0.59 0.59 0.24 0.32 N M4 L7 0.08 0.12 0.56 0.61 0.2 0.3 0.67 0.68 0.47 0.68 0.67 0.67 0.25 0.33 
+
+21 The results of combining TARS model with different label configurations are presented in Table 8, with the highest macro-F1 and micro-F1 score for each dataset are bolded. The results revealed the superiority of L2, which was able to produce the highest macro-F1 score for four datasets. L1 followed closely, achieving the highest scores for three datasets. The other labels failed to produce the highest values for any dataset. Table 8: Summary of the performance of the TARS model-label combinations across each dataset                                                                                                                        
+
+> M&L API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic
+> T M1 L1 0.49 0.63 0.64 0.7 0.49 0.52 0.77 0.78 0.59 0.67 0.89 0.9 0.62 0.62 T M1 L2 0.36 0.68 0.55 0.58 0.5 0.54 0.83 0.84 0.6 0.68 0.82 0.84 0.63 0.63
+> T M1 L3 0.33 0.46 0.52 0.59 0.44 0.44 0.62 0.62 0.58 0.65 0.6 0.64 0.36 0.36 T M1 L4 0.3 0.39 0.5 0.64 0.38 0.41 0.43 0.46 0.47 0.53 0.5 0.57 0.3 0.3 T M1 L5 0.3 0.38 0.48 0.6 0.34 0.38 0.42 0.43 0.22 0.22 0.4 0.5 0.3 0.31 T M1 L6 0.3 0.53 0.41 0.41 0.26 0.3 0.34 0.36 0.21 0.23 0.38 0.55 0.25 0.37 T M1 L7 0.3 0.64 0.54 0.7 0.3 0.33 0.37 0.37 0.32 0.39 0.4 0.63 0.27 0.33
+
+The results of the statistical test, presented in Figure 8, confirm these findings. The model combinations with L1 and L2 were ranked as the top performers, followed by L3 in second, L4 in third, L5 and L7 in fourth, and L6 in fifth. Table 9 presents the results of combining the generative-based model with the label configurations, with the highest macro-F1 and micro-F1 score for each dataset are bolded. The results demonstrate the superiority of L1, which achieved the highest performance on three datasets. All other labels, except for L3, were able to achieve the highest value on one dataset, while L3 did not produce the highest value on any dataset. Table 9: Summary of the performance of the generative model-label combi-nations across each dataset                                                                                                                        
+
+> M&L API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic
+> G M1 L1 0.52 0.58 0.75 0.8 0.73 0.73 0.9 0.91 0.67 0.89 0.88 0.89 0.72 0.73 G M1 L2 0.5 0.57 0.72 0.77 0.73 0.73 0.88 0.89 0.66 0.89 0.76 0.77 0.76 0.76
+> G M1 L3 0.5 0.57 0.72 0.77 0.64 0.65 0.86 0.88 0.62 0.86 0.82 0.82 0.72 0.73 G M1 L4 0.51 0.63 0.75 0.82 0.82 0.82 0.91 0.92 0.62 0.87 0.8 0.8 0.74 0.74 G M1 L5 0.38 0.64 0.62 0.8 0.83 0.83 0.9 0.9 0.62 0.86 0.82 0.83 0.62 0.63 G M1 L6 0.27 0.24 0.61 0.76 0.4 0.48 0.91 0.91 0.6 0.74 0.89 0.9 0.75 0.75 G M1 L7 0.22 0.22 0.69 0.8 0.32 0.38 0.93 0.93 0.6 0.86 0.81 0.82 0.64 0.66
+
+The statistical test produced three ranks, as Figure 9 presents. Combining G M1 with L1, L2, or L4 resulted in the top performance. Pairing the model 22 1 2 3 4 5
+
+> T_M1_L1 T_M1_L2
+> T_M1_L3
+> T_M1_L4
+> T_M1_L5 T_M1_L7
+> T_M1_L6
+> 0.00 0.25 0.50 0.75 1.00
+> Model
+> Macro−F1 score
+
+Rank Figure 8: Scott-Knott ESD ranking for the TARS model-label combinations based on macro-F1 score with L3 and L5 placed it in the second rank, while L6 and L7 combinations placed the model in the third rank. The results of comparing the performance of all model-label combinations across all ZSL techniques using the Scott-Knott ESD test are presented in Figure 10, with only the top 5 ranks included due to space limitations. The results confirm the superior performance of the E M9 model. Specifically, the model was ranked as the top performer when combined with both L2 and L3. Combining the model with L4 placed it in second place, alongside the generative-based model when combined with both L1 and L4. Additionally, the NLI-based model (i.e., N M4) was ranked second when combined with L3. Other combinations of embedding, NLI, and generative-based models followed in subsequent ranks. Notably, only one TARS-based combination was ranked fifth, with other ZSL technique combinations surpassing it. 23 1 2 3
+
+> G_M1_L1 G_M1_L2 G_M1_L4
+> G_M1_L3 G_M1_L5
+> G_M1_L6 G_M1_L7
+
+0.00 0.25 0.50 0.75 1.00 
+
+Model 
+
+> Macro−F1 score
+
+Rank Figure 9: Scott-Knott ESD ranking for the generative model-label combina-tions based on macro-F1 score 1 2 3 4 5
+
+> E_M9_L2 E_M9_L3
+> E_M9_L4 N_M4_L3 G_M1_L1 G_M1_L4
+> E_M8_L2 E_M8_L3 E_M9_L5 N_M4_L2 N_M4_L5 G_M1_L2 G_M1_L3
+> N_M1_L1 N_M1_L2 N_M2_L1 N_M2_L2 N_M3_L2 N_M4_L1 G_M1_L5
+> E_M9_L1 E_M12_L5 N_M1_L3 N_M2_L3 N_M3_L1 T_M1_L1
+
+0.00 0.25 0.50 0.75 1.00 
+
+Model 
+
+> Macro−F1 score
+
+Rank 
+
+Figure 10: Scott-Knott ESD ranking for model-label combinations based on macro-F1 score 24 5.3 RQ3: How does the performance of ZSL-based models compare with that of the state-of-the-art fine-tuned transformer-based models in sentiment classification? 
+
+The results of the state-of-the-art fine-tuned transformer-based models and the best-performing model-label combinations for each ZSL-based technique are presented in Table 10, where the highest values of the macro-F1 and micro-F1 scores for each dataset are bolded. As the table depicts, F M2 L1 achieved the highest macro scores in 3 out of the 7 datasets, and G M1 L4 attained the highest scores in 2 datasets. Furthermore, F M1 L1, F M3 L1, and E M9 L1 each achieved the highest score in one dataset. The results of the statistical analysis are presented in Figure 11. The statistical analysis revealed that F M1 L1 , F M4 L1 , and E M9 L3 are the top performers. The remaining fine-tuned models along with E M9 L2 and G M1 L4 , were ranked second. N M1 L1, N M2 L1, and E M9 L1 were ranked third. T M1 L1 preceded N M4 L3 and G M1 L1 , with the latter two models ranked last, in the fifth rank. The above results revealed that embedding-based and generative-based ZSL models have competitive performance compared to that of fine-tuned models on the testing set. 
+
+5.4 RQ4: What factors contribute to the misclassifi-cation of sentiment labels in ZSL-based models, and how do these compare with those shared with the state-of-the-art fine-tuned transformer-based models? 
+
+The results of the quantitative error analysis are summarized in Table 11, where the lowest number of misclassified instances for each dataset are bolded. Among the ZSL-based models, E M9 L3 yielded the fewest errors across the majority of datasets (i.e., 3 out of 7 datasets), followed by G M1 L1 and G M1 L4, in 2 out of 7 datasets, and E M9 L1 in only one dataset. More-over, common misclassifications across the ZSL-based models included 35 API reviews, 19 GitHub comments, 3 app reviews, 1 Jira comment, and 10 SO posts. When comparing the performance of the fine-tuned models to the ZSL-based models, the fine-tuned models produced fewer misclassifications than 25 Table 10: Summary of the performance of state-of-the-art fine-tuned transformer-based models and the best-performing model-label combinations for each ZSL-based technique 
+
+M&L API Gerrit GitHub Gitter Google Jira SO reviews Play Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic Mac Mic 
+
+Embedding-based ZSL models E M9 L1 0.47 0.49 0.43 0.75 0.61 0.62 0.95 0.95 0.6 0.86 0.99 0.99 0.64 0.67 E M9 L2 0.56 0.67 0.79 0.84 0.74 0.73 0.95 0.95 0.6 0.86 0.96 0.97 0.77 0.77 E M9 L3 0.58 0.67 0.79 0.86 0.79 0.78 0.95 0.95 0.6 0.86 0.96 0.97 0.81 0.81 NLI-based ZSL models N M1 L1 0.42 0.44 0.67 0.73 0.55 0.57 0.9 0.9 0.58 0.83 0.9 0.91 0.65 0.68 N M2 L1 0.42 0.45 0.77 0.83 0.58 0.59 0.86 0.86 0.6 0.86 0.91 0.92 0.7 0.72 N M4 L3 0.32 0.33 0.53 0.54 0.58 0.6 0.77 0.81 0.56 0.8 .76 0.76 0.65 0.66 TARS-based ZSL models T M1 L1 0.55 0.65 0.62 0.69 0.51 0.53 0.71 0.71 0.52 0.69 0.87 0.89 0.64 0.63 Generative-based ZSL models G M1 L1 0.57 0.69 0.66 0.69 0.46 0.54 0.66 0.68 0.58 0.83 0.54 0.81 0.76 0.76 G M1 L4 0.51 0.68 0.76 0.83 0.77 0.77 1 1 0.61 0.89 0.83 0.84 0.74 0.73 Fine-tuned models F M1 L1 0.82 0.89 0.78 0.85 0.92 0.92 0.51 0.67 0.55 0.8 0.96 0.97 0.89 0.89 F M2 L1 0.75 0.84 0.82 0.87 0.94 0.94 0.38 0.62 0.43 0.63 0.97 0.98 0.91 0.91 
+
+F M3 L1 0.8 0.87 0.79 0.84 0.94 0.94 0.38 0.62 0.58 0.83 0.96 0.97 0.88 0.88 F M4 L1 0.77 0.86 0.76 0.82 0.92 0.92 0.84 0.86 0.51 0.74 0.96 0.97 0.88 0.88 F M5 L1 0.72 0.81 0.78 0.84 0.93 0.93 0.51 0.67 0.53 0.77 0.96 0.97 0.89 0.89 
+
+26 1 2 3 4 5
+
+> F_M1_L1 F_M4_L1 E_M9_L3
+> F_M2_L1 F_M3_L1 F_M5_L1 E_M9_L2 G_M1_L4
+> N_M1_L1 N_M2_L1 E_M9_L1
+> T_M1_L1
+> N_M4_L3 G_M1_L1
+> 0.00 0.25 0.50 0.75 1.00
+> Model
+> Macro−F1 score
+> Rank
+
+Figure 11: Scott-Knott ESD ranking for the state-of-the-art fine-tuned transformer-based models and the best-performing model-label combinations for each ZSL-based technique based on macro-F1 score all of the examined ZSL-based models in 4 out of 7 datasets. The fine-tuned models were able to reduce misclassifications on API reviews, Gerrit code review comments, GitHub comments, and SO posts. The common misclassifications by the fine-tuned models included 25 API reviews, 11 Gerrit code review comments, 16 GitHub comments, 1 Gitter developer message, 5 app reviews, 1 Jira comment, and 25 SO posts. Both ZSL-based models and fine-tuned models failed to classify 9 API reviews, 5 GitHub comments, 3 app reviews, 1 Jira comment, and 1 SO post. The analysis of the commonly misclassified instances by the ZSL-based models revealed that among the total 68 misclassified instances, 64.71% were originally annotated as neutral, 22.06% as positive, and 13.24% as negative. The categorization of errors indicated that subjectivity in annotation resulting from different annotators’ perceptions of emotions accounts for 60.29% of the commonly misclassified instances. Polar facts were identi-fied as the second most common source of misclassification, where it rep-resents 22.06% of the errors. Polar facts are those that describe inherently desirable or undesirable situations, expressed in a neutral tone, such as the comment “this doesn’t work”. Politeness errors accounted for 8.82% of the misclassified instances. These errors arose when polite expressions, such as “Thanks!”, led to inconsistent classifications. Misclassifications due to figu-27 rative language, such as humor, irony, or sarcasm, contributed to 4.41% of the errors. An example is the API review statement: “So initializing high is better than too low”, which was annotated as negative by human annotators but incorrectly classified as positive or neutral by the models. Finally, prag-matic errors, such as statements reporting third-party opinions or emotions, were another source of misclassification, accounting for 4.41% of the errors. In these cases, sentences that humans identify as neutral are misclassified as positive or negative by the models due to the presence of emotion-related words. An example of this is the API review statement: “I know many de-velopers would like to have this”, which was annotated as neutral, but the majority of models classified it as positive. The common misclassified instances among both ZSL-based and fine-tuned models were originally labeled as follows: 57.89% neutral, 26.32% positive, and 15.79% negative. The error categorization revealed that sub-jectivity in annotation was the main contributor, accounting for 73.68% of these instances. Politeness errors accounted for 15.79%, followed by polar facts with 5.26%, and figurative language with 5.26%. Table 11: Summary of missclassifieds instances                                                                                                                                       
+
+> M&L API Gerrit GitHub Gitter Google Jira SO reviews Play
+> Test set size 452 160 713 21 35 93 443 ZSL-based models E M9 L1 229 40 270 151148 E M9 L2 148 25 193 153101 E M9 L3 149 23 154 15386 N M1 L1 254 43 308 268143 N M2 L1 250 27 294 357126 N M4 L3 304 74 285 4722 151 T M1 L1 157 50 333 611 10 164 G M1 L1 138 50 330 0618 105 G M1 L4 143 27 162 0415 118 Common among ZSL-based models 35 019 03110 Fine-tuned models F M1 L1 51 24 54 77347 F M2 L1 74 21 42 813 241
+> F M3 L1 60 25 50 86351 F M4 L1 62 27 57 39352 F M5 L1 85 26 52 78350 Common among fine-tuned models 25 11 16 15125 Common among all 9050311
+
+28 6 Discussion 
+
+The results of RQ1 revealed that generative-based ZSL outperformed other ZSL techniques using original labels, with NLI ranked second. Despite being pre-trained for sentiment analysis in tweets, E M9 performed well on soft-ware engineering sentiment analysis. Although, the paid embedding (i.e., E M10) outperformed most embeddings, it was outperformed by some NLI-based models and E M9. Therefore, we recommend exploring freely available models before investing in a paid one, as the former may yield better results. RQ2 revealed that no single label configuration consistently outperformed others across all models. While the original label L1 performed well with TARS and generative-based ZSL, embedding-based and NLI-based models performed better with expert-curated labels, particularly those incorporating the sentiment term (i.e., L2 and L3). Combining E M9 with L3 yielded the best results, suggesting that including task context in label configurations may enhance performance. Additionally, combining E M9 with L3 yielded the best results across all ZSL techniques. This supports the earlier obser-vation that pre-trained models from other domains are a viable approach for ZSL. In RQ3, when compared to fine-tuned state-of-the-art models, E M9 paired with L3 ranked as the top performer, achieving results comparable to some fine-tuned models, while surpassing others. This finding contra-dicts previous research, which observed that general sentiment analysis tools underperform in software engineering contexts [9, 10], as the finding demon-strates that pre-trained models trained on sentiment analysis in other do-mains can achieve performance similar to or exceeding fine-tuned models without the need for additional training or fine-tuning, thereby addressing the issue of data scarcity. RQ4 revealed that most misclassifications in ZSL-based models occurred in the neutral class, consistent with the observations of [12] and [3] that neutral sentiments are challenging to classify. Subjectivity in annotation and polar facts were identified as the primary causes of these misclassifications. Subjectivity in annotation was also highlighted by [3] as one of the challenges in sentiment analysis. Another observation is that while RQ3 demonstrated that some ZSL-based models performed similarly to fine-tuned models, the latter models were more effective at reducing misclassifications in technical datasets (i.e., API reviews, code reviews, GitHub comments, and SO posts), as evidenced by the results of RQ4. In contrast, ZSL-based models performed better on more conversational datasets, such as developer chat messages, app reviews, and Jira comments. 29 When comparing our results with previous, related studies, our results can be compared with the work of [1], which was performed in RQ3. The other work that can be compared to ours is the work of [2]. Specifically, we compare the performance of our ZSL-based models with their ZSL-based and FSL-based models on the common datasets from both studies. A key difference between our study and [2] is that while we evaluated the models on all test sets in RQ3 and RQ4, [2] selected a stratified representative random sample due to the high cost of running generative models. In our study, combining E M9 with both L2 and L3 resulted in a 0.79 macro-F1 score on the Gerrit dataset, higher than the 0.76 best macro-F1 score achieved by [2] through FSL, where their ZSL achieved 0.75. For GitHub, our highest macro-F1 score is 0.79, achieved by E M9 L3, while [2] achieved 0.72 with both FSL and ZSL. [2] achieved a perfect macro-F1 score on the Google Play dataset with FSL and 0.98 with ZSL, whereas our best ZSL model (i.e., G M1 L4) achieved only 0.61. E M9 L1 achieved an almost perfect macro-F1 score (i.e., 0.99) on the Jira dataset, where [2] achieved 0.91 through FSL and 0.85 through ZSL. Although [2] focused solely on generative-based models, the comparison highlights the superiority of E M9, which achieved higher results on 3 out of the 4 common datasets. This confirms our observation that applying ZSL with a model pre-trained on a similar context can yield competitive performance. 
+
+# 7 Threats to validity 
+
+Several threats may affect the validity of this study. This section discusses external, construct, internal, and conclusion validity threats, along with cor-responding mitigation strategies, where applicable [42]. 
+
+7.1 External validity 
+
+A potential threat to our study’s external validity is the generalizability of its findings. Although our results are derived from seven sentiment classification datasets representing diverse software engineering contexts, the generalizabil-ity of these findings cannot be claimed beyond these datasets. Another potential external validity threat arises from the models and labels utilized. Since our findings are confined to the models and labels examined, they may not generalize to others that were not included in this study. Consequently, we acknowledge this as a limitation to our study’s external validity. 30 7.2 Construct validity 
+
+A potential threat to this study’s construct validity lies in the performance measures employed. To address this threat, we report both macro-F1 and micro-F1 scores, with the former being the basis for comparison. This ap-proach aligns with the approach of [2, 6]. Another potential construct validity threat stems from the annotation of the utilized datasets. We rely on datasets annotated in prior work and widely utilized in related studies [1, 2, 4]. While efforts have been made to ensure annotations accuracy, we cannot guarantee the complete absence of errors. Consequently, this limitation is inherited from the datasets. An additional potential construct validity threat is the manual categoriza-tion of misclassified instances, which may introduce subjectivity. To mitigate this threat, we independently categorized the errors then resolved inconsis-tencies through discussion until a consensus was reached. 
+
+7.3 Internal validity 
+
+A potential threat to our study’s internal validity is the possibility of imple-mentation errors. To mitigate this, we used widely accepted and validated model implementations and followed guidelines and tutorials for applying these models in similar contexts, such as [13, 14]. 
+
+7.4 Conclusion validity 
+
+Conclusion validity concerns the appropriate use of statistical tests [42]. Be-sides using common statistical measures, such as percentages, to convey the study’s findings, we only employed Cohen’s Kappa coefficient to measure inter-rater agreement and the non-parametric Scott-Knott ESD test to com-pare the performance of models. The use of Cohen’s Kappa coefficient aligns with its intended purpose and is recommended by empirical standards in software engineering research [43]. The Scott-Knott ESD test was selected for its ability to produce disjoint groups with non-negligible magnitudes of difference, its application in prior studies within similar contexts, and its high tolerance for outliers [39, 40]. 
+
+# 8 Conclusion 
+
+Aiming to address the challenge of data scarcity within sentiment analysis for software engineering, this study explored the potential of ZSL for sentiment analysis in software engineering. We empirically evaluated the performance of 31 embedding-based, NLI-based, TARS-based, and generative-based ZSL tech-niques across multiple software engineering contexts. We expanded the scope of our analysis by including various label configurations to understand their impact on model performance. We then compared the best-performing ZSL-based models and label combinations with the state-of-the-art fine-tuned transformer-based models. Finally, we conducted an error analysis to better understand the causes of sentiment misclassifications by ZSL-based models. The results demonstrated that ZSL is a viable approach for sentiment analysis within the software engineering domain, achieving performance com-parable to or exceeding state-of-the-art fine-tuned transformer-based models without requiring fine-tuning. Specifically, an embedding-based model, fine-tuned to analyze sentiments within tweets, achieved top performance when paired with expert-generated labels that contextualized the dataset and in-corporated the term “sentiment”. The combination of the model and label was statistically ranked as the top performer, where it either matched or surpassed fine-tuned models. Similarly, the generative-based model when paired with expert-generated labels that elaborated on describing emotions with sentiments was ranked as the second-best performer alongside some of the fine-tuned models. The error analysis revealed that most misclassified instances were originally annotated as neutral sentiment, and the further cat-egorization of the misclassified instances identified subjectivity in annotation and polar facts as the primary causes of misclassification. These findings underscore the potential of ZSL in addressing the chal-lenges of training data shortages for sentiment analysis in software engineer-ing. By eliminating the need for annotated data, ZSL provides a practical solution for sentiment analysis across diverse software engineering contexts. Future work could explore how linguistic variation in label phrasing im-pacts sentiment classification performance. Additionally, investigating the influence of different prompting strategies on model effectiveness in sentiment classification represents a promising avenue for future research. Moreover, a deeper error analysis that leverages explainable artificial intelligence (XAI) and examines differences between developer-oriented and user-generated datasets could provide more nuanced insights into ZSL performance within sentiment analysis in software engineering. 32 Declaration of Generative AI and AI-assisted Technologies in the Writing Process 
+
+The authors used ChatGPT to improve the readability and language of the manuscript, with full responsibility for the final content. 
+
+# References 
+
+[1] T. Zhang, B. Xu, F. Thung, S. A. Haryono, D. Lo, L. Jiang, Sentiment analysis for software engineering: How far can pre-trained transformer models go?, in: 2020 IEEE Intealefato2018sentimentrnational Confer-ence on Software Maintenance and Evolution (ICSME), IEEE, 2020, pp. 70–80. [2] T. Zhang, I. C. Irsan, F. Thung, D. Lo, Revisiting sentiment analy-sis for software engineering in the era of large language models, ACM Transactions on Software Engineering and Methodology 34 (3) (2025) 1–30. [3] M. Obaidi, J. Kl¨ under, Development and application of sentiment anal-ysis tools in software engineering: A systematic literature review, in: Proceedings of the 25th International Conference on Evaluation and Assessment in Software Engineering, 2021, pp. 80–89. [4] B. Lin, F. Zampetti, G. Bavota, M. Di Penta, M. Lanza, R. Oliveto, Sentiment analysis for software engineering: How far can we go?, in: Proceedings of the 40th international conference on software engineering, 2018, pp. 94–104. [5] A. Sajadi, K. Damevski, P. Chatterjee, Towards understanding emotions in informal developer interactions: A gitter chat study, in: Proceedings of the 31st ACM Joint European Software Engineering Conference and Symposium on the Foundations of Software Engineering, 2023, pp. 2097– 2101. [6] N. Novielli, F. Calefato, D. Dongiovanni, D. Girardi, F. Lanubile, Can we use se-specific sentiment analysis tools in a cross-platform setting?, in: Proceedings of the 17th International Conference on Mining Software Repositories, 2020, pp. 158–168. 33 [7] G. Uddin, F. Khomh, Automatic mining of opinions expressed about apis in stack overflow, IEEE Transactions on Software Engineering 47 (3) (2019) 522–559. [8] F. Calefato, F. Lanubile, F. Maiorano, N. Novielli, Sentiment polarity detection for software development, in: Proceedings of the 40th Inter-national Conference on Software Engineering, 2018, pp. 128–128. [9] R. Jongeling, S. Datta, A. Serebrenik, Choosing your weapons: On sen-timent analysis tools for software engineering research, in: 2015 IEEE International Conference on Software Maintenance and Evolution (IC-SME), IEEE, 2015, pp. 531–535. [10] P. Tourani, Y. Jiang, B. Adams, Monitoring sentiment in open source mailing lists: exploratory study on the apache ecosystem., in: CASCON, Vol. 14, 2014, pp. 34–44. [11] N. Novielli, D. Girardi, F. Lanubile, A benchmark study on sentiment analysis for software engineering research, in: Proceedings of the 15th International Conference on Mining Software Repositories, 2018, pp. 364–375. [12] B. Lin, N. Cassee, A. Serebrenik, G. Bavota, N. Novielli, M. Lanza, Opinion mining for software development: a systematic literature re-view, ACM Transactions on Software Engineering and Methodology (TOSEM) 31 (3) (2022) 1–41. [13] L. Tunstall, L. Von Werra, T. Wolf, Natural language processing with transformers, ” O’Reilly Media, Inc.”, 2022. [14] J. Alammar, M. Grootendorst, Hands-On Large Language Models: Lan-guage Understanding and Generation, ” O’Reilly Media, Inc.”, 2024. [15] S. P. Veeranna, J. Nam, E. L. Mencıa, J. F¨ urnkranz, Using semantic similarity for multi-label zero-shot classification of text documents, in: Proceeding of european symposium on artificial neural networks, com-putational intelligence and machine learning. bruges, belgium: Elsevier, 2016, pp. 423–428. [16] W. Alhoshan, A. Ferrari, L. Zhao, Zero-shot learning for requirements classification: An exploratory study, Information and Software Technol-ogy 159 (2023) 107202. 34 [17] W. Yin, J. Hay, D. Roth, Benchmarking zero-shot text classifica-tion: Datasets, evaluation and entailment approach, arXiv preprint arXiv:1909.00161 (2019). [18] K. Halder, A. Akbik, J. Krapac, R. Vollgraf, Task-aware representation of sentences for generic text classification, in: Proceedings of the 28th International Conference on Computational Linguistics, 2020, pp. 3202– 3213. [19] T. Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P. Dhariwal, A. Neelakantan, P. Shyam, G. Sastry, A. Askell, et al., Language models are few-shot learners, Advances in neural information processing systems 33 (2020) 1877–1901. [20] M. S´ anchez-Gord´ on, R. Colomo-Palacios, Taking the emotional pulse of software engineering—a systematic literature review of empirical stud-ies, Information and Software Technology 115 (2019) 23–43. [21] M. Obaidi, L. Nagel, A. Specht, J. Kl¨ under, Sentiment analysis tools in software engineering: A systematic mapping study, Information and software Technology 151 (2022) 107018. [22] M. R. Islam, M. F. Zibran, Sentistrength-se: Exploiting domain speci-ficity for improved sentiment analysis in software engineering text, Jour-nal of Systems and Software 145 (2018) 125–146. [23] M. R. Islam, M. F. Zibran, Deva: sensing emotions in the valence arousal space in software engineering text, in: Proceedings of the 33rd annual ACM symposium on applied computing, 2018, pp. 1536–1543. [24] M. R. Islam, M. K. Ahmmed, M. F. Zibran, Marvalous: Machine learn-ing based detection of emotions in the valence-arousal space in software engineering text, in: Proceedings of the 34th ACM/SIGAPP Sympo-sium on Applied Computing, 2019, pp. 1786–1793. [25] A. Murgia, M. Ortu, P. Tourani, B. Adams, S. Demeyer, An exploratory qualitative and quantitative analysis of emotions in issue report com-ments of open source systems, Empirical Software Engineering 23 (2018) 521–564. [26] S. Cagnoni, L. Cozzini, G. Lombardo, M. Mordonini, A. Poggi, M. Tomaiuolo, Emotion-based analysis of programming languages on stack overflow, ICT Express 6 (3) (2020) 238–242. 35 [27] G. Uddin, Y.-G. Gu´ eh´ enuc, F. Khomh, C. K. Roy, An empirical study of the effectiveness of an ensemble of stand-alone sentiment detection tools for software engineering datasets, ACM Transactions on Software Engineering and Methodology (TOSEM) 31 (3) (2022) 1–38. [28] T. Ahmed, A. Bosu, A. Iqbal, S. Rahimi, Senticr: A customized sentiment analysis tool for code review interactions, in: 2017 32nd IEEE/ACM International Conference on Automated Software Engineer-ing (ASE), IEEE, 2017, pp. 106–111. [29] J. Ding, H. Sun, X. Wang, X. Liu, Entity-level sentiment analysis of issue comments, in: Proceedings of the 3rd International Workshop on Emotion Awareness in Software Engineering, 2018, pp. 7–13. [30] E. Biswas, M. E. Karabulut, L. Pollock, K. Vijay-Shanker, Achieving re-liable sentiment analysis in the software engineering domain using bert, in: 2020 IEEE International conference on software maintenance and evolution (ICSME), IEEE, 2020, pp. 162–173. [31] H. Batra, N. S. Punn, S. K. Sonbhadra, S. Agarwal, Bert-based sen-timent analysis: A software engineering perspective, in: Database and Expert Systems Applications: 32nd International Conference, DEXA 2021, Virtual Event, September 27–30, 2021, Proceedings, Part I 32, Springer, 2021, pp. 138–148. [32] D. Bleyl, E. K. Buxton, Emotion recognition on stackoverflow posts using bert, in: 2022 IEEE International Conference on Big Data (Big Data), IEEE, 2022, pp. 5881–5885. [33] K. Sun, X. Shi, H. Gao, H. Kuang, X. Ma, G. Rong, D. Shao, Z. Zhao, H. Zhang, Incorporating pre-trained transformer models into textcnn for sentiment analysis on software engineering texts, in: Proceedings of the 13th Asia-Pacific Symposium on Internetware, 2022, pp. 127–136. [34] M. Shafikuzzaman, M. R. Islam, A. C. Rolli, S. Akhter, N. Seliya, An empirical evaluation of the zero-shot, few-shot, and traditional fine-tuning based pretrained language models for sentiment analysis in soft-ware engineering, IEEE Access (2024). [35] V. R. B.-G. Caldiera, H. D. Rombach, Goal question metric paradigm, Encyclopedia of software engineering 1 (528-532) (1994) 6. 36 [36] M. M. Imran, Y. Jain, P. Chatterjee, K. Damevski, Data augmentation for improving emotion recognition in software engineering communica-tion, in: Proceedings of the 37th IEEE/ACM International Conference on Automated Software Engineering, 2022, pp. 1–13. [37] C. D. Manning, P. Raghavan, H. Sch¨ utze, Introduction to information retrieval, Cambridge university press, 2008. [38] I. H. Witten, E. Frank, M. A. Hall, C. J. Pal, M. Data, Practical ma-chine learning tools and techniques, in: Data mining, Vol. 2, Elsevier Amsterdam, The Netherlands, 2005, pp. 403–413. [39] C. Tantithamthavorn, S. McIntosh, A. E. Hassan, K. Matsumoto, The impact of automated parameter optimization on defect prediction mod-els, IEEE Transactions on Software Engineering 45 (7) (2018) 683–711. [40] M.-T. Puth, M. Neuh¨ auser, G. D. Ruxton, Effective use of spearman’s and kendall’s correlation coefficients for association between two mea-sured traits, Animal Behaviour 102 (2015) 77–84. [41] M. L. McHugh, Interrater reliability: the kappa statistic, Biochemia medica 22 (3) (2012) 276–282. [42] F. Shull, J. Singer, D. I. Sjøberg, Guide to advanced empirical software engineering, Springer, 2007. [43] P. Ralph, N. b. Ali, S. Baltes, D. Bianculli, J. Diaz, Y. Dittrich, N. Ernst, M. Felderer, R. Feldt, A. Filieri, et al., Empirical standards for software engineering research, arXiv preprint arXiv:2010.03525 (2020). 37

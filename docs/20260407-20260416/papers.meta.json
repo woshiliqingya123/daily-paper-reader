@@ -1,0 +1,51 @@
+{
+  "label": "2026-04-07 ~ 2026-04-16",
+  "date": "2026-04-07 ~ 2026-04-16",
+  "generated_at": "2026-04-16T12:26:07",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "20260407-20260416/2604.13398v1-from-prediction-to-justification-aligning-sentiment-reasoning-with-human-rationale-via-reinforcement-learning",
+      "section": "deep",
+      "title_en": "From Prediction to Justification: Aligning Sentiment Reasoning with Human Rationale via Reinforcement Learning",
+      "authors": "Shihao Zhang, Ziwei Wang, Jie Zhou, Yulan Wu, Qin Chen, Zhikai Lei, Liyang Yu, Liang Dou, Liang He",
+      "date": "2026-04-15",
+      "pdf": "https://arxiv.org/pdf/2604.13398v1",
+      "score": "8.0",
+      "evidence": "将情感推理与人类逻辑对齐",
+      "tldr": "该研究针对细粒度情感分析（ABSA）模型缺乏可解释性的问题，提出了ABSA-R1框架。该框架模仿人类“先推理后预测”的认知过程，利用强化学习训练大语言模型生成自然语言解释。通过引入认知对齐奖励模型和拒绝采样策略，模型在提升预测准确性的同时，实现了推理路径与情感标签的一致性，显著增强了模型的可解释性和在复杂场景下的性能。",
+      "tags": "query:msa",
+      "abstract_en": "While Aspect-based Sentiment Analysis (ABSA) systems have achieved high accuracy in identifying sentiment polarities, they often operate as \"black boxes,\" lacking the explicit reasoning capabilities characteristic of human affective cognition. Humans do not merely categorize sentiment; they construct causal explanations for their judgments. To bridge this gap, we propose ABSA-R1, a large language model framework designed to mimic this ``reason-before-predict\" cognitive process. By leveraging reinforcement learning (RL), ABSA-R1 learns to articulate the why behind the what, generating natural language justifications that ground its sentiment predictions. We introduce a Cognition-Aligned Reward Model (formerly sentiment-aware reward model) that enforces consistency between the generated reasoning path and the final emotional label. Furthermore, inspired by metacognitive monitoring, we implement a performance-driven rejection sampling strategy that selectively targets hard cases where the model's internal reasoning is uncertain or inconsistent. Experimental results on four benchmarks demonstrate that equipping models with this explicit reasoning capability not only enhances interpretability but also yields superior performance in sentiment classification and triplet extraction compared to non-reasoning baselines.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "20260407-20260416/2604.13335v1-sedtalker-emotion-aware-3d-facial-animation-using-frame-level-speech-emotion-diarization",
+      "section": "quick",
+      "title_en": "SEDTalker: Emotion-Aware 3D Facial Animation Using Frame-Level Speech Emotion Diarization",
+      "authors": "Farzaneh Jafari, Stefano Berretti, Anup Basu",
+      "date": "2026-04-14",
+      "pdf": "https://arxiv.org/pdf/2604.13335v1",
+      "score": "7.0",
+      "evidence": "利用语音情感分割进行情感感知3D面部动画",
+      "tldr": "SEDTalker是一个情感感知的语音驱动3D面部动画框架，通过帧级语音情感分割实现精细的表情控制。该方法直接从语音中预测连续的情感类别和强度，并利用Transformer-Mamba混合架构将情感嵌入与语音内容解耦，解决了以往方法依赖粗粒度标签的问题，实现了具有平滑情感过渡和高保真度的3D头像动画生成。",
+      "tags": "query:msa",
+      "abstract_en": "We introduce SEDTalker, an emotion-aware framework for speech-driven 3D facial animation that leverages frame-level speech emotion diarization to achieve fine-grained expressive control. Unlike prior approaches that rely on utterance-level or manually specified emotion labels, our method predicts temporally dense emotion categories and intensities directly from speech, enabling continuous modulation of facial expressions over time. The diarized emotion signals are encoded as learned embeddings and used to condition a speech-driven 3D animation model based on a hybrid Transformer-Mamba architecture. This design allows effective disentanglement of linguistic content and emotional style while preserving identity and temporal coherence. We evaluate our approach on a large-scale multi-corpus dataset for speech emotion diarization and on the EmoVOCA dataset for emotional 3D facial animation. Quantitative results demonstrate strong frame-level emotion recognition performance and low geometric and temporal reconstruction errors, while qualitative results show smooth emotion transitions and consistent expression control. These findings highlight the effectiveness of frame-level emotion diarization for expressive and controllable 3D talking head generation.",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "20260407-20260416/2604.13826v1-sentiment-analysis-for-software-engineering-how-far-can-zero-shot-learning-zsl-go",
+      "section": "quick",
+      "title_en": "Sentiment analysis for software engineering: How far can zero-shot learning (ZSL) go?",
+      "authors": "Reem Alfayez, Manal Binkhonain",
+      "date": "2026-04-15",
+      "pdf": "https://arxiv.org/pdf/2604.13826v1",
+      "score": "7.0",
+      "evidence": "使用零样本学习进行软件工程领域的情感分析",
+      "tldr": "本研究探讨了零样本学习（ZSL）在软件工程情感分析中的应用，旨在解决标注数据获取困难的问题。通过对比评估基于嵌入、NLI、TARS和生成式的多种ZSL技术，并与微调后的Transformer模型进行性能对比，研究发现结合专家定义标签的ZSL模型能达到与微调模型相当的性能。该研究证明了ZSL在减少数据依赖、提升软件工程领域情感识别效率方面的巨大潜力。",
+      "tags": "query:msa",
+      "abstract_en": "Sentiment analysis in software engineering focuses on understanding emotions expressed in software artifacts. Previous research highlighted the limitations of applying general off-the-shelf sentiment analysis tools within the software engineering domain and indicated the need for specialized tools tailored to various software engineering contexts. The development of such tools heavily relies on supervised machine learning techniques that necessitate annotated datasets. Acquiring such datasets is a substantial challenge, as it requires domain-specific expertise and significant effort. Objective: This study explores the potential of ZSL to address the scarcity of annotated datasets in sentiment analysis within software engineering Method:} We conducted an empirical experiment to evaluate the performance of various ZSL techniques, including embedding-based, NLI-based, TARS-based, and generative-based ZSL techniques. We assessed the performance of these techniques under different labels setups to examine the impact of label configurations. Additionally, we compared the results of the ZSL techniques with state-of-the-art fine-tuned transformer-based models. Finally, we performed an error analysis to identify the primary causes of misclassifications. Results: Our findings demonstrate that ZSL techniques, particularly those combining expert-curated labels with embedding-based or generative-based models, can achieve macro-F1 scores comparable to fine-tuned transformer-based models. The error analysis revealed that subjectivity in annotation and polar facts are the main contributors to ZSL misclassifications. Conclusion: This study demonstrates the potential of ZSL for sentiment analysis in software engineering. ZSL can provide a solution to the challenge of annotated dataset scarcity by reducing reliance on annotated dataset.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

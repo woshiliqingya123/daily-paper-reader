@@ -6,43 +6,31 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-15
-- 运行时间：2026-04-15 20:35:57 UTC
+- 最新运行日期：2026-04-07 ~ 2026-04-16
+- 运行时间：2026-04-16 12:25:56 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：6
-- 速读区：1
+- 本次总论文数：3
+- 精读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日深度解析 7 篇情感计算前沿论文，聚焦多模态协作与多智能体推理的突破性进展。
-重点推荐“增强后平衡”模态协作机制及 AffectAgent 框架，展示了检索增强与智能体协作在复杂情绪识别中的满分表现。
-建议优先研读多智能体协同推理相关成果，探索大模型在提升情感识别鲁棒性方面的实战潜力。
-- 详情：[/202604/15/README](/202604/15/README)
+本期聚焦情感智能的深度对齐，涵盖从强化学习驱动的推理逻辑到 3D 情感动画生成的前沿探索。
+重点展示了如何通过 RL 使情感分析具备符合人类逻辑的可解释性，并评估了零样本学习在软件工程领域的实战边界。
+建议关注 AI 逻辑对齐技术，尝试将更精准的情感理解引入垂直行业的可视化或自动化开发流程中。
+- 详情：[/20260407-20260416/README](/20260407-20260416/README)
 
 ### 精读区论文标签
-1. [Enhance-then-Balance Modality Collaboration for Robust Multimodal Sentiment Analysis](/202604/15/2604.12518v1-enhance-then-balance-modality-collaboration-for-robust-multimodal-sentiment-analysis)  
-   标签：评分：10.0/10、query:msa
-   evidence：整合文本、音频和视觉信号的多模态情感分析
-2. [AffectAgent: Collaborative Multi-Agent Reasoning for Retrieval-Augmented Multimodal Emotion Recognition](/202604/15/2604.12735v1-affectagent-collaborative-multi-agent-reasoning-for-retrieval-augmented-multimodal-emotion-recognition)  
-   标签：评分：10.0/10、query:msa
-   evidence：多智能体推理用于多模态情感识别
-3. [ARGen: Affect-Reinforced Generative Augmentation towards Vision-based Dynamic Emotion Perception](/202604/15/2604.12255v1-argen-affect-reinforced-generative-augmentation-towards-vision-based-dynamic-emotion-perception)  
+1. [From Prediction to Justification: Aligning Sentiment Reasoning with Human Rationale via Reinforcement Learning](/20260407-20260416/2604.13398v1-from-prediction-to-justification-aligning-sentiment-reasoning-with-human-rationale-via-reinforcement-learning)  
    标签：评分：8.0/10、query:msa
-   evidence：基于视觉的动态情感感知的生成式增强方法
-4. [Multilingual Multi-Label Emotion Classification at Scale with Synthetic Data](/202604/15/2604.12633v1-multilingual-multi-label-emotion-classification-at-scale-with-synthetic-data)  
-   标签：评分：8.0/10、query:msa
-   evidence：大规模多语言多标签情感分类
-5. [Stress Detection Using Wearable Physiological and Sociometric Sensors](/202604/15/2604.12746v1-stress-detection-using-wearable-physiological-and-sociometric-sensors)  
-   标签：评分：8.0/10、query:msa
-   evidence：结合生理和社交传感器进行压力检测
-6. [Cognition-Inspired Dual-Stream Semantic Enhancement for Vision-Based Dynamic Emotion Modeling](/202604/15/2604.12777v1-cognition-inspired-dual-stream-semantic-enhancement-for-vision-based-dynamic-emotion-modeling)  
-   标签：评分：8.0/10、query:msa
-   evidence：将感官输入与语义知识整合进行情感建模
+   evidence：将情感推理与人类逻辑对齐
 
 ### 速读区论文标签
-1. [Towards Universal Visualisation of Emotional States for Information Systems](/202604/15/2604.10756v1-towards-universal-visualisation-of-emotional-states-for-information-systems)  
-   标签：评分：6.0/10、query:msa
-   evidence：信息系统中情感状态的可视化
+1. [SEDTalker: Emotion-Aware 3D Facial Animation Using Frame-Level Speech Emotion Diarization](/20260407-20260416/2604.13335v1-sedtalker-emotion-aware-3d-facial-animation-using-frame-level-speech-emotion-diarization)  
+   标签：评分：7.0/10、query:msa
+   evidence：利用语音情感分割进行情感感知3D面部动画
+2. [Sentiment analysis for software engineering: How far can zero-shot learning (ZSL) go?](/20260407-20260416/2604.13826v1-sentiment-analysis-for-software-engineering-how-far-can-zero-shot-learning-zsl-go)  
+   标签：评分：7.0/10、query:msa
+   evidence：使用零样本学习进行软件工程领域的情感分析
 
 
 <div class="dpr-home-promo-card">
