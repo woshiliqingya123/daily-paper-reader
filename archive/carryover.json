@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-04-16T20:14:28.274715+00:00",
-  "updated_date": "20260416",
+  "generated_at": "2026-04-17T20:26:55.600761+00:00",
+  "updated_date": "20260417",
   "carryover_days": 9,
   "items": [
     {
@@ -41,82 +41,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2603.25719v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.21489v1",
-      "title": "Effective Strategies for Asynchronous Software Engineering Agents",
-      "abstract": "AI agents have become increasingly capable at isolated software engineering (SWE) tasks such as resolving issues on Github. Yet long-horizon tasks involving multiple interdependent subtasks still pose challenges both with respect to accuracy, and with respect to timely completion. A natural approach to solving these long-horizon tasks in a timely manner is asynchronous multi-agent collaboration, where multiple agents work on different parts of the task at the same time. But effective application of multi-agent systems has proven surprisingly difficult: concurrent edits by multiple agents interfere with each other, dependencies are difficult to synchronize, and combining partial progress into a coherent whole is challenging. On the other hand, human developers have long relied on mature collaboration infrastructure to manage these challenges in large software projects. Inspired by these collaboration primitives, we introduce Centralized Asynchronous Isolated Delegation (CAID), a structured multi-agent coordination paradigm grounded in three core SWE primitives: centralized task delegation, asynchronous execution, and isolated workspaces. CAID constructs dependency-aware task plans through a central manager, executes subtasks concurrently in isolated workspaces, and consolidates progress via structured integration with executable test-based verification. In empirical evaluation, we find that CAID improves accuracy over single-agent baselines by 26.7% absolute on paper reproduction tasks (PaperBench) and 14.3% on Python library development tasks (Commit0). Through systematic analysis, we find that branch-and-merge is a central coordination mechanism for multi-agent collaboration, and that SWE primitives such as git worktree, git commit, and git merge enable it to be realized in a reliable and executable manner.",
-      "authors": [
-        "Jiayi Geng",
-        "Graham Neubig"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "published": "2026-03-23T02:26:35+00:00",
-      "link": "https://arxiv.org/pdf/2603.21489v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "asynchronous software engineering agents",
-      "llm_evidence_cn": "异步软件工程智能体",
-      "llm_evidence": "异步软件工程智能体",
-      "canonical_evidence": "异步软件工程智能体",
-      "llm_tldr_en": "Investigates strategies for efficient asynchronous collaboration among software engineering agents on long-horizon tasks.",
-      "llm_tldr_cn": "研究了软件工程智能体在长程任务中进行高效异步协作的策略。",
-      "llm_tldr": "研究了软件工程智能体在长程任务中进行高效异步协作的策略。",
-      "llm_tags": [
-        "query:q2"
-      ],
-      "matched_query_tag": "query:q2",
-      "matched_query_text": "code agent efficient reasoning",
-      "matched_requirement_id": "req-2",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.21489v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.21272v1",
-      "title": "The Library Theorem: How External Organization Governs Agentic Reasoning Capacity",
-      "abstract": "Externalized reasoning is already exploited by transformer-based agents through chain-of-thought, but structured retrieval -- indexing over one's own reasoning state -- remains underexplored. We formalize the transformer context window as an I/O page and prove that tool-augmented agents with indexed external memory achieve exponentially lower retrieval cost than agents restricted to sequential scanning: $O(\\log_b N)$ versus $Ω(N)$ page reads per query, and $O(T \\log_b T)$ versus $Θ(T^2)$ cumulative cost over $T$ reasoning steps -- a gap that widens as deliberation deepens. We test these predictions on a controlled lookup benchmark across three content types -- random hashes, ordered integers, and encyclopedia entries -- varying store size from 50 to 5,000 items, and replicate key conditions across two model generations (GPT-4o-mini and GPT-5.4). On abstract content, the indexed agent achieves median 1 page read regardless of store size, confirming the $O(1)$ prediction. Sorted pages without an index fail to close the gap: the weaker model cannot sustain binary search at scale, and the stronger model achieves near-optimal $\\log_2 N$ search but still loses to the index by $5\\times$. On familiar content (encyclopedia entries), a competing failure mode emerges: the model recognizes the domain, bypasses the retrieval protocol, and generates answers from parametric memory, producing catastrophic token expenditure even when the index is sound. This parametric memory competition dissociates the two cognitive operations that indexing combines: understanding content (where language models excel) and following navigational protocols (where they fail when understanding tempts them to shortcut). The result argues for a separation of concerns: use language models for index construction, where semantic understanding helps, and deterministic algorithms for index traversal, where it hurts.",
-      "authors": [
-        "Zachary F. Mainen"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.CL",
-        "cs.DS",
-        "cs.LG"
-      ],
-      "published": "2026-03-22T15:02:56+00:00",
-      "link": "https://arxiv.org/pdf/2603.21272v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "structured retrieval for agentic reasoning",
-      "llm_evidence_cn": "智能体推理的结构化检索",
-      "llm_evidence": "智能体推理的结构化检索",
-      "canonical_evidence": "智能体推理的结构化检索",
-      "llm_tldr_en": "Proves that indexed external memory significantly reduces retrieval costs for agentic reasoning compared to scanning.",
-      "llm_tldr_cn": "证明了与顺序扫描相比，索引外部存储能显著降低智能体推理的检索成本。",
-      "llm_tldr": "证明了与顺序扫描相比，索引外部存储能显著降低智能体推理的检索成本。",
-      "llm_tags": [
-        "query:q5"
-      ],
-      "matched_query_tag": "query:q5",
-      "matched_query_text": "agent reasoning methods",
-      "matched_requirement_id": "req-5",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.21272v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.26266v2",
@@ -157,7 +82,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.26266v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.04373v1",
@@ -201,7 +126,7 @@
       "matched_requirement_id": "req-composite-profile-3",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04373v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.07645v1",
@@ -222,13 +147,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "proactive reasoning via iterative memory evolution for tool-use agents",
-      "llm_evidence_cn": "通过迭代记忆演化的主动推理方法，用于工具使用智能体",
-      "llm_evidence": "通过迭代记忆演化的主动推理方法，用于工具使用智能体",
-      "canonical_evidence": "通过迭代记忆演化的主动推理方法，用于工具使用智能体",
-      "llm_tldr_en": "PRIME introduces a training-free proactive reasoning method for agents using iterative memory evolution.",
-      "llm_tldr_cn": "PRIME为智能体引入了一种无需训练的、通过迭代记忆演化的主动推理方法。",
-      "llm_tldr": "PRIME为智能体引入了一种无需训练的、通过迭代记忆演化的主动推理方法。",
+      "llm_evidence_en": "proactive reasoning via iterative memory evolution",
+      "llm_evidence_cn": "通过迭代记忆演化的主动推理",
+      "llm_evidence": "通过迭代记忆演化的主动推理",
+      "canonical_evidence": "通过迭代记忆演化的主动推理",
+      "llm_tldr_en": "A training-free reasoning method for agents to refine user intent understanding through iterative memory evolution.",
+      "llm_tldr_cn": "一种无需训练的智能体推理方法，通过迭代记忆演化来优化对用户意图的理解。",
+      "llm_tldr": "一种无需训练的智能体推理方法，通过迭代记忆演化来优化对用户意图的理解。",
       "llm_tags": [
         "query:q5"
       ],
@@ -278,7 +203,7 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.02040v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.11811v1",
@@ -322,7 +247,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.11811v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.00917v1",
@@ -364,7 +289,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2604.00917v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.11753v1",
@@ -387,13 +312,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "parallel scaling and aggregation for long-horizon agentic reasoning tasks",
-      "llm_evidence_cn": "长程智能体推理任务的并行扩展与聚合",
-      "llm_evidence": "长程智能体推理任务的并行扩展与聚合",
-      "canonical_evidence": "长程智能体推理任务的并行扩展与聚合",
-      "llm_tldr_en": "AggAgent uses an aggregation agent to efficiently combine parallel trajectories for long-horizon tasks.",
-      "llm_tldr_cn": "AggAgent利用聚合智能体高效整合并行轨迹，以应对长程任务。",
-      "llm_tldr": "AggAgent利用聚合智能体高效整合并行轨迹，以应对长程任务。",
+      "llm_evidence_en": "Parallel test-time scaling for long-horizon agentic reasoning tasks",
+      "llm_evidence_cn": "长程智能体推理任务的并行推理时缩放",
+      "llm_evidence": "长程智能体推理任务的并行推理时缩放",
+      "canonical_evidence": "长程智能体推理任务的并行推理时缩放",
+      "llm_tldr_en": "AggAgent enables parallel scaling for long-horizon tasks by aggregating information across multiple trajectories.",
+      "llm_tldr_cn": "AggAgent 通过聚合多条轨迹的信息，实现了长程任务的并行推理缩放。",
+      "llm_tldr": "AggAgent 通过聚合多条轨迹的信息，实现了长程任务的并行推理缩放。",
       "llm_tags": [
         "query:q4"
       ],
@@ -441,7 +366,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2603.24858v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.12717v1",
@@ -466,13 +391,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "case-based learning for autonomous agents",
-      "llm_evidence_cn": "自主智能体的案例学习框架",
-      "llm_evidence": "自主智能体的案例学习框架",
-      "canonical_evidence": "自主智能体的案例学习框架",
-      "llm_tldr_en": "Proposes a case-based learning framework to help agents transfer prior experience to new complex tasks.",
-      "llm_tldr_cn": "提出一种基于案例的学习框架，帮助智能体将先前的经验转移到新的复杂任务中。",
-      "llm_tldr": "提出一种基于案例的学习框架，帮助智能体将先前的经验转移到新的复杂任务中。",
+      "llm_evidence_en": "case-based learning framework for autonomous agents to transfer prior experience",
+      "llm_evidence_cn": "自主智能体通过案例学习框架转移先前经验的推理方法",
+      "llm_evidence": "自主智能体通过案例学习框架转移先前经验的推理方法",
+      "canonical_evidence": "自主智能体通过案例学习框架转移先前经验的推理方法",
+      "llm_tldr_en": "Proposes a case-based learning framework to help agents reuse task-relevant knowledge and operational skills.",
+      "llm_tldr_cn": "提出了一种基于案例的学习框架，帮助智能体复用任务相关知识和操作技能。",
+      "llm_tldr": "提出了一种基于案例的学习框架，帮助智能体复用任务相关知识和操作技能。",
       "llm_tags": [
         "query:q5"
       ],
@@ -521,7 +446,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.29322v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.26233v1",
@@ -557,7 +482,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2603.26233v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.04269v2",
@@ -596,7 +521,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04269v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.03515v1",
@@ -633,7 +558,7 @@
       "matched_requirement_id": "req-composite-profile-3",
       "selection_source": "carryover_cache",
       "paper_id": "2604.03515v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.23129v1",
@@ -670,7 +595,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2603.23129v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.11201v1",
@@ -722,13 +647,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Benchmark for unified digital agents combining vision, search, and coding",
-      "llm_evidence_cn": "结合视觉、搜索和代码能力的统一数字智能体基准测试",
-      "llm_evidence": "结合视觉、搜索和代码能力的统一数字智能体基准测试",
-      "canonical_evidence": "结合视觉、搜索和代码能力的统一数字智能体基准测试",
-      "llm_tldr_en": "Introduces CocoaBench to evaluate agents on long-horizon tasks requiring flexible composition of capabilities.",
-      "llm_tldr_cn": "引入CocoaBench，用于评估需要灵活组合多种能力的智能体在长程任务上的表现。",
-      "llm_tldr": "引入CocoaBench，用于评估需要灵活组合多种能力的智能体在长程任务上的表现。",
+      "llm_evidence_en": "Benchmark for unified agents combining search and coding",
+      "llm_evidence_cn": "结合搜索与代码能力的统一智能体基准测试",
+      "llm_evidence": "结合搜索与代码能力的统一智能体基准测试",
+      "canonical_evidence": "结合搜索与代码能力的统一智能体基准测试",
+      "llm_tldr_en": "Introduces CocoaBench to evaluate agents on long-horizon tasks requiring vision, search, and coding.",
+      "llm_tldr_cn": "引入 CocoaBench 基准，评估智能体在结合视觉、搜索和代码的长程任务中的表现。",
+      "llm_tldr": "引入 CocoaBench 基准，评估智能体在结合视觉、搜索和代码的长程任务中的表现。",
       "llm_tags": [
         "query:profile-3:composite"
       ],
@@ -761,13 +686,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "trace-level framework for comparing human and GUI-agent behavior",
-      "llm_evidence_cn": "比较人类与GUI智能体行为的追踪级框架",
-      "llm_evidence": "比较人类与GUI智能体行为的追踪级框架",
-      "canonical_evidence": "比较人类与GUI智能体行为的追踪级框架",
-      "llm_tldr_en": "Evaluates whether GUI agents interact with systems in human-like ways beyond just task success.",
-      "llm_tldr_cn": "评估GUI智能体是否以类人的方式与系统交互，而不仅仅关注任务成功率。",
-      "llm_tldr": "评估GUI智能体是否以类人的方式与系统交互，而不仅仅关注任务成功率。",
+      "llm_evidence_en": "Framework for comparing human and GUI-agent behavior in search systems",
+      "llm_evidence_cn": "比较搜索系统中人类与GUI智能体行为的框架",
+      "llm_evidence": "比较搜索系统中人类与GUI智能体行为的框架",
+      "canonical_evidence": "比较搜索系统中人类与GUI智能体行为的框架",
+      "llm_tldr_en": "Develops a trace-level framework to evaluate if GUI agents interact with systems in human-like ways.",
+      "llm_tldr_cn": "提出一种追踪级评估框架，用于比较GUI智能体与人类在生产系统中的交互行为。",
+      "llm_tldr": "提出一种追踪级评估框架，用于比较GUI智能体与人类在生产系统中的交互行为。",
       "llm_tags": [
         "query:q8"
       ],
@@ -812,7 +737,7 @@
       "matched_requirement_id": "req-composite-profile-3",
       "selection_source": "carryover_cache",
       "paper_id": "2604.00901v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.03465v1",
@@ -854,7 +779,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2604.03465v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.07595v1",
@@ -875,13 +800,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "graph structure for persistent agent reasoning and evidence-centric feedback",
-      "llm_evidence_cn": "用于持久化智能体推理和以证据为中心反馈的图结构",
-      "llm_evidence": "用于持久化智能体推理和以证据为中心反馈的图结构",
-      "canonical_evidence": "用于持久化智能体推理和以证据为中心反馈的图结构",
-      "llm_tldr_en": "Reasoning Graphs improve agent accuracy by persisting chain-of-thought as structured edges for future queries.",
-      "llm_tldr_cn": "推理图通过将思维链持久化为结构化边，提高了智能体在未来查询中的准确性。",
-      "llm_tldr": "推理图通过将思维链持久化为结构化边，提高了智能体在未来查询中的准确性。",
+      "llm_evidence_en": "graph structure for persistent agent reasoning",
+      "llm_evidence_cn": "用于持久化智能体推理的图结构",
+      "llm_evidence": "用于持久化智能体推理的图结构",
+      "canonical_evidence": "用于持久化智能体推理的图结构",
+      "llm_tldr_en": "Introduces reasoning graphs to persist chain-of-thought feedback, improving agent accuracy and consistency.",
+      "llm_tldr_cn": "引入推理图以持久化思维链反馈，从而提高智能体的准确性和一致性。",
+      "llm_tldr": "引入推理图以持久化思维链反馈，从而提高智能体的准确性和一致性。",
       "llm_tags": [
         "query:q5"
       ],
@@ -927,7 +852,7 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.02460v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.04651v1",
@@ -966,7 +891,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04651v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.24755v1",
@@ -1011,166 +936,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2603.24755v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.11201v2",
-      "title": "CocoaBench: Evaluating Unified Digital Agents in the Wild",
-      "abstract": "LLM agents now perform strongly in software engineering, deep research, GUI automation, and various other applications, while recent agent scaffolds and models are increasingly integrating these capabilities into unified systems. Yet, most evaluations still test these capabilities in isolation, which leaves a gap for more diverse use cases that require agents to combine different capabilities. We introduce CocoaBench, a benchmark for unified digital agents built from human-designed, long-horizon tasks that require flexible composition of vision, search, and coding. Tasks are specified only by an instruction and an automatic evaluation function over the final output, enabling reliable and scalable evaluation across diverse agent infrastructures. We also present CocoaAgent, a lightweight shared scaffold for controlled comparison across model backbones. Experiments show that current agents remain far from reliable on CocoaBench, with the best evaluated system achieving only 45.1% success rate. Our analysis further points to substantial room for improvement in reasoning and planning, tool use and execution, and visual grounding.",
-      "authors": [
-        "CocoaBench Team",
-        "Shibo Hao",
-        "Zhining Zhang",
-        "Zhiqi Liang",
-        "Tianyang Liu",
-        "Yuheng Zha",
-        "Qiyue Gao",
-        "Jixuan Chen",
-        "Zilong Wang",
-        "Zhoujun Cheng",
-        "Haoxiang Zhang",
-        "Junli Wang",
-        "Hexi Jin",
-        "Boyuan Zheng",
-        "Kun Zhou",
-        "Yu Wang",
-        "Feng Yao",
-        "Licheng Liu",
-        "Yijiang Li",
-        "Zhifei Li",
-        "Zhengtao Han",
-        "Pracha Promthaw",
-        "Tommaso Cerruti",
-        "Xiaohan Fu",
-        "Ziqiao Ma",
-        "Jingbo Shang",
-        "Lianhui Qin",
-        "Julian McAuley",
-        "Eric P. Xing",
-        "Zhengzhong Liu",
-        "Rupesh Kumar Srivastava",
-        "Zhiting Hu"
-      ],
-      "primary_category": "cs.CL",
-      "categories": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "published": "2026-04-13T09:00:10+00:00",
-      "link": "https://arxiv.org/pdf/2604.11201v2",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "evaluating unified digital agents across vision, search, and coding",
-      "llm_evidence_cn": "评估跨视觉、搜索和编码的统一数字智能体",
-      "llm_evidence": "评估跨视觉、搜索和编码的统一数字智能体",
-      "canonical_evidence": "评估跨视觉、搜索和编码的统一数字智能体",
-      "llm_tldr_en": "CocoaBench provides a benchmark for evaluating unified agents on long-horizon tasks involving web and code.",
-      "llm_tldr_cn": "CocoaBench为评估涉及网页和代码的长程任务统一智能体提供了一个基准测试。",
-      "llm_tldr": "CocoaBench为评估涉及网页和代码的长程任务统一智能体提供了一个基准测试。",
-      "llm_tags": [
-        "query:profile-3:composite"
-      ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.11201v2",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.07988v1",
-      "title": "LogAct: Enabling Agentic Reliability via Shared Logs",
-      "abstract": "Agents are LLM-driven components that can mutate environments in powerful, arbitrary ways. Extracting guarantees for the execution of agents in production environments can be challenging due to asynchrony and failures. In this paper, we propose a new abstraction called LogAct, where each agent is a deconstructed state machine playing a shared log. In LogAct, agentic actions are visible in the shared log before they are executed; can be stopped prior to execution by pluggable, decoupled voters; and recovered consistently in the case of agent or environment failure. LogAct enables agentic introspection, allowing the agent to analyze its own execution history using LLM inference, which in turn enables semantic variants of recovery, health check, and optimization. In our evaluation, LogAct agents recover efficiently and correctly from failures; debug their own performance; optimize token usage in swarms; and stop all unwanted actions for a target model on a representative benchmark with just a 3% drop in benign utility.",
-      "authors": [
-        "Mahesh Balakrishnan",
-        "Ashwin Bharambe",
-        "Davide Testuggine",
-        "David Geraghty",
-        "David Mao",
-        "Vidhya Venkat",
-        "Ilya Mironov",
-        "Rithesh Baradi",
-        "Gayathri Aiyer",
-        "Victoria Dudin"
-      ],
-      "primary_category": "cs.DC",
-      "categories": [
-        "cs.DC",
-        "cs.AI"
-      ],
-      "published": "2026-04-09T08:58:23+00:00",
-      "link": "https://arxiv.org/pdf/2604.07988v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "agentic introspection and optimization via shared logs",
-      "llm_evidence_cn": "通过共享日志进行智能体自省与优化",
-      "llm_evidence": "通过共享日志进行智能体自省与优化",
-      "canonical_evidence": "通过共享日志进行智能体自省与优化",
-      "llm_tldr_en": "LogAct uses a shared log abstraction to enable reliable execution, introspection, and optimization of LLM agents.",
-      "llm_tldr_cn": "LogAct利用共享日志抽象实现了LLM智能体的可靠执行、自省和优化。",
-      "llm_tldr": "LogAct利用共享日志抽象实现了LLM智能体的可靠执行、自省和优化。",
-      "llm_tags": [
-        "query:q5"
-      ],
-      "matched_query_tag": "query:q5",
-      "matched_query_text": "agent reasoning methods",
-      "matched_requirement_id": "req-5",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.07988v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.21522v1",
-      "title": "Efficient Failure Management for Multi-Agent Systems with Reasoning Trace Representation",
-      "abstract": "Large Language Models (LLM)-based Multi-Agent Systems (MASs) have emerged as a new paradigm in software system design, increasingly demonstrating strong reasoning and collaboration capabilities. As these systems become more complex and autonomous, effective failure management is essential to ensure reliability and availability. However, existing approaches often rely on per-trace reasoning, which leads to low efficiency, and neglect historical failure patterns, limiting diagnostic accuracy. In this paper, we conduct a preliminary empirical study to demonstrate the necessity, potential, and challenges of leveraging historical failure patterns to enhance failure management in MASs. Building on this insight, we propose \\textbf{EAGER}, an efficient failure management framework for multi-agent systems based on reasoning trace representation. EAGER employs unsupervised reasoning-scoped contrastive learning to encode both intra-agent reasoning and inter-agent coordination, enabling real-time step-wise failure detection, diagnosis, and reflexive mitigation guided by historical failure knowledge. Preliminary evaluations on three open-source MASs demonstrate the effectiveness of EAGER and highlight promising directions for future research in reliable multi-agent system operations.",
-      "authors": [
-        "Lingzhe Zhang",
-        "Tong Jia",
-        "Mingyu Wang",
-        "Weijie Hong",
-        "Chiming Duan",
-        "Minghua He",
-        "Rongqian Wang",
-        "Xi Peng",
-        "Meiling Wang",
-        "Gong Zhang",
-        "Renhai Chen",
-        "Ying Li"
-      ],
-      "primary_category": "cs.SE",
-      "categories": [
-        "cs.SE",
-        "cs.AI"
-      ],
-      "published": "2026-03-23T03:31:41+00:00",
-      "link": "https://arxiv.org/pdf/2603.21522v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "efficient failure management in multi-agent systems using reasoning traces",
-      "llm_evidence_cn": "利用推理轨迹实现多智能体系统的高效故障管理",
-      "llm_evidence": "利用推理轨迹实现多智能体系统的高效故障管理",
-      "canonical_evidence": "利用推理轨迹实现多智能体系统的高效故障管理",
-      "llm_tldr_en": "EAGER improves multi-agent system reliability through efficient reasoning trace representation and failure patterns.",
-      "llm_tldr_cn": "EAGER通过高效的推理轨迹表示和故障模式识别，提升多智能体系统的可靠性。",
-      "llm_tldr": "EAGER通过高效的推理轨迹表示和故障模式识别，提升多智能体系统的可靠性。",
-      "llm_tags": [
-        "query:profile-3:composite"
-      ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.21522v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.03622v1",
@@ -1213,7 +979,7 @@
       "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
       "paper_id": "2604.03622v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.11686v1",
@@ -1239,60 +1005,21 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Structured multi-step reasoning agent to reduce inference cost",
-      "llm_evidence_cn": "结构化多步推理智能体以降低推理成本",
-      "llm_evidence": "结构化多步推理智能体以降低推理成本",
-      "canonical_evidence": "结构化多步推理智能体以降低推理成本",
-      "llm_tldr_en": "EA-Agent uses a multi-step reasoning process to improve entity alignment while reducing LLM inference costs.",
-      "llm_tldr_cn": "EA-Agent通过多步推理过程提升实体对齐效果，同时降低了大模型的推理成本。",
-      "llm_tldr": "EA-Agent通过多步推理过程提升实体对齐效果，同时降低了大模型的推理成本。",
+      "llm_evidence_en": "structured multi-step reasoning agent",
+      "llm_evidence_cn": "结构化多步推理智能体",
+      "llm_evidence": "结构化多步推理智能体",
+      "canonical_evidence": "结构化多步推理智能体",
+      "llm_tldr_en": "Proposes EA-Agent, a structured reasoning framework to improve entity alignment efficiency and interpretability.",
+      "llm_tldr_cn": "提出EA-Agent，一种结构化推理框架，旨在提高实体对齐的效率和可解释性。",
+      "llm_tldr": "提出EA-Agent，一种结构化推理框架，旨在提高实体对齐的效率和可解释性。",
       "llm_tags": [
-        "query:q4"
+        "query:q5"
       ],
-      "matched_query_tag": "query:q4",
-      "matched_query_text": "efficient reasoning in agents",
-      "matched_requirement_id": "req-4",
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.11686v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.13107v1",
-      "title": "Can Coding Agents Be General Agents?",
-      "abstract": "As coding agents have seen rapid capability and adoption gains, users are applying them to general tasks beyond software engineering. In this post, we investigate whether coding agents can successfully generalize to end-to-end business process automation. We identify gaps in current evaluations, and conduct a case study to evaluate a coding agent on practical business tasks in an open-core Enterprise Resource Planning system. We find that the agent reliably completes simple tasks but exhibits characteristic failures on complex tasks, suggesting that bridging domain logic and code execution is a key bottleneck to generalizability.",
-      "authors": [
-        "Maksim Ivanov",
-        "Abhijay Rana",
-        "Gokul Prabhakaran"
-      ],
-      "primary_category": "cs.SE",
-      "categories": [
-        "cs.SE",
-        "cs.AI",
-        "cs.LG"
-      ],
-      "published": "2026-04-10T22:39:51+00:00",
-      "link": "https://arxiv.org/pdf/2604.13107v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "evaluating coding agents on general business process automation tasks",
-      "llm_evidence_cn": "在通用业务流程自动化任务中评估代码智能体",
-      "llm_evidence": "在通用业务流程自动化任务中评估代码智能体",
-      "canonical_evidence": "在通用业务流程自动化任务中评估代码智能体",
-      "llm_tldr_en": "Investigates the generalizability of coding agents to complex end-to-end business automation tasks.",
-      "llm_tldr_cn": "研究代码智能体在复杂端到端业务自动化任务中的泛化能力。",
-      "llm_tldr": "研究代码智能体在复杂端到端业务自动化任务中的泛化能力。",
-      "llm_tags": [
-        "query:profile-3:composite"
-      ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.13107v1",
       "carry_days": 1
     },
     {
@@ -1315,19 +1042,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "knowledge retrieval grounded in code dependencies for multi-step reasoning",
-      "llm_evidence_cn": "基于代码依赖关系的知识检索用于多步推理",
-      "llm_evidence": "基于代码依赖关系的知识检索用于多步推理",
-      "canonical_evidence": "基于代码依赖关系的知识检索用于多步推理",
-      "llm_tldr_en": "Uses code-dependency graphs to improve retrieval for multi-step data analysis reasoning tasks.",
-      "llm_tldr_cn": "利用代码依赖图改进多步数据分析推理任务中的知识检索。",
-      "llm_tldr": "利用代码依赖图改进多步数据分析推理任务中的知识检索。",
+      "llm_evidence_en": "knowledge retrieval via code dependencies for data reasoning",
+      "llm_evidence_cn": "通过代码依赖进行知识检索以支持数据推理",
+      "llm_evidence": "通过代码依赖进行知识检索以支持数据推理",
+      "canonical_evidence": "通过代码依赖进行知识检索以支持数据推理",
+      "llm_tldr_en": "Proposes SGKR to improve multi-step reasoning by grounding knowledge retrieval in code dependency structures.",
+      "llm_tldr_cn": "提出 SGKR，通过基于代码依赖结构的知识检索来优化多步数据推理。",
+      "llm_tldr": "提出 SGKR，通过基于代码依赖结构的知识检索来优化多步数据推理。",
       "llm_tags": [
-        "query:profile-3:composite"
+        "query:q6"
       ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
+      "matched_query_tag": "query:q6",
+      "matched_query_text": "code generation reasoning",
+      "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
       "paper_id": "2604.10516v1",
       "carry_days": 1
@@ -1366,7 +1093,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2603.26942v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.26266v1",
@@ -1407,82 +1134,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.26266v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.22917v1",
-      "title": "IntentWeave: A Progressive Entry Ladder for Multi-Surface Browser Agents in Cloud Portals",
-      "abstract": "Browser agents built on LLMs can act in web interfaces, yet most remain confined to a single chat surface (e.g., a sidebar). This mismatch with real browsing can increase context-switching and reduce user control. We introduce \\textbf{IntentWeave}, a design space of ten spatial paradigms for embedding agentic assistance across a browser, organized as a progressive entry ladder from micro-interventions to dedicated workspaces. We implement IntentWeave as a browser-extension prototype on the Alibaba Cloud website and compare three entry strategies in a within-subjects study (N=16). Workspace-heavy strategies reduced completion time but lowered perceived control; micro-only strategies preserved control but were often insufficient; a mixed sidecar approach achieved the highest satisfaction. We conclude with guidance for escalating and retreating agent surfaces without disrupting user agency.",
-      "authors": [
-        "Wanying Mo",
-        "Jijia Lai",
-        "Xiaoming Wang"
-      ],
-      "primary_category": "cs.HC",
-      "categories": [
-        "cs.HC"
-      ],
-      "published": "2026-03-24T08:05:05+00:00",
-      "link": "https://arxiv.org/pdf/2603.22917v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Design paradigms for embedding agentic assistance in browser interfaces",
-      "llm_evidence_cn": "在浏览器界面中嵌入智能体辅助的设计范式",
-      "llm_evidence": "在浏览器界面中嵌入智能体辅助的设计范式",
-      "canonical_evidence": "在浏览器界面中嵌入智能体辅助的设计范式",
-      "llm_tldr_en": "Explores spatial paradigms for browser agents to improve user control and reduce context-switching in cloud portals.",
-      "llm_tldr_cn": "探索浏览器智能体的空间范式，以提高云门户中的用户控制力并减少上下文切换。",
-      "llm_tldr": "探索浏览器智能体的空间范式，以提高云门户中的用户控制力并减少上下文切换。",
-      "llm_tags": [
-        "query:q8"
-      ],
-      "matched_query_tag": "query:q8",
-      "matched_query_text": "web agent",
-      "matched_requirement_id": "req-8",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.22917v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.11556v1",
-      "title": "FM-Agent: Scaling Formal Methods to Large Systems via LLM-Based Hoare-Style Reasoning",
-      "abstract": "LLM-assisted software development has become increasingly prevalent, and can generate large-scale systems, such as compilers. It becomes crucial to strengthen the correctness of the generated code. However, automated reasoning for large-scale systems remains challenging due to code complexity. Hoare logic offers an approach to decomposing a large system into smaller components and reasoning about them separately (i.e., compositional reasoning). However, existing works still struggle to scale, because Hoare logic requires writing formal specifications for each function, imposing a heavy human burden. The problem is exacerbated when code is generated by LLMs, as developers lack a deep understanding of each function's expected behavior.   This paper presents FM-Agent, the first framework that realizes automated compositional reasoning for large-scale systems. Leveraging LLMs, FM-Agent introduces a top-down paradigm to automatically generate function-level specifications. Specifically, FM-Agent derives the specification of a function from how its callers expect the function to behave, so the generated specifications can reflect the developer's intent of a function even if the implementation is buggy. Developers' intent is usually expressed in natural language, while existing verifiers only support formulas. Therefore, FM-Agent generalizes Hoare-style inference to reason about functions against natural-language specifications. Finally, to confirm bug existence and explain bug causes, FM-Agent automatically generates test cases to trigger potential bugs. In our evaluation, FM-Agent successfully reasons about large-scale systems within 2 days, each of which has up to 143k LoC. These systems have already been tested by their developers, but FM-Agent still finds 522 newly discovered bugs. These bugs can cause serious consequences, including system crashes and incorrect execution results.",
-      "authors": [
-        "Haoran Ding",
-        "Zhaoguo Wang",
-        "Haibo Chen"
-      ],
-      "primary_category": "cs.SE",
-      "categories": [
-        "cs.SE",
-        "cs.AI"
-      ],
-      "published": "2026-04-13T14:42:44+00:00",
-      "link": "https://arxiv.org/pdf/2604.11556v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "LLM-based Hoare-style reasoning for code correctness in large systems",
-      "llm_evidence_cn": "基于LLM的Hoare风格推理用于大型系统的代码正确性",
-      "llm_evidence": "基于LLM的Hoare风格推理用于大型系统的代码正确性",
-      "canonical_evidence": "基于LLM的Hoare风格推理用于大型系统的代码正确性",
-      "llm_tldr_en": "Scales formal methods to large systems using LLM-based compositional reasoning for software development.",
-      "llm_tldr_cn": "利用基于LLM的组合推理将形式化方法扩展到大型系统，增强代码正确性。",
-      "llm_tldr": "利用基于LLM的组合推理将形式化方法扩展到大型系统，增强代码正确性。",
-      "llm_tags": [
-        "query:q2"
-      ],
-      "matched_query_tag": "query:q2",
-      "matched_query_text": "code agent efficient reasoning",
-      "matched_requirement_id": "req-2",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.11556v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.02623v2",
@@ -1527,7 +1179,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2604.02623v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.27813v1",
@@ -1575,7 +1227,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2603.27813v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.00594v1",
@@ -1614,7 +1266,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2604.00594v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.22999v1",
@@ -1652,7 +1304,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.22999v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.26246v1",
@@ -1698,7 +1350,7 @@
       "matched_requirement_id": "req-composite-tokencomp",
       "selection_source": "carryover_cache",
       "paper_id": "2603.26246v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.06696v1",
@@ -1737,7 +1389,7 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.06696v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.01599v1",
@@ -1782,7 +1434,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.01599v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.01610v1",
@@ -1819,7 +1471,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.01610v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.03430v1",
@@ -1858,7 +1510,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.03430v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.12129v1",
@@ -1884,13 +1536,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Constant-time instantiation of stateful AI agents to reduce latency and memory overhead",
-      "llm_evidence_cn": "有状态AI智能体的常数时间实例化，减少延迟和内存开销",
-      "llm_evidence": "有状态AI智能体的常数时间实例化，减少延迟和内存开销",
-      "canonical_evidence": "有状态AI智能体的常数时间实例化，减少延迟和内存开销",
-      "llm_tldr_en": "Aethon introduces a replication primitive for near-instant instantiation of stateful agents.",
-      "llm_tldr_cn": "Aethon引入了一种复制原语，实现了有状态智能体的近乎瞬时实例化。",
-      "llm_tldr": "Aethon引入了一种复制原语，实现了有状态智能体的近乎瞬时实例化。",
+      "llm_evidence_en": "Constant-time instantiation for efficient stateful AI agents",
+      "llm_evidence_cn": "高效有状态AI智能体的常数时间实例化",
+      "llm_evidence": "高效有状态AI智能体的常数时间实例化",
+      "canonical_evidence": "高效有状态AI智能体的常数时间实例化",
+      "llm_tldr_en": "Introduces Aethon, a replication primitive to reduce latency and memory overhead in stateful agent execution.",
+      "llm_tldr_cn": "引入Aethon原语，旨在减少有状态智能体执行时的延迟和内存开销。",
+      "llm_tldr": "引入Aethon原语，旨在减少有状态智能体执行时的延迟和内存开销。",
       "llm_tags": [
         "query:q4"
       ],
@@ -1934,7 +1586,7 @@
       "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04131v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.24284v1",
@@ -1971,7 +1623,7 @@
       "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
       "paper_id": "2603.24284v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.04269v1",
@@ -2010,7 +1662,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04269v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.01020v1",
@@ -2051,7 +1703,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.01020v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.23448v2",
@@ -2092,7 +1744,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2603.23448v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.22999v2",
@@ -2130,7 +1782,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.22999v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.04399v1",
@@ -2173,7 +1825,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2604.04399v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.12126v1",
@@ -2216,7 +1868,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.12126v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2603.27127v1",
@@ -2256,7 +1908,7 @@
       "matched_requirement_id": "req-8",
       "selection_source": "carryover_cache",
       "paper_id": "2603.27127v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.02547v1",
@@ -2292,7 +1944,7 @@
       "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2604.02547v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.07415v1",
@@ -2331,7 +1983,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.07415v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.11518v1",
@@ -2354,12 +2006,12 @@
       ],
       "llm_score": 8.0,
       "llm_evidence_en": "evolution of a production AI coding agent",
-      "llm_evidence_cn": "生产级 AI 代码智能体的演进",
-      "llm_evidence": "生产级 AI 代码智能体的演进",
-      "canonical_evidence": "生产级 AI 代码智能体的演进",
-      "llm_tldr_en": "Presents a methodology for LLM-assisted code translation and refinement of a production coding agent.",
-      "llm_tldr_cn": "提出了一种 LLM 辅助的代码翻译方法，用于生产级代码智能体的迭代优化。",
-      "llm_tldr": "提出了一种 LLM 辅助的代码翻译方法，用于生产级代码智能体的迭代优化。",
+      "llm_evidence_cn": "生产级AI代码智能体的演进",
+      "llm_evidence": "生产级AI代码智能体的演进",
+      "canonical_evidence": "生产级AI代码智能体的演进",
+      "llm_tldr_en": "Presents a methodology for LLM-assisted code translation driven by coding agent benchmarks.",
+      "llm_tldr_cn": "提出了一种由代码智能体基准驱动的LLM辅助代码翻译方法。",
+      "llm_tldr": "提出了一种由代码智能体基准驱动的LLM辅助代码翻译方法。",
       "llm_tags": [
         "query:q10"
       ],
@@ -2368,44 +2020,6 @@
       "matched_requirement_id": "req-10",
       "selection_source": "carryover_cache",
       "paper_id": "2604.11518v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.09409v1",
-      "title": "Do AI Coding Agents Log Like Humans? An Empirical Study",
-      "abstract": "Software logging is essential for maintaining and debugging complex systems, yet it remains unclear how AI coding agents handle this non-functional requirement. While prior work characterizes human logging practices, the behaviors of AI coding agents and the efficacy of natural language instructions in governing them are unexplored. To address this gap, we conduct an empirical study of 4,550 agentic pull requests across 81 open-source repositories. We compare agent logging patterns against human baselines and analyze the impact of explicit logging instructions. We find that agents change logging less often than humans in 58.4% of repositories, though they exhibit higher log density when they do. Furthermore, explicit logging instructions are rare (4.7%) and ineffective, as agents fail to comply with constructive requests 67% of the time. Finally, we observe that humans perform 72.5% of post-generation log repairs, acting as \"silent janitors\" who fix logging and observability issues without explicit review feedback. These findings indicate a dual failure in natural language instruction (i.e., scarcity of logging instructions and low agent compliance), suggesting that deterministic guardrails might be necessary to ensure consistent logging practices.",
-      "authors": [
-        "Youssef Esseddiq Ouatiti",
-        "Mohammed Sayagh",
-        "Hao Li",
-        "Ahmed E. Hassan"
-      ],
-      "primary_category": "cs.SE",
-      "categories": [
-        "cs.SE"
-      ],
-      "published": "2026-04-10T15:22:58+00:00",
-      "link": "https://arxiv.org/pdf/2604.09409v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "empirical study of AI coding agents logging",
-      "llm_evidence_cn": "AI 代码智能体日志记录的实证研究",
-      "llm_evidence": "AI 代码智能体日志记录的实证研究",
-      "canonical_evidence": "AI 代码智能体日志记录的实证研究",
-      "llm_tldr_en": "Analyzes how AI coding agents handle software logging compared to human developers.",
-      "llm_tldr_cn": "分析了 AI 代码智能体在软件日志记录方面与人类开发者的行为差异。",
-      "llm_tldr": "分析了 AI 代码智能体在软件日志记录方面与人类开发者的行为差异。",
-      "llm_tags": [
-        "query:q10"
-      ],
-      "matched_query_tag": "query:q10",
-      "matched_query_text": "latest research on code agent efficient reasoning",
-      "matched_requirement_id": "req-10",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.09409v1",
       "carry_days": 1
     },
     {
@@ -2429,19 +2043,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "inference-time scaffolding for efficient agents",
-      "llm_evidence_cn": "高效智能体的推理时脚手架",
-      "llm_evidence": "高效智能体的推理时脚手架",
-      "canonical_evidence": "高效智能体的推理时脚手架",
-      "llm_tldr_en": "Develops a three-tier scaffolding pipeline to improve small agent performance on modest hardware.",
-      "llm_tldr_cn": "开发了三层脚手架流水线，以提升小型智能体在有限硬件上的性能。",
-      "llm_tldr": "开发了三层脚手架流水线，以提升小型智能体在有限硬件上的性能。",
+      "llm_evidence_en": "Inference-time scaffolding to improve small agent performance in complex environments",
+      "llm_evidence_cn": "推理时脚手架以提高小型智能体在复杂环境中的性能",
+      "llm_evidence": "推理时脚手架以提高小型智能体在复杂环境中的性能",
+      "canonical_evidence": "推理时脚手架以提高小型智能体在复杂环境中的性能",
+      "llm_tldr_en": "Uses role orchestration at inference time to boost small model performance in agentic tasks.",
+      "llm_tldr_cn": "通过推理时的角色编排脚手架，显著提升了小型模型在复杂智能体任务中的表现。",
+      "llm_tldr": "通过推理时的角色编排脚手架，显著提升了小型模型在复杂智能体任务中的表现。",
       "llm_tags": [
-        "query:profile-3:composite"
+        "query:q4"
       ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.11465v1",
       "carry_days": 1
@@ -2484,7 +2098,7 @@
       "matched_requirement_id": "req-composite-tokencomp",
       "selection_source": "carryover_cache",
       "paper_id": "2604.06452v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.07720v2",
@@ -2519,13 +2133,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "multi-agent architecture for deep research reasoning",
-      "llm_evidence_cn": "用于深度研究推理的多智能体架构",
-      "llm_evidence": "用于深度研究推理的多智能体架构",
-      "canonical_evidence": "用于深度研究推理的多智能体架构",
-      "llm_tldr_en": "A framework for deep research agents to reason over structured and unstructured knowledge.",
-      "llm_tldr_cn": "一种让深度研究智能体能够对结构化和非结构化知识进行推理的框架。",
-      "llm_tldr": "一种让深度研究智能体能够对结构化和非结构化知识进行推理的框架。",
+      "llm_evidence_en": "deep research agent reasoning over web content",
+      "llm_evidence_cn": "深度研究智能体在网页内容上的推理",
+      "llm_evidence": "深度研究智能体在网页内容上的推理",
+      "canonical_evidence": "深度研究智能体在网页内容上的推理",
+      "llm_tldr_en": "A framework for deep research agents to reason over structured and unstructured knowledge for report generation.",
+      "llm_tldr_cn": "一种深度研究智能体框架，支持对结构化和非结构化知识进行推理以生成研究报告。",
+      "llm_tldr": "一种深度研究智能体框架，支持对结构化和非结构化知识进行推理以生成研究报告。",
       "llm_tags": [
         "query:profile-3:composite"
       ],
@@ -2560,12 +2174,12 @@
       ],
       "llm_score": 8.0,
       "llm_evidence_en": "KV cache offloading for context-intensive tasks",
-      "llm_evidence_cn": "上下文密集型任务的KV缓存卸载",
-      "llm_evidence": "上下文密集型任务的KV缓存卸载",
-      "canonical_evidence": "上下文密集型任务的KV缓存卸载",
-      "llm_tldr_en": "Evaluates KV-cache offloading techniques for tasks requiring heavy information extraction.",
-      "llm_tldr_cn": "评估了针对需要大量信息提取任务的KV缓存卸载技术。",
-      "llm_tldr": "评估了针对需要大量信息提取任务的KV缓存卸载技术。",
+      "llm_evidence_cn": "针对上下文密集型任务的KV缓存卸载",
+      "llm_evidence": "针对上下文密集型任务的KV缓存卸载",
+      "canonical_evidence": "针对上下文密集型任务的KV缓存卸载",
+      "llm_tldr_en": "Explores KV-cache offloading to reduce memory and latency in context-intensive LLM tasks.",
+      "llm_tldr_cn": "研究KV缓存卸载技术，以减少长上下文任务中的内存占用和推理延迟。",
+      "llm_tldr": "研究KV缓存卸载技术，以减少长上下文任务中的内存占用和推理延迟。",
       "llm_tags": [
         "query:q7"
       ],
@@ -2574,106 +2188,6 @@
       "matched_requirement_id": "req-7",
       "selection_source": "carryover_cache",
       "paper_id": "2604.08426v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.12290v1",
-      "title": "Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks with Generative Optimization",
-      "abstract": "Current LLM agent benchmarks, which predominantly focus on binary pass/fail tasks such as code generation or search-based question answering, often neglect the value of real-world engineering that is often captured through the iterative optimization of feasible designs. To this end, we introduce Frontier-Eng, a human-verified benchmark for generative optimization -- an iterative propose-execute-evaluate loop in which an agent generates candidate artifacts, receives executable verifier feedback, and revises them under a fixed interaction budget -- spanning $47$ tasks across five broad engineering categories. Unlike previous suites, Frontier-Eng tasks are grounded in industrial-grade simulators and verifiers that provide continuous reward signals and enforce hard feasibility constraints under constrained budgets. We evaluate eight frontier language models using representative search frameworks, finding that while Claude 4.6 Opus achieves the most robust performance, the benchmark remains challenging for all models. Our analysis suggests a dual power-law decay in improvement frequency ($\\sim$ 1/iteration) and magnitude ($\\sim$ 1/improvement count). We further show that although width improves parallelism and diversity, depth remains crucial for hard-won improvements under a fixed budget. Frontier-Eng establishes a new standard for assessing the capacity of AI agents to integrate domain knowledge with executable feedback to solve complex, open-ended engineering problems.",
-      "authors": [
-        "Yizhe Chi",
-        "Deyao Hong",
-        "Dapeng Jiang",
-        "Tianwei Luo",
-        "Kaisen Yang",
-        "Boshi Zhang",
-        "Zhe Cao",
-        "Xiaoyan Fan",
-        "Bingxiang He",
-        "Han Hao",
-        "Weiyang Jin",
-        "Dianqiao Lei",
-        "Qingle Liu",
-        "Houde Qian",
-        "Bowen Wang",
-        "Situ Wang",
-        "Youjie Zheng",
-        "Yifan Zhou",
-        "Calvin Xiao",
-        "Eren Cai",
-        "Qinhuai Na"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI",
-        "cs.CL"
-      ],
-      "published": "2026-04-14T05:02:06+00:00",
-      "link": "https://arxiv.org/pdf/2604.12290v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "benchmarking self-evolving agents on code generation and engineering tasks",
-      "llm_evidence_cn": "在代码生成和工程任务上对自我进化智能体进行基准测试",
-      "llm_evidence": "在代码生成和工程任务上对自我进化智能体进行基准测试",
-      "canonical_evidence": "在代码生成和工程任务上对自我进化智能体进行基准测试",
-      "llm_tldr_en": "A benchmark for agents performing iterative generative optimization in real-world engineering tasks.",
-      "llm_tldr_cn": "一个针对智能体在真实工程任务中进行迭代生成优化的基准测试。",
-      "llm_tldr": "一个针对智能体在真实工程任务中进行迭代生成优化的基准测试。",
-      "llm_tags": [
-        "query:q10"
-      ],
-      "matched_query_tag": "query:q10",
-      "matched_query_text": "latest research on code agent efficient reasoning",
-      "matched_requirement_id": "req-10",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.12290v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.10547v1",
-      "title": "Agent^2 RL-Bench: Can LLM Agents Engineer Agentic RL Post-Training?",
-      "abstract": "We introduce Agent^2 RL-Bench, a benchmark for evaluating agentic RL post-training -- whether LLM agents can autonomously design, implement, and run complete RL pipelines that improve foundation models. This capability is important because RL post-training increasingly drives model alignment and specialization, yet existing benchmarks remain largely static: supervised fine-tuning alone yields strong results, leaving interactive RL engineering untested. Agent^2 RL-Bench addresses this with six tasks across three levels -- from static rule-based training to closed-loop online RL with trajectory collection -- each adding a structural requirement that prior levels do not impose. The benchmark provides isolated workspaces with a grading API, runtime instrumentation that records every submission and code revision, and automated post-hoc analysis that generates structured run reports, enabling the first automated diagnostic of agent-driven post-training behavior. Across multiple agent stacks spanning five agent systems and six driver LLMs, we find that agents achieve striking interactive gains -- on ALFWorld, an RL-only agent improves from 5.97 to 93.28 via SFT warm-up and GRPO with online rollouts -- yet make only marginal progress on others (DeepSearchQA: +2.75 within evaluation noise), and that driver choice has a large effect on interactive tasks -- within the same scaffold, switching drivers changes interactive improvement from near-zero to +78pp. More broadly, the benchmark reveals that supervised pipelines dominate agent-driven post-training under fixed budgets, with online RL succeeding as the final best route only on ALFWorld. Code is available at https://github.com/microsoft/RD-Agent/tree/main/rdagent/scenarios/rl/autorl_bench.",
-      "authors": [
-        "Wanyi Chen",
-        "Xiao Yang",
-        "Xu Yang",
-        "Tianming Sha",
-        "Qizheng Li",
-        "Zhuo Wang",
-        "Bowen Xian",
-        "Fang Kong",
-        "Weiqing Liu",
-        "Jiang Bian"
-      ],
-      "primary_category": "cs.AI",
-      "categories": [
-        "cs.AI"
-      ],
-      "published": "2026-04-12T09:35:27+00:00",
-      "link": "https://arxiv.org/pdf/2604.10547v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "evaluating agents in engineering RL pipelines and code-based post-training",
-      "llm_evidence_cn": "评估智能体在工程化RL流水线和基于代码的后训练中的表现",
-      "llm_evidence": "评估智能体在工程化RL流水线和基于代码的后训练中的表现",
-      "canonical_evidence": "评估智能体在工程化RL流水线和基于代码的后训练中的表现",
-      "llm_tldr_en": "Benchmarks the ability of LLM agents to autonomously design and implement reinforcement learning pipelines.",
-      "llm_tldr_cn": "评估LLM智能体自主设计和实现强化学习流水线的能力。",
-      "llm_tldr": "评估LLM智能体自主设计和实现强化学习流水线的能力。",
-      "llm_tags": [
-        "query:q10"
-      ],
-      "matched_query_tag": "query:q10",
-      "matched_query_text": "latest research on code agent efficient reasoning",
-      "matched_requirement_id": "req-10",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.10547v1",
       "carry_days": 1
     },
     {
@@ -2696,19 +2210,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "compute-grounded reasoning for efficient spatial-aware research agents",
-      "llm_evidence_cn": "用于高效空间感知研究智能体的计算落地推理",
-      "llm_evidence": "用于高效空间感知研究智能体的计算落地推理",
-      "canonical_evidence": "用于高效空间感知研究智能体的计算落地推理",
-      "llm_tldr_en": "Introduces compute-grounded reasoning to resolve sub-problems deterministically before LLM generation.",
-      "llm_tldr_cn": "引入计算落地推理，在LLM生成前通过确定性计算解决子问题以提高效率。",
-      "llm_tldr": "引入计算落地推理，在LLM生成前通过确定性计算解决子问题以提高效率。",
+      "llm_evidence_en": "Compute-grounded reasoning for spatial-aware research agents",
+      "llm_evidence_cn": "空间感知研究智能体的计算落地推理",
+      "llm_evidence": "空间感知研究智能体的计算落地推理",
+      "canonical_evidence": "空间感知研究智能体的计算落地推理",
+      "llm_tldr_en": "Proposes a compute-grounded reasoning paradigm to improve accuracy in spatial and ML tasks.",
+      "llm_tldr_cn": "提出了一种计算落地推理范式，通过确定性计算辅助模型解决空间和机器学习任务。",
+      "llm_tldr": "提出了一种计算落地推理范式，通过确定性计算辅助模型解决空间和机器学习任务。",
       "llm_tags": [
-        "query:q4"
+        "query:q5"
       ],
-      "matched_query_tag": "query:q4",
-      "matched_query_text": "efficient reasoning in agents",
-      "matched_requirement_id": "req-4",
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.12102v2",
       "carry_days": 1
@@ -2737,13 +2251,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Multi-agent grounded reasoning for 3D scenes",
-      "llm_evidence_cn": "针对3D场景的多智能体落地推理",
-      "llm_evidence": "针对3D场景的多智能体落地推理",
-      "canonical_evidence": "针对3D场景的多智能体落地推理",
-      "llm_tldr_en": "MAG-3D is a training-free multi-agent framework for grounded 3D reasoning using off-the-shelf VLMs.",
-      "llm_tldr_cn": "MAG-3D是一个无需训练的多智能体框架，利用现成VLM实现3D场景的落地推理。",
-      "llm_tldr": "MAG-3D是一个无需训练的多智能体框架，利用现成VLM实现3D场景的落地推理。",
+      "llm_evidence_en": "Multi-agent framework for grounded 3D reasoning",
+      "llm_evidence_cn": "用于3D场景接地推理的多智能体框架",
+      "llm_evidence": "用于3D场景接地推理的多智能体框架",
+      "canonical_evidence": "用于3D场景接地推理的多智能体框架",
+      "llm_tldr_en": "Presents MAG-3D, a training-free multi-agent framework for spatial and geometric reasoning in 3D scenes.",
+      "llm_tldr_cn": "提出MAG-3D，一种无需训练的多智能体框架，用于3D场景中的空间与几何推理。",
+      "llm_tldr": "提出MAG-3D，一种无需训练的多智能体框架，用于3D场景中的空间与几何推理。",
       "llm_tags": [
         "query:q5"
       ],
@@ -2795,90 +2309,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.07146v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.10577v1",
-      "title": "The Blind Spot of Agent Safety: How Benign User Instructions Expose Critical Vulnerabilities in Computer-Use Agents",
-      "abstract": "Computer-use agents (CUAs) can now autonomously complete complex tasks in real digital environments, but when misled, they can also be used to automate harmful actions programmatically. Existing safety evaluations largely target explicit threats such as misuse and prompt injection, but overlook a subtle yet critical setting where user instructions are entirely benign and harm arises from the task context or execution outcome. We introduce OS-BLIND, a benchmark that evaluates CUAs under unintended attack conditions, comprising 300 human-crafted tasks across 12 categories, 8 applications, and 2 threat clusters: environment-embedded threats and agent-initiated harms. Our evaluation on frontier models and agentic frameworks reveals that most CUAs exceed 90% attack success rate (ASR), and even the safety-aligned Claude 4.5 Sonnet reaches 73.0% ASR. More interestingly, this vulnerability becomes even more severe, with ASR rising from 73.0% to 92.7% when Claude 4.5 Sonnet is deployed in multi-agent systems. Our analysis further shows that existing safety defenses provide limited protection when user instructions are benign. Safety alignment primarily activates within the first few steps and rarely re-engages during subsequent execution. In multi-agent systems, decomposed subtasks obscure the harmful intent from the model, causing safety-aligned models to fail. We will release our OS-BLIND to encourage the broader research community to further investigate and address these safety challenges.",
-      "authors": [
-        "Xuwei Ding",
-        "Skylar Zhai",
-        "Linxin Song",
-        "Jiate Li",
-        "Taiwei Shi",
-        "Nicholas Meade",
-        "Siva Reddy",
-        "Jian Kang",
-        "Jieyu Zhao"
-      ],
-      "primary_category": "cs.CR",
-      "categories": [
-        "cs.CR",
-        "cs.AI"
-      ],
-      "published": "2026-04-12T10:52:42+00:00",
-      "link": "https://arxiv.org/pdf/2604.10577v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Safety evaluation of computer-use agents in digital environments",
-      "llm_evidence_cn": "数字环境中计算机使用智能体的安全性评估",
-      "llm_evidence": "数字环境中计算机使用智能体的安全性评估",
-      "canonical_evidence": "数字环境中计算机使用智能体的安全性评估",
-      "llm_tldr_en": "OS-BLIND is a benchmark for evaluating the safety of computer-use agents under unintended attack conditions.",
-      "llm_tldr_cn": "OS-BLIND是一个用于评估计算机使用智能体在非预期攻击条件下安全性的基准测试。",
-      "llm_tldr": "OS-BLIND是一个用于评估计算机使用智能体在非预期攻击条件下安全性的基准测试。",
-      "llm_tags": [
-        "query:q8"
-      ],
-      "matched_query_tag": "query:q8",
-      "matched_query_text": "web agent",
-      "matched_requirement_id": "req-8",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.10577v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2604.13558v1",
-      "title": "AgentComm: Semantic Communication for Embodied Agents",
-      "abstract": "The increasing deployment of agentic artificial intelligence (AI) systems has intensified the demand for efficient agent to agent communication, particularly over bandwidth limited wireless links. In embodied AI applications, agents must exchange task related information under strict latency and reliability constraints. Existing agent communication methods primarily focus on connectivity and protocol efficiency, but lack effective mechanisms to reduce physical layer transmission overhead while preserving task semantics.To address this challenge, this paper proposes a semantic agent communication framework that reduces communication overhead while maintaining task performance and shared understanding among agents. An LLM based semantic processor is first introduced to reorganize and condense agent generated messages by extracting task relevant semantic content. To cope with information loss introduced by aggressive message reduction, an importance-aware semantic transmission strategy is developed, which adaptively protects semantic components according to their task importance. Furthermore, a task specific knowledge base is incorporated as long term semantic memory to support recurring tasks and further reduce bandwidth consumption with minimal performance degradation. Experimental results and ablation studies demonstrate that the proposed framework achieves nearly 50% bandwidth reduction with negligible loss in task completion performance compared to conventional transmission schemes.",
-      "authors": [
-        "Peiwen Jiang",
-        "Yushuo Feng",
-        "Jiajia Guo",
-        "Chao-Kai Wen",
-        "Shi Jin"
-      ],
-      "primary_category": "eess.SP",
-      "categories": [
-        "eess.SP"
-      ],
-      "published": "2026-04-15T07:06:08+00:00",
-      "link": "https://arxiv.org/pdf/2604.13558v1",
-      "tags": [
-        "keyword:高效推理",
-        "query:高效推理"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "semantic communication framework to reduce overhead for agents",
-      "llm_evidence_cn": "减少智能体通信开销的语义通信框架",
-      "llm_evidence": "减少智能体通信开销的语义通信框架",
-      "canonical_evidence": "减少智能体通信开销的语义通信框架",
-      "llm_tldr_en": "AgentComm reduces communication overhead for embodied agents while preserving task semantics and performance.",
-      "llm_tldr_cn": "AgentComm在保持任务语义和性能的同时，减少了具身智能体之间的通信开销。",
-      "llm_tldr": "AgentComm在保持任务语义和性能的同时，减少了具身智能体之间的通信开销。",
-      "llm_tags": [
-        "query:q4"
-      ],
-      "matched_query_tag": "query:q4",
-      "matched_query_text": "efficient reasoning in agents",
-      "matched_requirement_id": "req-4",
-      "selection_source": "carryover_cache",
-      "paper_id": "2604.13558v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.10392v1",
@@ -2925,7 +2356,7 @@
       "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
       "paper_id": "2604.10392v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.07146v2",
@@ -2968,7 +2399,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.07146v2",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.12285v1",
@@ -2999,19 +2430,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "hierarchical graph-based memory for efficient context perception",
-      "llm_evidence_cn": "基于层次图的存储器，用于高效上下文感知",
-      "llm_evidence": "基于层次图的存储器，用于高效上下文感知",
-      "canonical_evidence": "基于层次图的存储器，用于高效上下文感知",
-      "llm_tldr_en": "GAM uses a hierarchical graph structure to decouple memory encoding and consolidation for LLM agents.",
-      "llm_tldr_cn": "GAM采用层次图结构为LLM智能体解耦记忆编码与巩固，提升长效交互能力。",
-      "llm_tldr": "GAM采用层次图结构为LLM智能体解耦记忆编码与巩固，提升长效交互能力。",
+      "llm_evidence_en": "Hierarchical Graph-based Agentic Memory for long-term interactions",
+      "llm_evidence_cn": "用于长期交互的分层图结构智能体记忆",
+      "llm_evidence": "用于长期交互的分层图结构智能体记忆",
+      "canonical_evidence": "用于长期交互的分层图结构智能体记忆",
+      "llm_tldr_en": "Proposes a hierarchical graph memory to balance new information perception and stable knowledge retention in agents.",
+      "llm_tldr_cn": "提出一种分层图结构记忆框架，解决智能体在长期交互中感知新信息与保留旧知识的冲突。",
+      "llm_tldr": "提出一种分层图结构记忆框架，解决智能体在长期交互中感知新信息与保留旧知识的冲突。",
       "llm_tags": [
-        "query:profile-3:composite"
+        "query:q5"
       ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.12285v1",
       "carry_days": 1
@@ -3039,19 +2470,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "durable write surface for LLM coding agents to prevent token waste",
-      "llm_evidence_cn": "为LLM代码智能体提供持久化写入层以减少token浪费",
-      "llm_evidence": "为LLM代码智能体提供持久化写入层以减少token浪费",
-      "canonical_evidence": "为LLM代码智能体提供持久化写入层以减少token浪费",
-      "llm_tldr_en": "Presents Resilient Write, an MCP server that ensures durable file operations for coding agents to avoid retries.",
-      "llm_tldr_cn": "提出Resilient Write，通过六层持久化写入面确保代码智能体文件操作的可靠性。",
-      "llm_tldr": "提出Resilient Write，通过六层持久化写入面确保代码智能体文件操作的可靠性。",
+      "llm_evidence_en": "durable write surface for coding agents to save tokens",
+      "llm_evidence_cn": "为代码智能体提供持久化写入以节省token",
+      "llm_evidence": "为代码智能体提供持久化写入以节省token",
+      "canonical_evidence": "为代码智能体提供持久化写入以节省token",
+      "llm_tldr_en": "Resilient Write provides a durable layer for coding agents to handle failures efficiently and reduce token waste.",
+      "llm_tldr_cn": "Resilient Write为代码智能体提供持久层，以高效处理失败并减少token浪费。",
+      "llm_tldr": "Resilient Write为代码智能体提供持久层，以高效处理失败并减少token浪费。",
       "llm_tags": [
-        "query:profile-3:composite"
+        "query:q2"
       ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
+      "matched_query_tag": "query:q2",
+      "matched_query_text": "code agent efficient reasoning",
+      "matched_requirement_id": "req-2",
       "selection_source": "carryover_cache",
       "paper_id": "2604.10842v1",
       "carry_days": 1
@@ -3079,19 +2510,19 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "hierarchical experience for efficient reasoning in search agents",
-      "llm_evidence_cn": "用于搜索智能体高效推理的分层经验框架",
-      "llm_evidence": "用于搜索智能体高效推理的分层经验框架",
-      "canonical_evidence": "用于搜索智能体高效推理的分层经验框架",
-      "llm_tldr_en": "Proposes HiExp to transform reasoning trajectories into hierarchical knowledge for stable agent training.",
-      "llm_tldr_cn": "提出HiExp框架，将推理轨迹转化为分层经验知识，提升搜索智能体的训练稳定性。",
-      "llm_tldr": "提出HiExp框架，将推理轨迹转化为分层经验知识，提升搜索智能体的训练稳定性。",
+      "llm_evidence_en": "improving reasoning trajectories for search agents",
+      "llm_evidence_cn": "改进搜索智能体的推理轨迹",
+      "llm_evidence": "改进搜索智能体的推理轨迹",
+      "canonical_evidence": "改进搜索智能体的推理轨迹",
+      "llm_tldr_en": "Proposes a hierarchical experience framework to enhance the reasoning efficiency and training stability of search agents.",
+      "llm_tldr_cn": "提出一种分层经验框架，以增强搜索智能体的推理效率和训练稳定性。",
+      "llm_tldr": "提出一种分层经验框架，以增强搜索智能体的推理效率和训练稳定性。",
       "llm_tags": [
-        "query:profile-3:composite"
+        "query:q4"
       ],
-      "matched_query_tag": "query:profile-3:composite",
-      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
-      "matched_requirement_id": "req-composite-profile-3",
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
       "selection_source": "carryover_cache",
       "paper_id": "2604.08124v1",
       "carry_days": 1
@@ -3146,7 +2577,7 @@
       "matched_requirement_id": "req-composite-tokencomp",
       "selection_source": "carryover_cache",
       "paper_id": "2604.08120v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.09459v1",
@@ -3181,7 +2612,7 @@
       "matched_requirement_id": "req-5",
       "selection_source": "carryover_cache",
       "paper_id": "2604.09459v1",
-      "carry_days": 1
+      "carry_days": 2
     },
     {
       "id": "2604.12102v1",
@@ -3203,13 +2634,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Compute-grounded reasoning for spatial-aware research agents",
-      "llm_evidence_cn": "空间感知研究智能体的计算落地推理",
-      "llm_evidence": "空间感知研究智能体的计算落地推理",
-      "canonical_evidence": "空间感知研究智能体的计算落地推理",
-      "llm_tldr_en": "Introduces compute-grounded reasoning to resolve sub-problems deterministically for agents.",
-      "llm_tldr_cn": "引入计算落地推理，为智能体确定性地解决子问题。",
-      "llm_tldr": "引入计算落地推理，为智能体确定性地解决子问题。",
+      "llm_evidence_en": "Compute-grounded reasoning for research agents",
+      "llm_evidence_cn": "研究型智能体的计算落地推理",
+      "llm_evidence": "研究型智能体的计算落地推理",
+      "canonical_evidence": "研究型智能体的计算落地推理",
+      "llm_tldr_en": "Introduces a paradigm where deterministic computation resolves sub-problems to assist agent reasoning.",
+      "llm_tldr_cn": "引入一种新范式，通过确定性计算解决子问题以辅助智能体进行推理。",
+      "llm_tldr": "引入一种新范式，通过确定性计算解决子问题以辅助智能体进行推理。",
       "llm_tags": [
         "query:q5"
       ],
@@ -3253,13 +2684,13 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Multi-agent architecture that reasons over structured and unstructured knowledge",
+      "llm_evidence_en": "Multi-agent architecture reasoning over structured and unstructured knowledge",
       "llm_evidence_cn": "对结构化和非结构化知识进行推理的多智能体架构",
       "llm_evidence": "对结构化和非结构化知识进行推理的多智能体架构",
       "canonical_evidence": "对结构化和非结构化知识进行推理的多智能体架构",
-      "llm_tldr_en": "Proposes a framework for deep research agents to reason using hybrid knowledge sources for report generation.",
-      "llm_tldr_cn": "提出一种深度研究智能体框架，利用混合知识源进行推理并生成报告。",
-      "llm_tldr": "提出一种深度研究智能体框架，利用混合知识源进行推理并生成报告。",
+      "llm_tldr_en": "Proposes HKA framework for Knowledgeable Deep Research using multi-step reasoning and hybrid data.",
+      "llm_tldr_cn": "提出 HKA 框架，利用多步推理和混合数据进行知识型深度研究。",
+      "llm_tldr": "提出 HKA 框架，利用多步推理和混合数据进行知识型深度研究。",
       "llm_tags": [
         "query:q5"
       ],
@@ -3291,13 +2722,253 @@
         "query:高效推理"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "LLM agent for automatic code generation and error correction in power grid analysis",
-      "llm_evidence_cn": "用于电网分析中自动代码生成和错误纠正的LLM智能体",
-      "llm_evidence": "用于电网分析中自动代码生成和错误纠正的LLM智能体",
-      "canonical_evidence": "用于电网分析中自动代码生成和错误纠正的LLM智能体",
-      "llm_tldr_en": "Develops an agentic framework for reliable MATPOWER script generation and automated debugging.",
-      "llm_tldr_cn": "开发了一个智能体框架，用于可靠的MATPOWER脚本生成和自动调试。",
-      "llm_tldr": "开发了一个智能体框架，用于可靠的MATPOWER脚本生成和自动调试。",
+      "llm_evidence_en": "agent for automatic code generation and error correction",
+      "llm_evidence_cn": "用于自动代码生成和纠错的智能体",
+      "llm_evidence": "用于自动代码生成和纠错的智能体",
+      "canonical_evidence": "用于自动代码生成和纠错的智能体",
+      "llm_tldr_en": "Develops an LLM agent for power grid analysis with automated code generation and a three-tier error correction system.",
+      "llm_tldr_cn": "开发了一个用于电网分析的智能体，具备自动代码生成和三级纠错系统。",
+      "llm_tldr": "开发了一个用于电网分析的智能体，具备自动代码生成和三级纠错系统。",
+      "llm_tags": [
+        "query:q10"
+      ],
+      "matched_query_tag": "query:q10",
+      "matched_query_text": "latest research on code agent efficient reasoning",
+      "matched_requirement_id": "req-10",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.09995v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.14267v1",
+      "title": "Enhancing LLM-based Search Agents via Contribution Weighted Group Relative Policy Optimization",
+      "abstract": "Search agents extend Large Language Models (LLMs) beyond static parametric knowledge by enabling access to up-to-date and long-tail information unavailable during pretraining. While reinforcement learning has been widely adopted for training such agents, existing approaches face key limitations: process supervision often suffers from unstable value estimation, whereas outcome supervision struggles with credit assignment due to sparse, trajectory-level rewards. To bridge this gap, we propose Contribution-Weighted GRPO (CW-GRPO), a framework that integrates process supervision into group relative policy optimization. Instead of directly optimizing process rewards, CW-GRPO employs an LLM judge to assess the retrieval utility and reasoning correctness at each search round, producing per-round contribution scores. These scores are used to rescale outcome-based advantages along the trajectory, enabling fine-grained credit assignment without sacrificing optimization stability. Experiments on multiple knowledge-intensive benchmarks show that CW-GRPO outperforms standard GRPO by 5.0\\% on Qwen3-8B and 6.3\\% on Qwen3-1.7B, leading to more effective search behaviors. Additional analysis reveals that successful trajectories exhibit concentrated contributions across rounds, providing empirical insight into search agent tasks.",
+      "authors": [
+        "Junzhe Wang",
+        "Zhiheng Xi",
+        "yajie yang",
+        "Hao Luo",
+        "Shihan Dou",
+        "Tao Gui",
+        "Qi Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-04-15T17:37:59+00:00",
+      "link": "https://arxiv.org/pdf/2604.14267v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reinforcement learning framework for search agents to improve retrieval utility",
+      "llm_evidence_cn": "用于搜索智能体的强化学习框架，提升检索效用",
+      "llm_evidence": "用于搜索智能体的强化学习框架，提升检索效用",
+      "canonical_evidence": "用于搜索智能体的强化学习框架，提升检索效用",
+      "llm_tldr_en": "Enhances search agents using a contribution-weighted policy optimization framework for better reasoning.",
+      "llm_tldr_cn": "通过贡献加权策略优化框架增强搜索智能体的推理与检索能力。",
+      "llm_tldr": "通过贡献加权策略优化框架增强搜索智能体的推理与检索能力。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.14267v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.11378v1",
+      "title": "From Agent Loops to Structured Graphs:A Scheduler-Theoretic Framework for LLM Agent Execution",
+      "abstract": "The dominant paradigm for building LLM based agents is the Agent Loop, an iterative cycle where a single language model decides what to do next by reading an ever growing context window. This paradigm has three structural weaknesses: implicit dependencies between steps, unbounded recovery loops, and mutable execution history that complicates debugging. We characterize the Agent Loop as a single ready unit scheduler: at any moment, at most one executable unit is active, and the choice of which unit to activate comes from opaque LLM inference rather than an inspectable policy. This perspective places Agent Loops and graph based execution engines on a single semantic continuum. We propose SGH, Structured Graph Harness, which lifts control flow from implicit context into an explicit static DAG. SGH makes three commitments: execution plans are immutable within a plan version, planning execution and recovery are separated into three layers, and recovery follows a strict escalation protocol. These choices trade some expressiveness for controllability, verifiability, and implementability. Our contributions are fourfold: a scheduler unified framework that applies classical scheduling theory to LLM agent execution and identifies challenges introduced by non deterministic LLM nodes; a trade off analysis of controllability, expressiveness, and implementability across 70 surveyed systems; a formal specification including a node state machine with termination and soundness guarantees; and an attributable experimental framework with a seven group design for future validation. This is a position paper and design proposal. We provide a theoretical framework, design analysis, and experimental protocol, not a production implementation or empirical results.",
+      "authors": [
+        "Hu Wei"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "eess.SY"
+      ],
+      "published": "2026-04-13T12:16:45+00:00",
+      "link": "https://arxiv.org/pdf/2604.11378v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "scheduler-theoretic framework for agent execution reasoning",
+      "llm_evidence_cn": "智能体执行推理的调度理论框架",
+      "llm_evidence": "智能体执行推理的调度理论框架",
+      "canonical_evidence": "智能体执行推理的调度理论框架",
+      "llm_tldr_en": "Proposes a structured graph framework to replace agent loops, improving execution efficiency and debuggability.",
+      "llm_tldr_cn": "提出一种结构化图框架来替代智能体循环，提高执行效率和可调试性。",
+      "llm_tldr": "提出一种结构化图框架来替代智能体循环，提高执行效率和可调试性。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.11378v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.12610v1",
+      "title": "Transforming External Knowledge into Triplets for Enhanced Retrieval in RAG of LLMs",
+      "abstract": "Retrieval-Augmented Generation (RAG) mitigates hallucination in large language models (LLMs) by incorporating external knowledge during generation. However, the effectiveness of RAG depends not only on the design of the retriever and the capacity of the underlying model, but also on how retrieved evidence is structured and aligned with the query. Existing RAG approaches typically retrieve and concatenate unstructured text fragments as context, which often introduces redundant or weakly relevant information. This practice leads to excessive context accumulation, reduced semantic alignment, and fragmented reasoning chains, thereby degrading generation quality while increasing token consumption. To address these challenges, we propose Tri-RAG, a structured triplet-based retrieval framework that improves retrieval efficiency through reasoning-aligned context construction. Tri-RAG automatically transforms external knowledge from natural language into standardized structured triplets consisting of Condition, Proof, and Conclusion, explicitly capturing logical relations among knowledge fragments using lightweight prompt-based adaptation with frozen model parameters. Building on this representation, the triplet head Condition is treated as an explicit semantic anchor for retrieval and matching, enabling precise identification of query-relevant knowledge units without directly concatenating lengthy raw texts. As a result, Tri-RAG achieves a favorable balance between retrieval accuracy and context token efficiency. Experimental results across multiple benchmark datasets demonstrate that Tri-RAG significantly improves retrieval quality and reasoning efficiency, while producing more stable generation behavior and more efficient resource utilization in complex reasoning scenarios.",
+      "authors": [
+        "Xudong Wang",
+        "Chaoning Zhang",
+        "Qigan Sun",
+        "Zhenzhen Huang",
+        "Chang Lu",
+        "Sheng Zheng",
+        "Zeyu Ma",
+        "Caiyan Qin",
+        "Yang Yang",
+        "Hengtao Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-14T11:36:29+00:00",
+      "link": "https://arxiv.org/pdf/2604.12610v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reduces token consumption and redundant information in RAG context",
+      "llm_evidence_cn": "减少RAG上下文中的token消耗和冗余信息",
+      "llm_evidence": "减少RAG上下文中的token消耗和冗余信息",
+      "canonical_evidence": "减少RAG上下文中的token消耗和冗余信息",
+      "llm_tldr_en": "Tri-RAG structures retrieved evidence into triplets to reduce token consumption and improve reasoning chains.",
+      "llm_tldr_cn": "Tri-RAG将检索到的证据结构化为三元组，以减少token消耗并改善推理链。",
+      "llm_tldr": "Tri-RAG将检索到的证据结构化为三元组，以减少token消耗并改善推理链。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.12610v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.09508v1",
+      "title": "VISOR: Agentic Visual Retrieval-Augmented Generation via Iterative Search and Over-horizon Reasoning",
+      "abstract": "Visual Retrieval-Augmented Generation (VRAG) empowers Vision-Language Models to retrieve and reason over visually rich documents. To tackle complex queries requiring multi-step reasoning, agentic VRAG systems interleave reasoning with iterative retrieval.. However, existing agentic VRAG faces two critical bottlenecks. (1) Visual Evidence Sparsity: key evidence is scattered across pages yet processed in isolation, hindering cross-page reasoning; moreover, fine-grained intra-image evidence often requires precise visual actions, whose misuse degrades retrieval quality; (2) Search Drift in Long Horizons: the accumulation of visual tokens across retrieved pages dilutes context and causes cognitive overload, leading agents to deviate from their search objective. To address these challenges, we propose VISOR (Visual Retrieval-Augmented Generation via Iterative Search and Over-horizon Reasoning), a unified single-agent framework. VISOR features a structured Evidence Space for progressive cross-page reasoning, coupled with a Visual Action Evaluation and Correction mechanism to manage visual actions. Additionally, we introduce a Dynamic Trajectory with Sliding Window and Intent Injection to mitigate search drift. They anchor the evidence space while discarding earlier raw interactions, preventing context from being overwhelmed by visual tokens. We train VISOR using a Group Relative Policy Optimization-based Reinforcement Learning (GRPO-based RL) pipeline with state masking and credit assignment tailored for dynamic context reconstruction. Extensive experiments on ViDoSeek, SlideVQA, and MMLongBench demonstrate that VISOR achieves state-of-the-art performance with superior efficiency for long-horizon visual reasoning tasks.",
+      "authors": [
+        "Yucheng Shen",
+        "Jiulong Wu",
+        "Jizhou Huang",
+        "Dawei Yin",
+        "Lingyong Yan",
+        "Min Cao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-04-10T17:25:34+00:00",
+      "link": "https://arxiv.org/pdf/2604.09508v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Iterative search and reasoning for agentic visual RAG",
+      "llm_evidence_cn": "智能体视觉 RAG 的迭代搜索与推理",
+      "llm_evidence": "智能体视觉 RAG 的迭代搜索与推理",
+      "canonical_evidence": "智能体视觉 RAG 的迭代搜索与推理",
+      "llm_tldr_en": "Proposes VISOR to address visual evidence sparsity and context drift in long-horizon agentic reasoning.",
+      "llm_tldr_cn": "提出 VISOR 框架，解决长程智能体推理中的视觉证据稀疏和上下文漂移问题。",
+      "llm_tldr": "提出 VISOR 框架，解决长程智能体推理中的视觉证据稀疏和上下文漂移问题。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.09508v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.14609v1",
+      "title": "El Agente Forjador: Task-Driven Agent Generation for Quantum Simulation",
+      "abstract": "AI for science promises to accelerate the discovery process. The advent of large language models (LLMs) and agentic workflows enables the expediting of a growing range of scientific tasks. However, most of the current generation of agentic systems depend on static, hand-curated toolsets that hinder adaptation to new domains and evolving libraries. We present El Agente Forjador, a multi-agent framework in which universal coding agents autonomously forge, validate, and reuse computational tools through a four-stage workflow of tool analysis, tool generation, task execution, and iterative solution evaluation. Evaluated across 24 tasks spanning quantum chemistry and quantum dynamics on five coding agent setups, we compare three operating modes: zero-shot generation of tools per task, reuse of a curriculum-built toolset, and direct problem-solving with the coding agents as the baseline. We find that our tool generation and reuse framework consistently improves accuracy over the baseline. We also show that reusing a toolset built by a stronger coding agent can reduce API cost and substantially raises the solution quality for weaker coding agents. Case studies further demonstrate that tools forged for different domains can be combined to solve hybrid tasks. Taken together, these results show that LLM-based agents can use their scientific knowledge and coding capabilities to autonomously build reusable scientific tools, pointing toward a paradigm in which agent capabilities are defined by the tasks they are designed to solve rather than by explicitly engineered implementations.",
+      "authors": [
+        "Zijian Zhang",
+        "Aiwei Yin",
+        "Amaan Baweja",
+        "Jiaru Bai",
+        "Ignacio Gustin",
+        "Varinia Bernales",
+        "Alán Aspuru-Guzik"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "physics.comp-ph"
+      ],
+      "published": "2026-04-16T04:28:56+00:00",
+      "link": "https://arxiv.org/pdf/2604.14609v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "autonomous tool generation for coding agents",
+      "llm_evidence_cn": "代码智能体的自主工具生成",
+      "llm_evidence": "代码智能体的自主工具生成",
+      "canonical_evidence": "代码智能体的自主工具生成",
+      "llm_tldr_en": "Presents a multi-agent framework where coding agents autonomously forge and reuse tools for scientific tasks.",
+      "llm_tldr_cn": "提出一个多智能体框架，代码智能体可以自主锻造和重用工具以完成科学任务。",
+      "llm_tldr": "提出一个多智能体框架，代码智能体可以自主锻造和重用工具以完成科学任务。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.14609v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.12881v1",
+      "title": "Evaluating LLMs Code Reasoning Under Real-World Context",
+      "abstract": "Code reasoning tasks are increasingly crucial to evaluating large language models (LLMs). Yet most existing benchmarks rely on simplistic, LLM-generated snippets or human-written solutions to code challenges and often restrict inputs and outputs to primitive types, failing to reflect the structure and dependencies of real-world projects. These simplifications limit their ability to measure practical generalizability. We present R2Eval1, a benchmark of 135 code reasoning problems drawn from ten widely used Python projects. Unlike prior work, R2Eval serializes compound and custom types, preserving real-world data complexity and enabling a more realistic assessment of LLMs.",
+      "authors": [
+        "Changshu Liu"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-04-14T15:32:07+00:00",
+      "link": "https://arxiv.org/pdf/2604.12881v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Evaluating code reasoning under real-world context and dependencies",
+      "llm_evidence_cn": "在真实世界上下文和依赖下评估代码推理",
+      "llm_evidence": "在真实世界上下文和依赖下评估代码推理",
+      "canonical_evidence": "在真实世界上下文和依赖下评估代码推理",
+      "llm_tldr_en": "Presents R2Eval, a benchmark for measuring LLM code reasoning using complex real-world project structures.",
+      "llm_tldr_cn": "发布R2Eval基准测试，利用复杂的真实项目结构评估大模型的代码推理能力。",
+      "llm_tldr": "发布R2Eval基准测试，利用复杂的真实项目结构评估大模型的代码推理能力。",
       "llm_tags": [
         "query:q6"
       ],
@@ -3305,7 +2976,142 @@
       "matched_query_text": "code generation reasoning",
       "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
-      "paper_id": "2604.09995v1",
+      "paper_id": "2604.12881v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.10866v1",
+      "title": "OccuBench: Evaluating AI Agents on Real-World Professional Tasks via Language World Models",
+      "abstract": "AI agents are expected to perform professional work across hundreds of occupational domains (from emergency department triage to nuclear reactor safety monitoring to customs import processing), yet existing benchmarks can only evaluate agents in the few domains where public environments exist. We introduce OccuBench, a benchmark covering 100 real-world professional task scenarios across 10 industry categories and 65 specialized domains, enabled by Language World Models (LWMs) that simulate domain-specific environments through LLM-driven tool response generation. Our multi-agent synthesis pipeline automatically produces evaluation instances with guaranteed solvability, calibrated difficulty, and document-grounded diversity. OccuBench evaluates agents along two complementary dimensions: task completion across professional domains and environmental robustness under controlled fault injection (explicit errors, implicit data degradation, and mixed faults). We evaluate 15 frontier models across 8 model families and find that: (1) no single model dominates all industries, as each has a distinct occupational capability profile; (2) implicit faults (truncated data, missing fields) are harder than both explicit errors (timeouts, 500s) and mixed faults, because they lack overt error signals and require the agent to independently detect data degradation; (3) larger models, newer generations, and higher reasoning effort consistently improve performance. GPT-5.2 improves by 27.5 points from minimal to maximum reasoning effort; and (4) strong agents are not necessarily strong environment simulators. Simulator quality is critical for LWM-based evaluation reliability. OccuBench provides the first systematic cross-industry evaluation of AI agents on professional occupational tasks.",
+      "authors": [
+        "Xiaomeng Hu",
+        "Yinger Zhang",
+        "Fei Huang",
+        "Jianhong Tu",
+        "Yang Su",
+        "Lianghao Deng",
+        "Yuxuan Liu",
+        "Yantao Liu",
+        "Dayiheng Liu",
+        "Tsung-Yi Ho"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-13T00:27:32+00:00",
+      "link": "https://arxiv.org/pdf/2604.10866v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Evaluating AI agents on real-world professional tasks",
+      "llm_evidence_cn": "在真实世界专业任务上评估AI智能体",
+      "llm_evidence": "在真实世界专业任务上评估AI智能体",
+      "canonical_evidence": "在真实世界专业任务上评估AI智能体",
+      "llm_tldr_en": "Introduces OccuBench to evaluate AI agents across 100 professional task scenarios using Language World Models.",
+      "llm_tldr_cn": "推出OccuBench基准，利用语言世界模型评估AI智能体在100个专业任务场景中的表现。",
+      "llm_tldr": "推出OccuBench基准，利用语言世界模型评估AI智能体在100个专业任务场景中的表现。",
+      "llm_tags": [
+        "query:q9"
+      ],
+      "matched_query_tag": "query:q9",
+      "matched_query_text": "agent",
+      "matched_requirement_id": "req-9",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.10866v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.14403v1",
+      "title": "A Unified Model and Document Representation for On-Device Retrieval-Augmented Generation",
+      "abstract": "Traditional Retrieval-Augmented Generation (RAG) approaches generally assume that retrieval and generation occur on powerful servers removed from the end user. While this reduces local hardware constraints, it introduces significant drawbacks: privacy concerns regarding data access, recurring maintenance and storage costs, increased latency, and the necessity of an internet connection. On-device RAG addresses these challenges by executing the entire pipeline locally, making it ideal for querying sensitive personal information such as financial documents, contact details, and medical history. However, on-device deployment necessitates a delicate balance between limited memory and disk space. Specifically, the context size provided to the generative model must be restricted to manage KV cache and attention memory usage, while the size of stored embeddings must be minimized to preserve disk space. In this work, we propose a unified model that compresses the RAG context and utilizes the same representations for retrieval. This approach minimizes disk utilization compared to using separate representations, while significantly reducing the context size required for generation. With an average of 1/10 of the context, our model matches the performance of a traditional RAG reader without increasing storage requirements compared to a multi-vector retrieval model. This approach represents the first model to unify retrieval and context compression using a shared model and representation. We believe this work will inspire further consolidation of distinct models to optimize on-device performance.",
+      "authors": [
+        "Julian Killingback",
+        "Ofer Meshi",
+        "Henry Li",
+        "Hamed Zamani",
+        "Maryam Karimzadehgan"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR"
+      ],
+      "published": "2026-04-15T20:34:10+00:00",
+      "link": "https://arxiv.org/pdf/2604.14403v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Context size management for on-device retrieval-augmented generation",
+      "llm_evidence_cn": "端侧检索增强生成的上下文大小管理",
+      "llm_evidence": "端侧检索增强生成的上下文大小管理",
+      "canonical_evidence": "端侧检索增强生成的上下文大小管理",
+      "llm_tldr_en": "Develops a unified model for on-device RAG that balances memory constraints and context representation.",
+      "llm_tldr_cn": "为端侧RAG开发统一模型，在有限的内存和磁盘空间内平衡上下文表示与检索效率。",
+      "llm_tldr": "为端侧RAG开发统一模型，在有限的内存和磁盘空间内平衡上下文表示与检索效率。",
+      "llm_tags": [
+        "query:q7"
+      ],
+      "matched_query_tag": "query:q7",
+      "matched_query_text": "context compression",
+      "matched_requirement_id": "req-7",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.14403v1",
+      "carry_days": 1
+    },
+    {
+      "id": "2604.07789v1",
+      "title": "ORACLE-SWE: Quantifying the Contribution of Oracle Information Signals on SWE Agents",
+      "abstract": "Recent advances in language model (LM) agents have significantly improved automated software engineering (SWE). Prior work has proposed various agentic workflows and training strategies as well as analyzed failure modes of agentic systems on SWE tasks, focusing on several contextual information signals: Reproduction Test, Regression Test, Edit Location, Execution Context, and API Usage. However, the individual contribution of each signal to overall success remains underexplored, particularly their ideal contribution when intermediate information is perfectly obtained. To address this gap, we introduce Oracle-SWE, a unified method to isolate and extract oracle information signals from SWE benchmarks and quantify the impact of each signal on agent performance. To further validate the pattern, we evaluate the performance gain of signals extracted by strong LMs when provided to a base agent, approximating real-world task-resolution settings. These evaluations aim to guide research prioritization for autonomous coding systems.",
+      "authors": [
+        "Kenan Li",
+        "Qirui Jin",
+        "Liao Zhu",
+        "Xiaosong Huang",
+        "Yijia Wu",
+        "Yikai Zhang",
+        "Xin Zhang",
+        "Zijian Jin",
+        "Yufan Huang",
+        "Elsie Nallipogu",
+        "Chaoyun Zhang",
+        "Yu Kang",
+        "Saravan Rajmohan",
+        "Qingwei Lin",
+        "Wenke Lee",
+        "Dongmei Zhang"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.CL",
+        "cs.SE"
+      ],
+      "published": "2026-04-09T04:37:24+00:00",
+      "link": "https://arxiv.org/pdf/2604.07789v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "quantifying information signals for SWE agents",
+      "llm_evidence_cn": "量化软件工程智能体的信息信号",
+      "llm_evidence": "量化软件工程智能体的信息信号",
+      "canonical_evidence": "量化软件工程智能体的信息信号",
+      "llm_tldr_en": "Analyzes the impact of different information signals on the performance of software engineering agents.",
+      "llm_tldr_cn": "量化分析了不同信息信号对软件工程（SWE）智能体任务成功率的具体贡献。",
+      "llm_tldr": "量化分析了不同信息信号对软件工程（SWE）智能体任务成功率的具体贡献。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "carryover_cache",
+      "paper_id": "2604.07789v1",
       "carry_days": 1
     }
   ]
