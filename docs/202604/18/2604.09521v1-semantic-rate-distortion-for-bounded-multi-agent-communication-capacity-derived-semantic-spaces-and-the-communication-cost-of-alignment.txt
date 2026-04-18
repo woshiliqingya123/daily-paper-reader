@@ -1,0 +1,1395 @@
+Title: Semantic Rate-Distortion for Bounded Multi-Agent Communication: Capacity-Derived Semantic Spaces and the Communication Cost of Alignment
+
+URL Source: https://arxiv.org/pdf/2604.09521v1
+
+Published Time: Mon, 13 Apr 2026 01:18:30 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# Semantic Rate-Distortion for Bounded Multi-Agent Communication: Capacity-Derived Semantic Spaces and the Communication Cost of Alignment 
+
+Anthony T Nixon ∗
+
+# Abstract 
+
+When two agents of different computational capacities interact with the same environment, they need not compress a common semantic alphabet differently; they can induce different semantic alphabets altogether. We show that the quotient POMDP Qm,T (M )—the unique coarsest abstraction consistent with an agent’s capacity—serves as a capacity-derived semantic space for any bounded agent, and that communication between heterogeneous agents exhibits a sharp structural phase transition. Below a critical rate Rcrit determined by the quotient mismatch, intent-preserving communication is structurally impossible . In the supported one-way memoryless regime, classical side-information coding then yields exponential decay above the induced benchmark. Classical coding theorems tell you the rate once the source alphabet is fixed; our contribution is to derive that alphabet from bounded interaction itself .Concretely, we prove: (1) a fixed-ε structural phase-transition theorem whose lower bound is fully general on the common-history quotient comparison used throughout the paper (§5); (2) a one-way Wyner-Ziv benchmark identification on quotient alphabets, with exact converse, exact operational equality for memoryless quotient sources, and an ergodic long-run bridge argued via explicit mixing bounds (§7); (3) an asymptotic one-way converse in the shrinking-distortion regime 
+
+ε = O(1 /T ), proved from the message stream and decoder side information rather than from a stronger causal-independence claim (§6); and (4) alignment traversal bounds enabling compositional communication through intermediate capacity levels (§8). Experiments on eight POMDP environments (including the standard RockSample(4,4) benchmark) illustrate the structural phase transition, a structured-policy benchmark shows that the one-way rate can drop by up to 19 × relative to the counting bound, and a dedicated shrinking-distortion sweep matches the regime of the asymptotic converse. Throughout, we make explicit which statements are theorem-level, which are benchmark identifications, and which are qualitative application implications. 
+
+# 1 Introduction 
+
+A human overseer and a frontier AI model; two language models of different sizes; a sensor array and a robotic controller. In each case, agents of different computational capacities must coordi-nate in a shared environment—and their capacity mismatch creates a fundamental communica-tion challenge. An agent with m memory nodes perceives the environment through its quotient POMDP Qm,T (M ) [4]: the unique coarsest abstraction consistent with its computational capacity. 
+
+> ∗
+
+DefSig. Correspondence: anthony@defsig.com .Preprint.                                       
+
+> arXiv:2604.09521v1 [cs.IT] 10 Apr 2026 Agent pair Sender ( A)Receiver ( B)Rcrit meaning Instantiation
+> Human ↔AI AI ( mAlarge) Human ( mHsmall) RLHF feedback floor §9 Large →small model mlarge msmall Distillation loss floor Cor. 35 Sensor →controller msensor mctrl Comm. bandwidth floor §4 Stepping-stone chain m1>· · · > m k(compositional) Traversal rate budget Thm. 31 Equal agents mmRcrit = 0 (no gap) Lem. 39
+
+Table 1: The framework applies universally to any pair of bounded agents. The critical rate Rcrit 
+
+quantifies the structural communication cost of the capacity gap. Below Rcrit , intent-preserving communication is impossible regardless of protocol design. Two agents with different capacities thus inhabit different semantic spaces —even when acting in the same physical world. The quotient is not a design choice; it is mathematically inevitable, determined by which environmental distinctions the agent’s memory can sustain. 
+
+The central question. At what rate must agent A communicate to agent B to achieve ε-aligned joint behavior, given their capacity mismatch? This question arises universally across agent pairs (Table 1). Classical rate-distortion [ 2] assumes shared codebooks and reconstruction error—assumptions that fail when agents have heterogeneous capacities. The relevant distortion is operational : does B preserve A’s intent? The codebook cannot be universal; it must be quotient-aware , designed around the agents’ respective equivalence structures. Classical coding theorems characterize the rate once the source alphabet is given. Our contribution is showing which alphabet each agent’s capacity demands —and that the resulting communication theory produces concrete, experimentally supported predictions of where intent-preserving communication transitions from impossible to achievable. The paper’s backbone is therefore a fixed-distortion structural theorem : the capacity gap induces a phase transition even before one asks for asymptotically sharp converses. The one-way Wyner-Ziv reduction then identifies the sharp benchmark once the quotient alphabets are derived, and the shrinking-distortion converse adds an asymptotic sharpening through the actual message stream and decoder side information rather than carrying the full empirical burden of the paper. 
+
+Claim taxonomy. The paper makes three kinds of claims. Theorem-level claims are proved in the main text or appendix under explicit assumptions. Benchmark-identification claims show when the semantic problem can be compared to a classical coding benchmark; these are exact at the converse level under one-way observability, exact operationally for i.i.d. quotient sources, and otherwise stated as long-run average bridges. Application claims translate the structural results to alignment, routing, or control settings; unless derived directly from a theorem, these are qualitative implications rather than formal guarantees. 
+
+Why this is not just Wyner-Ziv on a renamed alphabet. Wyner-Ziv theory starts after the source and side-information alphabets are already fixed. In heterogeneous-agent communication, that is precisely the missing object: bounded agents need not share a natural semantic alphabet because their computational capacities induce different quotient partitions. The quotient construction therefore does not merely relabel a classical problem; it identifies when a classical side-information theorem becomes available and which distinctions each agent can, or cannot, represent. 
+
+Contributions. 
+
+1. Capacity-derived semantic spaces and distortion measures (Sections 2 and 3): The quotient POMDP as each agent’s semantic space, with intent preservation, value-alignment, and quotient morphism distance as operationally meaningful metrics. 2. Fixed-ε structural phase transition (Section 5): Below Rcrit , semantic distortion is bounded away from zero ( structural impossibility ) under an explicit positive-support condi-tion on merged quotient classes. The constructive exponential upper bound is proved only in the one-way memoryless benchmark regime and is stated as such. Experiments illustrate the random-policy knee relative to the log-cardinality reference without claiming a sharper theorem than the model supports (Figure 2). 2Framework What is given What remains open This paper’s role    
+
+> Classical R-D /WZ Source alphabet and fidelity criterion are specified by the modeler No account of where heterogeneous agents’ semantic alphabets come from Derives those alphabets from bounded interaction before applying coding theory POMDP abstrac-tion / quotienting Capacity-dependent state abstractions No communication theorem between mismatched abstractions Turns quotient mismatch into a rate theorem with a structural floor IB / task-oriented compression Relevance variable and task objective are designer-chosen No receiver-capacity side-information model Uses receiver quotient classes as capacity-derived side information, not designer-chosen relevance This work Sender/receiver quotient alphabets are induced by capacity Communication cost between mismatched semantic spaces Identifies the structural floor and the one-way benchmark once the alphabets are derived
+
+Table 2: Positioning relative to adjacent frameworks. The novelty is not the reuse of classical coding tools per se, but the derivation of agent-dependent semantic alphabets from bounded interaction and the resulting communication problem between them. 3. Wyner-Ziv benchmark identification (Section 7): In the common-history coarsening setting and under one-way observability, semantic rate-distortion admits a quotient-alphabet WZ benchmark with exact converse , exact i.i.d. operational bridge , and an ergodic long-run bridge argued with explicit mixing bounds . Structured visitation lowers the benchmark by up to 19 × relative to the counting bound (Figure 7). 4. Shrinking-distortion one-way converse (Section 6): Asymptotic lower bound from the message stream plus decoder side information in the regime ε = O(1 /T ), complemented by a dedicated shrinking-distortion sweep that matches this regime empirically (Figure 3 and theorem 21). 5. Alignment traversal (Section 8): Compositional bounds enable stepping-stone alignment through intermediate capacity levels—bridging the gap incrementally. 6. Alignment implications (Section 9): Human–AI alignment, model distillation, and sensor-controller communication inherit theorem-backed structural lower bounds, plus constructive upper bounds under explicit memoryless/codebook assumptions. 
+
+# 2 Preliminaries 
+
+Definition 1 (Finite POMDP) . A finite POMDP is M = ⟨S, A, O, P, Z, R, b 0⟩ with finite state, action, and observation sets, transition kernel P (s′|s, a ), observation kernel Z(o|s′, a ), reward function R, and initial belief b0 ∈ ∆( S).
+
+Definition 2 (Agent Class) . A stochastic FSC is π = ⟨N, α, β, n 0⟩ where |N | ≤ m, α(n′|n, o ) is the node transition, β(a|n) the action distribution, and n0 the initial node. Πm,T denotes the set of all such FSCs evaluated over horizon T ; Πm,T,δ additionally restricts observation resolution to δ.Histories h, h ′ ∈ O t are bounded-indistinguishable (h ≡m,T h′) when sup π∈Πm,T W1
+
+ P πM (Ot+1: T |
+
+h), P πM (Ot+1: T | h′) = 0 .
+
+Definition 3 (Quotient POMDP) . The quotient POMDP Qm,T (M ) has state space {[h] : h ∈ O t}
+
+(equivalence classes under ≡m,T ) with aggregated transitions induced by M . It is the unique minimal abstraction preserving all observation laws for controllers in Πm,T [4 ]; see also [ 11 ] for related POMDP equivalence results. The probe-exact quotient [ 4] is the coarsest partition for which 
+
+[h]probe := {h′ : ∀π ∈ Πm,T , P πM (Ot+1: T |h) = P πM (Ot+1: T |h′)}—a self-contained construction within the FSC/POMDP formalism above. 
+
+Remark 4 (Self-contained well-definedness) . The quotient Qm,T (M ) has well-defined aggregated transitions because the equivalence ≡m,T is right-invariant : if h ≡m,T h′, then for every observation 
+
+o ∈ O , the extended histories ho ≡m,T h′o. This follows directly from the definition: if all 
+
+π ∈ Πm,T produce identical future observation distributions from h and h′, then conditioning on one additional observation preserves this identity (by the chain rule for conditional distributions in 
+
+3[h]1                
+
+> A[h]2
+> A[h]3
+> A[h]4
+> A[h]5
+> A
+> [h]1
+> B(3 subclasses →merged) [h]2
+> B(3 subclasses →merged)
+> h1h2h3h4h5h6h7
+
+QA
+
+QB   
+
+> Asees 5 classes; Bsees 2. Communication must resolve the merged subclasses.
+
+Figure 1: Quotient partitions for two agents of different capacity. Solid blue boxes: QA-classes (finer). Dashed red boxes: QB -classes (coarser). Each QB -class merges multiple QA-classes. Below 
+
+Rcrit = ⌈log 5 − log 2 ⌉ bits/step, B cannot distinguish the merged subclasses—some of A’s intended actions are irrecoverable. 
+
+Symbol Meaning 
+
+M ; S, A, O POMDP; state, action, observation sets 
+
+Qm,T (M ); QA, QB Quotient POMDP; quotient class sets for agents A, B
+
+Πm,T m-node FSCs evaluated over horizon T
+
+≡m,T Bounded indistinguishability (history equivalence under Πm,T )
+
+Rcrit , Rsem (ε) Critical rate, semantic rate-distortion function 
+
+dintent , Dintent Per-history and expected intent distortion 
+
+dval , dbeh , dQ Value-alignment, behavioral, quotient morphism distances 
+
+hA, hB Entropy rates of quotient processes {QAt }, {QBt }
+
+¯h(QA | QB ) Conditional entropy rate (WZ benchmark) 
+
+cM Minimum inter-class intent distortion gap 
+
+I(Xn → Y n) Directed information 
+
+Table 3: Core notation. See Sections 2 and 3 for formal definitions. 
+
+the finite POMDP). Right-invariance ensures that the transition [h] o
+
+−→ [ho ] is independent of the representative, so the quotient POMDP’s state transitions are well-defined. The specific quotient facts used later in this paper are collected in Section C; the full Myhill–Nerode characterization (uniqueness, minimality, surjectivity of the quotient map) remains in [4]. 
+
+Intuition: why different capacities create a communication problem. Consider Figure 1. A POMDP generates observation histories h ∈ O ≤T . Agent A, with mA = 16 memory nodes, can distinguish 781 equivalence classes of histories (its quotient QA); agent B, with mB = 1 node, collapses those same histories into only 289 classes ( QB ). Because QA refines QB , every QB -class is the union of one or more QA-classes. The 492 distinctions visible to A but invisible to B—the 
+
+QA-subclasses merged within each QB -class—are precisely the communication problem. Unless A
+
+sends enough bits to resolve these merged subclasses, B cannot distinguish histories that A knows to require different actions: intent-preserving communication is impossible below the rate needed to disambiguate them. 
+
+Definition 5 (Directed Information [3]) .
+
+I(Xn → Y n) := 
+
+> n
+
+X
+
+> t=1
+
+I(Xt; Yt | Y t−1).
+
+# 3 Semantic Distortion Measures 
+
+Classical rate-distortion uses reconstruction error. For multi-agent communication, we need distortion capturing meaning preservation .
+
+Definition 6 (Value-Alignment Distortion) . dval (πA, π B ; M ) := sup R: LR≤1 |V πA 
+
+> M
+
+(R) − V πB 
+
+> M
+
+(R)|,a pseudometric on policies. 
+
+Definition 7 (Behavioral Divergence) . dbeh (πA, π B ; M ) := W1
+
+ P πA 
+
+> M
+
+(OT ), P πB 
+
+> M
+
+(OT ).
+
+Proposition 8 (Value Bound from Behavior) . dval (πA, π B ) ≤ LR · T · dbeh (πA, π B ).
+
+4Proof. By LR-Lipschitz reward (Assumption 45): | ¯RM (ht, π A) − ¯RM (ht, π B )| ≤ LR ·W1(P πA 
+
+> M
+
+(Ot+1: T |ht), P πB 
+
+> M
+
+(Ot+1: T |ht)) per step. Sum over T steps (see also Theorem 46). This is self-contained; see [4] for the general FSC setting. 
+
+Definition 9 (Intent and Intent Distortion) . Agent A’s intent at history h is Intent A(h) :=  bAh , π A(· | h), V πA (h). The intent preservation distortion is: 
+
+dintent (A, B | h) := W1(bAh , b Bh ) + TV  πA(·| h), π B (·| h) + |V πA (h) − V πB (h)|,
+
+with expected distortion Dintent (A, B ) := Eh∼P πAM
+
+[dintent (A, B | h)] .
+
+Remark 10 (Component Scales and Reward Normalization) . The three components of dintent have different scales: W1 on simplices over n states takes values in [0 , 2] ; TV distance in [0 , 1] ; the value difference depends on the reward scale. We assume throughout that ∥R∥∞ ≤ 1 (i.e., rewards are normalized to [0 , 1] ), ensuring the value-difference component |V πA (h) − V πB (h)| ≤ T is bounded; without this normalization, dintent would be unbounded. Under this assumption, dintent is a well-defined bounded distortion measure. The critical rate Rcrit depends only on quotient structure (class counts), not on distortion scale. Our experiments use a simplified two-term proxy; see Section M. 
+
+Proposition 11 (Proxy Bound (deterministic policies)) . Let dexp intent (h) := W1(bAh , b Bh ) + λ · 1{aA̸ =
+
+aB } be the two-term experimental proxy with λ > 0. For deterministic policies (where action mismatch implies TV( πA(·| h), π B (·| h)) = 1 ≥ λ): 
+
+dexp intent (h) ≤ dintent (h) ≤ dexp intent (h) + |V πA (h) − V πB (h)|.
+
+In particular, the critical rate Rcrit (which depends on quotient class counts, not distortion scale; see Theorem 28) is identical under both measures. The phase transition location and exponential decay exponent are invariant to the choice of distortion metric; only the pre-exponential constant cM
+
+changes. Proof. The lower bound holds when λ ≤ TV( πA(·| h), π B (·| h)) whenever aA̸ = aB ; this is satisfied for deterministic policies (where action mismatch implies TV = 1 ) and in our experiments with 
+
+λ = 0 .5. The upper bound follows by the triangle inequality. Since Rcrit = ¯h(QA | QB ) depends only on the quotient process entropies and not on the distortion function, the phase transition location is metric-invariant. In the supported one-way memoryless regime, the constructive error exponent depends on surplus rate above the relevant benchmark, not on cM .
+
+Definition 12 (Quotient Morphism Distance) . A quotient morphism φ : QA → Q B preserves the initial class and respects transitions. The morphism distance is: 
+
+dQ(A, B | M ) := inf  
+
+> φ:QA→Q B
+
+sup 
+
+> [h]∈Q A
+
+W1
+
+ PM (·| [h]) , P M (·| φ([ h])) .
+
+When QA refines QB , the inclusion map is a morphism and dQ = 0 .
+
+# 4 Multi-Agent Communication Model 
+
+Setup. Environment M ; agent A with capacity (mA, T A); agent B with capacity (mB , T B ). At each step t, A observes OAt , takes action aAt , and may send message Mt ∈ { 1, . . . , 2R} to B over a noiseless channel at rate R bits/step. B observes OBt , receives Mt, and takes action aBt .
+
+Definition 13 (Communication Protocol) . A protocol (E, D ) consists of: 
+
+• An encoder Et : ( OA)≤t → { 1, . . . , 2R} with H(Mt | M t−1) ≤ R.
+
+• A bounded decoder D = ( πB , U ), where πB ∈ ΠmB ,T B is an mB -node FSC and U :
+
+{1, . . . , 2R} → ΘmB updates the FSC’s parameters upon each received message. Here 
+
+ΘmB := ∆( A)mB × ∆( {1, . . . , m B })mB ×|O| is the space of action distributions and node-transition matrices for an mB -node FSC. The FSC πB takes inputs (nBt , O Bt ) at each step t,where nBt ∈ { 1, . . . , m B } is the current node and OBt ∈ O B is B’s current observation; this is implicit in the FSC definition of Section 2. Messages may reconfigure πB ’s parameters but cannot expand its mB -node memory capacity. 
+
+5Assumption 14 (Common-history coarsening regime) . The theorem-level comparisons between 
+
+QA and QB are stated for a single underlying history process ht ∈ O t. The sender and receiver quotient processes are QAt := [ ht]mA,T A and QBt := [ ht]mB ,T B on this same history space, so when 
+
+mA ≥ mB the canonical map of Theorem 40 gives QBt = κA→B (QAt ) pointwise. The more general notation (OAt , O Bt ) above is retained to distinguish encoder and decoder roles; distinct-sensor models are covered by the theorem-level results only when they induce this same coarsening relation. 
+
+Assumption 15 (Intent measurability on quotient classes) . Under the common-history regime of Theorem 14, the sender intent Intent A(h) is constant within each QA-class: if [h]mA,T A = [ h′]mA,T A ,then Intent A(h) = Intent A(h′). Equivalently, dintent induces a well-defined distortion on QA × Q A.
+
+Remark 16 (Scope of intent measurability) . Theorem 15 is needed for the WZ benchmark identi-fication (Section 7), the shrinking-distortion converse (Section 6), and the Blahut-Arimoto bench-mark computation, all of which use dintent as a class-level distortion matrix. It is not needed for the structural lower bound of Theorem 18(i), whose pigeonhole argument uses the history-level separation cM . A sufficient condition is that the sender’s policy πA is quotient-compatible :
+
+πA(· | h) = πA(· | h′) whenever [h]mA,T A = [ h′]mA,T A . This holds when πA is derived from the quotient POMDP Qm,T (M ) or is a belief-based policy, since distinct quotient classes have distinct beliefs (Theorem 41). 
+
+Definition 17 (Semantic Rate-Distortion Function) .
+
+Rsem (ε) := inf R : ∃ protocol (E, D ) with Dintent (A, B | E, D ) ≤ ε .
+
+# 5 Semantic Channel Capacity 
+
+Theorem 18 (Semantic Channel Capacity) . For agents A, B communicating over a noiseless channel at rate R, define Csem (R) := inf {Dintent achievable at rate R}. Then: 
+
+(i) Threshold behavior. Csem (R) ≥ cM > 0 for R < Rcrit when-ever there exists a reachable QB -class of positive stationary mass that contains more than 2R reachable QA-subclasses. Under uniform quotient visitation this yields the structural threshold Rcrit := log |Q A| − log |Q B |. Here cM := min [h]A̸ =[ h′]A 
+
+> [h]A,[h′]A⊆[h]B
+
+min h∈[h]A, h ′∈[h′]A dintent 
+
+ Intent A(h), Intent A(h′) is the minimum intent distortion between any pair of histories in distinct merged subclasses. 
+
+(ii) Exponential decay in the one-way memoryless regime. Under Assumptions 14, 15, 23, and 45, if the joint quotient source (QAt , Q Bt ) is i.i.d., then every rate 
+
+R > R WZ (0) = H(QA | QB )
+
+admits a block semantic protocol whose distortion decays exponentially in T :
+
+Csem (R) ≤ LR · T · 2−T E WZ (R),
+
+for some classical WZ reliability exponent EWZ (R) > 0. In the uniform-cardinality special case, H(QA | QB ) = log |Q A| − log |Q B | = Rcrit .
+
+(iii) Perfect alignment. Csem (R) = 0 if R ≥ log |Q A|.Proof sketch. (i) Pigeonhole on a positively supported merged QB -class: if that class contains more than 2R reachable QA-subclasses, two of them must share the same message/side-information pair, forcing positive-probability confusion and therefore dintent ≥ cM . Full proof in Section H. (ii) 
+
+In the one-way i.i.d. regime, Theorems 25 and 26 reduce the problem to lossless WZ coding on quotient alphabets; classical reliability exponents then give exponentially decaying block error above 
+
+H(QA | QB ), and Theorem 46 propagates that error to semantic distortion. Full proof in Section I. 
+
+(iii) R ≥ log |Q A| specifies A’s class exactly. The phase transition is structural: when QA strictly refines QB , distinctions visible to A are invisible to B regardless of protocol—a direct consequence of the quotient refinement QA ⪯ Q B in the common-history comparison regime of Theorem 14. Extended discussion of cM positivity, the role of B’s bounded memory, the positive-support requirement in part (i), and the source-distribution dependence of the constructive benchmark appear in Section D. 66 Shrinking-Distortion Converse 
+
+This section is an asymptotic sharpening of the fixed-ε structural theorem above. The main operational statement of the paper remains Theorem 18; the theorem here gives a shrinking-distortion lower bound from the actual message stream and decoder side information, avoiding a stronger causal-independence claim than the model justifies. 
+
+Assumption 19 (Quotient Process Regularity) . Under Assumption 14 and the communication protocol, the joint quotient process (QAt , Q Bt ) induced by the common history source converges to a stationary distribution and is ergodic. This holds when the underlying POMDP has a unique stationary distribution over states and the encoder is time-invariant. 
+
+Theorem 20 (Asymptotic One-Way Converse (Shrinking-Distortion Regime)) . Under Assump-tions 14, 15, 19, and 23, consider a sequence of horizons T and protocols (E(T ), D (T )) with per-step rates RT and expected intent distortions DT ≤ εT . Let ε′ 
+
+> T
+
+:= 2 εT /c M and assume T ε ′ 
+
+> T
+
+≤ 1/2.Then 
+
+RT ≥ (hA − hB ) − h(ε′ 
+
+> T
+
+) − ε′ 
+
+> T
+
+log |Q A| − oT (1) ,
+
+where hA, h B are the entropy rates of {QAt }, {QBt } (Remark 43) and h(·) is the binary entropy function. In particular, if ε′ 
+
+> T
+
+→ 0, then 
+
+lim inf   
+
+> T→∞
+
+RT ≥ hA − hB .
+
+Under near-uniform quotient distributions ( hA ≈ log |Q A|, hB ≈ log |Q B |), the right-hand side reduces to the log-cardinality reference log |Q A| − log |Q B |.Proof sketch. H(QTA | QTB ) = T (hA − hB ) + o(T ) by quotient coarsening on the common history source. Since the decoder sees (M T , Q TB ), the rate constraint gives T R T ≥ I(QTA; M T | QTB ).A semantic Fano argument based on nearest-intent decoding from (M T , Q TB ) turns the shrinking distortion assumption εT = O(1 /T ) into the entropy penalty h(ε′ 
+
+> T
+
+)+ ε′ 
+
+> T
+
+log |Q A|+oT (1) , producing the stated lower bound. Full proof in Section J. 
+
+Remark 21 (Fano regime restriction) . The Semantic Fano inequality (Theorem 48) underlying Theorem 20 requires ε = O(1 /T ) for the block error bound to be non-vacuous. This means the converse is formally operative only when the distortion tolerance shrinks with horizon length. For fixed ε and growing T , the bound degrades. We therefore separate the empirical roles of the figures: Figure 2 remains a fixed-ε illustration of the broader structural phase transition, while Figure 3 provides one empirical illustration in the same shrinking-distortion regime as the converse. Relaxing the converse to constant-ε regimes is an open problem; a possible route is via the blowing-up lemma [29]. 
+
+Remark 22 (Phase transition is regime-independent) . The ε = O(1 /T ) restriction applies only to the shrinking-distortion converse (Theorem 20). The structural lower bound in Theorem 18(i) is a fixed-ε
+
+statement, while the exponential achievability theorem of Theorem 18(ii) belongs only to the one-way memoryless benchmark regime. The experiments therefore illustrate the structural phase transition at fixed ε = 0 .1 without being read as a pointwise empirical proof of the shrinking-distortion converse. 
+
+# 7 Wyner-Ziv Reduction 
+
+The semantic rate-distortion problem admits a one-way benchmark identification with the classical Wyner-Ziv problem [ 27 ] (source coding with decoder side information) on quotient alphabets. The exactness split is as follows: the semantic converse matches the WZ converse exactly; the operational bridge is exact for memoryless (i.i.d.) quotient sources; for general ergodic sources, the achievability direction is argued (not proved) via a causal pipeline with explicit mixing-time bounds (Section F)—a fully explicit FSC-level pathwise equivalence remains open. This identification is stated only in the common-history coarsening regime of Theorem 14 and under one-way observability (Theorem 23); the two-way and genuinely distinct-sensor cases remain open (Section O). 
+
+Assumption 23 (One-Way Observability) . Agent B’s actions do not causally affect the sender-side source history: 
+
+P (OAt | st, a At , a Bt ) = P (OAt | st, a At ).
+
+7This holds whenever A is a sensor or instructor and B is an actuator or learner—the natural model for human–AI alignment, where the AI acts and the human provides feedback that does not directly alter the source observed by the sender. Together with Theorem 14, it gives the coarsening-side-information setting used in the WZ and shrinking-distortion converse sections. It excludes fully cooperative Dec-POMDPs where both agents jointly affect the shared state and neither history is a deterministic coarsening of the other. 
+
+Remark 24 (When distinct-sensor models reduce to common-history coarsening) . The common-history regime (Theorem 14) is not as restrictive as it may first appear. A genuinely distinct-sensor model (OAt , O Bt ) reduces to the common-history setting whenever there exists a shared sufficient statistic—for example, when both agents observe noisy versions of a common underlying signal Xt
+
+and one agent’s observation is a stochastic degradation of the other’s. Concretely, if OBt − OAt − Xt
+
+forms a Markov chain (i.e., B’s observation is a further corruption of A’s), then the quotient induced by B’s observation history coarsens that of A’s, recovering the coarsening relation of Theorem 40. This covers sensor-controller pairs with shared physics but different sensor quality, and teacher-student pairs where the student sees a lossy version of the teacher’s input. The genuinely non-reducible case—where A and B observe complementary aspects of the environment with no dominance relation—remains open and likely requires the two-way directed-information framework of Section O. 
+
+Proposition 25 (One-Way Wyner-Ziv Benchmark Identification) . Under Assumptions 14, 15, 19, and 23: (i) (Proved.) Any semantic protocol achieving distortion D induces a valid WZ code: 
+
+Rsem (D) ≥ RWZ (D; QA, QB , d intent ).(ii) (Proved, i.i.d.; argued, ergodic.) Any WZ code on (QA, QB , d intent ) can be implemented as a causal pipelined semantic protocol. For memoryless (i.i.d.) quotient sources, the pipeline achieves exact WZ distortion (Theorem 26). For general ergodic sources, the long-run time-averaged semantic distortion converges to DWZ via the ergodic theorem with explicit mixing-time bounds (Section F); a fully explicit FSC-level equality remains open. 
+
+Corollary 26 (Exact I.I.D. Operational Achievability) . Under the conditions of Theorem 25, if the quotient process {QAt } is i.i.d. (memoryless source), then the causal pipeline achieves Rsem (D) = 
+
+RWZ (D) exactly. Successive blocks are independent, so θ(k+1) = f ( ˆQ(k−1)  
+
+> A
+
+, Q (k−1)  
+
+> B
+
+) is independent of Q(k+1)  
+
+> A
+
+, and each block’s distortion equals DWZ exactly. 
+
+Remark 27 (Ergodic long-run achievability (argued)) . The converse leg of Theorem 25 is exact. The only non-exact leg is the ergodic achievability direction: the causal pipeline introduces a two-block delay, so θ(k+1) is correlated with Q(k+1)  
+
+> A
+
+through the source dependence. Under geometric mixing with rate ρ < 1 (guaranteed by Theorem 19 on a finite state space), the correlation decays as ρ2n
+
+across the two-block gap. For any δ > 0, choosing blocklength n ≥ (2 log(1 /δ )) / log(1 /ρ ) ensures per-block distortion deviation ≤ δ, yielding ¯DK ≤ DWZ + δ + D0/K . The ergodic theorem then gives almost-sure convergence of the time-averaged distortion (Section F). A fully explicit pathwise FSC-level equivalence remains open. 
+
+Corollary 28 (One-Way Critical-Rate Benchmark) . Under Assumptions 14, 15, 19, and 23 (i.e., the conditions of Theorem 25), denote the conditional entropy rate ¯h(QA | QB ) := lim T →∞ 1 
+
+> T
+
+H(QTA |
+
+QTB ). Then the lossless Wyner-Ziv benchmark on quotient alphabets is 
+
+RWZ crit := RWZ (0) = ¯h(QA | QB ) = hA − hB ,
+
+where the last equality uses H(QTA, Q TB ) = H(QTA) (since QTB is determined by QTA via the coarsen-ing QA ⪯ Q B ). For i.i.d. quotient distributions, ¯h(QA | QB ) = H(QA | QB ) = H(QA) − H(QB ).The log-cardinality form log |Q A| − log |Q B | is the further special case of uniform distributions. Under the i.i.d. exact bridge and the ergodic long-run bridge of Theorem 25, RWZ crit is the one-way benchmark for the semantic critical rate. 
+
+Source-distribution dependence. The benchmark RWZ crit = ¯h(QA | QB ) depends on the policy-induced visitation over quotient classes; the log-cardinality form is the worst-case (uniform) upper bound. Table 4 summarizes the hierarchy. Experiments use random policies (near-uniform visitation), so the empirical knee tracks the log-cardinality bound; under structured policies the true benchmark can be substantially lower (see Section M). 8Form of Rcrit Expression Regime 
+
+Log-cardinality (worst-case) log |Q A| − log |Q B | Uniform quotient dist. WZ lossless rate (i.i.d.) H(QA | QB ) i.i.d. source Conditional entropy rate ¯h(QA | QB ) = hA − hB Stationary ergodic 
+
+Table 4: Hierarchy of critical-rate characterizations, from conservative (top) to sharp (bottom). The log-cardinality form is policy-independent; the entropy-rate form depends on the joint quotient dynamics. Numerical values for Chain5 appear in Section M. The WZ single-letter formula, gap closure, and inherited strong converses/error exponents/finite-blocklength bounds follow from the reduction; see Section A for details. 
+
+Proposition 29 (Encoder-Only Penalty Relative to the WZ Benchmark) . Let X = QA and Y = QB
+
+with the deterministic coarsening f : QA → Q B , so that QB − QA − T is a Markov chain for any bottleneck variable T . For any encoder T inducing distortion D(T ) under dintent ,
+
+I(QA; T ) ≥ RWZ 
+
+ D(T ) + I(QB ; T ), (1) 
+
+where RWZ (D) = min p(u|qA): E[dintent ]≤D
+
+I(QA; U ) − I(QB ; U ) is the one-way WZ benchmark on quotient alphabets (Theorem 36). Consequently, if T∆ is IB-optimal at relevance ∆ for 
+
+RIB (∆) := min      
+
+> p(t|qA): I(T;QB)≥∆
+
+I(QA; T ),
+
+and D∗(∆) is the distortion induced by T∆, then 
+
+RIB (∆) ≥ RWZ 
+
+ D∗(∆)  + ∆ .
+
+At the lossless endpoint, the encoder-only / side-information gap is exact: 
+
+Renc (0) − RWZ (0) = H(QA) − H(QA | QB ) = H(QB ),
+
+where Renc (0) = H(QA) is the standard lossless rate without decoder side information. Proof sketch. For any encoder T , the induced pair (T, D (T )) is feasible for the WZ objective at distortion D(T ), so by definition of RWZ ,
+
+RWZ 
+
+ D(T ) ≤ I(QA; T ) − I(QB ; T ).
+
+Rearranging gives (1) . Applying the inequality to an IB-optimal encoder T∆ yields the second claim. For the lossless endpoint, the encoder-only rate is the standard lossless source-coding rate 
+
+Renc (0) = H(QA), while Theorem 28 gives RWZ (0) = H(QA | QB ); subtracting yields the exact gap H(QB ) because QB is a deterministic function of QA.
+
+Remark 30 (IB vs. semantic R-D: what is derived vs. pre-specified) . In the IB framework, the relevance variable Y is chosen by the designer; in our framework, Y = QB is derived from agent B’s computational capacity via the quotient functor Q. Theorem 29 shows that once this identification is made, encoder-only bottlenecks such as IB-style compressions pay an additive penalty relative to the side-information-aware WZ benchmark; at zero distortion, that penalty is exactly the side-information entropy H(QB ).
+
+# 8 Achievability and Constructive Schemes 
+
+Theorem 31 (Alignment Traversal) . For agent classes ΠA and ΠB connected by intermediate classes 
+
+{Πi} with quotient morphisms φi : Qi → Q i+1 having Lipschitz constants Li,
+
+dQ(A, B | M ) ≤
+
+> k−1
+
+X
+
+> i=1
+
+Li · dQ(Π i, Πi+1 | M ),
+
+and therefore 
+
+Rsem (A → B; ε) ≤ X
+
+> i
+
+Rsem (Π i → Πi+1 ; ε/k ).
+
+Proof in Section K. 
+
+9Single-letter achievability. The worst-case over Πm,T prevents single-letter coding theorems. Under a memoryless reference policy distribution μ ∈ ∆(Π m,T ) (strong assumption ; the one-way WZ reduction removes the memoryless restriction on the rate-distortion benchmark under one-way observability, but the single-letter formula below is exact only for memoryless μ), the average-case rate-distortion decomposes into independent per-step problems: 
+
+Theorem 32 (Memoryless Single-Letter Achievability) . If the reference policy distribution μ is memoryless, then 
+
+Rμ(ε) = min     
+
+> P(M|Intent): E[dintent ]≤ε
+
+I(Intent; M ).
+
+Under one-way observability, the WZ benchmark of Theorem 25 governs the general stationary-ergodic problem at the benchmark level, but the single-letter formula above is exact only for memory-less μ.Proof sketch. Under memoryless μ, the intent sequence {Intent t} is i.i.d. (each drawn independently from μ’s induced distribution on quotient classes). The T -step mutual information decomposes: 
+
+I(Intent T ; M T ) = P 
+
+> t
+
+I(Intent t; Mt), and standard single-letter rate-distortion theory [ 18 ] applies to each term. 
+
+Remark 33 (Beyond the memoryless reference distribution) . For Markovian or more general reference processes, the i.i.d. single-letter objective can still be used as a conservative constructive upper bound by restricting attention to memoryless encoders that ignore temporal correlation. The true operational rate can only be lower; the theorem above does not claim an exact single-letter characterization outside the memoryless setting. 
+
+Definition 34 (Semantic Codebook Construction) . Compute quotient QA; for each class [h], compute centroid intent ¯I([ h]) ; quantize to 2R codewords via k-means++ [ 34 ]. Encoder maps [h] to nearest codeword; decoder maps codeword to recommended action distribution. This achieves Dintent ≤
+
+O(|Q A|1/d · 2−R/d ), where d is the effective dimension of the intent space, i.e. the number of independent coordinates needed to represent the intent vectors up to negligible residual variance (Section L). 
+
+# 9 Applications to Alignment 
+
+Model the human as agent H with capacity (mH , T H ) and the AI as agent A with (mA, T A) ≫
+
+(mH , T H ). This section derives the form of the alignment cost under the quotient model. The structural lower bound (Theorem 18(i)) and the constructive upper bound (Theorem 32) are theorem-level given their assumptions. The practical implications for RLHF, debate, and routing are qualitative :they predict scaling forms (linear in capacity gap, logarithmic in accuracy) but do not yield computable numerical bounds until the effective quotient cardinalities |Q A|, |Q H | can be estimated for real systems—an open problem discussed in Section 12. 
+
+Corollary 35 (Alignment Cost Scaling) . The alignment rate Ralign (ε) := Rsem (A → H; ε) satisfies: (i) Structural lower bound (from Theorem 18(i)): Ralign (ε) ≥ Rcrit = log |Q A| − log |Q H |
+
+for any ε < c M .(ii) Constructive upper bound (memoryless/codebook regime): Under the memoryless reference-distribution assumption of Theorem 32 and the codebook construction of Theo-rem 34, there exists a quotient-aware protocol with 
+
+Rcb align (ε) ≤ deff · log( |Q A|1/d eff /ε ) + O(1) ,
+
+giving an O(log(1 /ε )) accuracy cost beyond the structural floor. Together: the theorem-backed part is the structural floor Ralign (ε) ≥ log |Q A| − log |Q H |, while the codebook scheme provides a constructive rate in a restricted regime. Proof. Part (i) is Theorem 18(i) applied to the (A, H ) pair. Part (ii) inverts the codebook bound 
+
+Dintent ≤ Cd · |Q A|1/d · 2−R/d (Section L): setting ε = Cd · |Q A|1/d · 2−R/d and solving for R
+
+gives R = d · log( Cd · |Q A|1/d /ε ).10 Figure 2: Left: Chain5 rate-distortion curves for mA = 16 , mB ∈ { 1, 2, 4, 8}. A sharp knee appears near Rcrit ≈ 1.4 bits/step (dashed); distortion decays rapidly above it. Right: Rmin vs. capacity gap (slope ≈ 1), confirming Theorem 35. The framework recovers human–AI alignment as a special case (Table 1), but the claims split into three layers. Theorem-backed: the structural lower bound says any communication protocol must pay for the quotient mismatch. Constructive: the logarithmic-in-accuracy upper bound comes from the memoryless/codebook regime above, not from the full general model. Qualitative: RLHF, debate, routing, and scalable oversight are interpretations of the structural theorem once the quotient model is deemed appropriate for the application. In RLHF [ 46 ], each binary preference comparison conveys at most 1 bit (a choice between two options); with Likert-scale strength, the effective rate is ≈1–2 bits per comparison. 2 Under the quotient model, Theorem 35 therefore predicts a structural cost linear in the capacity gap and an accuracy surcharge logarithmic in 1/ε . These are scaling-form predictions—the theory identifies the functional dependence on the capacity gap and accuracy target, not a computable numerical bound for a specific LLM–human pair. Estimating effective quotient cardinalities for real systems (e.g., via probing classifiers that approximate the quotient partition, or via the lattice-gradient approach of Section Q) is the key open problem connecting this theory to practice. The traversal theorem (Theorem 31) suggests routing alignment through intermediate abstractions—analogous to weak-to-strong generalization or scalable oversight via debate. Data processing implies post-processing cannot improve alignment. Extended discussion in Section G. 
+
+# 10 Experiments 
+
+We validate theoretical predictions on C HAIN 5 ( |S| = 5 , |A| = 2 , |O| = 5 ), the standard RockSam-ple(4,4) benchmark ( |S| = 257 , |A| = 9 , |O| = 3 ), and six additional environments (up to |S| = 200 ). All results report median over 10 seeds; shaded bands are IQR. We distinguish two empirical roles: fixed-ε figures illustrating the structural phase transition, and one dedicated shrinking-distortion sweep aligned with the asymptotic converse regime. Detailed methodology is in Section M; Section B records what these experiments do and do not validate relative to the theorem-level claims. 
+
+Methodology summary. Quotient classes are computed by enumerating all deterministic FSCs for m ≤ 3 or sampling nFSC ≥ 50 random stochastic FSCs for larger m; histories with identical behavioral signatures (future observation distributions across all sampled FSCs, to tolerance 10 −4)form equivalence classes. Intent distortion uses the two-term proxy dexp intent (h) := ∥bAh − bBh ∥1 +0.5 · 1{aA̸ = aB }, which lower-bounds the full three-term dintent of Section 3 while preserving the same phase-transition location (Theorem 11). Distortion is measured as the empirical average over 10 ,000 sampled trajectories. Semantic codebooks are constructed via k-means++ on quotient-class belief centroids (Theorem 34). All code and reproduction instructions are available at https: //github.com/alch3mistdev/semantic-rate-distortion .        
+
+> 2The 1-bit lower bound is information-theoretic: a binary choice has entropy ≤1bit. The “1–2 bits” range reflects that graded preferences (e.g., 5-point Likert) can convey log 25≈2.3bits, reduced by human noise. This is a modeling assumption, not a derived quantity.
+
+11 Figure 3: Shrinking-distortion regime illustration for the asymptotic one-way converse (Chain5, 
+
+(mA, m B ) = (16 , 1) ). The orange curve shows the empirical minimum rate Rmin achiev-ing Dintent ≤ εT with εT = 0.4/T ; the blue curve shows the log-cardinality reference 
+
+log |QA| − log |QB |. This figure is a regime-matching illustration for Theorem 20. By contrast, Figure 2 remains a fixed-ε illustration of the broader structural phase-transition theorem. 
+
+Phase transition (Figure 2, left). The mB = 1 curve ( |Q A| = 781 , |Q B | = 289 ) shows a clear empirical knee near the log-cardinality reference ≈ 1.4 bits/step; mB ≥ 2 curves cluster together once the capacity gap closes. Because Chain5 is highly non-uniform ( max k rk/¯r = 15 .9; Section M), we treat this as structural evidence for a knee near the counting reference , not as validation of a sharper theorem-level exponent. 
+
+Alignment scaling (Figure 2, right). Rmin scales linearly with the capacity gap with slope ≈ 1,confirming the structural term dominates (Theorem 35). 
+
+Shrinking-distortion regime match (Figure 3). To complement the fixed-ε plots, we run a dedicated Chain5 sweep in the same regime as Theorem 20: for T ∈ { 2, 3, 4, 5} we set εT = 0 .4/T ,recompute (QA, QB ) for each horizon, and report the minimum integer rate achieving Dintent ≤ εT .The resulting thresholds are Rmin ∈ { 5, 8, 10 , 12 }, while the corresponding log-cardinality references are {0.43 , 0.79 , 1.43 , 2.29 } bits/step. We use this sweep as a regime-matching illustration rather than a pointwise empirical proof of the converse: it keeps the distortion tolerance in the same asymptotic scaling class as the theorem, while the fixed-ε figures continue to illustrate the broader structural transition. 
+
+Scalability and closer-to-uniform cases. Figure 6 shows the phase transition on RichGridWorld (|S| = 36 , |O| = 12 , T = 2 ); the mB = 1 gap ( Rcrit ≈ 5.0 bits/step) creates a persistent distortion floor. B ALANCED RAND 8 ( |S| = 8 , ratio 2.58 ; Figure 6) is much closer to the uniform/cardinality regime than Chain5 and shows an inflection near Rcrit ≈ 1.63 bits/step, which is consistent with the idealized constructive benchmark without being a proof of it. To verify that the phase transition persists at scale, Figure 4 tests chain POMDPs with |S| ∈ { 100 , 150 , 200 } and coarse observations (|O| ∈ { 5, 6, 8}, T = 2 , mA = 4 ). The mB = 1 curves show a clear capacity gap ( |Q A| > |Q B |,
+
+Rcrit = 2 bits/step) with distortion bounded away from zero below Rcrit ; the mB = 2 curves close the gap ( |Q A| = |Q B |, Rcrit = 0 ). Total runtime for all three domains: < 1 second. 
+
+Standard benchmark: RockSample(4,4). To test the framework on a recognized POMDP bench-mark beyond synthetic chains, we apply it to RockSample(4,4) [ 51 ] ( |S| = 257 , |A| = 9 , |O| = 3 ,
+
+T = 3 ). This domain has action-dependent observation support : only check-rock actions yield informative observations (good/bad), while movement always emits “none.” The quotient source is therefore non-i.i.d.: rock-checking strategies create temporal correlations in the observation sequence that make the quotient class at time t depend on the full history, not just the current state. Figure 5 confirms a clear phase transition: for mA = 8 , mB = 1 (|Q A| = 40 , |Q B | = 7 , Rcrit = 3 ), intent 12 Figure 4: Phase transition at |S| > 100 . Top: mB = 1 creates a capacity gap; distortion floor persists below Rcrit = 2 bits/step. Bottom: mB = 2 closes the gap ( |Q A| = |Q B |). Domains: Chain100 (|S| = 100 ), Chain150 ( |S| = 150 ), Chain200 ( |S| = 200 ). 
+
+Figure 5: RockSample(4,4): phase transition and WZ benchmark. Left: Dintent vs. R for mA = 8 ,
+
+mB ∈ { 1, 2, 3}; the mB = 1 curve shows a clear knee at Rcrit = 3 bits/step. Right: Blahut-Arimoto 
+
+RWZ (D) (black) vs. R(D) (red) on the non-i.i.d. quotient source; H(QA|Q B ) = 0 .70 bits/step. distortion remains above 0.73 below the critical rate and drops to 0.52 above it. Larger receiver capacity ( mB = 2 , 3) progressively lowers the distortion floor ( 0.17 and 0.11 , respectively). The Blahut-Arimoto RWZ (D) benchmark yields H(QA|Q B ) = 0 .70 bits/step—confirming non-trivial side-information gain on a non-i.i.d. source—and the RWZ (D) curve lies strictly below R(D)
+
+throughout the distortion range. Runtime: < 7 seconds. 
+
+Baselines and semantic coding advantage. Against Blahut-Arimoto RWZ (D), k-means on beliefs, and random clustering (Section M), the quotient-aware protocol consistently outperforms; semantic coding requires higher rates than classical observation compression, reflecting the cost of intent preservation (Figure 10). Additional experiments (Tiger, LLM routing) are in the appendix. 13 Figure 6: Left: RichGridWorld ( T = 2 ); mB = 1 gap creates a distortion floor. Right: BalancedRand8 (T = 4 , refinement ratio 2.58 ); inflection near Rcrit ≈ 1.63 .
+
+Figure 7: Wyner-Ziv benchmark curves under random vs. structured policies (Chain5, mA = 16 ,
+
+mB = 1 ). Solid: RWZ (D) with decoder side information; dashed: R(D) without. Vertical lines mark the log-cardinality bound ( 1.43 , gray), H(QA|Q B )rand (0.29 , blue), and H(QA|Q B )struct 
+
+(0.08 , red). Structured vs. random at the same WZ benchmark level: 3.6× reduction ( 0.08 vs. 0.29 ); structured vs. worst-case counting bound: 19 × (0.08 vs. 1.43 ). 
+
+Entropy-rate benchmark vs. log-cardinality (Figure 7). The experiments above use random policies, which produce near-uniform quotient visitation; the empirical knee therefore tracks the 
+
+log-cardinality bound (log |Q A| − log |Q B | = 1 .43 bits/step). Theorem 28 identifies the sharper one-way benchmark as the conditional entropy rate H(QA | Q B ), which equals the log-cardinality form only under uniform visitation. To probe this sharper benchmark, we compare Blahut-Arimoto Wyner-Ziv RWZ (D) curves under two source distributions: 1. Random policy : uniform actions yield H(QA | Q B ) = 0 .29 bits/step. 2. Structured policy : near-optimal FSCs (m ≤3, value-weighted sampling) concentrate visitation, yielding H(QA | Q B ) = 0 .08 bits/step. In both cases, RWZ (D) reaches zero distortion at the predicted H(QA | Q B ) benchmark rather than at the log-cardinality bound. The structured-policy knee is 3.6× lower than the random-policy knee ( 0.08 vs. 0.29 bits/step) at the same WZ benchmark level, and 19 × lower than the worst-case counting bound ( 0.08 vs. 1.43 bits). The 19 × figure compares the tightest benchmark against the loosest; the 3.6× figure isolates the effect of structured visitation at a common theoretical level. Both demonstrate that structured visitation can make the one-way benchmark substantially smaller than a capacity-counting argument suggests. This is benchmark evidence, not a separate proof of full end-to-end operational optimality outside the regimes covered by Theorem 25. 
+
+Encoder-only bottlenecks vs. semantic WZ (Figure 8). Theorem 29 shows that any encoder-only bottleneck pays at least the WZ benchmark plus the relevance it retains about QB . The figure compares an IB-style encoder-only baseline against the semantic WZ benchmark. At the lossless endpoint, the gap is exact: under structured policies, encoder-only lossless coding requires H(QA) = 2.39 bits/step while the one-way semantic benchmark needs only H(QA | Q B ) = 0 .08 bits/step—a 
+
+31 × gap. Under random policies the corresponding lossless ratio is 21 ×. Across the displayed distortion range, the encoder-only curve remains above the side-information-aware benchmark, illustrating the cost of ignoring decoder side information. 14 Figure 8: IB-style encoder-only compression vs. the semantic WZ benchmark (Theorem 29). The dashed curve ignores decoder side information QB ; the solid curve exploits it. The exact theorem-level statement is the lower bound of Theorem 29; the lossless endpoints differ by H(QB ). (a) Structured policies: 31 × lossless gap. (b) Random policies: 21 × lossless gap. 
+
+# 11 Related Work 
+
+Rate-distortion and source coding with side information. Shannon [ 1 , 2] established rate-distortion for shared codebooks; the Blahut-Arimoto algorithm [ 35 , 36 ] provides the computational backbone. Wyner and Ziv [ 27 ] characterized rate-distortion with decoder side information; Slepian and Wolf [ 45 ] established the complementary lossless distributed coding result. Draper and Wor-nell [ 37 ] extended WZ to structured side information, closely related to our quotient side-information model. Our one-way WZ reduction (Theorem 25) identifies when semantic rate-distortion can be benchmarked by a classical side-information problem on quotient alphabets. Derpich and Øster-gaard [ 43 ] improve causal rate-distortion bounds; Permuter et al. [ 42 ] establish directed information achievability. Stavrou and Kountouris [ 33 , 38 ] and Zaidi et al. [ 32 ] develop goal-oriented compres-sion where the distortion is task-specific; our framework differs in that both the source alphabet (quotient classes) and the distortion (intent preservation) are derived from agent capacity rather than pre-specified. 
+
+Semantic communication, bounded rationality, and Dec-POMDPs. Gündüz et al. [ 5 ], Koun-touris and Pappas [6], and Xie et al. [40] develop task-oriented and deep-learning-enabled semantic communication. Tishby et al. [ 22 ] introduced the Information Bottleneck (IB), which compresses through a pre-specified relevance variable Y ; Theorem 29 shows that once Y = QB is fixed, any encoder-only bottleneck pays an additive penalty relative to the side-information-aware WZ bench-mark, and at zero distortion that penalty is exactly H(QB ). Crucially, in our framework Y is derived 
+
+from capacity via the quotient functor, not chosen. Sims [ 23 ] and Genewein et al. [ 24 ] formalized information-theoretic bounded rationality; Ortega and Braun [ 7] developed a thermodynamic frame-work. Our framework grounds these in POMDPs via the quotient functor. Bernstein et al. [ 25 ] showed Dec-POMDP planning is NEXP-complete; Goldman and Zilberstein [ 39 ] characterized communica-tion complexity. Nayyar, Mahajan, and Teneketzis [ 44 ] developed the common-information approach 
+
+to Dec-POMDPs under communication constraints, establishing structural results for optimal strate-gies given shared information; our one-way observability (Theorem 23) creates a related asymmetric information structure, but our focus is on minimum rate for semantic alignment rather than optimal 
+
+strategies . Tatikonda and Mitter [ 26 ] show stabilization requires rate exceeding topological entropy; 
+
+Rcrit is the analogous semantic quantity. Witsenhausen [ 41 ] shows shared-information assumptions break distributed control; Theorem 18(i) is a semantic analogue. In multi-agent RL, emergent communication protocols arise spontaneously when agents are given discrete channels [ 48 , 49 ]; our framework provides a theoretical lens for such protocols, predicting the minimum channel capacity for intent-preserving coordination as a function of the agents’ capacity gap. 
+
+POMDP abstraction and alignment. Nixon [ 4 ] establishes the Myhill–Nerode theorem for bounded interaction; the quotient POMDP’s well-definedness is sketched in Theorem 4. Cas-tro et al. [ 11 ], Ferns et al. [ 15 ], Li et al. [ 16 ], Abel et al. [ 47 ], and Amato et al. [ 17 ] develop 15 Result Status Assumptions Loc.                                 
+
+> Value/proxy bounds Proved Lip. reward §3 Capacity (i): threshold Proved Common-history coarsening + positive support on a merged class App. H Capacity (ii): exp. decay Proved (i.i.d. one-way) Common-history coarsening, intent meas., one-way, i.i.d. quotient source, Lip. App. I Shrinking-distortion con-verse Proved (shrinking-ε
+> regime) Common-history coarsening, intent meas., quot. reg., one-way App. J WZ converse (Prop. 25(i)) Proved Common-history coarsening, intent meas. + one-way §7 WZ bridge (Prop. 25(ii)) Proved (i.i.d.) / Argued (erg.) Common-history coarsening, intent meas. + one-way §7
+> Rcrit benchmark / gap closure Exact converse /exact i.i.d.; argued ergodic Common-history coarsening, intent meas. + one-way §7 Traversal Proved Lip. morph. App. K Single-letter Proved Memoryless μ§8 Alignment scaling Lower bound proved; up-per bound constructive Cap. thm + memoryless/codebook regime §9 Encoder-only penalty (Prop. 29) Proved Common-history coarsening, intent meas. + one-way §7 Quotient PAC bound (Prop. 51) Proved Separation γ > 0App. M
+
+Table 5: Proof status. “Proved” = complete proof in appendix. “Proved (i.i.d.) / Argued (erg.)” = exact for memoryless sources; ergodic case argued with explicit mixing-time bounds (Theorem 27). “Argued” = structured argument; gap acknowledged. The alignment upper bound is constructive rather than fully general, and the shrinking-distortion converse is theorem-level only in its stated asymptotic regime. POMDP/MDP equivalence, abstraction, and FSC-based algorithms. The quotient functor Q uni-fies bisimulation, lumpability, and policy abstraction as capacity-indexed special cases [ 4 ]. Prior alignment theory [ 9, 10 ] focuses on preference learning; Christiano et al. [ 46 ] introduced deep RL from human preferences (RLHF), the dominant paradigm for practical alignment. We provide a complementary information-theoretic perspective: RLHF’s comparison budget is bounded below by 
+
+Rcrit (Section 9). 
+
+# 12 Discussion and Conclusion 
+
+We have developed a semantic rate-distortion theory where bounded agents’ semantic spaces are quotient POMDPs and communication is formalized as rate-constrained quotient morphisms. The backbone of the paper is the fixed-ε structural phase transition theorem: below Rcrit , some semantic distinctions are irresolvable regardless of protocol design. Under one-way observability in the common-history coarsening regime, the Wyner-Ziv benchmark then sharpens this structural picture: the converse matches the classical WZ converse exactly, the operational bridge is exact for memoryless quotient sources (Theorem 26), the resulting constructive decay is classical rather than bespoke, and the ergodic bridge is argued with explicit mixing-time bounds for long-run average distortion (Theorem 27). Separately, the shrinking-distortion converse provides an asymptotic one-way lower bound from messages plus decoder side information rather than the sole empirical backbone of the paper. The impossibility below Rcrit is structural : when the sender’s quotient resolution exceeds the receiver’s, certain semantic distinctions are irresolvable regardless of coding sophistication. The discrete framework extends to continuous domains via metric entropy: Rcrit (ε) ≈ (dA −dB ) log(1 /ε )
+
+for smooth quotient manifolds of dimensions dA > d B (Section N). 
+
+Summary of results and proof status. Table 5 collects the main results with their proof status and required assumptions. Section B separately records which empirical sections speak to which claims, so theorem-level, benchmark-level, and qualitative statements are not conflated. 16 On the capacity model and the source of novelty. The framework models agent capacity as the node count m of a finite-state controller. This is one possible formalization—not the only one. Attention-limited agents, agents with context-dependent working memory, or neural networks with varying depth and width all suggest alternative capacity measures that would induce different quotient structures and potentially different Rcrit values. We make two observations. First, the structural prediction —that a capacity gap induces a phase transition in semantic communication—is robust to the choice of capacity model: any model that produces a refinement lattice of abstractions (finer capacity ⇒ finer partition) yields a qualitatively identical phase transition, with Rcrit determined by the refinement gap. The FSC formalization is the setting in which we can prove sharp theorems, but the structural phenomenon does not depend on it. Second, the framework is modular : replacing the FSC-based quotient with any abstraction functor that satisfies right-invariance (Theorem 38) and refinement monotonicity (Theorem 39) would preserve all results from Section 5 onward. The FSC assumption determines which quotient is computed; the rate-distortion theory downstream is parametric in the quotient structure. One might separately object that the framework reduces to “apply standard coding theorems to a particular alphabet.” This objection conflates the contribution with its consequences. Classical rate-distortion theory tells you the communication cost once you know the source alphabet . But in the multi-agent setting, the alphabet is not given—it emerges from each agent’s computational constraints. The quotient functor Q identifies which environmental distinctions each agent’s memory can sustain; the refinement gap between QA and QB is what creates the communication problem in the first place. That Rcrit is metric-invariant (Theorem 11) is not a weakness but a feature: the phase transition is a structural property of the capacity gap, independent of how we measure semantic fidelity. 
+
+Limitations and open problems. The WZ reduction requires both the common-history coarsening regime and one-way observability; the two-way and genuinely distinct-sensor cases remain open [ 26 ,31 ] (though Theorem 24 identifies a class of distinct-sensor models that reduce to the common-history setting). The exponential bound (Theorem 18(ii)) is proved only in the one-way memoryless regime; outside that regime we present structural lower bounds and benchmark identifications rather than a theorem-level constructive exponent. Continuous alphabets, unknown environments, noisy channels, and operational WZ codebook construction are deferred to future work (Sections N and O). The alignment implications (Section 9) predict scaling forms but not computable numerical bounds for real systems, pending methods for estimating effective quotient cardinalities at scale. A concrete open problem is value-relevant tightening . The current bounds count all quotient distinc-tions equally, but some QA-subclasses may be value-irrelevant: merging them would not change the optimal policy or its value. Let Qval  
+
+> A
+
+be the coarsening of QA retaining only value-relevant cells (cf. Theorem 44). Then H(Qval  
+
+> A
+
+| Q B ) ≤ ¯h(QA | Q B ), and the true minimum alignment rate could be substantially lower than the full-quotient benchmark. Characterizing Qval  
+
+> A
+
+—which requires identifying which abstractions are task-irrelevant, not merely capacity-irrelevant—would tighten all downstream bounds and is the most promising route to practical relevance. A natural candidate approach is reward-weighted partition refinement : starting from QA, iteratively merge subclass pairs whose value functions differ by less than a tolerance τ , retaining only splits that change the optimal action or shift the value by more than τ . The resulting coarsening is reward-scale-aware by construction and could be combined with the lattice-gradient estimation below to make the tightening tractable at scale. Quotient estimation has PAC-style guarantees (Theorem 51), but the worst-case sample complexity is exponential in m (the uniform FSC distinguishing probability pγ can be as small as 1/N FSC =
+
+|A| −m · m−m|O| ). We empirically observe rapid convergence at moderate n ≈ 20 for structured POMDPs, and a promising path to scalability is lattice-gradient estimation (Section Q): instead of computing Q absolutely, enter the quotient lattice at a computable point and estimate the differential 
+
+refinement ∆Q between adjacent capacity levels, chaining local estimates via Lipschitz bounds (Theorem 31) to recover global structure. For language-based agents, the self-referential closure of natural language provides a natural probe family—linguistic prompts that test whether a model distinguishes context A from context B—making each ∆Q estimation polynomial in sample size rather than exponential in m.17 References 
+
+[1] C. E. Shannon. A mathematical theory of communication. Bell System Technical Journal ,27:379–423, 1948. [2] C. E. Shannon. Coding theorems for a discrete source with a fidelity criterion. IRE National Convention Record , 7:142–163, 1959. [3] J. L. Massey. Causality, feedback and directed information. In Proc. Int. Symp. Information Theory and Its Applications (ISITA) , pages 303–305, 1990. [4] A. T. Nixon. The Myhill–Nerode theorem for bounded interaction: Canonical abstractions via agent-bounded indistinguishability. arXiv:2603.21399 [cs.AI] , 2026. [5] D. Gündüz, Z. Qin, I. E. Aguerri, H. S. Dhillon, Z. Yang, A. Yener, K. K. Wong, and C.-B. Chae. Beyond transmitting bits: Context, semantics, and task-oriented communications. IEEE JSAC , 41(1):5–41, 2023. [6] M. Kountouris and N. Pappas. Semantics-empowered communication for networked intelligent systems. IEEE Communications Magazine , 59(6):96–102, 2021. [7] P. A. Ortega and D. A. Braun. Thermodynamics as a theory of decision-making with information-processing costs. Proceedings of the Royal Society A , 469(2153):20120683, 2013. [8] L. P. Kaelbling, M. L. Littman, and A. R. Cassandra. Planning and acting in partially observable stochastic domains. Artificial Intelligence , 101(1–2):99–134, 1998. [9] S. Russell. Human Compatible: Artificial Intelligence and the Problem of Control . Viking, 2019. [10] N. Soares and B. Fallenstein. Aligning superintelligence with human interests: A technical research agenda. Machine Intelligence Research Institute , Technical Report 2014-8, 2014. [11] P. S. Castro, P. Panangaden, and D. Precup. Equivalence relations in fully and partially observable Markov decision processes. In IJCAI , pages 1653–1658, 2009. [12] R. El-Yaniv and Y. Wiener. On the foundations of noise-free selective classification. JMLR ,11:1605–1641, 2010. [13] S. Kadavath, T. Conerly, A. Askell, T. Henighan, D. Drain, E. Perez, N. Schiefer, Z. Hatfield-Dodds, D. DasSarma, E. Tran-Johnson, et al. Language models (mostly) know what they know. 
+
+arXiv:2207.05221 , 2022. [14] X. Wang, J. Wei, D. Schuurmans, Q. Le, E. Chi, S. Narang, A. Chowdhery, and D. Zhou. Self-consistency improves chain of thought reasoning. In ICLR , 2023. [15] N. Ferns, P. Panangaden, and D. Precup. Metrics for finite Markov decision processes. In UAI ,2004. [16] L. Li, T. J. Walsh, and M. L. Littman. Towards a unified theory of state abstraction for MDPs. In ISAIM , 2006. [17] C. Amato, D. S. Bernstein, and S. Zilberstein. Optimizing fixed-size stochastic controllers for POMDPs and decentralized POMDPs. Autonomous Agents and Multi-Agent Systems ,21(3):293–320, 2010. [18] T. M. Cover and J. A. Thomas. Elements of Information Theory . Wiley, 2006. [19] I. Ong, A. Almahairi, V. Wu, W.-L. Chiang, T. Wu, J. E. Gonzalez, M. W. Kadous, and I. Stoica. RouteLLM: Learning to route LLMs from preference data. In ICLR , 2025. [20] D. Hendrycks, C. Burns, S. Basart, A. Zou, M. Mazeika, D. Song, and J. Steinhardt. Measuring massive multitask language understanding. In ICLR , 2021. [21] Y. Wang, X. Ma, G. Zhang, et al. MMLU-Pro: A more robust and challenging multi-task language understanding benchmark. In NeurIPS Datasets and Benchmarks , 2024. [22] N. Tishby, F. C. Pereira, and W. Bialek. The information bottleneck method. In Proc. 37th Allerton Conf. on Communication, Control, and Computing , 1999. [23] C. A. Sims. Implications of rational inattention. Journal of Monetary Economics , 50(3):665–690, 2003. 18 [24] T. Genewein, F. Leibfried, K. Grau-Moya, and D. A. Braun. Bounded rationality, abstraction, and hierarchical decision-making: An information-theoretic optimality principle. Frontiers in Robotics and AI , 2:27, 2015. [25] D. S. Bernstein, R. Givan, N. Immerman, and S. Zilberstein. The complexity of decentralized control of Markov decision processes. Mathematics of Operations Research , 27(4):819–840, 2002. [26] S. Tatikonda and S. Mitter. Control under communication constraints. IEEE Transactions on Automatic Control , 49(7):1056–1068, 2004. [27] A. D. Wyner and J. Ziv. The rate-distortion function for source coding with side information at the decoder. IEEE Transactions on Information Theory , 22(1):1–10, 1976. [28] T. Berger. Rate Distortion Theory: A Mathematical Basis for Data Compression . Prentice-Hall, 1971. [29] I. Csiszár and J. Körner. Information Theory: Coding Theorems for Discrete Memoryless Systems . Cambridge University Press, 2nd edition, 2011. [30] V. Kostina and S. Verdú. Fixed-length lossy compression in the finite blocklength regime. IEEE Transactions on Information Theory , 58(6):3309–3338, 2012. [31] H. H. Permuter, T. Weissman, and A. J. Goldsmith. Finite state channels with time-invariant deterministic feedback. IEEE Transactions on Information Theory , 55(2):644–662, 2009. [32] A. Zaidi, I. E. Aguerri, and S. Shamaï. On the information bottleneck problems: Models, connections, applications, and information theoretic views. Entropy , 22(2):151, 2020. [33] P. A. Stavrou and M. Kountouris. A rate distortion approach to goal-oriented communication. In Proc. IEEE Int. Symp. Information Theory (ISIT) , 2022. [34] D. Arthur and S. Vassilvitskii. k-means++: The advantages of careful seeding. In SODA , pages 1027–1035, 2007. [35] R. E. Blahut. Computation of channel capacity and rate-distortion functions. IEEE Transactions on Information Theory , 18(4):460–473, 1972. [36] S. Arimoto. An algorithm for computing the capacity of arbitrary discrete memoryless channels. 
+
+IEEE Transactions on Information Theory , 18(1):14–20, 1972. [37] S. C. Draper and G. W. Wornell. Side information aware coding strategies for sensor networks. 
+
+IEEE JSAC , 22(6):966–976, 2004. [38] P. A. Stavrou and M. Kountouris. The role of fidelity in goal-oriented semantic communication: A rate-distortion approach. IEEE Trans. Commun. , 71(7):3918–3931, 2023. [39] C. V. Goldman and S. Zilberstein. Decentralized control of cooperative systems: Categorization and complexity analysis. J. Artif. Intell. Res. , 22:143–174, 2004. [40] H. Xie, Z. Qin, G. Y. Li, and B.-H. Juang. Deep learning enabled semantic communication systems. IEEE Trans. Signal Process. , 69:2663–2675, 2021. [41] H. S. Witsenhausen. A counterexample in stochastic optimum control. SIAM J. Control ,6(1):131–147, 1968. [42] H. H. Permuter, P. Cuff, B. Van Roy, and T. Weissman. Capacity of the trapdoor channel with feedback. IEEE Trans. Inf. Theory , 54(7):3150–3165, 2008. [43] M. S. Derpich and J. Østergaard. Improved upper bounds to the causal quadratic rate-distortion function for Gaussian stationary sources. IEEE Trans. Inf. Theory , 58(5):3131–3152, 2012. [44] A. Nayyar, A. Mahajan, and D. Teneketzis. Decentralized stochastic control with partial history sharing: A common information approach. IEEE Transactions on Automatic Control ,58(7):1644–1658, 2013. [45] D. Slepian and J. K. Wolf. Noiseless coding of correlated information sources. IEEE Transac-tions on Information Theory , 19(4):471–480, 1973. [46] P. F. Christiano, J. Leike, T. Brown, M. Milani, S. Gilmer, and D. Amodei. Deep reinforcement learning from human preferences. In NeurIPS , 2017. [47] D. Abel, D. Arumugam, L. Lehnert, and M. Littman. State abstractions for lifelong reinforce-ment learning. In ICML , 2018. 19 [48] A. Lazaridou, A. Peysakhovich, and M. Baroni. Multi-agent cooperation and the emergence of (natural) language. In ICLR , 2017. [49] T. Eccles, Y. Bachrach, G. Lever, A. Lazaridou, and T. Graepel. Biases for emergent communi-cation in multi-agent reinforcement learning. In NeurIPS , 2019. [50] G. A. Miller. Note on the bias of information estimates. In H. Quastler, editor, Information Theory in Psychology: Problems and Methods , pages 95–100, 1955. [51] T. Smith and R. Simmons. Heuristic search value iteration for POMDPs. In Proceedings of the 20th Conference on Uncertainty in Artificial Intelligence (UAI) , pages 520–527, 2004. 
+
+# A Wyner-Ziv Corollaries 
+
+Corollary 36 (Benchmark Gap Closure) . Under the one-way reduction (Theorem 25), the converse and pipelined achievability are governed by the same WZ benchmark. For i.i.d. blocks drawn from the stationary marginal p(qA), the WZ single-letter formula applies: 
+
+RWZ (D) = min 
+
+> p(u|qA):
+> E[dintent ]≤D
+
+I(QA; U ) − I(QB ; U ),
+
+where U forms the Markov chain QB → QA → U . This formula is exact for the i.i.d. source; for the ergodic Markov quotient process, the same objective serves as a conservative constructive upper bound when we restrict attention to memoryless auxiliaries U and ignore temporal correlation. 
+
+Corollary 37 (Inherited Results) . Under the conditions of Theorem 25, the semantic setting inherits strong converses [ 29 ] (distortion approaches dmax exponentially below Rsem (D)), er-ror exponents [ 29 ] matching the WZ reliability function, and finite-blocklength bounds [ 30 ](R(n, D, ε ) = Rsem (D) + pV /n Q −1(ε) + O(log n/n )). 
+
+# B Claim / Validation Ledger 
+
+Claim surface Formal status Assumptions What the experiments speak to 
+
+Structural phase transition; one-way constructive decay Lower bound theorem-level; exponential de-cay theorem-level only in the i.i.d. one-way regime Common-history coars-ening for quotient com-parison; positive support for impossibility; intent meas. + one-way + i.i.d. + Lip. for constructive decay Chain5, RichGridWorld, BalancedRand8, and Chain100/150/200 probe where the empirical knees sit relative to the stated references; Chain5 is not read as validation of a sharp constructive exponent Shrinking-distortion converse Theorem-level, asymp-totic only Common-history coars-ening, intent meas., one-way observability, quo-tient regularity, shrink-ing distortion ε =
+
+O(1 /T )
+
+A dedicated shrinking-ε Chain5 sweep matches the converse regime; the fixed-ε plots still illustrate the broader phase-transition shape rather than the converse itself One-way WZ benchmark Exact converse; i.i.d. operationally exact; er-godic long-run bridge argued Common-history coars-ening, intent meas. +one-way observability Blahut-Arimoto curves and structured-policy comparisons validate benchmark sensitivity to visitation, not full ergodic FSC-level equality Alignment applica-tions Lower bound theorem-backed; upper bound constructive; routing qualitative Quotient model for the application; mem-oryless/codebook assumptions for the upper bound Alignment-scaling plots support the structural trend; the LLM routing appendix is an analogy/case study, not a formal instantiation 
+
+Table 6: Ledger separating theorem-level claims from benchmark-level and qualitative claims. The purpose is not to downplay the empirical section, but to prevent fixed-ε experiments and benchmark calculations from being mistaken for proof of stronger statements than the paper actually establishes. 20 C Quotient Facts Used in This Paper 
+
+This paper does not re-prove the full Myhill–Nerode theorem of [ 4]. The later sections use only three structural facts: right-invariance of the history equivalence, refinement monotonicity as capacity increases, and the resulting canonical coarsening map QA → Q B . We collect those facts here so the notation used in the rate-distortion arguments is self-contained. Uniqueness and minimality of the quotient remain imported background from [4]. 
+
+Lemma 38 (Right-invariance and well-defined quotient transitions) . If h ≡m,T h′, then for every observation o ∈ O , the extended histories satisfy ho ≡m,T h′o. Consequently the transition 
+
+[h] o
+
+−→ [ho ] is independent of the chosen representative. Proof. If h ≡m,T h′, then every controller π ∈ Πm,T induces the same future observation law from 
+
+h and h′. Conditioning both laws on one additional observation o preserves equality by the chain rule for conditional distributions in the finite POMDP, so ho ≡m,T h′o. The quotient transition therefore depends only on the class [h], not on the representative history. 
+
+Lemma 39 (Refinement monotonicity in capacity) . If mA ≥ mB and TA = TB = T , then 
+
+QA ⪯ Q B .Proof. Since mA ≥ mB , every FSC with at most mB nodes is also an FSC with at most mA nodes, so ΠmB ,T ⊆ ΠmA,T . Therefore equality of future observation laws against all controllers in ΠmA,T 
+
+implies equality against all controllers in ΠmB ,T . Hence h ≡mA,T h′ implies h ≡mB ,T h′, so every 
+
+QA-class is contained in a unique QB -class. 
+
+Proposition 40 (Canonical coarsening map) . Under the conditions of Theorem 39, the map 
+
+κA→B : QA → Q B , κA→B ([ h]A) := [ h]B ,
+
+is well-defined. It is surjective onto the reachable QB -classes. Proof. Well-definedness follows from Theorem 39: if [h]A = [ h′]A, then h ≡mA,T h′, hence 
+
+h ≡mB ,T h′ and therefore [h]B = [ h′]B . Surjectivity onto reachable QB -classes is immediate because each reachable QB -class contains at least one history h, and that history belongs to some 
+
+QA-class whose image under κA→B is exactly [h]B .
+
+# D Extended Capacity Theorem Remarks 
+
+Remark 41 (Positivity of cM ). cM > 0 whenever QA is strictly finer than QB , as a consequence of the definitions. In a finite POMDP, the posterior belief bh = P (st | ht) is a sufficient statistic for the future observation distribution under any policy [ 4]: P πM (Ot+1: T | h) depends on h only through bh. Hence if bh = bh′ , then h and h′ produce identical future observations under all policies— including all FSCs in ΠmA,T A —and therefore lie in the same quotient class. Contrapositively, if 
+
+[h]A̸ = [ h′]A, then bh̸ = bh′ . Since W1(b, b ′) > 0 for distinct distributions on a finite state space, the belief component of dintent is strictly positive: dintent (Intent A(h), Intent A(h′)) ≥ W 1(bh, b h′ ) > 0.Finiteness of QA and QB then gives cM ≥ min [h]A̸ =[ h′]A W1(bh, b h′ ) > 0.
+
+Remark 42 (Positive-support condition in Theorem 18(i)) . The impossibility proof needs one additional condition beyond strict refinement: at least one merged QB -class witnessing the pigeonhole argument must appear with positive stationary mass under the protocol-induced source law. In finite irreducible settings this is automatic for every reachable recurrent class; we state it explicitly because mere convergence to stationarity does not by itself guarantee positive mass on every merged class. 
+
+Role of B’s quotient. B’s computational bound ( mB -node FSC) means its effective information state at each step is its QB -class. The quotient theorem [ 4 ] establishes that QB is the unique minimal abstraction preserving observation laws for all policies in ΠmB ,T B . Since B’s policy is constrained to this class, two histories in the same QB -class produce identical conditional observation distributions under any policy B can execute. Messages from A allow B to reconfigure its FSC parameters—selecting which mB -node policy to run—but not to transcend the mB memory bound. The impossibility below Rcrit arises because B’s bounded processing cannot resolve the relevant 
+
+QA-subclasses, even with optimal use of received messages. 21 Interpretation: structural impossibility. The existence of a phase transition is a structural conse-quence of the quotient refinement QA ⪯ Q B , which is policy-independent once the common-history comparison regime is fixed. When QA is strictly finer than QB , certain distinctions that A can per-ceive are invisible to B regardless of the protocol. The location of the most informative benchmark (Rcrit = ¯h(QA | QB ) under Theorem 25) depends on the source distribution; the log-cardinality form provides a policy-independent worst-case reference, while theorem-level exponential achievability is claimed only in the one-way memoryless regime of Theorem 18(ii). 
+
+# E Extended Converse Remarks 
+
+Remark 43 (Entropy rate and tightness) . Let hA := lim T →∞ 1 
+
+> T
+
+H(QTA) and hB := lim T →∞ 1 
+
+> T
+
+H(QTB ) denote the entropy rates of the quotient processes, which exist under Assump-tion 19. The shrinking-distortion converse (Theorem 20) depends on hA − hB . The benchmark is closest to the log-cardinality reference when the quotient processes have near-maximal entropy (hA ≈ log |Q A|, hB ≈ log |Q B |), i.e. under approximately uniform visitation of quotient classes. 
+
+# F Full Wyner-Ziv Reduction Proof 
+
+This appendix provides the detailed proof of Theorem 25 (one-way Wyner-Ziv reduction). 
+
+Proof of Theorem 25. The proof proceeds in four steps; Steps 1–2 are definitional, Step 3 is the main technical content, and Step 4 follows from [29]. 
+
+Step 1 (Source identification). Under Assumptions 14, 19, and 23, the quotient process {QAt }t≥1
+
+induced by the common history source is stationary and ergodic on the finite alphabet QA. Be-cause B’s actions do not feed back into the sender-side source history, {QAt } is a well-defined source independent of the decoder. 
+
+Step 2 (Side information identification). Since QA and QB are both defined on that same history space, Theorem 40 gives a canonical map κA→B : QA → Q B with QTB = κA→B (QTA) pointwise. Thus QTB serves as decoder side information correlated with the source QTA. We do not claim this deterministic coarsening step for a genuinely distinct-sensor model unless it is first reduced to the same common-history setting. 
+
+Step 3 (Achievability: exact i.i.d., argued ergodic). Any Wyner-Ziv code for the source QTA with decoder side information QTB at distortion D under dintent operates at rate RWZ (D). By Theorem 15, 
+
+dintent is well-defined as a function of quotient class pairs (qA, ˆqA) ∈ Q A × Q A, so the WZ distortion matrix is unambiguous. Such a code can be implemented as a semantic communication protocol as follows. 
+
+Causal pipeline construction. The protocol of Theorem 13 requires B to act at every step, while WZ coding is block-based at blocklength n. We bridge this gap with a pipelined scheme that respects causality. Divide time into blocks of n steps. During block k, A accumulates quotient classes 
+
+Q(k) 
+
+> A
+
+:= ( QA
+
+> (k−1) n+1
+
+, . . . , Q Akn ) and simultaneously transmits the WZ codeword for the previous 
+
+block Q(k−1)  
+
+> A
+
+at rate R bits/step. Upon receiving the codeword at the end of block k, B decodes 
+
+ˆQ(k−1)  
+
+> A
+
+and uses it to select FSC parameters θ(k+1) for block k + 1 . During block 1 (before any codeword is available), B runs a default FSC θ0; the resulting distortion D0 ≤ dmax is bounded. Over K blocks, the average distortion is 
+
+¯DK = D0 + ( K − 1) DWZ 
+
+K
+
+> K→∞
+
+−−−−→ DWZ ≤ D, 
+
+so the pipeline overhead vanishes asymptotically. The per-step rate remains R; the cost is a one-block decoding delay, which is standard in block coding [18]. 
+
+From WZ reconstruction to semantic distortion. The standard WZ achievability theorem for stationary ergodic sources [ 29 ] guarantees the existence of a block code at rate RWZ (D) whose time-averaged 
+
+reconstruction distortion converges to ≤ D as blocklength n → ∞ . The pipeline applies this code to successive blocks: during block k+1 , B runs an FSC with parameters θ(k+1) chosen from the decoded block k−1.22 I.I.D. case (exact). When the quotient source is memoryless (i.i.d. blocks), the parameter θ(k+1) =
+
+f ( ˆQ(k−1)  
+
+> A
+
+, Q (k−1)  
+
+> B
+
+) is independent of Q(k+1)  
+
+> A
+
+, and each block’s distortion equals DWZ exactly. No mixing argument is needed, and the pipeline achieves the WZ rate-distortion function with equality: 
+
+Rsem (D) = RWZ (D). This proves Theorem 26. 
+
+Ergodic case (argued with mixing bounds). For a correlated ergodic source, the per-block distortion may fluctuate because θ(k+1) = f ( ˆQ(k−1)  
+
+> A
+
+, Q (k−1)  
+
+> B
+
+) is correlated with Q(k+1)  
+
+> A
+
+through the source dependence. Under Assumption 19, the quotient process on a finite state space has a unique stationary distribution and exhibits geometric mixing: ∥P(QAt ∈ · | QA 
+
+> 0
+
+= q) − μ∥TV ≤ C0ρt for some ρ < 1
+
+and C0 > 0. The two-block delay in the pipeline creates a gap of 2n steps between the data used to select θ(k+1) and the block Q(k+1)  
+
+> A
+
+it governs. The correlation between these decays as C0ρ2n. For any target tolerance δ > 0, choosing blocklength 
+
+n ≥ 2 log( C0/δ )log(1 /ρ )
+
+ensures the per-block distortion deviation from DWZ is at most δ. Combined with the ergodic theorem applied to the joint process (Q(k) 
+
+> A
+
+, ˆQ(k) 
+
+> A
+
+), the time-averaged semantic distortion 1
+
+> K
+
+PKk=1 d(k)intent 
+
+converges almost surely to E[dintent (QA, ˆQA)] ≤ D. The pipeline overhead from block 1 vanishes as 
+
+K → ∞ , yielding ¯DK ≤ DWZ +δ+D0/K . This supplies an asymptotic-average achievability bridge from WZ reconstruction distortion to semantic distortion. Upgrading to a blockwise identification would require an explicit coupling that we do not provide. 
+
+Parameter optimization. At the end of block k, B has decoded ˆQ(k−1)  
+
+> A
+
+and observed Q(k−1)  
+
+> B
+
+. It selects FSC parameters θ(k+1) to minimize expected distortion given the decoded information: 
+
+θ(k+1) = arg min θ∈ΘmB E[dintent | ˆQ(k−1)  
+
+> A
+
+, Q (k−1)  
+
+> B
+
+, θ ]. The parameter space ΘmB = ∆( A)mB ×
+
+∆( {1, . . . , m B })mB ×|O| (Theorem 13) is a product of simplices, hence compact. The expected distortion is continuous in θ: the belief component bBh and policy component πB (·| h) are continuous functions of the FSC parameters (via the finite forward recursion), and dintent is continuous in beliefs and policies. By the extreme value theorem, the minimum is attained. Since B applies the optimized θ(k+1) causally during block k+1 (using only past decoded information), every action respects the protocol’s per-step structure. 
+
+Step 4 (Converse). Any semantic protocol (E, D ) at rate R achieving Dintent ≤ D induces a valid Wyner-Ziv code in this common-history coarsening setting: the message sequence M T encodes 
+
+QTA, B’s side information is QTB = κA→B (QTA), and the achieved distortion D is valid under dintent .Since {QAt } is stationary ergodic (Step 1), the WZ converse for stationary ergodic sources [ 29 ]applies: R ≥ RWZ (D).Combining Steps 3–4 yields the benchmark identification. For i.i.d. sources, the identification is exact in both directions. For ergodic sources, the converse remains exact and the achievability is argued with explicit mixing-rate control; upgrading that final leg to an exact FSC-level pathwise identity remains open. 
+
+Remark 44 (Conservative nature of the bound) . The conditional entropy rate ¯h(QA | QB ) counts all 
+
+distinctions visible to A but not to B. If some QA-subclasses are value-irrelevant (i.e., merging them does not change the optimal value), the true minimum rate could be lower. Formally, let Qval  
+
+> A
+
+denote the coarsening of QA retaining only value-relevant cells; then Hμ(Qval  
+
+> A
+
+| QB ) ≤ ¯h(QA | QB ),with equality when all QA-distinctions affect optimal value. This paper’s bounds are therefore conservative; tightening them to the value-relevant quotient is an open problem. 
+
+# G Alignment Applications 
+
+This appendix provides extended discussion of alignment applications deferred from Section 9. Model the human as agent H with capacity (mH , T H ) and the AI as agent A with (mA, T A) ≫
+
+(mH , T H ).
+
+RLHF. In RLHF [ 46 ], human feedback provides ≈1–2 bits per comparison (see footnote in §9). If the capacity mismatch maps to quotient structures, Theorem 35 predicts the scaling form 
+
+23 Form of Rcrit Expression Regime Depends on Chain5                                                
+
+> Log-cardinality log |Q A| − log |Q B|Worst-case Quotient sizes only 1.43 Marginal entropy H(QA)−H(QB)i.i.d. source Policy visitation 0.59 WZ lossless rate H(QA|QB)i.i.d. (BA) Source + coarsening 0.29 ‡
+> Cond. entropy rate ¯h(QA|QB)Stationary ergodic Joint dynamics 0.024 ††Estimated from 50 ,000 trajectories ( ×100 steps) with Miller-Madow correction ( +0 .001 bits). The null-pair calibration ( |Q A|=|Q B|= 781 ) leaves a residual of 0.030 bits/step, so the entropy-rate estimate should be interpreted as a qualitative diagnostic rather than a precise benchmark.
+> ‡Under random-policy visitation; structured policies yield H(QA|QB) = 0 .08 bits/step (Figure 7), a 3.6×
+> reduction vs. random ( 0.29 ) and 19 ×vs. the counting bound ( 1.43 ).
+
+Table 7: Critical rate benchmark characterizations with Chain5 numerical values ( (mA = 16 , m B =1) ); see Table 4 for the condensed hierarchy. The WZ lossless rate H(QA | QB ) is computed via Blahut-Arimoto on visited quotient classes and is the most reliable numerical reference. 
+
+Ncomparisons ≥ (log |Q A| − log |Q H |)/2 + Ω(log(1 /ε )) : linear in the capacity gap, logarithmic in accuracy. This is a structural prediction about functional dependence, not a computable numerical bound—the precise quotient cardinalities |Q A|, |Q H | for LLM-scale systems remain unknown. Estimating effective quotient sizes from learned representations (e.g., via probing classifiers, the lattice-gradient approach of Section Q, or by identifying natural-language cross-probes that test whether a model distinguishes context A from context B) is the key open problem connecting this theory to practice. 
+
+Interpretability and debate. Explanations are bandwidth-limited channels; the traversal theorem (Theorem 31) suggests routing through intermediate abstractions [ 12 , 13 ]. Multiple debaters form a multi-access channel, increasing effective alignment bandwidth. By data processing, post-processing cannot improve alignment: Ralign (f (A) → H; ε) ≥ Ralign (A → H; ε); for intermediate agents: 
+
+Ralign (A → H; ε) ≤ P 
+
+> i
+
+Ralign (Layer i → Layer i+1 ; ε/k ).
+
+Connection to LLM routing (Section P). The LLM routing experiment provides a concrete (if analogical) illustration of the phase transition in a practical setting. The 1-bit router operates at R = 1 bit/query. The framework predicts that routing quality depends on whether this rate exceeds Rcrit for the effective quotient gap between the strong and weak models. The observation that single-token logprob routing fails on MMLU-Pro (APGR = 0 .457 < random = 0 .502 ) while self-consistency routing succeeds (APGR = 2 .216 ) is consistent with a phase transition: the logprob probe family induces a coarser effective quotient (fewer distinguishable difficulty classes), pushing Rcrit 
+
+above the 1-bit channel; the richer self-consistency probes yield a finer quotient, bringing Rcrit 
+
+below 1 bit. This illustrates how the theory’s qualitative predictions—that communication success depends on the interaction between channel capacity and the quotient structure induced by the probe family—manifest in practice. 
+
+# H Proof of Theorem 18(i): Impossibility Below Critical Rate 
+
+Proof. Fix a reachable QB -class Ck with stationary mass π(Ck) > 0 and rk > 2R reachable QA-subclasses inside it. At rate R, the encoder can produce at most 2R messages per step. Since B’s decoder is an mB -node FSC (Theorem 13), its effective per-step information state within the common-history comparison regime is the pair (received message, current QB -class). Thus within Ck the decoder can distinguish at most 2R of the rk subclasses. By pigeonhole, at least one decoder state merges at least two reachable QA-subclasses inside Ck.Conditional on visiting Ck, the probability of such a merge is at least 1 − 2R/r k, so the unconditional confusion probability satisfies 
+
+pconfuse ≥ π(Ck)  1 − 2R/r k
+
+ > 0.
+
+Whenever the decoder confuses two distinct merged QA-subclasses, the resulting intent distortion is at least cM by definition. Therefore 
+
+Dintent ≥ pconfuse · cM > 0.
+
+24 I Proof of Theorem 18(ii): Constructive Decay in the One-Way Memoryless Regime 
+
+We prove the upper bound of Theorem 18(ii) only in the regime stated there: common-history coarsening, one-way observability, i.i.d. quotient source, and observation-Lipschitz reward. The proof imports the classical lossless WZ reliability exponent rather than deriving a new ambiguity-cell argument. 
+
+Assumption 45 (Observation-Lipschitz Reward) . The reward function is LR-observation-Lipschitz: for all histories h, h ′ and all π ∈ Πm,T , | ¯R(h, π ) − ¯R(h′, π )| ≤ LR ·W1
+
+ P πM (Ot+1: T |h), P πM (Ot+1: T |h′).
+
+Lemma 46 (Distortion Propagation) . If B assigns the wrong QA-class at step t, then W1(μ, ν ) ≤ 1
+
+(discrete metric). If E[∆ t] ≤ δ at each step, then |V πA (M ) − V πB (M )| ≤ LR · T · δ.Proof. The Wasserstein bound follows from W1 ≤ ∥ · ∥ TV ≤ 1. For propagation: by the value-function error bound of [ 4] (Theorem: Value-function error bound), | ¯RM (Ht, π ) − ¯RB (Ht, π )| ≤ 
+
+LR · ∆t. Summing over T stages: dval ≤ LR · T · dbeh ≤ LR · T · δ.
+
+Proof of Theorem 18(ii). Step 1 (lossless WZ code above the benchmark). Under the stated assumptions, Theorem 26 identifies the semantic problem exactly with lossless WZ coding on the i.i.d. quotient source, and Theorem 28 gives the lossless benchmark RWZ (0) = H(QA | QB ). For every rate R > H (QA | QB ), the classical WZ/Slepian-Wolf reliability function [ 29 ] yields a block code of length T with reconstruction error probability 
+
+P (T ) 
+
+> e
+
+≤ 2−T E WZ (R)
+
+for some exponent EWZ (R) > 0.
+
+Step 2 (propagation to semantic distortion). On blocks decoded correctly, the induced semantic distortion is zero because the quotient block is reconstructed exactly. On error blocks, the per-step behavioral discrepancy is at most 1, so by Theorem 46 the total semantic distortion over the block is at most LR · T . Therefore 
+
+Csem (R) ≤ LR · T · P (T ) 
+
+> e
+
+≤ LR · T · 2−T E WZ (R).
+
+Consistency with parts (i) and (iii). Part (ii) is intentionally narrower than part (i): it is a con-structive theorem only for the one-way i.i.d. benchmark regime. Part (i) remains the structural lower bound outside that regime, and part (iii) still gives perfect alignment by exact quotient transmission when R ≥ log |Q A|.
+
+# J Proof of Theorem 20: Shrinking-Distortion Converse 
+
+Formal setup. A protocol (E, D ) consists of encoder Et : (OA)t → Mt with H(Mt |
+
+M t−1) ≤ R, and bounded decoder D = ( πB , U ) where πB ∈ ΠmB ,T B is an mB -node FSC and 
+
+U : {1, . . . , 2R} → ΘmB reconfigures FSC parameters upon each message (see Theorem 13). Under Theorem 14, both quotient processes are evaluated on the same source history ht, so QAt = [ ht]mA,T A
+
+and QBt = [ ht]mB ,T B . By Theorem 15, the sender intent Intent t = Intent A(ht) is determined by QAt , so H(Intent T | QTA) = 0 .
+
+Lemma 47 (Information Bound) . Under Assumptions 14, 19, and 23 and protocol (E, D ),
+
+I(QTA; M T | QTB ) ≤ T · R. 
+
+Proof. Using the chain rule and the rate constraint, 
+
+I(QTA; M T | QTB ) ≤ H(M T | QTB ) ≤ H(M T ) = 
+
+> T
+
+X
+
+> t=1
+
+H(Mt | M t−1) ≤ T R. 
+
+25 Lemma 48 (Semantic Fano Inequality) . Under Assumptions 14, 19, and 23, if a horizon-T protocol achieves distortion Dintent ≤ ε with ε′ := 2 ε/c M and T ε ′ ≤ 1/2, then 
+
+1
+
+T H(QTA | M T , Q TB ) ≤ h(ε′) + ε′ log |Q A| + oT (1) .
+
+Regime restriction. The block error probability P (block)  
+
+> e
+
+≤ T ε ′ from the union bound requires 
+
+T ε ′ ≤ 1/2 for Fano’s inequality to be non-vacuous, i.e., ε ≤ cM /(4 T ). This restriction grows tighter 
+
+with horizon T . Consequently, the converse (Theorem 20) is formally operative only in the regime 
+
+ε = O(1 /T ). As in Theorem 21, we separate empirical roles: Figure 2 uses fixed ε = 0 .1 to illustrate the structural phase transition (Theorem 18)—not the converse—while Figure 3 runs εT = 0 .4/T 
+
+over varying T , matching the shrinking-distortion scaling class of this lemma. Neither figure should be read as a pointwise empirical proof of the converse bound; the asymptotic form ( T → ∞ with 
+
+ε → 0 at rate O(1 /T )) remains the formally justified regime. See Section M for protocol details. Proof. Let Y T := ( M T , Q TB ) denote the full decoder-side information. For each step t, define 
+
+ˆQt = gt(Y T ) as the nearest-intent decoder: among the reachable QA-subclasses consistent with the observed QB -class, choose the one whose induced sender intent is closest (under dintent ) to the receiver intent realized by the protocol. Because distinct merged QA-subclasses are separated by at least cM , a nearest-neighbor error implies the realized per-step distortion is at least cM /2. Therefore, with Zt := 1{ ˆQt̸ = QAt },
+
+ε ≥ Dintent = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+E[dintent ,t ] ≥ cM
+
+2 · 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+P(Zt = 1) ,
+
+giving the average per-step error probability ¯Pe := 1
+
+> T
+
+P 
+
+> t
+
+P(Zt = 1) ≤ 2ε/c M =: ε′.
+
+Per-step to block conversion. Choose blocklength nT := ⌊√T ⌋. Write T = BT nT + rT with 
+
+BT := ⌊T /n T ⌋ full blocks and remainder 0 ≤ rT < n T . For each full block b, let QnT 
+
+> A,b
+
+be the corresponding length-nT substring of QTA, and let ˆQnT 
+
+> A,b
+
+be its MAP estimate from Y T . Since the average per-step error probability satisfies ¯Pe ≤ ε′, a union bound over the nT symbols in block b
+
+gives 
+
+P QnT
+
+> A,b
+
+̸ = ˆQnT
+
+> A,b
+
+ ≤ nT ε′.
+
+Because T ε ′ ≤ 1/2, we have nT ε′ ≤ √T ε ′ ≤ 1/(2 √T ), so Fano’s inequality is eventually non-vacuous on every full block. Applying the |Q A|nT -ary Fano bound to block b yields 
+
+1
+
+nT
+
+H(QnT 
+
+> A,b
+
+| Y T ) ≤ 1
+
+nT
+
+h(nT ε′) + ε′ · 1
+
+nT
+
+log( |Q A|nT − 1) .
+
+Using the block chain rule and bounding the remainder by rT log |Q A|,
+
+1
+
+T H(QTA | Y T ) ≤ BT
+
+T h(nT ε′) + BT nT
+
+T ε′ · 1
+
+nT
+
+log( |Q A|nT − 1) + rT
+
+T log |Q A|.
+
+Now nT → ∞ , rT /T → 0, and nT ε′ ≤ 1/(2 √T ) → 0, so BT 
+
+> T
+
+h(nT ε′) = oT (1) and 
+
+1
+
+nT
+
+log( |Q A|nT − 1) = log |Q A| + oT (1) .
+
+Therefore 
+
+1
+
+T H(QTA | M T , Q TB ) ≤ ε′ log |Q A| + oT (1) ≤ h(ε′) + ε′ log |Q A| + oT (1) .
+
+Proof of Theorem 20. Setup. Fix horizon T and protocol (E(T ), D (T )) with per-step rate RT and distortion εT ; write ε′ 
+
+> T
+
+:= 2 εT /c M .
+
+Step 1. Since QTB is decoder side information and the messages are the only communicated bits, decompose: 
+
+I(QTA; M T | QTB ) = H(QTA | QTB ) − H(QTA | M T , Q TB ).
+
+26 Step 2. Since QA refines QB , knowing QTA determines QTB , so I(QTA; QTB ) = H(QTB ). Therefore: 
+
+H(QTA | QTB ) = H(QTA) − H(QTB ).
+
+By Assumption 19, the quotient processes are stationary ergodic with entropy rates hA, h B (Re-mark 43): H(QTA) = T h A + o(T ) and H(QTB ) = T h B + o(T ). Hence H(QTA | QTB ) = 
+
+T (hA − hB ) + o(T ).
+
+Step 3. By Lemma 48: H(QTA | M T , Q TB ) ≤ T · h(ε′ 
+
+> T
+
+) + ε′ 
+
+> T
+
+· T log |Q A| + o(T ).
+
+Step 4. By Lemma 47: T · RT ≥ I(QTA; M T | QTB ).
+
+Step 5. Combining Steps 1–4 and dividing by T gives 
+
+RT ≥ (hA − hB ) − h(ε′ 
+
+> T
+
+) − ε′ 
+
+> T
+
+log |Q A| − oT (1) .
+
+If ε′ 
+
+> T
+
+→ 0, taking lim inf T →∞ yields lim inf T RT ≥ hA − hB . Under near-uniform quotient distributions ( hA ≈ log |Q A|, hB ≈ log |Q B |; see Remark 43), this recovers the log-cardinality reference. The one-way WZ reduction (Theorem 25) sharpens the converse at D = 0 to the benchmark 
+
+R ≥ RWZ (0) = H(QA | QB ); the matching achievability direction is exact only for i.i.d. sources and otherwise argued separately in Section 7. 
+
+Remark 49 (Decoder-side interpretation) . The theorem does not require an additional slack parame-ter. If one nevertheless wants to compare the converse bound to the information actually extracted from messages, the natural quantity is the residual uncertainty 
+
+1
+
+T H(QTA | M T , Q TB ) = 1
+
+T H(QTA | QTB ) − 1
+
+T I(QTA; M T | QTB ).
+
+Under Assumption 19, this equals (hA − hB ) − 1 
+
+> T
+
+I(QTA; M T | QTB ) + oT (1) , so it measures how far the received messages fall short of saturating the conditional entropy rate available beyond QTB .At the lossless one-way WZ benchmark, this residual vanishes asymptotically. 
+
+# K Proof of Theorem 31: Alignment Traversal 
+
+Proof. For any [h]A ∈ Q A, write φ = φk−1 ◦ · · · ◦ φ1 and apply the triangle inequality for W1:
+
+W1
+
+ PM (·| [h]A), P M (·| φ([ h]A))  ≤
+
+> k−1
+
+X
+
+> i=1
+
+W1
+
+ PM (·| φi−1:1 ([ h]A)) , P M (·| φi:1 ([ h]A)) 
+
+≤
+
+> k−1
+
+X
+
+> i=1
+
+Li · dQ(Π i, Πi+1 | M ),
+
+where φi:1 := φi ◦ · · · ◦ φ1 and the second inequality uses the Li-Lipschitz property of each φi.Taking the supremum over [h]A yields dQ(A, B | M ) ≤ P 
+
+> i
+
+Li · dQ(Π i, Πi+1 | M ).For the rate statement, fix protocols for each adjacent pair (Π i, Πi+1 ) achieving distortion at most 
+
+ε/k with rates arbitrarily close to Rsem (Π i → Πi+1 ; ε/k ). Compose these protocols sequentially through the intermediate agents. The total rate is the sum of the stage rates, and the total distortion is at most ε by the triangle inequality / budget split. Taking infima over the stage protocols gives 
+
+Rsem (A → B; ε) ≤ X
+
+> i
+
+Rsem (Π i → Πi+1 ; ε/k ),
+
+which is exactly the claimed traversal bound. 
+
+# L Codebook Performance Bound 
+
+Theorem 50 (Codebook Performance, restated) . The semantic codebook of Theorem 34 achieves 
+
+Dintent ≤ O(|Q A|1/d · 2−R/d ), where d is the effective dimension of the intent space. 
+
+27 Proof. The 2R codewords partition the |Q A| quotient classes into K = 2 R Voronoi cells in the 
+
+d-dimensional intent space. By standard k-means quantization theory [ 18 ], E[∥I − ˆI∥] ≤ Cd ·
+
+(|Q A|/K )1/d for a d-dimensional uniform source, where Cd depends only on dimension. Substituting 
+
+K = 2 R and using dintent ≤ ∥ I − ˆI∥1 (since each component of dintent —belief W1, policy TV, value difference—is bounded by the corresponding L1 component of the intent vector difference under ∥R∥∞ ≤ 1) gives the bound. For Markovian priors, the same construction remains a valid memoryless encoder and therefore provides a conservative constructive upper bound; allowing encoders with memory can only improve on it. 
+
+# M Additional Experimental Details 
+
+Environments. TIGER [8]: A two-door problem where the agent must determine which door hides a tiger based on noisy observations. We used T = 4 , mA = 3 , mB = 1 . The quotient computation yielded |Q A| = 31 and |Q B | = 15 classes, giving Rcrit ≈ 1.05 bits/step. Below Rcrit ,distortion remains above 0.3; above Rcrit , it decays rapidly toward zero, reaching Dintent < 0.02 
+
+at R = 3 bits/step (see Figure 9). At R ≥ log |Q A| ≈ 4.95 bits/step, perfect alignment is achieved (Dintent = 0 ), confirming Theorem 18(iii). 
+
+Figure 9: Semantic rate-distortion curves for the T IGER environment ( T = 4 , mA = 3 , mB = 1 ). 
+
+Figure 10: Left: Critical rate Rcrit vs. quotient size gap across POMDP instances. Right: Semantic vs. classical coding ( mA = 16 , m B = 2 ). Shaded band shows IQR over 10 seeds. CHAIN 5: A 5-state chain POMDP ( |S| = 5 , |A| = 2 , |O| = 5 , obs. noise 0.3) designed to produce large quotient gaps. The main experiments use T = 4 with mA = 16 and mB ∈ { 1, 2, 4, 8}. For mB = 1 :
+
+|Q A| = 781 , |Q B | = 289 , giving Rlog crit = log(781 /289) ≈ 1.43 bits/step. The large quotient gap produces a sharp phase transition in the rate-distortion curve (Figure 2). 
+
+Codebook construction. For each rate R ∈ { 0, 0.5, . . . , 7} bits/step, we ran 10 independent trials with different random seeds for FSC sampling and codebook construction. We report the median intent distortion; shaded regions in figures indicate the interquartile range (25th–75th percentile). Semantic codebooks use Theorem 34, constructing quotient-aware partitions and measuring opera-tional Dintent . Classical baselines are Shannon-theoretic reference curves, not operational coding schemes: observation compression uses D = max(0 , (H(O) − R)/H (O)) , and belief compression 
+
+28 uses D = max(0 , (H(B) − R)/H (B)) , where H(O) and H(B) are the marginal entropy of the observation and belief processes respectively. 
+
+Intent distortion measurement. Experiments use the two-term proxy dexp intent (h) := ∥bAh − bBh ∥1 +0.5 · 1{aA̸ = aB }, omitting the value-difference term from the full three-term dintent (Theorem 10). By Theorem 11, dexp intent ≤ dintent ≤ dexp intent + |V πA (h) − V πB (h)|: the proxy is a lower bound on the full measure, and the phase transition location and exponential exponent are invariant to this choice (they depend on quotient entropy, not distortion scale). On Chain5 with LR ≈ 0.74 and 
+
+max h dbeh (h) ≤ 1 (Wasserstein distance bounded by 1 under the discrete observation metric), the value-difference gap is bounded by LR · T · max h dbeh (h) ≤ 0.74 · 5 · 1 = 3 .7, so the two measures agree qualitatively. We measured Dexp intent by sampling 10 ,000 trajectories under each policy and computing the empirical average. 
+
+Alignment scaling sweep. For Figure 2, we generated 12 POMDP instances with varying state/observation sizes and computed quotients at multiple memory levels (mA, m B ). For each configuration, we performed binary search on R to find Rmin achieving Dintent ≤ 0.1.
+
+Shrinking-distortion sweep. To match the regime of the asymptotic one-way converse, we ran a dedicated Chain5 sweep at (mA, m B ) = (16 , 1) with horizons T ∈ { 2, 3, 4, 5} and threshold 
+
+εT = 0 .4/T . For each horizon we recomputed (QA, QB ) and searched integer rates R ∈ { 0, . . . , 12 }
+
+for the first rate achieving Dintent ≤ εT . The resulting thresholds were Rmin = 5 , 8, 10 , 12 , while the corresponding log-cardinality references were 0.43 , 0.79 , 1.43 , 2.29 bits/step. We use this sweep as a regime-matching illustration for Theorem 20, not as a pointwise empirical proof of the converse itself. 
+
+Quotient computation algorithm. The quotient QA = Qm,T (M ) is computed as follows: (1) FSC generation: for m ≤ 3, enumerate all deterministic m-node FSCs; for m > 3, sample nFSC random stochastic FSCs uniformly ( nFSC = 80 for the main Chain5 experiments; 50 for RichGridWorld and BalancedRand8). (2) Signature computation: for each history h ∈ O ≤T and each FSC π,compute the future observation distribution P πM (Ot+1 | h); the behavioral signature of h is the tuple of these distributions across all FSCs. (3) Equivalence grouping: histories with identical signatures (to numerical tolerance 10 −4) form equivalence classes; the number of distinct classes is |Q A|. Enumeration is exponential in m; sampling is polynomial per FSC but requires sufficient samples for accurate quotient estimation. In our experiments, nFSC ≥ 50 suffices for m ≤ 16 with 
+
+|O| ≤ 5 (convergence validated in Figure 11). 
+
+Quotient estimation convergence. To validate that random FSC sampling produces stable quotient estimates, we swept nFSC ∈ { 5, 10 , 20 , 30 , 50 , 80 , 100 , 150 , 200 } for Chain5 at m ∈ { 1, 2, 4} with 10 seeds each (Figure 11). For m = 1 , full enumeration is feasible and |Q| is constant at 289. For 
+
+m = 2 , the estimate rises from 688 ( nFSC = 5 ) to 774 by nFSC = 20 and stabilizes. For m = 4 ,stabilization to 781 occurs by nFSC = 10 . The IQR bands vanish by nFSC = 20 , confirming that moderate sampling suffices. 
+
+Proposition 51 (Quotient estimation sample complexity) . Let M be a POMDP with |O| observations and horizon T , and let the true quotient Qm,T (M ) have separation margin γ := min h̸≡ h′ ∥sig( h) −
+
+sig( h′)∥1 > 0, where sig( h) concatenates the one-step future distributions across all m-node FSCs. If n FSCs are sampled i.i.d. uniformly from the set of all |A| m · mm|O| deterministic m-node FSCs, then with probability ≥ 1 − δ over the sample, the estimated quotient partition equals the true partition, provided 
+
+n ≥ 1
+
+pγ
+
+ 2T log |O| + log(1 /δ ), (2) 
+
+where pγ := min h̸≡ h′ Pr π∼Unif [∥sig π (h) − sig π (h′)∥1 > γ/ 2] is the minimum per-FSC distinguish-ing probability. Proof sketch. For each inequivalent pair (h, h ′), a uniformly random FSC distinguishes them with probability ≥ pγ . With n i.i.d. samples, the probability that no sample separates the pair is (1 −pγ )n ≤
+
+e−np γ . The number of history pairs is at most |O| 2T ; a union bound gives Pr[ any pair missed ] ≤|O| 2T · e−np γ . Setting this ≤ δ and solving yields (2). 29 Figure 11: Quotient estimation convergence for Chain5 ( T = 4 ). Each point is the median |Q m,T |
+
+over 10 seeds; shaded bands indicate IQR. Estimates stabilize by nFSC ≈ 20 .
+
+Remark 52 (Practical implications) . In the worst case, pγ ≥ 1/N FSC where NFSC = |A| m · mm|O| ,making n exponential in m—consistent with the NEXP-completeness of Dec-POMDP planning [ 25 ]. In practice, pγ is much larger: our convergence experiments (Figure 11) show stabilisation at n ≈ 20 
+
+for m ≤ 16 with |O| = 5 , suggesting pγ ≫ 1/N FSC for structured POMDPs. 
+
+Assumption verification on Chain5. We computed the refinement ratio for (mA = 16 , m B = 1) 
+
+on Chain5: |Q A| = 781 , |Q B | = 289 , ¯r = 2 .70 , max k rk = 43 , giving ratio max k rk/¯r = 15 .9.The refinement is notably non-uniform: some QB -classes contain up to 43 QA-subclasses. This is precisely why we do not use Chain5 as validation of a sharp theorem-level constructive exponent; we use it instead as structural and benchmark evidence. The observation-Lipschitz constant was estimated at LR ≈ 0.74 , confirming the Lipschitz reward structure holds with a moderate constant. 
+
+Quotient entropies and one-way critical-rate benchmark. We estimated marginal quotient entropies via 10,000 simulated trajectories of length 50 on Chain5, mapping beliefs to quotient classes at each step. For (mA = 16 , m B = 1) : H(QA) ≈ 6.03 bits vs. log |Q A| = 9 .61 , and 
+
+H(QB ) ≈ 5.44 bits vs. log |Q B | = 8 .17 —marginal entropies at only 63% and 67% of their maxima. Since QB coarsens QA, the i.i.d. critical rate is H(QA) − H(QB ) ≈ 0.59 bits/step, which is 59% 
+
+below the log-cardinality approximation of 1.43 . This confirms non-uniform quotient distributions significantly lower the one-way WZ benchmark relative to the log-cardinality approximation. Per-step conditional entropy rates estimated independently were H(QtA | Qt−1 
+
+> A
+
+) ≈ 2.39 and H(QtB |
+
+Qt−1 
+
+> B
+
+) ≈ 2.45 , indicating substantial temporal correlation. The marginal difference hA−hB ≈ − 0.05 
+
+is an artifact of computing the rates from separate trajectory ensembles: the L1-distance belief classification introduces small errors that break the exact coarsening property. To resolve this, we computed ¯h(QA | QB ) directly from joint transition statistics using 50 ,000 trajec-tories of horizon 100 (5 × longer than the base experiments), with Miller-Madow bias correction [ 50 ]. On each trajectory, every belief is classified into both QA and QB simultaneously; we build a sparse joint bigram over (QA, Q B ) pairs and compute ¯h(QA | QB ) = ¯h(QA, Q B ) − ¯h(QB ), adding the correction ˆhMM = ˆh + ( keff − 1) /(2 N ln 2) where keff is the number of observed successor states and N is the row total. Results for all six (mA, m B ) pairs: 30 (mA, m B ) |Q A| |Q B | log |Q A| − log |Q B | H(QA) − H(QB ) ¯h(QA | QB ) MM corr. (16, 1) 781 289 1.43 0.59 0.024 † 0.001 (8, 1) 781 289 1.43 0.55 0.020 † 0.001 (4, 1) 781 289 1.43 0.48 0.030 † 0.001 (16, 2) 781 774 0.01 0.52 ≤ 0.017 † 0.001 (8, 2) 781 774 0.01 0.48 ≤ 0.011 † 0.001 (16, 4) 781 781 0.00 0.12 ≤ 0.030 †† 0.000        
+
+> †Estimates from 50 ,000 trajectories ( ×100 steps) with Miller-Madow correction. The null-pair calibration
+> (16 ,4) has true value zero and leaves a residual of 0.030 bits/step, so these entropy-rate estimates should be read as qualitative diagnostics near the noise floor.
+
+For mB = 1 (large gap), the joint estimate ¯h(QA | QB ) ∈ [0 .020 , 0.030] bits/step is positive as theory requires and far below the log-cardinality approximation 1.43 , confirming a highly structured joint process. For near-equal quotients, however, the estimates sit at the null-pair noise floor. We therefore treat the joint entropy-rate values as qualitative evidence that temporal structure can lower the benchmark, while using the Blahut-Arimoto i.i.d. quantity H(QA | QB ) = 0 .29 bits (Table 7) as the main numeric anchor in the paper. For the key (16 , 1) pair, the main quantitative comparison used in the paper is therefore between the log-cardinality upper bound 1.43 and the Blahut-Arimoto i.i.d. benchmark 0.29 . The joint entropy-rate estimate ¯h(QA | QB ) ≈ 0.024 ±0.030 is retained as qualitative context only: it is consistent with the possibility that temporal correlation lowers the benchmark still further, but it is too noise-limited to serve as the primary numeric reference. 
+
+Effective intent dimension (codebook bound validation). The codebook performance bound (Section L) depends on the effective dimension d of the intent space. For Chain5 ( |S| = 5 ), PCA on the 781 quotient-class belief centroids yields: 2 components explain 87% of variance, 3 explain 95%, and all 4 non-degenerate components explain 100%. Thus deff = 4 (matching |S| − 1, the simplex dimension). The codebook bound predicts Dintent ≤ O(781 1/4 · 2−R/ 4) ≈ O(5 .3 · 2−R/ 4),consistent with the empirical decay observed in Figure 2. 
+
+Blahut-Arimoto RWZ (D) computation. To compare the experiments against the WZ benchmark (Theorem 25) numerically, we compute the i.i.d. quantity RWZ (D) on Chain5’s quotient alphabets via the standard alternating minimization [ 35 ]: given source distribution p(qA) (estimated from 2,000 
+
+trajectories), distortion matrix dintent (qiA, q jA) over all |Q A|2 pairs, and deterministic coarsening 
+
+f : QA → Q B , the WZ iteration alternates 
+
+q(u | x) ∝ p(u | y = f (x)) e−s d (x,u ), p(u | y) = X
+
+> x
+
+p(x | y) q(u | x),
+
+with Lagrange parameter s swept over [0 .01 , 316] on a log-spaced grid (32 points). We also compute the standard R(D) (no side information) by replacing p(u | y) with p(u). Filtering to the 234 visited quotient classes, H(QA | QB ) = 0 .29 bits under the i.i.d. marginal, consistent with the computed 
+
+RWZ (0) ≈ 0.29 bits. The gap R(D) − RWZ (D) measures the value of B’s side information. 
+
+Balanced-refinement environment. BALANCED RAND 8 is a random POMDP ( |S| = 8 , |A| = 2 ,
+
+|O| = 2 , seed 8) selected from 2,000 random POMDPs with 4 memory/horizon configurations each, targeting uniform refinement ratio < 3 with capacity gap > 0.5 bits. The selected instance has 
+
+mA = 4 , T = 4 , |Q A| = 31 , |Q B | = 10 (for mB = 1 ), refinement ratio 2.58 , and Rcrit ≈ 1.63 bits/step. The refinement distribution rk = [8 , 6, 5, 5, 2, 1, 1, 1, 1, 1] is substantially more uniform than Chain5’s (rk = [43 , 43 , . . . ], ratio 15 .9). Results are in Figure 6. 
+
+Baseline coding comparisons. For k-means baseline, we cluster the |Q A| belief centroids using 
+
+k-means in L1 geometry with k-means++ initialization at each rate level R ∈ { 0, 1, . . . , 10 }. Each cluster maps to the nearest QB class, and Dintent is computed as the p(qA)-weighted average intent distortion. Random clustering averages 5 trials of uniform random label assignment. The comparison confirms that quotient-aware clustering outperforms geometry-only clustering (k-means) and random clustering at all rates, with the gap widest at intermediate rates near Rcrit .31 N Continuous Spaces Extension 
+
+Proposition 53 (Continuous Semantic Rate-Distortion Bound) . Let QA and QB be quotient spaces with metric d and ε-covering numbers N (ε, QA, d ) and N (ε, QB , d ). Then any protocol achieving 
+
+Dintent ≤ ε requires: 
+
+R ≥ log N (ε, QA, d ) − log N (ε, QB , d ) − h(ε′) − ε′ log N (ε, QA, d ).
+
+For smooth quotient manifolds of intrinsic dimensions dA and dB : log N (ε, Q, d ) ≈ d · log(1 /ε ) + 
+
+O(1) , yielding R ≥ (dA − dB ) log(1 /ε ) − O(ε).Proof sketch. Replace |Q| with N (ε, Q, d ) in the Fano argument (Section J). Each ε-ball in QA
+
+mapping to the same ε-ball in QB constitutes an ambiguity cell of the same structure as the discrete case. 
+
+# O Two-Way Conjecture 
+
+We conjecture that the two-way semantic rate-distortion function satisfies: 
+
+R(2 -way) sem (D) = inf 
+
+> p(mt|qtA):
+> E[dintent ]≤D
+
+lim  
+
+> T→∞
+
+1
+
+T I(QTA → M T ∥QTB ),
+
+where I(XT → M T ∥QTB ) denotes the causally conditioned directed information [3, 31 ]: the minimum causal communication rate given B’s evolving side information. This reduces to RWZ (D)
+
+under one-way observability (when QTB is non-causal side information) and recovers causal rate-distortion [26] when QB is trivial. 
+
+# P LLM Routing as Semantic Communication (Analogical Case Study) 
+
+This appendix presents an analogical illustration—not a formal instantiation—of the framework’s qualitative predictions in a practical LLM setting. The LLM representations are not quotient POMDPs; the value of the case study is that it exhibits the same qualitative phenomena (phase transition, probe-family dependence) that the theory predicts. To that end, we analyze LLM model routing as an instance of semantic communication. A strong model (GPT-4) is selectively invoked based on a weak model’s (Mixtral-8x7B) self-assessment—a 1-bit communication protocol at rate R = 1 bit/query. 
+
+Phase transition via probe family richness. We report APGR (Accuracy Per GPU-hour Ratio): APGR := (accuracy of routing policy) / (mean GPU-hours per query under routing policy), normalized so that APGR = 1 corresponds to always using the strong model at its accuracy ceiling. Higher APGR indicates better accuracy-efficiency tradeoff [ 19 ]. On MMLU [ 20 ] (14K questions, 69% weak accuracy), single-token logprobs achieve APGR = 0 .620 , outperforming embedding-based routing ( 0.518 ). On the harder MMLU-Pro [ 21 ] (12K questions, 33% weak accuracy), logprobs fail (APGR = 0 .457 , below random at 0.502 ): the competence band is exceeded. 
+
+Richer probe recovers signal. Self-consistency sampling [ 14 ] ( N = 8 completions) achieves APGR = 2 .216 on MMLU-Pro, a 36% improvement. This confirms the theory: ΠSC is a richer probe family, yielding a finer quotient |Q(Π SC )| > |Q(Π logprob )|. At the 90% quality threshold, the router saves 28% of inference cost. 
+
+Interpretation. The routing problem instantiates semantic communication: the weak model’s uncertainty signal is a quotient-aware code, and the router’s boundary corresponds to Rcrit . We emphasize this is an analogy grounded in the framework’s structure, not a formal deduction—the LLM’s representations are not quotient POMDPs. The analogy is useful because it predicts the qualitative phenomena (phase transition, probe family dependence) observed empirically. 32 Q Lattice-Gradient Quotient Estimation 
+
+The worst-case complexity of absolute quotient estimation is exponential in m (Theorem 51). We outline a differential approach that avoids this barrier by exploiting the lattice structure of the quotient functor Q.
+
+Core idea. The refinement lemma (Theorem 39) orders quotients by capacity: m < m ′ implies 
+
+Qm coarsens Qm′ . Instead of computing Qm from scratch at target capacity m, enter the lattice at a small computable capacity m0 (where enumeration is tractable) and estimate the differential refinement ∆Qk→k+1 —the additional distinctions gained by moving from capacity k to k + 1 —at each step along the chain m0, m 0+1 , . . . , m .
+
+Lipschitz chaining. By Theorem 31, the alignment rate between adjacent levels satisfies 
+
+Rsem (Π k → Πk+1 ; ε) ≤ Lk · ∥ ∆Qk→k+1 ∥, where Lk is the local Lipschitz constant of the quotient morphism. Summing: the total error from chaining m − m0 local estimates accumulates linearly , not exponentially, in the capacity gap. Each local ∆Q estimate requires only a polynomial number of 
+
+cross-probes —input pairs that are equivalent at level k but distinguished at level k+1 —whose count is bounded by |Q k+1 | − |Q k|.
+
+Language as probe family. For language-based agents, the self-referential closure of natural language provides a scalable probe family without FSC enumeration. A linguistic cross-probe is a prompt pair (p, p ′) designed so that a capacity-k model responds identically but a capacity-(k+1) 
+
+model distinguishes them (e.g., paraphrases that require deeper contextual reasoning to separate). Neural representation clusters at intermediate layers provide empirical proxies for quotient class membership, connecting ∆Q estimation to standard probing methodology in interpretability research. 
+
+Open conjectures. 
+
+1. Bridge: Neural representation clusters at layer l of a transformer refine the Myhill–Nerode quotient 
+
+Qm,T (M ) for an effective capacity m(l) determined by the layer’s representational bandwidth. 2. Smoothness: The quotient lattice for language-based agents is connected and locally smooth— adjacent capacity levels produce O(1) new quotient classes per step, making the chaining error well-controlled. These conjectures are empirically testable via layer-wise probing of language models at varying scales, and if confirmed, would make Rcrit estimation polynomial in m for practical architectures. 
+
+# Broader Impact 
+
+This work provides information-theoretic tools for quantifying alignment costs between agents of different computational capacities. The framework’s primary intended application is understanding and improving human–AI alignment: quantifying the minimum feedback bandwidth for safe AI behavior and identifying when alignment is structurally impossible given capacity constraints. This has positive implications for the principled design of RLHF pipelines and interpretability methods. However, the framework also reveals fundamental limits. The structural impossibility below Rcrit 
+
+implies that some agent pairs cannot be aligned regardless of communication protocol design. If misinterpreted, this could discourage alignment efforts in regimes where they are most needed. We emphasize that the impossibility is rate-limited, not absolute: increasing the communication rate (e.g., richer feedback mechanisms) can always reduce the gap. The framework should be used to design better alignment protocols , not to justify inadequate ones. 
+
+# Code Availability 
+
+All POMDP experiments and plotting code are available in the accompanying GitHub repository: 
+
+https://github.com/alch3mistdev/semantic-rate-distortion . The repository includes: • POMDP construction and quotient computation ( pomdp_core.py , rich_pomdp.py )• Semantic and classical coding protocols (crown_experiments.py ,
+
+run_experiments.py )33 • Blahut-Arimoto Wyner-Ziv rate-distortion ( blahut_arimoto_wz.py )• Structured-policy, shrinking-ε, and IB comparison (structured_policy_rd.py ,
+
+shrinking_epsilon_sweep.py , ib_baseline.py )• Capacity gap experiments ( run_capacity_gap.py )• Scalability experiments ( scalability_experiment.py , richgrid_experiments.py )• RockSample(4,4) benchmark experiment ( rocksample_experiment.py )• All result data ( results/*.json ) and publication-quality figures ( results/*.png )The LLM routing case study (Section P) is an analytical illustration using published benchmark results and does not involve new experiments. To reproduce all experiments: see the repository README for the recommended run order. Dependencies: Python 3.10+, NumPy, SciPy, scikit-learn, matplotlib. No GPU required; all experiments run on CPU in under 30 minutes. 34
