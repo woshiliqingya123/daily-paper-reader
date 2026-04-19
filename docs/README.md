@@ -6,79 +6,76 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-18
-- 运行时间：2026-04-18 19:26:36 UTC
+- 最新运行日期：2026-04-19
+- 运行时间：2026-04-19 19:21:00 UTC
 - 运行状态：成功
-- 本次总论文数：19
-- 精读区：8
+- 本次总论文数：18
+- 精读区：7
 - 速读区：11
 
 ### 今日简报（AI）
-今日精选 19 篇前沿论文，重点攻克长程推理优化与自进化 GUI 智能体两大核心难题。
-SPPO 提出的序列级 PPO 与 EE-MCP 的环境自动生成技术，为复杂任务下的模型进化提供了高效路径。
-建议关注小模型策略修复与视觉语言模型在网页交互中的落地潜力。
-- 详情：[/202604/18/README](/202604/18/README)
+今日聚焦 LLM 智能体效能优化，深度解析了通过强化学习主动管理上下文及按需推理的最新突破。
+重点推荐满分论文提出的上下文主动筛选机制，以及利用模型内部不确定性提升奖励建模效率的创新方案。
+建议开发者警惕代码智能体在长程迭代中的性能衰减，并探索多智能体系统中的领域自适应技术。
+- 详情：[/202604/19/README](/202604/19/README)
 
 ### 精读区论文标签
-1. [SPPO: Sequence-Level PPO for Long-Horizon Reasoning Tasks](/202604/18/2604.08865v1-sppo-sequence-level-ppo-for-long-horizon-reasoning-tasks)  
+1. [Escaping the Context Bottleneck: Active Context Curation for LLM Agents via Reinforcement Learning](/202604/19/2604.11462v1-escaping-the-context-bottleneck-active-context-curation-for-llm-agents-via-reinforcement-learning)  
+   标签：评分：10.0/10、query:profile-3
+   evidence：通过强化学习进行主动上下文管理以实现高效智能体推理
+2. [Reason Only When Needed: Efficient Generative Reward Modeling via Model-Internal Uncertainty](/202604/19/2604.10072v1-reason-only-when-needed-efficient-generative-reward-modeling-via-model-internal-uncertainty)  
    标签：评分：9.0/10、query:q4
-   evidence：长程推理任务的可扩展算法
-2. [EE-MCP: Self-Evolving MCP-GUI Agents via Automated Environment Generation and Experience Learning](/202604/18/2604.09815v1-ee-mcp-self-evolving-mcp-gui-agents-via-automated-environment-generation-and-experience-learning)  
+   evidence：通过选择性思维链提示实现高效推理
+3. [Reason Only When Needed: Efficient Generative Reward Modeling via Model-Internal Uncertainty](/202604/19/2604.10072v2-reason-only-when-needed-efficient-generative-reward-modeling-via-model-internal-uncertainty)  
+   标签：评分：9.0/10、query:q5
+   evidence：高效生成式奖励模型，仅在需要时进行推理
+4. [CocoaBench: Evaluating Unified Digital Agents in the Wild](/202604/19/2604.11201v1-cocoabench-evaluating-unified-digital-agents-in-the-wild)  
    标签：评分：9.0/10、query:profile-3
-   evidence：用于软件任务的自我进化 MCP-GUI 智能体
-3. [From Translation to Superset: Benchmark-Driven Evolution of a Production AI Agent from Rust to Python](/202604/18/2604.11518v1-from-translation-to-superset-benchmark-driven-evolution-of-a-production-ai-agent-from-rust-to-python)  
-   标签：评分：9.0/10、query:q10
-   evidence：利用基准驱动的改进演进生产级AI代码智能体
-4. [LIFE -- an energy efficient advanced continual learning agentic AI framework for frontier systems](/202604/18/2604.12874v1-life----an-energy-efficient-advanced-continual-learning-agentic-ai-framework-for-frontier-systems)  
-   标签：评分：9.0/10、query:q4
-   evidence：智能体高效能推理与学习框架
-5. [Evaluating LLMs Code Reasoning Under Real-World Context](/202604/18/2604.12881v1-evaluating-llms-code-reasoning-under-real-world-context)  
-   标签：评分：9.0/10、query:q6
-   evidence：在真实项目上下文和依赖下评估代码推理
-6. [Contract-Coding: Towards Repo-Level Generation via Structured Symbolic Paradigm](/202604/18/2604.13100v1-contract-coding-towards-repo-level-generation-via-structured-symbolic-paradigm)  
-   标签：评分：9.0/10、query:q10
-   evidence：通过结构化符号推理实现高效仓库级代码生成
-7. [El Agente Forjador: Task-Driven Agent Generation for Quantum Simulation](/202604/18/2604.14609v1-el-agente-forjador-task-driven-agent-generation-for-quantum-simulation)  
+   evidence：结合视觉、搜索和代码的统一数字智能体
+5. [Spatial Atlas: Compute-Grounded Reasoning for Spatial-Aware Research Agent Benchmarks](/202604/19/2604.12102v1-spatial-atlas-compute-grounded-reasoning-for-spatial-aware-research-agent-benchmarks)  
    标签：评分：9.0/10、query:profile-3
-   evidence：用于工具生成和任务执行的通用代码智能体
-8. [Beyond Chat and Clicks: GUI Agents for In-Situ Assistance via Live Interface Transformation](/202604/18/2604.14668v1-beyond-chat-and-clicks-gui-agents-for-in-situ-assistance-via-live-interface-transformation)  
+   evidence：针对研究智能体和机器学习工程的计算落地推理
+6. [RiskWebWorld: A Realistic Interactive Benchmark for GUI Agents in E-commerce Risk Management](/202604/19/2604.13531v1-riskwebworld-a-realistic-interactive-benchmark-for-gui-agents-in-e-commerce-risk-management)  
    标签：评分：9.0/10、query:q8
-   evidence：通过DOM对实时网页界面提供协助的GUI智能体
+   evidence：电子商务网络任务中GUI智能体的基准测试
+7. [Autonomous Evolution of EDA Tools: Multi-Agent Self-Evolved ABC](/202604/19/2604.15082v1-autonomous-evolution-of-eda-tools-multi-agent-self-evolved-abc)  
+   标签：评分：9.0/10、query:q10
+   evidence：LLM智能体自主改进逻辑综合工具的源代码
 
 ### 速读区论文标签
-1. [PaperVoyager : Building Interactive Web with Visual Language Models](/202604/18/2603.22999v1-papervoyager--building-interactive-web-with-visual-language-models)  
-   标签：评分：8.0/10、query:q8
-   evidence：用于文档理解的自主网页智能体
-2. [PaperVoyager : Building Interactive Web with Visual Language Models](/202604/18/2603.22999v2-papervoyager--building-interactive-web-with-visual-language-models)  
-   标签：评分：8.0/10、query:q8
-   evidence：用于构建交互式 Web 系统的自主智能体
-3. [Polaris: A Gödel Agent Framework for Small Language Models through Experience-Abstracted Policy Repair](/202604/18/2603.23129v1-polaris-a-gdel-agent-framework-for-small-language-models-through-experience-abstracted-policy-repair)  
-   标签：评分：8.0/10、query:q5
-   evidence：智能体的递归自我改进与元推理
-4. [Code Review Agent Benchmark](/202604/18/2603.23448v2-code-review-agent-benchmark)  
+1. [The Specification Gap: Coordination Failure Under Partial Knowledge in Code Agents](/202604/19/2603.24284v1-the-specification-gap-coordination-failure-under-partial-knowledge-in-code-agents)  
+   标签：评分：8.0/10、query:q6
+   evidence：多智能体代码生成中的协作失败研究
+2. [SlopCodeBench: Benchmarking How Coding Agents Degrade Over Long-Horizon Iterative Tasks](/202604/19/2603.24755v1-slopcodebench-benchmarking-how-coding-agents-degrade-over-long-horizon-iterative-tasks)  
    标签：评分：8.0/10、query:q2
-   evidence：软件工程智能体及 AI 智能体代码审查数据集
-5. [Litmus (Re)Agent: A Benchmark and Agentic System for Predictive Evaluation of Multilingual Models](/202604/18/2604.08970v1-litmus-reagent-a-benchmark-and-agentic-system-for-predictive-evaluation-of-multilingual-models)  
+   evidence：在长程迭代任务中评估代码智能体及其代码质量
+3. [Context-Mediated Domain Adaptation in Multi-Agent Sensemaking Systems](/202604/19/2603.24858v1-context-mediated-domain-adaptation-in-multi-agent-sensemaking-systems)  
+   标签：评分：8.0/10、query:q5
+   evidence：通过上下文介导的适配重塑多智能体推理行为
+4. [Agent Factories for High Level Synthesis: How Far Can General-Purpose Coding Agents Go in Hardware Optimization?](/202604/19/2603.25719v1-agent-factories-for-high-level-synthesis-how-far-can-general-purpose-coding-agents-go-in-hardware-optimization)  
+   标签：评分：8.0/10、query:q2
+   evidence：用于硬件优化的代码智能体
+5. [HARPO: Hierarchical Agentic Reasoning for User-Aligned Conversational Recommendation](/202604/19/2604.10048v1-harpo-hierarchical-agentic-reasoning-for-user-aligned-conversational-recommendation)  
    标签：评分：7.0/10、query:q5
-   evidence：使用DAG编排推理的预测性评估智能体系统
-6. [SAGE: A Service Agent Graph-guided Evaluation Benchmark](/202604/18/2604.09285v1-sage-a-service-agent-graph-guided-evaluation-benchmark)  
-   标签：评分：7.0/10、query:q5
-   evidence：服务智能体推理逻辑的图引导评估
-7. [Do AI Coding Agents Log Like Humans? An Empirical Study](/202604/18/2604.09409v1-do-ai-coding-agents-log-like-humans-an-empirical-study)  
-   标签：评分：7.0/10、query:q2
-   evidence：AI代码智能体日志记录行为的实证研究
-8. [Pioneer Agent: Continual Improvement of Small Language Models in Production](/202604/18/2604.09791v1-pioneer-agent-continual-improvement-of-small-language-models-in-production)  
+   evidence：推荐系统中的分层智能体推理
+6. [The Amazing Agent Race: Strong Tool Users, Weak Navigators](/202604/19/2604.10261v1-the-amazing-agent-race-strong-tool-users-weak-navigators)  
    标签：评分：7.0/10、query:q9
-   evidence：自动化小语言模型智能体生命周期的闭环系统
-9. [Multi-Agent Decision-Focused Learning via Value-Aware Sequential Communication](/202604/18/2604.08944v1-multi-agent-decision-focused-learning-via-value-aware-sequential-communication)  
+   evidence：智能体多步工具使用与导航的基准测试
+7. [From Query to Counsel: Structured Reasoning with a Multi-Agent Framework and Dataset for Legal Consultation](/202604/19/2604.10470v1-from-query-to-counsel-structured-reasoning-with-a-multi-agent-framework-and-dataset-for-legal-consultation)  
+   标签：评分：7.0/10、query:q5
+   evidence：用于结构化推理的多智能体框架
+8. [Rethinking Software Engineering for Agentic AI Systems](/202604/19/2604.10599v1-rethinking-software-engineering-for-agentic-ai-systems)  
+   标签：评分：7.0/10、query:profile-3
+   evidence：重新思考智能体 AI 系统与代码生成的软件工程
+9. [Horrila: Cost-Based Placement of Semantic Operators in Hybrid Query Plans](/202604/19/2604.09944v1-horrila-cost-based-placement-of-semantic-operators-in-hybrid-query-plans)  
+   标签：评分：6.0/10、query:tokencomp
+   evidence：减少LLM调用和数据处理成本
+10. [RCBSF: A Multi-Agent Framework for Automated Contract Revision via Stackelberg Game](/202604/19/2604.10740v1-rcbsf-a-multi-agent-framework-for-automated-contract-revision-via-stackelberg-game)  
    标签：评分：6.0/10、query:q5
-   evidence：提升决策质量的多智能体顺序通信
-10. [Semantic Rate-Distortion for Bounded Multi-Agent Communication: Capacity-Derived Semantic Spaces and the Communication Cost of Alignment](/202604/18/2604.09521v1-semantic-rate-distortion-for-bounded-multi-agent-communication-capacity-derived-semantic-spaces-and-the-communication-cost-of-alignment)  
+   evidence：自动合同修订的多智能体框架
+11. [OccuBench: Evaluating AI Agents on Real-World Professional Tasks via Language Environment Simulation](/202604/19/2604.10866v2-occubench-evaluating-ai-agents-on-real-world-professional-tasks-via-language-environment-simulation)  
    标签：评分：6.0/10、query:q9
-   evidence：异构智能体之间的语义压缩与通信
-11. [The Blind Spot of Agent Safety: How Benign User Instructions Expose Critical Vulnerabilities in Computer-Use Agents](/202604/18/2604.10577v1-the-blind-spot-of-agent-safety-how-benign-user-instructions-expose-critical-vulnerabilities-in-computer-use-agents)  
-   标签：评分：6.0/10、query:q9
-   evidence：真实数字环境下计算机使用智能体的安全性评估
+   evidence：在真实世界专业任务上评估AI智能体
 
 
 <div class="dpr-home-promo-card">

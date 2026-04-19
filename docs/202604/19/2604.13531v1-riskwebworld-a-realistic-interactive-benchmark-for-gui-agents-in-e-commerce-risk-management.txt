@@ -1,0 +1,1202 @@
+Title: RiskWebWorld: A Realistic Interactive Benchmark for GUI Agents in E-commerce Risk Management
+
+URL Source: https://arxiv.org/pdf/2604.13531v1
+
+Published Time: Thu, 16 Apr 2026 00:34:17 GMT
+
+Number of Pages: 30
+
+Markdown Content:
+# RiskWebWorld: A Realistic Interactive Benchmark for GUI Agents in E-commerce Risk Management 
+
+Renqi Chen Zeyin Tao Jianming Guo Jing Wang Zezhou Xu Jingzhe Zhu Qingqing Sun Tianyi Zhang ∗ Shuai Chen ∗
+
+Ant International, Ant Group 
+
+{chenrenqi.crq, zty113091, shuai.cs}@ant-intl.com 
+
+Abstract 
+
+Graphical User Interface (GUI) agents show strong capabilities for automating web tasks, but existing interactive benchmarks primarily target benign, predictable con-sumer environments. Their effectiveness in high-stakes, investigative domains such as authentic e-commerce risk management remains underexplored. To bridge this gap, we present RiskWebWorld, the first highly realistic interactive benchmark for evaluating GUI agents in e-commerce risk management. RiskWebWorld features 1,513 tasks sourced from production risk-control pipelines across 8 core domains, and captures the authentic challenges of risk operations on uncooperative websites, partially environmental hijackments. To support scalable evaluation and agentic re-inforcement learning (RL), we further build a Gymnasium-compliant infrastructure that decouples policy planning from environment mechanics. Our evaluation across diverse models reveals a dramatic capability gap: top-tier generalist models achieve 49.1% success, while specialized open-weights GUI models lag at near-total failure. This highlights that foundation model scale currently matters more than zero-shot interface grounding in long-horizon professional tasks. We also demonstrate the viability of our infrastructure through agentic RL, which improves open-source models by 16.2%. These results position RiskWebWorld as a practical testbed for developing robust digital workers. 
+
+1 Introduction 
+
+Graphical user interface (GUI) agents have emerged as intelligent digital assistants capable of autonomously interacting with software environments [ 33 , 10 , 15 , 46 , 21 ]. By perceiving visual rendering states (e.g., screenshots) and underlying structural data (e.g., DOM trees), they translate natural language instructions into dynamic sequences of executable computer actions. As foundational models evolve, the application scope of GUI agents is expanding from normal consumer tasks [ 58 , 52 ,22] to high-stakes professional operations [37, 26, 48]. However, deploying agents in domains with strict operational constraints places severe demands on their reliability, long-horizon planning, and adaptability. To rigorously evaluate and advance their real-world capabilities, the community needs interactive benchmarks that reflect the multifaceted challenges of authentic commercial settings. While current interactive benchmarks have established valuable evaluation protocols for general web browsing [ 63 , 59 , 55 , 54 ], mobile applications [ 40 , 20 , 24 ], and desktop environments [ 50 , 57 , 56 ], they exhibit critical limitations when scaling toward enterprise-grade applications. First, existing benchmarks predominantly simulate predictable, benign tasks, overlooking the complexities of dynamic risk analysis and cross-page verification. Second, specialized commercial domains, such as e-commerce risk management, remain underdeveloped from standardized evaluations. Crucially, most existing frameworks tightly couple policy planning and environment mechanics within closed       
+
+> ∗Corresponding authors. Preprint.
+> arXiv:2604.13531v1 [cs.AI] 15 Apr 2026 Task (example, EN/ZH)
+> Help me query information about the “XXX” app
+> on the Apple App Store.
+> 帮助我查询苹果应用商店中的 XXX 应用相关信息。
+> Agent
+> (e.g., BU -30B)
+> RiskWebWorld Environment (Cloud & Parallel & Interactive & Standardized)
+> Action
+> (e.g., Click) Observation
+> (e.g., DOM Tree)
+> Observation Reward Terminated Information Truncated
+
+Figure 1: RiskWebWorld is a highly realistic, interactive benchmark for evaluating GUI agents in e-commerce risk management scenarios. It comprises 1,513 tasks across 8 business domains, with a scalable environment infrastructure that supports rigorous benchmarking and RL training. loops. This architectural limitation restricts scalable benchmarking throughput and obstructs the fine-grained step orchestration required for stable agentic reinforcement learning (RL) training. Authentic e-commerce risk analysis [ 5, 61 ] exemplifies these underexplored challenges. Agents operating in this domain cannot rely on straightforward, linear workflows. Instead, they act as proac-tive investigators, gathering heterogeneous data across multiple scattered and often uncooperative websites to uncover hidden risk signals. Throughout this process, agents frequently confront unpre-dictable environmental hijackments, including unexpected verification barriers (e.g., CAPTCHAs), disruptive pop-ups, and severe dynamic content shifts. Without testbeds that natively incorporate these sophisticated hurdles, it is difficult to gauge the functional readiness of GUI agents for live production deployment. To bridge these gaps, we introduce RiskWebWorld (Figure 1), the first highly realistic, interactive benchmark tailored for evaluating web agents in complex e-commerce risk management scenarios. Our main contributions are: • We curate a comprehensive benchmark of 1,513 interactive Web UI tasks spanning 8 real-world business domains. Sourced directly from active online production pipelines, these tasks inherently include genuine environmental hijackments and unstructured verification challenges. • We develop a scalable, Gymnasium-compliant environment infrastructure powered by CDP-based remote orchestration. This design decouples the agent’s decision-making policy from the rendering mechanics, facilitating parallelized benchmarking and unlocking native support for agentic RL. • We conduct an extensive evaluation of diverse baselines, including proprietary, open-weights, and GUI-specific foundation models, revealing clear performance tiers and systematic failure patterns that expose current limitations in open-ended exploration and multi-page evidence composition. • We empirically demonstrate the viability of our infrastructure for advancing agent capabilities through RL, showing that open-source models (e.g., Qwen3-VL-8B) achieve consistent perfor-mance gains of up to 16.2% when trained interactively in our environment. Our evaluation reveals that foundational model scale overwhelmingly dictates performance in complex web environments, dwarfing the impact of specialized zero-shot interface grounding .Top-tier generalist models (e.g., Gemini-3-Pro, GPT-5.2) reach success rates near 50%, whereas specialized GUI models face near-total failure (often 0% success) due to action misrouting and argument hallucination. Even the most capable agents, however, face strict performance ceilings when required to execute continuous deductive verification sequences across scattered pages. Ultimately, our systematic evaluation and agentic RL demonstration establish RiskWebWorld as a critical testbed for transforming web agents from constrained assistants into robust digital workers. 
+
+2 Related Works 
+
+GUI Agents GUI agents are intelligent systems powered by large language or vision-language models (LLMs/VLMs) that perceive graphical user interfaces and execute automated actions to accomplish user-specified tasks. Early approaches primarily relied on expert workflows with modular planner-actioner architectures [ 23 , 62 , 49 , 51 , 60 , 18 ], which often suffer from error accumulation in 2long-horizon tasks. Recently, research has broadly converged into two paradigms: (1) data-driven fine-tuning , where multimodal LLMs are trained end-to-end on GUI datasets [ 27 , 30 , 64 , 9, 38 , 43 , 46 ], though they still face generalization bottlenecks on unseen scenarios; (2) versatile GUI agent frameworks [ 32 , 25 , 34 , 2, 53 ] that seamlessly integrate foundation models with tailored tools and enhanced context management to support robust real-world interactions and trajectory collection. These developments underscore the promise of GUI agents for open-ended web automation, naturally motivating the critical need for highly realistic benchmarks to evaluate their evolving capabilities. 
+
+Benchmarks for GUI Agents Benchmarks for evaluating GUI agents comprise two categories: static and interactive evaluators. Static (or offline) benchmarks rely on constructed datasets that provide paired GUI states (e.g., historical screenshots or DOM trees) alongside ground-truth next-action annotations [ 31 , 6 , 19 , 41 , 17 , 37 ]. While convenient for metric assessment, they inherently oversimplify real-world interfaces and neglect the compounding dynamics of sequential execution. Conversely, interactive (or online) benchmarks situate agents within live or simulated environments, allowing them to freely interact with the GUI over multiple turns and measuring success based on ultimate task completion. Although interactive benchmarks have been well-established for general web browsing [ 58 , 36 , 55 , 8], mobile applications [ 12 , 28 , 40 , 24 ] and desktop environments [ 52 , 14 ,57 , 42 , 50 ], they primarily evaluate agents in relatively benign environments focused on everyday consumer tasks (e.g., buying a product, fetching simple information). This focus leaves a critical gap in assessing agent capabilities for complex, high-stakes professional workflows. Moreover, while a scarce amount of preliminary research touches upon highly specialized commercial domains [ 5 , 37 ]like e-commerce risk management, systematic evaluation remains absent. 
+
+Gaps and Contributions Current benchmarks broadly fail to reflect the stringent demands of highly specialized commercial production settings. Authentic risk analysis introduces severe domain-specific hurdles: agents must gather scattered heterogeneous data across multiple websites to uncover deeply hidden insights, while simultaneously navigating specialized out-of-distribution interfaces and unpredictable environmental constraints (e.g., CAPTCHAs, pop-ups). Because current benchmarks omit these challenges, they cannot adequately ensure the real-world applicability of UI agents. We therefore develop RiskWebWorld, a highly realistic, interactive e-commerce risk management benchmark coupled with a scalable environment infrastructure, to specifically bridge these gaps. 
+
+3 RiskWebWorld Benchmark Infrastructure 
+
+Benchmarking the capability of a GUI agent in live website production settings requires handling the interaction between the agent and the website environment towards the target task. RiskWebWorld realizes this by (1) an agent module that orchestrates the multi-turn interaction and decouples the agent’s decision making from the environment, (2) a suite of tasks that define the target tasks and the corresponding evaluation metrics, (3) an environment module that supports parallel, isolated, and stable website interactions, and (4) a specialized workflow that drives the evaluation process. The overall architecture of the RiskWebWorld benchmark infrastructure is illustrated in Figure 2. 
+
+3.1 Agent 
+
+The agent’s interaction with the GUI environment is typically formulated as a partially observable Markov decision process (POMDP) [ 52 , 57 ] with an environment state space S, an observation function O : S → O, an action space A, a transition function T : S × A → S, and a reward function 
+
+R : S × A → R. In each turn, the agent receives an observation ot ∈ O (e.g., DOM tree, screenshot) from the website, and selects an action at ∈ A (e.g., click, type) to execute. The environment then transitions to a new state st+1 = T (st, a t), and the agent receives a reward rt = R(st, a t). The loop continues until (1) terminated: the agent declares that the task is completed (success or failure), or (2) truncated: the interaction reaches a maximum number of steps. In RiskWebWorld, we decouple the agent’s decision making from the environment by maintaining a five-tuple of the interaction state for the agent: ⟨ot, r t−1, T erminated, T runcated, Inf o ⟩, where 
+
+T erminated and T runcated are boolean flags indicating whether the interaction is terminated or truncated, and Inf o is a dictionary that contains additional information (e.g., action validation). The role of the agent module is to monitor the interaction process carefully. 3Task (Sec 3.2)                   
+
+> Task Instruction
+> Help me query information
+> about the “XXX” app on
+> the Apple App Store…
+> EN ZH
+> 帮助我查询苹果应用商
+> 店中的 XXX 应用相关信
+> 息…
+> Task SOP
+> The steps are as follows:
+> 1. Go to the App Store…
+> 2. If the app is visible, scroll
+> down to browse the page…
+> 3. If the app is not visible…
+> 4. …
+> EN ZH
+> 步骤如下：
+> 1. 跳转应用商店网址 …
+> 2. 如果应用可见，下滑
+> 浏览页面 …
+> 3. 如果应用不可见 …
+> 4. …
+> Evaluation Method
+> LLM -as -a-Judge Exact Match
+> Workflow (Sec 3.4)
+> Remote Device Provisioning
+> Interaction Loop
+> Task -wise Evaluation
+> Cloud Browser
+> Cluster
+> DaaS SDK
+> Task Initialization
+> CDP
+> Agent
+> (Sec 3.1)
+> Env
+> (Sec 3.3)
+> Environment (Sec 3.3)
+> Gymnasium -compliant Web Environment
+> Ray
+> Observation Reward Term./Trunc. Info.
+> Playwright -based Client
+> CDP Context Constructor Action Parser
+> Remote Browser Session
+> Screenshot
+> DOM Tree
+> Benchmark & RL Training
+
+Figure 2: RiskWebWorld benchmark infrastructure. Benchmark procedure is defined by the workflow (Sec. 3.4): First, remote browser devices are provisioned in the cloud and connected to the environ-ment module through CDP. Then the environment is initialized with the task configuration (Sec. 3.2), and the agent (Sec. 3.1) starts to interact with the environment (Sec. 3.3) in a step-wise manner. After the loop terminates or truncates, evaluation results could serve for both benchmarking and training. 
+
+3.2 Task Configuration 
+
+Each task in RiskWebWorld is defined by a task configuration consisting of three components. (1) Task instruction: a natural language description of the task, comprising the task’s goal and output format constraints. (2) Task standard operating procedure (SOP): a step-by-step procedure that guides the agent to complete the task. The SOP is annotated by human experts and serves as a reference for the agent to follow, which directly decides the task’s difficulty level. (3) Task evaluation method: each task is associated with a specific evaluation method that quantifies the agent’s performance on the task. For example, the evaluation method can be either LLM judgment-based or exact match-based, depending on the nature of the task. Figure 4 illustrates a real example of a task configuration. 
+
+3.3 Environment 
+
+Existing web-agent frameworks (e.g., Browser Use [ 32 ]) are typically designed as closed-loop, autoregressive systems aimed at inference-time task execution for end users (consumer-facing). In such autonomous paradigms, the agent encapsulates both the policy planning and the environment execution within an opaque, uninterruptible monolithic loop. To unlock transparent, lightweight, and fine-grained evaluation for rigorous benchmarking, we systematically rebuild the web agent framework to formulate a scalable, Gymnasium-compliant environment, which also synergistically fulfills the strict, step-wise trajectory sampling requirements of RL training for GUI agents. Ta-ble 1 summarizes the comparison between our RiskWebWorld environment and existing web-agent environments. Three key features of the environment module are as follows. 
+
+Unified MDP Decoupling We decoupled the environment mechanics from the autonomous policy planner based on two fundamental objectives: (1) Universal Benchmarking Standardization : The core intent is to elevate the environment from a framework-specific closed agent into a reproducible, model-agnostic benchmarking testbed. By strictly refactoring the monolithic framework to expose formalized Gymnasium-compliant MDP primitives—while maintaining its original execution se-mantics—we logically isolate the environment’s state-transition mechanism from internal prompt engineering and LLM inferences. This standardizes the pipeline of extracting multi-modal observa-tions and validating JSON action schemas, endowing researchers with the capacity to seamlessly "plug-and-play" diverse foundation models. (2) Lightweight Distributed Architecture : Building on the environment above, rigorous benchmarking and RL training demand the concurrent execution of open-domain tasks. Standard frameworks collapse at this scale due to localized UI threads, and verbose I/O-blocking system logs. To overcome this, we deployed the environment as a lightweight execution layer inside Ray-backed remote actors. Each actor connects to dynamically provisioned cloud sandboxes through the remote Chrome DevTools Protocol (CDP), packages multimodal histo-ries for the policy network, and executes externally generated actions. To further stabilize large-scale parallel runs, we introduce a streamlined fault-interception mechanism that safely converts volatile Py-4Table 1: The comparison between our RiskWebWorld environment and existing web-agent environ-ments. Our environment is the only one that satisfies all the criteria for a standardized, scalable, and robust web-agent environment, which is essential for rigorous benchmarking and RL training. WebUI Env Dynamic Interaction General Action Space Standardized MDP Parallel Scalability Local-Free Execution Framework-Decoupled Mind2Web [6] ✗ ✓ ✗ ✗ ✓ ✗                                    
+
+> Online-Mind2Web [55] ✓✓✗✗✓✗
+> WebShop [58] ✓✗✓✗✗✗
+> WebArena [63] ✓✓✓✗✗✗
+> WebServ [29] ✓✓✗✓✗✗
+> WebGym [3] ✓✓✓✓✗✗
+> RiskWebWorld Env ✓✓✓✓✓✓
+
+dantic validation and DOM parsing exceptions into silent boolean failure signals, thereby preventing cascading worker crashes, reducing memory overhead, and increasing transition throughput. 
+
+CDP-Based Remote Orchestration At the browser-execution layer, we eliminate local browser instantiation entirely and instead interact with cloud-hosted Chromium instances through the CDP. At the beginning of each episode, the environment uses Daas [ 9] SDK to provision an isolated browser session and obtain a low-level WebSocket endpoint associated with a unique Trace ID. A Playwright-based client then attaches directly to this endpoint, allowing high-level Python-side DOM control to operate transparently over the remote rendering engine. Furthermore, this CDP-driven initialization enforces an execution profile (e.g., a fixed 1920 ×1200 viewport, and neutral proxy injections). These controls reduce rendering-side stochasticity and minimize DOM serialization latency across the remote procedure call (RPC) boundary, thereby producing stable high-fidelity visual and textual observations for policy network. 
+
+Granular MDP Control Dismantling the native autonomous run-loop grants the external orches-trator surgical time-step control. This discrete granularity not only allows the external algorithm to explicitly inject intermediate actions and gracefully handle terminal states, but naturally transforms our benchmark into a pristine RL native habitat. Most crucially, this explicit step sequencing enables the procedural injection of tailored shaping rewards (e.g., evaluation method querying trajectory accuracy), which assigns detailed credit across the sampled open-web exploratory paths. 
+
+3.4 Workflow 
+
+Given a task configuration, our workflow takes 4 steps to benchmark it: (1) Remote Device Pro-visioning first acquires an isolated cloud browser sandbox via Daas SDK, retrieving a low-level CDP debugging endpoint tied to a unique Trace ID. (2) Task Initialization then connects to this remote device via Playwright to initialize the task-specific environment, where task configurations are recorded and the initial observation is obtained. Then (3) Interaction Loop begins multi-round interaction explicitly between the external policy agent and the environment. When the interaction terminates or truncates, the workflow enters (4) Task-wise Evaluation . Depending on the task type, this stage may invoke different evaluation protocols, ultimately producing granular scalar rewards. 
+
+4 RiskWebWorld Tasks 
+
+RiskWebWorld comprises 1,513 Web UI tasks organized into two subsets: (1) RiskWebWorld-Standard , which contains 1070 tasks, includes both tasks accompanied by SOPs and tasks whose scenarios are not compatible with SOP-based execution. This subset is designed to evaluate an agent’s capability in regular production settings. (2) RiskWebWorld-Challenge , which contains 443 tasks, consists of tasks for which no executable SOPs are available, thereby requiring stronger long-horizon reasoning and exploration capabilities from the agent. The benchmark spans 8 business domains, further narrowing the gap between general benchmarks and e-commerce risk management scenarios. 5Long -horizon Exploration          
+
+> 22%
+> 13%
+> 16%
+> 11%
+> 8%
+> 12% 7%
+> 11%
+> Product Risk
+> Profile (332)
+> Merchant Risk Profile
+> (194)
+> Client Risk Profile
+> (245)
+> Content Consistency
+> Assurance (108)
+> Customs Declaration &
+> Clearance Status Audit
+> (116)
+> Logistics and Supply
+> Chain Tracking (166)
+> Website Accessibility &
+> Identity Verification (178)
+> Secure Payment
+> Channel Validation
+> (174)
+> (a) (b) (c)
+
+Figure 3: RiskWebWorld task statistics. (a) Task category distribution across 8 business domains. Exact values are given in parentheses. (b) Distributions of execution time and step count across task instances. (c) Comparison of step count distributions between SOP-accompanied and SOP-free tasks. 
+
+4.1 Task Curation 
+
+Our raw data is collected from an internal online production pipeline in which commercial tasks are executed by various information-seeking agents (e.g., Web UI agents 2 and Deep Research agents). For GUI agents, all tasks are restricted to be completed within 20 steps to satisfy efficiency constraints in real-world production settings. After collecting more than 10,000 task instances, we apply a rigorous filtering process to construct the RiskWebWorld-Standard subset. The first filtering criterion is result correctness. For tasks with existing labels, we compare the agent outputs against the labels. If they are consistent, the labels are retained and tasks are preserved; otherwise, we verify the label validity by cross-checking against the actual website state after task execution, ensuring label accuracy. For tasks without labels, human annotators manually assess the outputs, retaining correct answers or re-annotating incorrect ones as labels. We then apply three fine-grained criteria to ensure benchmark quality: (1) Task uniqueness. Duplicate tasks with identical instructions and SOPs are removed to promote diversity within the benchmark. (2) Task time invariance. Tasks that are highly time-sensitive and likely to become obsolete within a short period (e.g., tasks related to flash sales) are excluded to preserve the benchmark’s long-term relevance. (3) Task relevance. Since the production pipeline utilizes various agents with different capabilities, the correct answer may not be derived from GUI agents. Such tasks are manually removed to ensure that all tasks are compatible with the evaluation agent. In total, we obtain 1,070 tasks for the RiskWebWorld-Standard subset. Among them, 443 tasks are accompanied by executable SOPs, while the remaining 627 tasks do not include SOPs due to the dynamic nature of their scenarios or the absence of fixed exploration paths for completion. To further enrich the benchmark with more challenging and generalizable tasks, RiskWebWorld-Challenge subset is constructed by removing the SOP guidance from these 443 SOP-accompanied tasks by our annotators. This setting requires the agent to complete the task without procedural references, thereby placing greater demands on its task-level process understanding and planning capabilities. 
+
+4.2 Task Statistics Category We adopted the task taxonomy proposed by previous work [ 5 ] to encompass 8 business domains: Product Risk Profile (product-specific risk attributes; 332 tasks), Merchant Risk Profile (legal registration details, business licenses, etc.; 194 tasks), Client Risk Profile (publicly available identifiers, etc.; 245 tasks), Logistics and Supply Chain Tracking (shipping status through courier, freight, or e-commerce platforms; 166 tasks), Customs Declaration & Clearance Status Audit (116 tasks), Website Accessibility & Identity Verification (178 tasks), Content Consistency Assurance (108 tasks), and Secure Payment Channel Validation (174 tasks). The detailed task distribution across these categories is illustrated in Figure 3 (a). The top three most heavily represented categories are Product Risk Profile, Client Risk Profile, and Merchant Risk Profile, highlighting a strong emphasis on core entity-level risk assessment. 
+
+Runtime Profiling For tasks collected from the online production pipeline, all execution metadata, including execution time and the number of interaction steps, are logged by our internal monitoring system, as illustrated in Figure 7. We re-perform the RiskWebWorld-Challenge tasks on the same Web 
+
+> 2We deployed the state-of-the-art Qwen3.5-397B on the Browser Use framework, with a revised action space and prompt.
+
+6Table 2: Performance of baseline agents on the RiskWebWorld by task category. The columns delineate abbreviations: PRP (Product Risk Profile), MRP (Merchant Risk Profile), CRP (Client Risk Profile), LSCT (Logistics and Supply Chain Tracking), CDCSA (Customs Declaration & Clearance Status Audit), WAIV (Website Accessibility & Identity Verification), CCA (Content Consistency Assurance), SPCV (Secure Payment Channel Validation). The Overall column reports the success rate (SR) over 1,513 tasks. Highest SRs in each category are in purple ; second highest in blue . Model Commercial Domain Overall PRP MRP CRP LSCT CDCSA WAIV CCA SPCV                                                                                                                                                                            
+
+> Commercial Models
+> GPT-5.2 49.7 35.6 54.7 48.8 62.1 56.7 54.6 32.2 48.7 Gemini-3-Pro 39.2 38.7 53.5 56.6 69.8 60.7 50.9 39.1 49.1 Claude-Sonnet-4.5 22.3 30.9 49.0 30.1 51.7 31.5 27.8 23.0 32.4
+> Average 37.1 35.1 52.4 45.2 61.2 49.6 44.4 31.4 43.4
+> High-capability Open-source Models
+> Kimi-K2.5 18.1 34.0 56.3 50.0 44.8 48.3 7.4 0.0 32.6 GLM-4.6V 1.8 10.3 1.6 0.0 0.0 23.0 0.0 13.8 6.3 Qwen3.5-397B 36.7 27.8 47.3 43.4 64.7 55.6 40.7 34.5 42.4 Qwen3-VL-235B 46.7 31.0 54.3 42.7 60.3 58.4 51.8 36.8 47.1
+> Average 25.8 25.8 39.9 34.0 42.5 46.3 25.0 21.3 32.1
+> Resource-efficient Open-source Models
+> Qwen3.5-35B 35.5 28.4 23.3 25.3 56.9 28.1 29.6 36.8 32.0 Qwen3-VL-30B 27.1 22.7 16.7 18.7 56.0 26.4 7.4 23.0 24.2 InternVL3.5-38B 6.3 3.1 1.2 0.0 0.0 0.0 0.0 2.3 2.2
+> Average 23.0 18.1 13.7 14.7 37.6 18.2 12.3 20.7 19.5
+> GUI-specific Models
+> ShowUI-2B 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 GUI-G1-3B 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 UI-TARS-1.5-7B 3.9 0.0 1.6 0.0 0.0 0.0 3.7 0.0 1.4 UI-TARS-72B 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 BU-30B 36.1 26.3 44.1 19.3 56.9 25.3 18.5 27.6 32.4
+> Average 8.0 5.3 9.1 3.9 11.4 5.1 4.4 5.5 6.8
+
+UI agent settings as RiskWebWorld-Standard to obtain the corresponding execution metadata. Then we analyze the distributions of execution time and step count across all task instances in Figure 3(b). In general, tasks involving more interaction steps impose greater demands on long-horizon exploration and planning. We observe a positive correlation between execution time and step count, where the task distribution also exhibits a noticeable upper-left trend: tasks with the same number of steps need longer execution times. This pattern is attributed to factors such as website load latency and LLM inference time (longer interaction paths involve longer histories). 
+
+SOP Guidance To quantify the impact of SOP guidance on task difficulty, we compare the distributions of step counts between SOP-accompanied (RiskWebWorld-Standard) and SOP-free tasks (RiskWebWorld-Challenge), as shown in Figure 3(c). SOP-free tasks generally require more interaction steps, suggesting that the absence of procedural guidance increases task complexity. 
+
+Environment Hijackments RiskWebWorld tasks comprise a range of environmental hijackments that evaluate GUI agents’ ability to handle real-world web interaction challenges. As summarized in Figure 5, we identify three representative types of hijackments: (1) Verification Barrier, where the agent needs to overcome human verification mechanisms (e.g., CAPTCHA) to access the target information; (2) Unpredictable Pop-up, where the agent must deal with unexpected pop-ups (e.g., cookie consent forms or region selection prompts) that disrupt the normal interaction flow; and (3) Dynamic Content Shift, where the agent should adapt to dynamic changes in website content (e.g., website load latency or redirection) that affect the availability or accessibility of information. 75 Benchmarking Baselines 
+
+5.1 Benchmark Setup Model Selection We evaluate four types of models on the RiskWebWorld benchmark, including commercial models (e.g., GPT-5.2 [ 35 ], Gemini-3-Pro [ 11 ], Claude-Sonnet-4.5 [ 1 ]), high-capability open-source models (e.g., Kimi-K2.5 [ 44 ], GLM-4.6V [ 16 ], Qwen3.5-397B [ 39 ], Qwen3-VL-235B [ 4]), resource-efficient open-source models (e.g., Qwen3.5-35B, Qwen3-VL-30B, InternVL3.5-38B [ 47 ]), and GUI-specific models (e.g., ShowUI-2B [ 27 ], GUI-G1-3B [ 64 ], UI-TARS-1.5-7B [ 38 ], UI-TARS-72B, BrowserUse-30B [ 32 ]). The default model settings are used for all models, and no additional training or fine-tuning is performed. 
+
+Environment Configuration All experiments are conducted in the environment described in Sec. 3.3. Each task instance is executed in an isolated browser session provisioned by the Daas SDK, with a fixed viewport of 1920 ×1080. We cap each episode at 20 interaction steps. To prevent degenerate looping behavior, an episode is terminated early after three consecutive action failures. Following the message management mechanism of Browser Use, the agent’s execution history (e.g., reasoning traces and action results), together with the current webpage’s DOM tree, screenshot, task instruction, and system prompt, is packaged as the observation for the subsequent step. More details of the prompt design and action space are described in App. H. 
+
+Evaluation Criteria We measure model performance using task success rate, i.e., the proportion of tasks answered correctly. For fields that require exact information (e.g., numerical values), we use exact-match evaluation. For free-form textual fields, correctness is determined by an LLM judge. 
+
+5.2 Quantitative Analysis: Benchmark Performance Leading generalist models set the performance ceiling on RiskWebWorld. As shown in Table 2, top proprietary models, Gemini-3-Pro (49.1%) and GPT-5.2 (48.7%), together with the large open-weights model Qwen3-VL-235B (47.1%), form a clear first tier. In contrast, specialized zero-shot GUI models (e.g., ShowUI and UI-TARS variants) often collapse to 0% overall success. This gap shows that strong performance on static, confined UI benchmarks does not transfer to dynamic, multi-hop commercial risk analysis. We discuss these failures in detail in Sec. 5.3. 
+
+Task complexity affects success across domains. Performance varies substantially with task compo-sition. Structured tasks with predictable flows, such as Customs Declaration Audits (CDCSA)—where the target website is given—show the highest completion rates (Gemini-3-Pro: 69.8%). By contrast, performance drops on tasks requiring cross-page consistency and continuous verification. In Secure Payment Channel Validation (SPCV) and Merchant Risk Profile (MRP), agents must explore multiple unfamiliar websites, and even the best models peak at 39.1% and 38.7%. This variance indicates persistent brittleness in long-horizon context maintenance and deductive verification. 
+
+Foundation scaling outweighs interface-specific grounding for open-web robustness. The bench-mark empirically validates model-scale effects over specialized interface alignment. Within identical model families, expanding parameter capacities systematically unlocks step-function improvements; for example, upgrading from Qwen3-VL-30B (24.2%) to Qwen3-VL-235B (47.1%) nearly doubles the overall success rate. Crucially, the persistent failure of GUI-oriented baselines indicates that low-level interface grounding is heavily bottlenecked by base instruction-following and reasoning capabilities. Addressing complex real-world business web analysis inherently demands the robust in-struction following, flexible error recovery, and deep generalization that currently emerge exclusively through foundational scaling rather than targeted UI-restricted datasets. 
+
+5.3 Qualitative Analysis: Agent Behavior and Failure Modes Limited instruction-following and generalization disproportionately affect specialized agents. 
+
+Instruction-following and generalization issues have been observed across specialized and generalist models (Figure 8), but the former are impacted more. A notable exception in specialized models is BU-30B, which is fine-tuned on Qwen3-VL-30B using data from Browser Use. Because the Browser Use prompt is also applied in our environment, we suspect this allows BU-30B to artificially exploit specific prompt patterns and action formats. To investigate this hypothesis, we evaluate models under 8Table 3: Performance (SR) of baseline agents under different system prompt settings to reveal the impact of agent generalization capability. Normal denotes the default detailed prompt, while Flash is a concise version. Performance degradation ( ∆) are with respect to the Normal. Generalist Models Specialized Models Kimi-K2.5 Qwen3-VL-235B Qwen3-VL-30B BU-30B ShowUI-2B UI-TARS-1.5-7B Normal 32.6 47.1 24.2 32.4 0.0 1.4 Flash 32.1 46.0 21.8 15.9 0.0 1.2       
+
+> ∆-1.5% -2.3% -9.9% -50.9% --14.3%
+
+two system prompt configurations: Normal (the default comprehensive prompt) and Flash (a concise variant). As depicted in Table 3, transitioning from the Normal to the Flash prompt induces a severe performance drop in BU-30B. This stark contrast suggests that specialized fine-tuning on standard GUI datasets may inadvertently compromise the model’s generalization capabilities. Conversely, generalist models exhibit fewer performance degradation, indicating that robust instruction-following and reasoning abilities enable them to maintain performance even with reduced prompt guidance. 
+
+Action routing and argument generation are the primary bottlenecks for small models. From the failure trajectories of small models (ShowUI-2B in Figure 9 and UI-TARS-1.5-7B in Figure 10), we observe that they identify a plausible next subgoal in thinking /memory , yet fail to realize that intent as a valid executable action. One common failure is action misrouting, where an inappropriate action type or tool is selected for the current interface state. The other major failure lies in argument misgeneration: even when the action type is roughly correct, the generated parameters are often invalid, either by hallucinating unsupported values or by assigning the wrong parameter form to the selected action or element. Moreover, after execution errors, the model tend to repeat similarly invalid actions instead of updating its internal state based on environmental feedback. These patterns indicate that the main limitation of small models lies not in high-level task understanding, but in action routing, argument generation, and state tracking during sequential interaction. 
+
+The performance ceiling of SOTAs is limited by open-ended exploration and long-horizon evidence composition. Advanced models generally succeed at high-level task understanding, but their performance ceiling is still constrained by two limitations. First, they remain weak in open-ended exploration (Gemini-3-Pro in Figure 11) when the intended information path is blocked by access restrictions, anti-bot defenses, or broken pages, and thus often fail to proactively discover feasible alternatives beyond the initial plan. Second, they are still limited in long-horizon evidence composition (Qwen3.5-397B in Figure 12) across multiple pages, especially when relevant clues are scattered across a large state space with substantial irrelevant content. These patterns suggest that, for state-of-the-art models, the main challenge is no longer basic navigation or subgoal identification, but proactive recovery and evidence aggregation in realistic web environments. 
+
+5.4 Environment Matters: Exploration of Agentic RL 
+
+Table 4: Performance (SR) of baseline models be-fore and after Agentic RL training on our proposed RiskWebWorld environment. Normal Flash Qwen3-VL-8B 20.2 17.5 +RiskWebWorld Env 36.4 (+16.2) 32.3 (+13.8) Kimi-VL-A3B 12.2 10.6 +RiskWebWorld Env 20.0 (+7.8) 18.9 (+8.3) Agentic RL has emerged as a promising paradigm for training interactive agents in com-plex environments. To reveal its potential for e-commerce risk management, we conduct a preliminary study by training baseline models in the proposed RiskWebWorld Env (Sec. 3.3); additional implementation details are provided in Sec. G. As shown in Table 4, agentic RL training in RiskWebWorld yields consistent im-provements across models and prompt settings. Qwen3-VL-8B improves by 16.2% and 13.8% under the Normal and Flash prompts, respectively, while Kimi-VL-A3B [ 45 ] gains 7.8% and 8.3%. These empirical results validate the efficacy of our environment in supporting stable and parallelized agentic RL training. By facilitating online, long-horizon exploration and reasoning without dependence on pre-collected static trajectories, RiskWebWorld unlocks generalized capabilities that fundamentally surpass the limitations associated with SFT overfitting and offline RL artifacts. 96 Conclusion 
+
+In this paper, we present RiskWebWorld, the first interactive benchmark for evaluating the capabilities of web agents in real-world e-commerce risk management scenarios. RiskWebWorld consists of 1,513 tasks across 8 business domains. We also introduce a novel Gymnasium-compliant environment that decouples the environment mechanics from the policy planner, enabling stable and scalable agentic RL training. Our extensive evaluations reveal significant performance gaps among current models and highlight key challenges in generalization and open-ended exploration. RiskWebWorld serves for advancing research in web agents and their applications in e-commerce risk management. 
+
+References 
+
+[1] Anthropic. Claude sonnet 4.5 system card, 2025. [2] Anthropic. Computer use (beta). https://docs.anthropic.com/en/docs/ agents-and-tools/computer-use , n.d. Accessed: 2025-05-03. [3] Hao Bai, Alexey Taymanov, Tong Zhang, Aviral Kumar, and Spencer Whitehead. Web-gym: Scaling training environments for visual web agents with realistic tasks. arXiv preprint arXiv:2601.02439 , 2026. [4] Shuai Bai, Yuxuan Cai, Ruizhe Chen, Keqin Chen, Xionghui Chen, Zesen Cheng, Lianghao Deng, Wei Ding, Chang Gao, Chunjiang Ge, Wenbin Ge, Zhifang Guo, Qidong Huang, Jie Huang, Fei Huang, Binyuan Hui, Shutong Jiang, Zhaohai Li, Mingsheng Li, Mei Li, Kaixin Li, Zicheng Lin, Junyang Lin, Xuejing Liu, Jiawei Liu, Chenglong Liu, Yang Liu, Dayiheng Liu, Shixuan Liu, Dunjie Lu, Ruilin Luo, Chenxu Lv, Rui Men, Lingchen Meng, Xuancheng Ren, Xingzhang Ren, Sibo Song, Yuchong Sun, Jun Tang, Jianhong Tu, Jianqiang Wan, Peng Wang, Pengfei Wang, Qiuyue Wang, Yuxuan Wang, Tianbao Xie, Yiheng Xu, Haiyang Xu, Jin Xu, Zhibo Yang, Mingkun Yang, Jianxin Yang, An Yang, Bowen Yu, Fei Zhang, Hang Zhang, Xi Zhang, Bo Zheng, Humen Zhong, Jingren Zhou, Fan Zhou, Jing Zhou, Yuanzhi Zhu, and Ke Zhu. Qwen3-vl technical report. arXiv preprint arXiv:2511.21631 , 2025. [5] Renqi Chen, Zeyin Tao, Jianming Guo, Jingzhe Zhu, Yiheng Peng, Qingqing Sun, Tianyi Zhang, and Shuai Chen. Risk: A framework for gui agents in e-commerce risk management. arXiv preprint arXiv:2509.21982 , 2025. [6] Xiang Deng, Yu Gu, Boyuan Zheng, Shijie Chen, Sam Stevens, Boshi Wang, Huan Sun, and Yu Su. Mind2web: Towards a generalist agent for the web. Advances in Neural Information Processing Systems , 36:28091–28114, 2023. [7] Lang Feng, Zhenghai Xue, Tingcong Liu, and Bo An. Group-in-group policy optimization for llm agent training. arXiv preprint arXiv:2505.10978 , 2025. [8] Chengguang Gan, Yoshihiro Tsujii, Yunhao Liang, Tatsunori Mori, Shiwen Ni, and Hiroki Itoh. Guideweb: A benchmark for automatic in-app guide generation on real-world web uis. arXiv preprint arXiv:2602.01917 , 2026. [9] Changlong Gao, Zhangxuan Gu, Yulin Liu, Xinyu Qiu, Shuheng Shen, Yue Wen, Tianyu Xia, Zhenyu Xu, Zhengwen Zeng, Beitong Zhou, et al. Ui-venus-1.5 technical report. arXiv preprint arXiv:2602.09082 , 2026. [10] Difei Gao, Lei Ji, Zechen Bai, Mingyu Ouyang, Peiran Li, Dongxing Mao, Qinchen Wu, Weichen Zhang, Peiyi Wang, Xiangwu Guo, et al. Assistgui: Task-oriented pc graphical user interface automation. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition , pages 13289–13298, 2024. [11] Google. Gemini 3 pro, 2025. [12] Li Gu, Zihuan Jiang, Zhixiang Chi, Huan Liu, Ziqiang Wang, Yuanhao Yu, Glen Berseth, and Yang Wang. Generalization in online reinforcement learning for mobile agents. arXiv preprint arXiv:2603.07432 , 2026. 10 [13] Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. [14] Longjie Guo, Chenjie Yuan, Mingyuan Zhong, Robert Wolfe, Ruican Zhong, Yue Xu, Bingbing Wen, Hua Shen, Lucy Lu Wang, and Alexis Hiniker. Susbench: An online benchmark for evaluating dark pattern susceptibility of computer-use agents. arXiv preprint arXiv:2510.11035 ,2025. [15] Hongliang He, Wenlin Yao, Kaixin Ma, Wenhao Yu, Yong Dai, Hongming Zhang, Zhenzhong Lan, and Dong Yu. Webvoyager: Building an end-to-end web agent with large multimodal models. arXiv preprint arXiv:2401.13919 , 2024. [16] Wenyi Hong, Wenmeng Yu, Xiaotao Gu, Guo Wang, Guobing Gan, Haomiao Tang, Jiale Cheng, Ji Qi, Junhui Ji, Lihang Pan, et al. Glm-4.5 v and glm-4.1 v-thinking: Towards versatile multimodal reasoning with scalable reinforcement learning. arXiv preprint arXiv:2507.01006 ,2025. [17] Youngmin Im, Byeongung Jo, Jaeyoung Wi, Seungwoo Baek, Tae Hoon Min, Joo Hyung Lee, Sangeun Oh, Insik Shin, and Sunjae Lee. Modular and multi-path-aware offline benchmarking for mobile gui agents. arXiv preprint arXiv:2512.12634 , 2025. [18] Wenjia Jiang, Yangyang Zhuang, Chenxi Song, Xu Yang, Joey Tianyi Zhou, and Chi Zhang. Ap-pagentx: Evolving gui agents as proficient smartphone users. arXiv preprint arXiv:2503.02268 ,2025. [19] Raghav Kapoor, Yash Parag Butala, Melisa Russak, Jing Yu Koh, Kiran Kamble, Waseem AlShikh, and Ruslan Salakhutdinov. Omniact: A dataset and benchmark for enabling multimodal generalist autonomous agents for desktop and web. In European Conference on Computer Vision , pages 161–178. Springer, 2024. [20] Quyu Kong, Xu Zhang, Zhenyu Yang, Nolan Gao, Chen Liu, Panrong Tong, Chenglin Cai, Hanzhang Zhou, Jianan Zhang, Liangyu Chen, et al. Mobileworld: Benchmarking autonomous mobile agents in agent-user interactive and mcp-augmented environments. arXiv preprint arXiv:2512.19432 , 2025. [21] Shrinidhi Kumbhar, Haofu Liao, Srikar Appalaraju, and Kunwar Yashraj Singh. Towards gui agents: Vision-language diffusion models for gui grounding. arXiv preprint arXiv:2603.26211 ,2026. [22] Juyong Lee, Taywon Min, Minyong An, Dongyoon Hahm, Haeone Lee, Changyeon Kim, and Kimin Lee. Benchmarking mobile device control agents across diverse configurations. arXiv preprint arXiv:2404.16660 , 2024. [23] Yanda Li, Chi Zhang, Wanqi Yang, Bin Fu, Pei Cheng, Xin Chen, Ling Chen, and Yunchao Wei. Appagent v2: Advanced agent for flexible mobile interactions. arXiv preprint arXiv:2408.11824 ,2024. [24] Yang Li, Yuchen Liu, Haoyu Lu, Zhiqiang Xia, Hongzhen Wang, Kaiyang Han, Changpeng Yang, Jinyang Wu, Jiaming Xu, Runyu Shi, et al. Gui-ceval: A hierarchical and comprehensive chinese benchmark for mobile gui agents. arXiv preprint arXiv:2603.15039 , 2026. [25] Xinbin Liang, Jinyu Xiang, Zhaoyang Yu, Jiayi Zhang, Sirui Hong, Sheng Fan, and Xiao Tang. Openmanus: An open-source framework for building general ai agents, 2025. [26] Zeyi Liao, Jaylen Jones, Linxi Jiang, Yuting Ning, Eric Fosler-Lussier, Yu Su, Zhiqiang Lin, and Huan Sun. Redteamcua: Realistic adversarial testing of computer-use agents in hybrid web-os environments. arXiv preprint arXiv:2505.21936 , 2025. [27] Kevin Qinghong Lin, Linjie Li, Difei Gao, Zhengyuan Yang, Shiwei Wu, Zechen Bai, Stan Weix-ian Lei, Lijuan Wang, and Mike Zheng Shou. Showui: One vision-language-action model for gui visual agent. In Proceedings of the Computer Vision and Pattern Recognition Conference ,pages 19498–19508, 2025. 11 [28] Guangyi Liu, Pengxiang Zhao, Liang Liu, Zhiming Chen, Yuxiang Chai, Shuai Ren, Hao Wang, Shibo He, and Wenchao Meng. Learnact: Few-shot mobile gui agent with a unified demonstration benchmark. arXiv preprint arXiv:2504.13805 , 2025. [29] Yuxuan Lu, Jing Huang, Hui Liu, Jiri Gesi, Yan Han, Shihan Fu, Tianqi Zheng, and Dakuo Wang. Webserv: A browser-server environment for efficient training of reinforcement learning-based web agents at scale. arXiv preprint arXiv:2510.16252 , 2025. [30] Run Luo, Lu Wang, Wanwei He, and Xiaobo Xia. Gui-r1: A generalist r1-style vision-language action model for gui agents. arXiv preprint arXiv:2504.10458 , 2025. [31] Grégoire Mialon, Clémentine Fourrier, Thomas Wolf, Yann LeCun, and Thomas Scialom. Gaia: a benchmark for general ai assistants. In The Twelfth International Conference on Learning Representations , 2023. [32] Magnus Müller and Gregor Žuniˇ c. Browser use: Enable ai to control your browser, 2024. [33] Dang Nguyen, Jian Chen, Yu Wang, Gang Wu, Namyong Park, Zhengmian Hu, Hanjia Lyu, Junda Wu, Ryan Aponte, Yu Xia, et al. Gui agents: A survey. In Findings of the Association for Computational Linguistics: ACL 2025 , pages 22522–22538, 2025. [34] OpenAI. Computer-using agent. https://openai.com/index/computer-using-agent/ ,January 2025. Published: January 23, 2025; Accessed: 2025-05-03. [35] OpenAI. Introducing gpt 5.2, 2025. [36] Yichen Pan, Dehan Kong, Sida Zhou, Cheng Cui, Yifei Leng, Bing Jiang, Hangyu Liu, Yanyi Shang, Shuyan Zhou, Tongshuang Wu, et al. Webcanvas: Benchmarking web agents in online environments. arXiv preprint arXiv:2406.12373 , 2024. [37] Ralph Peeters, Aaron Steiner, Luca Schwarz, Julian Yuya Caspary, and Christian Bizer. Webmall– a multi-shop benchmark for evaluating web agents. arXiv e-prints , pages arXiv–2508, 2025. [38] Yujia Qin, Yining Ye, Junjie Fang, Haoming Wang, Shihao Liang, Shizuo Tian, Junda Zhang, Jiahao Li, Yunxin Li, Shijue Huang, et al. Ui-tars: Pioneering automated gui interaction with native agents. arXiv preprint arXiv:2501.12326 , 2025. [39] Qwen Team. Qwen3.5: Towards native multimodal agents, February 2026. [40] Christopher Rawles, Sarah Clinckemaillie, Yifan Chang, Jonathan Waltz, Gabrielle Lau, Mary-beth Fair, Alice Li, William Bishop, Wei Li, Folawiyo Campbell-Ajala, et al. Android-world: A dynamic benchmarking environment for autonomous agents. URL https://arxiv. org/abs/2405.14573 , 2024. [41] Christopher Rawles, Alice Li, Daniel Rodriguez, Oriana Riva, and Timothy Lillicrap. An-droidinthewild: A large-scale dataset for android device control. Advances in Neural Information Processing Systems , 36:59708–59728, 2023. [42] Marta Sumyk and Oleksandr Kosovan. Cuaaudit: Meta-evaluation of vision-language models as auditors of autonomous computer-use agents. arXiv preprint arXiv:2603.10577 , 2026. [43] Fei Tang, Zhangxuan Gu, Zhengxi Lu, Xuyang Liu, Shuheng Shen, Changhua Meng, Wen Wang, Wenqi Zhang, Yongliang Shen, Weiming Lu, et al. Gui-g 2: Gaussian reward modeling for gui grounding. arXiv preprint arXiv:2507.15846 , 2025. [44] Kimi Team, Tongtong Bai, Yifan Bai, Yiping Bao, SH Cai, Yuan Cao, Y Charles, HS Che, Cheng Chen, Guanduo Chen, et al. Kimi k2. 5: Visual agentic intelligence. arXiv preprint arXiv:2602.02276 , 2026. [45] Kimi Team, Angang Du, Bohong Yin, Bowei Xing, Bowen Qu, Bowen Wang, Cheng Chen, Chenlin Zhang, Chenzhuang Du, Chu Wei, Congcong Wang, Dehao Zhang, Dikang Du, Dongliang Wang, Enming Yuan, Enzhe Lu, Fang Li, Flood Sung, Guangda Wei, Guokun Lai, Han Zhu, Hao Ding, Hao Hu, Hao Yang, Hao Zhang, Haoning Wu, Haotian Yao, Haoyu Lu, Heng Wang, Hongcheng Gao, Huabin Zheng, Jiaming Li, Jianlin Su, Jianzhou Wang, Jiaqi 12 Deng, Jiezhong Qiu, Jin Xie, Jinhong Wang, Jingyuan Liu, Junjie Yan, Kun Ouyang, Liang Chen, Lin Sui, Longhui Yu, Mengfan Dong, Mengnan Dong, Nuo Xu, Pengyu Cheng, Qizheng Gu, Runjie Zhou, Shaowei Liu, Sihan Cao, Tao Yu, Tianhui Song, Tongtong Bai, Wei Song, Weiran He, Weixiao Huang, Weixin Xu, Xiaokun Yuan, Xingcheng Yao, Xingzhe Wu, Xinxing Zu, Xinyu Zhou, Xinyuan Wang, Y. Charles, Yan Zhong, Yang Li, Yangyang Hu, Yanru Chen, Yejie Wang, Yibo Liu, Yibo Miao, Yidao Qin, Yimin Chen, Yiping Bao, Yiqin Wang, Yongsheng Kang, Yuanxin Liu, Yulun Du, Yuxin Wu, Yuzhi Wang, Yuzi Yan, Zaida Zhou, Zhaowei Li, Zhejun Jiang, Zheng Zhang, Zhilin Yang, Zhiqi Huang, Zihao Huang, Zijia Zhao, and Ziwei Chen. Kimi-VL technical report, 2025. [46] Haoming Wang, Haoyang Zou, Huatong Song, Jiazhan Feng, Junjie Fang, Junting Lu, Longxi-ang Liu, Qinyu Luo, Shihao Liang, Shijue Huang, et al. Ui-tars-2 technical report: Advancing gui agent with multi-turn reinforcement learning. arXiv preprint arXiv:2509.02544 , 2025. [47] Weiyun Wang, Zhangwei Gao, Lixin Gu, Hengjun Pu, Long Cui, Xingguang Wei, Zhaoyang Liu, Linglin Jing, Shenglong Ye, Jie Shao, et al. Internvl3.5: Advancing open-source multimodal models in versatility, reasoning, and efficiency. arXiv preprint arXiv:2508.18265 , 2025. [48] Yanxi Wang, Zhiling Zhang, Wenbo Zhou, Weiming Zhang, Jie Zhang, Qiannan Zhu, Yu Shi, Shuxin Zheng, and Jiyan He. Guiguard: Toward a general framework for privacy-preserving gui agents. arXiv preprint arXiv:2601.18842 , 2026. [49] Zhenhailong Wang, Haiyang Xu, Junyang Wang, Xi Zhang, Ming Yan, Ji Zhang, Fei Huang, and Heng Ji. Mobile-agent-e: Self-evolving mobile assistant for complex tasks. arXiv preprint arXiv:2501.11733 , 2025. [50] Jing Wu, Daphne Barretto, Yiye Chen, Nicholas Gydé, Yanan Jian, Yuhang He, and Vibhav Vineet. Os-marathon: Benchmarking computer-use agents on long-horizon repetitive tasks. 
+
+arXiv preprint arXiv:2601.20650 , 2026. [51] Tianbao Xie, Jiaqi Deng, Xiaochuan Li, Junlin Yang, Haoyuan Wu, Jixuan Chen, Wenjing Hu, Xinyuan Wang, Yuhui Xu, Zekun Wang, et al. Scaling computer-use grounding via user interface decomposition and synthesis. arXiv preprint arXiv:2505.13227 , 2025. [52] Tianbao Xie, Danyang Zhang, Jixuan Chen, Xiaochuan Li, Siheng Zhao, Ruisheng Cao, Toh J Hua, Zhoujun Cheng, Dongchan Shin, Fangyu Lei, et al. Osworld: Benchmarking multimodal agents for open-ended tasks in real computer environments. Advances in Neural Information Processing Systems , 37:52040–52094, 2024. [53] Haiyang Xu, Xi Zhang, Haowei Liu, Junyang Wang, Zhaozai Zhu, Shengjie Zhou, Xuhao Hu, Feiyu Gao, Junjie Cao, Zihua Wang, et al. Mobile-agent-v3. 5: Multi-platform fundamental gui agents. arXiv preprint arXiv:2602.16855 , 2026. [54] Kevin Xu, Yeganeh Kordi, Tanay Nayak, Adi Asija, Yizhong Wang, Kate Sanders, Adam Byerly, Jingyu Zhang, Benjamin Van Durme, and Daniel Khashabi. Turkingbench: A challenge benchmark for web agents. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) , pages 3694–3710, 2025. [55] Tianci Xue, Weijian Qi, Tianneng Shi, Chan Hee Song, Boyu Gou, Dawn Song, Huan Sun, and Yu Su. An illusion of progress? assessing the current state of web agents. arXiv preprint arXiv:2504.01382 , 2025. [56] Jingyi Yang, Shuai Shao, Dongrui Liu, and Jing Shao. Riosworld: Benchmarking the risk of multimodal computer-use agents. arXiv preprint arXiv:2506.00618 , 2025. [57] Pei Yang, Hai Ci, and Mike Zheng Shou. macosworld: A multilingual interactive benchmark for gui agents. arXiv preprint arXiv:2506.04135 , 2025. [58] Shunyu Yao, Howard Chen, John Yang, and Karthik Narasimhan. Webshop: Towards scalable real-world web interaction with grounded language agents. Advances in Neural Information Processing Systems , 35:20744–20757, 2022. 13 [59] Suyu Ye, Haojun Shi, Darren Shih, Hyokun Yun, Tanya G Roosta, and Tianmin Shu. Realwe-bassist: A benchmark for long-horizon web assistance with real-world users. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 40, pages 34441–34449, 2026. [60] Chaoyun Zhang, He Huang, Chiming Ni, Jian Mu, Si Qin, Shilin He, Lu Wang, Fangkai Yang, Pu Zhao, Chao Du, et al. Ufo2: The desktop agentos. arXiv preprint arXiv:2504.14603 , 2025. [61] Xianren Zhang, Shreyas Prasad, Di Wang, Qiuhai Zeng, Suhang Wang, Wenbo Yan, and Mat Hans. A functionality-grounded benchmark for evaluating web agents in e-commerce domains. 
+
+arXiv preprint arXiv:2508.15832 , 2025. [62] Di Zhao, Longhui Ma, Siwei Wang, Miao Wang, and Zhao Lv. Cola: Collaborative multi-agent framework with dynamic task scheduling for gui automation. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing , pages 4570–4593, 2025. [63] Shuyan Zhou, Frank F Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar, Xianyi Cheng, Tianyue Ou, Yonatan Bisk, Daniel Fried, et al. Webarena: A realistic web environment for building autonomous agents. arXiv preprint arXiv:2307.13854 , 2023. [64] Yuqi Zhou, Sunhao Dai, Shuai Wang, Kaiwen Zhou, Qinglin Jia, and Jun Xu. Gui-g1: Understanding r1-zero-like training for visual grounding in gui agents. arXiv preprint arXiv:2505.15810 , 2025. 14 Appendix 
+
+A Limitations and Future Work 15 B Code and Data Availability 15 C Impact Statement 16 D Ethical, Privacy, and Safeguarding Statement 16 E Example of a Real RiskWebWorld Task 16 F Environment Hijackments 17 G Training Implementation Details 17 H Agent Implementation Details 19 
+
+H.1 Prompt Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19 H.2 Action Space Design . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 
+
+I Online Monitoring System 23 J More Details of Agent Behavior and Failure Modes 23 
+
+J.1 Limited Instruction-following and Generalization Disproportionately Affect Special-ized Agents . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 23 J.2 Action routing and argument generation are the primary bottlenecks for small models. 24 J.3 The performance ceiling of SOTAs is limited by open-ended exploration and long-horizon evidence composition. . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28 
+
+A Limitations and Future Work 
+
+While RiskWebWorld represents a meaningful step towards realistic evaluation of web agents in e-commerce risk management, there are several limitations that we acknowledge and plan to address in future work. First, although we have curated a diverse set of tasks across multiple business domains, the benchmark may still not cover all possible scenarios and edge cases that agents may encounter in real-world applications. Future iterations of RiskWebWorld will aim to expand the task set and include more complex and dynamic scenarios, such as those involving multi-agent interactions or real-time data updates. Second, while our environment supports stable agentic RL training, we have only conducted preliminary experiments with a limited set of models. Future research will involve more extensive training and evaluation of a wider range of models, including those with different architectures, training paradigms, and levels of supervision. 
+
+B Code and Data Availability 
+
+To support reproducibility while adhering to privacy standards, we establish the following release policies for our code and data: 15 Code Availability: The source code and infrastructure for the RiskWebWorld benchmark are currently being finalized for public release. The complete codebase will be officially open-sourced to the public in the near future. 
+
+Data Availability: Because the RiskWebWorld benchmark is sourced from authentic e-commerce risk management pipelines, it inherently involves sensitive privacy and commercial information. The full dataset will be released under a strict data access application system. Prospective users will be required to submit an application and undergo a rigorous qualification review to ensure that privacy information remains secure before access is granted. 
+
+C Impact Statement 
+
+RiskWebWorld contributes to the development of robust, reliable, and practical GUI agents capable of handling high-stakes professional operations. By establishing the first highly realistic interactive benchmark tailored for e-commerce risk management, our work facilitates the automation of complex investigative tasks. This advancement has the potential to significantly enhance digital security, mitigate online fraud, and reduce the manual workload associated with massive risk-control pipelines. Furthermore, the benchmark’s emphasis on authentic environmental hijackments (e.g., uncooperative websites, dynamic content shifts) actively promotes the creation of more resilient AI systems capable of navigating unpredictable real-world scenarios. This aligns with the broader industry effort to elevate AI assistants from constrained consumer tools to dependable digital workers in enterprise-grade applications. 
+
+D Ethical, Privacy, and Safeguarding Statement 
+
+RiskWebWorld adheres to strictly responsible AI principles through both its data governance and implementation safeguards. All benchmark tasks focus exclusively on constructive risk-assessment applications—such as merchant profiling, secure payment validation, and supply chain track-ing—deliberately avoiding scenarios that could facilitate malicious cyber activities or unauthorized system exploitation. Due to the authentic nature of the production-sourced tasks, the benchmark inherently involves real-world commercial and entity-level information. To mitigate privacy risks, we mandate a strict data accessibility protocol. As detailed in Sec. B, full access to the dataset is gated behind a rigorous qualification review system to ensure that researchers comply with privacy standards, thereby preventing the misuse of sensitive information. Furthermore, when presenting images or specific examples throughout this paper, we intentionally redact and blur all private or sensitive information (e.g., Figure 7, Figure 8) to provide an additional layer of privacy protection. For safe and responsible evaluation, RiskWebWorld implements strict environment isolation. The benchmark operates entirely within ephemeral cloud-hosted Chromium sandboxes provisioned via a remote Chrome DevTools Protocol (CDP) infrastructure. This architecture logically isolates all automated agent actions from local host platforms. Our workflow ensures that all browser states, temporary files, and interaction footprints are safely confined and immediately discarded after each episode, preventing any harmful operations or the accumulation of sensitive data. 
+
+E Example of a Real RiskWebWorld Task 
+
+Figure 4 illustrates an example of a real RiskWebWorld task in the Logistics and Supply Chain Tracking category. The task is to search for the origin and destination of a specific vessel. In “Role” section, the role of the agent is defined; in “SOP” section, the task instruction and the step-by-step SOP guidance are provided for the agent to complete the task. In the SOP-free setting, the agent needs to complete the same task without the SOP, which requires stronger reasoning and exploration capabilities. In “output format ” section, the expected output format is defined for the agent to follow; in “Evaluation” section, the evaluation method is determined, e.g., LLM judge. 16 Role                              
+
+> You are an ocean freight specialist, data cleaning engineer,
+> and web automation assistant with expertise in vessel naming
+> conventions and vessel -tracking websites.
+> SOP
+> 1. Parse the input text and extract the cleaned vessel name,
+> stored as vessel_name . Preserve valid name components such
+> as carrier prefixes, pinyin, embedded numbers, and trailing
+> letters when they are part of the vessel name, while removing
+> voyage suffixes.
+> 2. Navigate to https://www.marinetraffic.com ; if unavailable, use
+> VesselFinder. Enter vessel_name in the search box.
+> 3. If a matching vessel appears in the dropdown list, open the
+> most relevant result. If no result appears, further remove any
+> suspected trailing voyage fragment and retry the search once.
+> If still unsuccessful, set status to false and call done .
+> 4. On the vessel detail page, extract the location below Last
+> Port as origin_address and the location
+> below Destination as destination_address . If either field is
+> unavailable, set it to null .
+> 5. Call done .
+> Output Format
+> Output only the following JSON object, with no additional
+> explanatory text:
+> {
+> "status": boolean,
+> "origin_address": "string|null",
+> "destination_address": "string|null"
+> }
+> Role
+> You are an ocean freight specialist, data cleaning engineer, and
+> web automation assistant with expertise in vessel naming
+> conventions and vessel -tracking websites. Parse the input text
+> to extract the vessel name and search for vessel name. Extract
+> the origin address and the destination address; if either field is
+> unavailable, set it to null.
+> Output Format
+> Output only the following JSON object, with no additional
+> explanatory text:
+> {
+> "status": boolean,
+> "origin_address": "string|null",
+> "destination_address": "string|null"
+> }
+
+No SOP 
+
+(a) (b) 
+
+> Evaluation
+> LLM Judge.
+> Evaluation
+> LLM Judge.
+
+Figure 4: An example of a real RiskWebWorld task. The task is to search for the origin and destination of a specific vessel, belonging to the Logistics and Supply Chain Tracking category. In case (a), the agent is given a task instruction and an SOP that provides step-by-step guidance. In case (b), the agent needs to complete the same task without the SOP, which requires stronger reasoning and exploration capabilities. 
+
+F Environment Hijackments 
+
+RiskWebWorld tasks comprise a range of environmental hijackments that evaluate GUI agents’ ability to handle real-world web interaction challenges. As summarized in Figure 5, we identify three representative types of hijackments: (1) Verification Barrier, where the agent needs to overcome human verification mechanisms (e.g., CAPTCHA) to access the target information; (2) Unpredictable Pop-up, where the agent must deal with unexpected pop-ups (e.g., cookie consent forms or region selection prompts) that disrupt the normal interaction flow; and (3) Dynamic Content Shift, where the agent should adapt to dynamic changes in website content (e.g., website load latency or redirection) that affect the availability or accessibility of information. These hijackments are utilized to reflect the unpredictable and often adversarial nature of real-world web environments, and to test the robustness and adaptability of GUI agents in handling such challenges. 
+
+G Training Implementation Details 
+
+We use Qwen3-VL-8B-Instruct and Kimi-VL-A3B as the base model and the verl-agent framework [ 7]for training over 1200 steps (each step corresponds to one episode of interaction with the environment). Our training is conducted on 8 Nvidia A100-80G GPUs, where Group Relative Policy Optimization (GRPO) [ 13 ] is used as the training algorithm, with the rollout group size set to 4. The rollout temperature is set to 1.0 and the KL-divergence loss coefficient is set to 0.01. The maximum prompt length is set to 16,384 tokens, and the maximum response length is set to 512 tokens. The learning rate is set to 1e-6 and the mini-batch size is set to 32. We adopt a composite reward function R
+
+to guide the agent’s learning process. For a given trajectory τ = ( a1, a 2, . . . , a |τ |), the reward is 17 (a) (b) 
+
+(c) Figure 5: Environmental hijackments seen in RiskWebWorld tasks. Three representative cases are illustrated: (a) Verification Barrier (e.g., human verification CAPTCHA). (b) Unpredictable Pop-up (e.g., cookie consent forms). (c) Dynamic Content Shift (e.g., network load latency). computed as: 
+
+R(τ ) = Rcomp · γ |τ |−| τ |min   
+
+> |τ|min
+
++ 
+
+> |τ|
+
+X
+
+> i=1
+
+Rstep (ai), (1) where |τ |min is the minimum number of steps to complete the task among a group of trajectories, γ
+
+is a decay factor set to 0.95, Rstep is a step-wise reward function that measures the action format correctness (0.02 for correct format, -0.02 for incorrect format), and Rcomp is a completion reward: 
+
+Rcomp =
+
+
+
+1.0, if the answer is correct 
+
+0.3, if the trajectory is reasonable 
+
+0.1, if the task is completed within the maximum steps 
+
+0.0, otherwise (2) where the judgment is made by Qwen3.5-397B-A17B based on the final answer, the trajectory, and the task instruction. In each training step, for a given task q, the agent generates a group of G trajectories {τ1, τ 2, . . . , τ G}
+
+by interacting with the environment. The reward R(τi) is computed for each trajectory, and the policy is updated using GRPO loss function: 
+
+LGRP O (θ) = − 1
+
+G
+
+> G
+
+X
+
+> i=1
+
+1
+
+|τi|
+
+> |τi|
+
+X
+
+> t=1
+
+min 
+
+
+
+ri,t (θ) ˆAi, clip (ri,t (θ), 1 − ϵ, 1 + ϵ) ˆAi
+
+
+
++ βDKL (πθ || πref ) ,
+
+(3) 18 where ri,t (θ) = πθ (ai,t |si,t ) 
+
+> πold (ai,t |si,t )
+
+is the importance sampling ratio. A trajectory-level advantage ˆAi[ 9]replaces the traditional step-wise advantage given the sparse reward nature of online environments: 
+
+ˆAi = R(τi) − mean ({R(τi)}Gj=1 )
+
+std ({R(τi)}Gj=1 ) + ϵ . (4) The trajectory-level advantage ˆAi is applied across all steps in the trajectory, which overcomes the environmental stochasticity and provides a more stable learning signal for the agent. For the environment configuration, we use 32 cloud browser instances in parallel, and each episode is capped at 20 interaction steps. Each task instance is executed in an isolated browser session provisioned by the Daas SDK, with a fixed viewport of 1920 ×1080. To prevent degenerate looping behavior, an episode is terminated early after three consecutive action failures. Following the message management mechanism of Browser Use, the agent’s execution history (e.g., reasoning traces and action results), together with the current webpage’s DOM tree, screenshot, task instruction, and system prompt, is packaged as the observation for the subsequent step. In the training phase, we use the Normal system prompt (See App. H.1) for all agents. The training data is additionally collected from another period of the online production pipeline, which contains 640 task instances that are not included in the RiskWebWorld benchmark. The data collection process follows the same procedure as described in Sec. 4.1, and collected data is further argumented by rephrasing the task instruction to increase the diversity of training samples. 0 100 200 300 400 500 600 700 800 
+
+> Step
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Reward
+> Raw Curve
+> Moving Average
+
+Figure 6: Agentic RL training curves. The blue line represents the raw mean reward across trajectories, while the orange line represents the smoothed reward using a moving average. The improvement is not strictly monotonic due to the inherent stochasticity of the environment (e.g., network uncertainty, website load latency). However, the overall upward trend indicates that the agent could learn to improve its performance based on the proposed RiskWebWorld Environment. 
+
+H Agent Implementation Details 
+
+H.1 Prompt Design 
+
+All agents make decisions based on the prompts with the following content structure:        
+
+> < System Prompt > < Agent History > < User Query > < Browser State > ( DOM tree , screenshot )
+
+Our system prompt follows the Browser Use framework [ 32 ], which comprises two modes: normal mode and flash mode. The normal mode has a more detailed system prompt that provides compre-hensive guidance on the agent’s capabilities, input structure, task completion rules, action rules, and efficiency guidelines. The flash mode has a more concise system prompt that focuses on the essential information for task completion. Normal mode usually leads to better performance but may require 19 more inference time, while flash mode is more efficient but may result in lower performance. In our experiments, we use normal mode as the default setting for all baseline agents, and we also conduct ablation studies on the impact of system prompt design by evaluating the same agents under flash mode. The default system prompt (normal mode) is given by: 
+
+You are an AI agent designed to operate in an iterative loop to automate 
+
+,→ browser tasks . Your ultimate goal is accomplishing the task 
+
+,→ provided in < user_request >. < intro > You excel at following tasks : 1. Navigating complex websites and extracting precise information 2. Automating form submissions and interactive web actions 3. Gathering and saving information 4. Using your filesystem effectively to decide what to keep in your 
+
+,→ context 5. Operate effectively in an agent loop 6. Efficiently performing diverse web tasks </ intro > < language_settings > - Default working language : ** English ** - Always respond in the same language as the user request </ language_settings > < input > At every step , your input will consist of : 1. < agent_history >: A chronological event stream including your previous 
+
+,→ actions and their results . 2. < agent_state >: Current < user_request > , summary of < todo_contents > , 
+
+,→ and < step_info >. 3. < browser_state >: Current URL , open tabs , interactive elements indexed 
+
+,→ for actions , and visible page content . 4. < browser_vision >: Screenshot of the browser with bounding boxes 
+
+,→ around interactive elements . If you used screenshot before , this 
+
+,→ will contain a screenshot . 5. < read_state > This will be displayed only if your previous action was 
+
+,→ extract or read_file . This data is only shown in the current step 
+
+,→ .</ input > < agent_history > Agent history will be given as a list of step information as follows : < step_ {{ step_number }} >: Evaluation of Previous Step : Assessment of last action Memory : Your memory of this step Next Goal : Your goal for this step Action Results : Your actions and their results </ step_ {{ step_number }} > and system messages wrapped in <sys > tag . </ agent_history > < user_request > USER REQUEST : This is your ultimate objective and always remains visible 
+
+,→ .- This has the highest priority . Make the user happy . - If the user request is very specific - then carefully follow each step 
+
+,→ and dont skip or hallucinate steps . - If the task is open ended you can plan yourself how to get it done . </ user_request > < browser_state > 1. Browser State will be given as : Current URL : URL of the page you are currently viewing . Open Tabs : Open tabs with their ids . Interactive Elements : All interactive elements will be provided in 
+
+,→ format as [ index ] < type > text </ type > where - index : Numeric identifier for interaction - type : HTML element type ( button , input , etc .) - text : Element description Examples : [33] < div > User form </ div > \ t *[35] < button aria - label = ’ Submit form ’ > Submit </ button > Note that : 
+
+20 - Only elements with numeric indexes in [] are interactive - ( stacked ) indentation ( with \ t ) is important and means that the 
+
+,→ element is a ( html ) child of the element above ( with a lower 
+
+,→ index ) - Elements tagged with a star ‘*[ ‘ are the new interactive elements that 
+
+,→ appeared on the website since the last step - if url has not 
+
+,→ changed . Your previous actions caused that change . Think if you 
+
+,→ need to interact with them , e . g . after input you might need to 
+
+,→ select the right option from the list . - Pure text elements without [] are not interactive . </ browser_state > < task_completion_rules > You must call the ‘ done ‘ action in one of two cases : - When you have fully completed the USER REQUEST . - When you reach the final allowed step ( ‘ max_steps ‘) , even if the task 
+
+,→ is incomplete . - If it is ABSOLUTELY IMPOSSIBLE to continue . The ‘ done ‘ action is your opportunity to terminate and share your 
+
+,→ findings with the user . - Set ‘ success ‘ to ‘ true ‘ only if the full USER REQUEST has been 
+
+,→ completed with no missing components . - If any part of the request is missing , incomplete , or uncertain , set ‘
+
+,→ success ‘ to ‘ false ‘. - You can use the ‘ text ‘ field of the ‘ done ‘ action to communicate your 
+
+,→ findings and ‘ files_to_display ‘ to send file attachments to the 
+
+,→ user , e . g . ‘[" results . md "] ‘. - Put ALL the relevant information you found so far in the ‘ text ‘ field 
+
+,→ when you call ‘ done ‘ action . - Combine ‘ text ‘ and ‘ files_to_display ‘ to provide a coherent reply to 
+
+,→ the user and fulfill the USER REQUEST . - You are ONLY ALLOWED to call ‘ done ‘ as a single action . Don ’ t call it 
+
+,→ together with other actions . - If the user asks for specified format , such as " return JSON with 
+
+,→ following structure " , " return a list of format ..." , MAKE sure to 
+
+,→ use the right format in your answer . - If the user asks for a structured output , your ‘ done ‘ action ’ s schema 
+
+,→ will be modified . Take this schema into account when solving the 
+
+,→ task ! </ task_completion_rules > < action_rules > - You are allowed to use a maximum of { max_actions } actions per step . If you are allowed multiple actions , you can specify multiple actions in 
+
+,→ the list to be executed sequentially ( one after another ) . - If the page changes after an action , the sequence is interrupted and 
+
+,→ you get the new state . </ action_rules > < efficiency_guidelines > You can output multiple actions in one step . Try to be efficient where 
+
+,→ it makes sense . Do not predict actions which do not make sense 
+
+,→ for the current page . ** Recommended Action Combinations :** - ‘ input ‘ + ‘ click ‘ fills form field and submit / search in one step - ‘ input ‘ + ‘ input ‘ fills multiple form fields - ‘ click ‘ + ‘ click ‘ navigates through multi - step flows ( when the page 
+
+,→ does not navigate between clicks ) - ‘ scroll ‘ with pages 10 + ‘ extract ‘ scrolls to the bottom of the page 
+
+,→ to load more content before extracting structured data - File operations + browser actions Do not try multiple different paths in one step . Always have one clear 
+
+,→ goal per step . Its important that you see in the next step if your action was 
+
+,→ successful , so do not chain actions which change the browser 
+
+,→ state multiple times , e . g . - do not use click and then navigate , because you would not see if the 
+
+,→ click was successful or not . - or do not use switch and switch together , because you would not see 
+
+,→ the state in between . 
+
+21 - do not use input and then scroll , because you would not see if the 
+
+,→ input was successful or not . </ efficiency_guidelines > < output > You must ALWAYS respond with a strictly valid JSON object . IMPORTANT : Do NOT include markdown code blocks ( e . g . , ‘‘‘ json ) or any 
+
+,→ text before / after the JSON . The JSON must strictly follow this exact structure : {{ " thinking ": " A structured reasoning block ." , " evaluation_previous_goal ": " Concise one - sentence analysis of your 
+
+,→ last action ( Success / Failure / Uncertain ) ." , " memory ": "1 -3 sentences of specific progress tracking ." , " next_goal ": " The immediate next objective in one sentence ." , " action ": [{{ " ACTION_KEY ": {{ " parameter ": " value " }} }} ]}} # CRITICAL RULES : 1. WRONG FORMAT : {{" action_name ": " input " , " params ": {{" index ": 1 , 
+
+,→ ...}}}} 2. CORRECT FORMAT : {{" input ": {{" index ": 1 , " text ": " example " , " clear ": 
+
+,→ true }}}} 3. " action " is an array . You can provide up to { max_actions } actions , 
+
+,→ except for " done " which must be a single action . </ output > 
+
+The system prompt for the flash mode is given by: 
+
+You are an AI agent designed to operate in an iterative loop to automate 
+
+,→ browser tasks . Your ultimate goal is accomplishing the task 
+
+,→ provided in < user_request >. < language_settings > Default : English . Match user ’ s language . </ 
+
+,→ language_settings > < user_request > Ultimate objective . Specific tasks : follow each step . Open 
+
+,→ - ended : plan approach . </ user_request > < browser_state > Elements : [ index ] < type > text </ type >. Only [ indexed ] are 
+
+,→ interactive . Indentation = child . *[= new . </ browser_state > < file_system > - PDFs are auto - downloaded to available_file_paths - use 
+
+,→ read_file to read the doc or scroll and look at screenshot . You 
+
+,→ have access to persistent file system for progress tracking . Long 
+
+,→ tasks >10 steps : use todo . md : checklist for subtasks , update 
+
+,→ with replace_file_str when completing items . When writing CSV , 
+
+,→ use double quotes for commas . In available_file_paths , you can 
+
+,→ read downloaded files and user attachment files . </ file_system > < action_rules > You are allowed to use a maximum of { max_actions } actions per step . 
+
+,→ Check the browser state each step to verify your previous action 
+
+,→ achieved its goal . When chaining multiple actions , never take 
+
+,→ consequential actions ( submitting forms , clicking consequential 
+
+,→ buttons ) without confirming necessary changes occurred . </ action_rules > < output > You must respond with a valid JSON in this exact format : {{ " memory ": " Up to 5 sentences of specific reasoning about : Was the 
+
+,→ previous step successful / failed ? What do we need to remember 
+
+,→ from the current state for the task ? Plan ahead what are the 
+
+,→ best next actions . What ’ s the next immediate goal ? Depending on 
+
+,→ the complexity think longer . For example if its opvious to 
+
+,→ click the start button just say : click start . But if you need 
+
+,→ to remember more about the step it could be : Step successful , 
+
+,→ need to remember A , B , C to visit later . Next click on A ." , " action ": [{{" action_name ": {{" params_key ": " params_value "}}}}] }} </ output > 
+
+22 H.2 Action Space Design 
+
+Action space design is a critical component for enabling effective agent interaction with the web environment. We define a comprehensive set of actions that cover a wide range of interactions necessary for navigating and extracting information from commercial websites. The action space includes basic interactions such as clicking, inputting text, navigating to URLs, scrolling, and waiting, as well as more advanced actions like extracting structured data using LLM-based methods, solving slider captchas, and executing custom JavaScript code for complex interactions. Each action is defined with specific parameters to allow for precise control over the agent’s behavior in the dynamic web environment. The full list of actions and their definitions are provided in Table 5. Table 5: Action space used by RiskWebWorld agents.                                                                                 
+
+> Action Definition
+> {"click": {"index": int}} Click an interactive element by index .
+> {"input": {"index": int, "text": "string", "clear": bool}}
+> Type text into an element by index ; supports clear (clear first vs. append).
+> {"done": {"text": "string", "success": bool, "files_to_display": ["string"]}}
+> Finish the task and return final output (text ,success ,optional
+> files_to_display ).
+> {"search": {"query": "string", "engine": "duckduckgo"|"google"|"bing"}}
+> Run a web search with query on duckduckgo /google /bing .
+> {"navigate": {"url": "string", "new_tab": bool}}
+> Navigate to a URL, optionally in a new tab ( new_tab ).
+> {"scroll": {"down": bool, "pages": float, "index": int|null}}
+> Scroll up/down by page units ( pages ), optionally inside a container ( index ).
+> {"wait": {"seconds": int}} Wait for a specified number of seconds.
+> {"go_back": {}} Go back in browser history.
+> {"refresh": {}} Refresh the current page.
+> {"switch": {"tab_id": "string"}} Switch to another tab via tab_id .
+> {"send_keys": {"keys": "string"}} Send keyboard keys/shortcuts (e.g., Enter, Escape, Control+O).
+> {"extract": {"query": "string", "extract_links": bool, "start_from_char": int}}
+> Use LLM-based extraction from page markdown; supports extract_links
+> and continuation offset ( start_from_char ).
+> {"close": {"tab_id": "string"}} Close a tab via tab_id .
+> {"find_text": {"text": "string"}} Scroll/jump to specified text on the page.
+> {"screenshot": {}} Request a screenshot to be included in the next browser state.
+> {"solve_slider_captcha": {}} Attempt slider captcha solving using screenshot + captcha API + simulated human drag.
+> {"dropdown_options": {"index": int}} Retrieve available options from a dropdown/menu by index .
+> {"select_dropdown": {"index": int, "text": "string"}}
+> Select a dropdown option by exact text at index .
+> {"evaluate": {"code": "string"}} Execute custom JavaScript in page context (advanced interaction/extraction).
+
+I Online Monitoring System 
+
+For tasks collected from the online production pipeline, all execution metadata, including execution time and the number of interaction steps, are logged by our internal monitoring system, as illustrated in Figure 7. This system provides a user-friendly interface for tracking agent performance, diagnosing failures, and analyzing behavior patterns across different tasks and models. 
+
+J More Details of Agent Behavior and Failure Modes 
+
+J.1 Limited Instruction-following and Generalization Disproportionately Affect Specialized Agents 
+
+As shown in Figure 8, both specialized and generalist models exhibit instruction-following and generalization failures. By inspecting their action outputs, we find that specialized models more often fail to produce actions that are both valid and executable under our environment, suggesting that their behavior is more tightly coupled to familiar prompting patterns and action specifications. In many cases, these models appear able to capture the high-level task intent, yet struggle to robustly adapt when the prompt format, action layout, or interaction context differs from the distribution seen during fine-tuning. A notable exception among specialized models is BU-30B, which is fine-tuned from Qwen3-VL-30B using data from Browser Use. Since our environment also adopts the Browser Use prompt, BU-30B may benefit from a prompt-level overlap that is unavailable to other specialized agents. In particular, we hypothesize that this overlap allows the model to exploit familiar 23 Figure 7: Online monitoring platform. Task execution details are recorded and managed. The private information is redacted for security purposes. prompt structures and action formatting conventions, thereby masking its underlying sensitivity to prompt design and inflating its apparent robustness in the default setting. To test this hypothesis, we evaluate models under two system-prompt settings: Normal , the default comprehensive prompt used in our main experiments, and Flash , a concise variant that removes much of the detailed procedural guidance while preserving the task semantics. As reported in Table 3, BU-30B undergoes a severe performance drop when moving from the Normal prompt to the Flash prompt. This sharp degradation strongly suggests that a substantial portion of its success under the default setup may rely on matching specific prompt templates rather than on robust task understanding or transferable decision-making ability. More broadly, this finding indicates that specialized fine-tuning on standard GUI datasets may inadvertently encourage models to overfit to recurring prompt patterns, interface conventions, or action schemas, at the expense of broader generalization. Such specialization can improve in-distribution performance, but may also reduce robustness when models are exposed to even modest prompt variations. In contrast, generalist models show much smaller performance degradation under the Flash prompt. This relative stability suggests that stronger instruction-following, reasoning, and adaptation abilities allow generalist models to maintain performance even when explicit prompt guidance is substantially reduced. Taken together, these results highlight a key trade-off: while specialized training may boost benchmark-aligned behavior, it can also make agents more brittle under prompt shifts, whereas generalist models tend to better preserve functionality under distribution changes. 
+
+J.2 Action routing and argument generation are the primary bottlenecks for small models. 
+
+Across both Figure 9 and Figure 10, the small models often exhibit plausible high-level reasoning in their thinking /memory : they can usually describe the current page, identify an appropriate next subgoal, and sometimes even mention the correct target in natural language. However, these intentions frequently fail to translate into valid executable actions. Instead, the breakdown consistently occurs at the action generation stage, where the dominant errors fall into two recurring categories: action misrouting and argument misgeneration. The first category, action misrouting, refers to selecting an inappropriate action type or tool for the current interface state. In Figure 9, for example, the model correctly recognizes that it should 24 Error Case 1: no action generatio n
+
+> Error Case 2: degenerate repetitive actions
+> Correct Case: right output format
+> Error Case 3: unparsable action
+
+Figure 8: Three main failure modes of specialized and generalist models: no action generation (action list is empty), degenerate repetitive actions (e.g., repeatedly clicking the same button), and invalid action format (e.g., missing required parameters, truncated action schema due to token limits). The correct action format is crucial for successful execution, and failure to adhere to it leads to immediate execution failures. interact with a relevant result, yet repeatedly outputs solve_slider_captcha despite there being no captcha to solve. It also emits a search action after already reaching the target page. These behaviors suggest that the model does not fundamentally fail to understand the task goal; rather, it fails to map an identified subgoal to the correct executable action. The second category, argument misgeneration, arises even when the predicted action type is roughly correct. Here, the generated parameters are often invalid in two ways. First, the model may hallucinate unsupported argument values that are not grounded in the current interface state. For instance, in Figure 9, it predicts a clickable DOM index that does not exist, while in Figure 10, it generates an overlong declaration number with unsupported newline characters. Second, the model may assign the wrong parameter form to the selected action or element. In Figure 10, for example, it applies an 
+
+input action to what should be a clickable button and fabricates text for elements that should not receive textual input. These failures indicate that the model struggles not only to ground argument values in the current DOM, but also to align parameter structure with the semantics of the chosen action and interface element. Moreover, the models show limited state tracking and poor error recovery during sequential interaction. After receiving environmental feedback such as Action Selection Error or Index Not Found in the DOM, they often fail to revise their internal state and instead repeat similarly invalid actions. Rather than incorporating execution feedback to repair the trajectory, they persist in the same faulty action patterns. Overall, these trajectories indicate that the main limitation of small models lies not in high-level task understanding, but in reliably converting task intent into grounded and executable actions. Their failures are primarily driven by weak action routing, invalid argument generation, and insufficient state tracking under interactive feedback. 25 "thinking": "I'm currently on the export query interface, and I've noticed 
+
+that the radio buttons for import and export are already selected. The 
+
+next step is to enter the customs declaration number. I see that there's 
+
+an input box labeled 'Customs Declaration Number/Unified Number' on 
+
+the page, which is exactly where I need to input the number. Let me 
+
+click on this input box to start entering the information.", 
+
+"evaluation_previous_goal": "None", 
+
+"memory": "I have accessed the export query interface, and now I need 
+
+to enter the customs declaration number in the designated input box.", 
+
+"next_goal": "Enter '292120250001172953' into element [299] and then 
+
+click on it.", 
+
+"action": [{ 
+
+"input": { 
+
+"index": 299, 
+
+"text": "292120250001172953", 
+
+"clear": true}}] 
+
+"thinking": "I have accessed the export query interface, and now I need 
+
+to enter the customs declaration number in the designated input box. I 
+
+see that the input box is located at index [299], so I will click on it to 
+
+activate it and then enter '292120250001172953'.", 
+
+"evaluation_previous_goal": "I clicked on the input box with index [299] 
+
+to activate it, allowing me to enter the customs declaration number.", 
+
+"memory": "I accessed the export query interface and clicked on the 
+
+input box with index [299] to activate it, getting ready to enter the 
+
+customs declaration number.", 
+
+"next_goal": "Enter '292120250001172953' into element [299] and then 
+
+click on it.", 
+
+"action": [{ 
+
+"input": { 
+
+"index": 299, 
+
+"text":"292120250001172953 \n\n\n\n\n\n\n\n\n\n\n", 
+
+"clear": true}}] 
+
+Repetitive Action 
+
+Step 2 Step 3 
+
+"thinking": "I have accessed the export query interface and clicked on 
+
+the input box with index [299] to activate it, allowing me to enter the 
+
+customs declaration number. I have already typed in the customs 
+
+declaration number '292120250001172953', and now I need to click on 
+
+the blue button labeled 'Export' to proceed with the export query.", 
+
+"evaluation_previous_goal ": "The customs declaration number has 
+
+been successfully entered into the designated input box.", 
+
+"memory": "I have accessed the export query system and entered the 
+
+customs declaration number. Now, I need to click on the blue button 
+
+labeled 'Export' to initiate the export query.", 
+
+"next_goal ": "Click on the blue button labeled 'Export' to proceed with 
+
+the export query.", 
+
+"action": [{ 
+
+"input": { 
+
+"index": 834, 
+
+"text": "export \n", 
+
+"clear": true}}] 
+
+"thinking": "I have accessed the export query system and entered the 
+
+customs declaration number. Now, I need to click on the blue button 
+
+labeled 'Export' to initiate the export query. However, it seems that this 
+
+button is currently unavailable, so I will try clicking on it once more to see 
+
+if that resolves the issue.", 
+
+"evaluation_previous_goal ": "I clicked on the blue button labeled 
+
+'Export', but it seems that this button is currently unavailable, so I will try 
+
+clicking on it once more to see if that resolves the issue.", 
+
+"memory": "I have accessed the export query system and entered the 
+
+customs declaration number. Now, I need to click on the blue button 
+
+labeled 'Export' to initiate the export query.", 
+
+"next_goal ": "Click on the blue button labeled 'Export'", 
+
+"action": [{ 
+
+"input": { 
+
+"index": 834, 
+
+"text": " 查询 重置 订阅 运抵 转关 报关 转关 放⾏ 装船 理货 离境 ", 
+
+"clear": false}}] 
+
+Index Not Found in the DOM & 
+
+Action Selection Error 
+
+Step 4 Step 5 
+
+Index Not Found in the DOM & 
+
+Action Selection Error 
+
+Element [299] Element [299] Figure 9: Failure trajectory of ShowUI-2B on a Customs Declaration & Clearance Status Audit task. The model correctly identifies the next subgoal and target information in its reasoning, but fails to generate valid executable actions. It repeatedly emits input actions with hallucinated text for non-input elements, and fails to output any valid click action to interact with the page. After receiving execution errors (Step 2 to Step 5), it does not update its internal state and continues to produce similar invalid actions. 26 "memory": "I can see that the Google search page is already open, and 
+
+now I need to look up product information for the iPhone 14. According 
+
+to the task requirements, I should use Google's search function to find 
+
+HS Code information. I need to click the search box in the center of the 
+
+page, then enter the relevant query keywords. To improve the accuracy 
+
+of the search, I should enclose the query keywords in English quotation 
+
+marks.", 
+
+"action": [ 
+
+{
+
+"solve_slider_captcha ": {} 
+
+}, 
+
+{
+
+"click": {"index": 156} 
+
+}, 
+
+{
+
+"click": {"index": 159} 
+
+}]
+
+"memory": "I can see that the Google search results page has loaded 
+
+and displays multiple results related to the HS Code for the iPhone 14. 
+
+The first link is from the Seair Exim Solutions website, titled \"Iphone 14 
+
+HS Code for Export & Import, \" which appears to be the most relevant 
+
+result. I should click this link to view the detailed information.", 
+
+"action": [ 
+
+{
+
+"solve_slider_captcha ": {} 
+
+}] 
+
+Action Selection Error 
+
+Step 1 Step 5 
+
+"memory": "The search results page has loaded, and I've found several 
+
+relevant links. The first link is from Seair Exim Solutions, titled \"Iphone 
+
+14 HS Code for Export & Import, \" which seems to be the most closely 
+
+related to what we're looking for. I should click on this link to check the 
+
+detailed information.", 
+
+"action": [ 
+
+{
+
+"solve_slider_captcha ": {} 
+
+}] Action Selection Error 
+
+Step 12 
+
+"memory": "The page has redirected to the correct page, and I can see 
+
+the detailed information about the iPhone 14's HS Code. The table on 
+
+the page clearly lists the import and export HS Codes, which is exactly 
+
+what we were looking for. Now that I've found the information, I can 
+
+conclude this search task.", 
+
+"action": [ 
+
+{
+
+"search": { 
+
+"query": "HS Code for iphone 14", 
+
+"engine": " www.seair.co.in "
+
+}
+
+}] 
+
+Step 14 
+
+Action Selection Error 
+
+Index in the DOM is not Clickable 
+
+Action Selection Error Figure 10: Failure trajectory of UI-TARS-1.5-7B on a Product Risk Profile task. The model also identifies the next subgoal and target information, but fails to generate valid executable actions. It tends to output solve_slider_captcha regardless of the page state, and generates an invalid 
+
+click action with a non-existent DOM index. It also misunderstands the action definition, applying 
+
+search when it has already reached the target page. From Step 5 to Step 12, we could found that the model repeatedly emits invalid actions without updating its internal state based on execution feedback, which indicates a lack of error recovery and state tracking. 27 J.3 The performance ceiling of SOTAs is limited by open-ended exploration and long-horizon evidence composition. 
+
+From the failure trajectories of frontier models (Gemini-3-Pro in Figure 11 and Qwen3.5-397B-A17B in Figure 12), we find that their limitations differ qualitatively from those of smaller models. Rather than failing at basic action generation, these models often demonstrate strong high-level task understanding: they correctly infer the next subgoal, identify relevant candidate webpages, and generate executable actions that are appropriate for the current interface state. Nevertheless, two recurring bottlenecks still constrain their end-to-end performance. The first bottleneck is limited open-ended exploration . In the logistics and supply chain tracking example, Gemini-3-Pro correctly recognizes that the primary website is blocked and switches to the fallback website. It also continues to produce valid interactions on the new page. However, once the fallback site leads to a 404 page, the model does not broaden its search space or proactively seek other external routes to recover the required information. This suggests that current frontier agents can react to immediate failures within a predefined path, but remain weak at open-ended recovery when the prescribed websites become unusable. The second bottleneck is limited long-horizon evidence composition . In the secure payment channel validation example, Qwen3.5-397B-A17B successfully reaches relevant pages and identifies useful interface cues, but still fails to derive the correct final answer. The failure arises not from webpage selection, but from difficulty in synthesizing information distributed across multiple pages and inter-action steps. When too many products, categories, and payment-related signals are simultaneously present, the model struggles to maintain the relevant latent state, filter distractors, and aggregate the right pieces of evidence into a coherent conclusion. Overall, these failure patterns indicate that the upper bound of current state-of-the-art web agents is constrained less by low-level execution and more by their ability to recover from environment-induced dead ends and compose dispersed evidence over long interaction horizons. Improving open-ended exploration, state tracking, and multi-page evidence composition is therefore a key direction for enhancing robustness in realistic web tasks. 28 "thinking": "Starting the task. I need to: \n1. Parse 'EVER 
+
+ALLY/OLAM7W1MA' to extract vessel name = 'EVER ALLY' (EVER is 
+
+prefix, OLAM7W1MA is voyage) \n2. Navigate to 
+
+https:// www.marinetraffic.com \n3. Search for the vessel \n4. Extract 
+
+voyage data (Last Port, Destination) \n5. Return results via done 
+
+action \n\nCurrently on Google homepage. First step is to navigate to 
+
+MarineTraffic website.", 
+
+"evaluation_previous_goal ": "Agent initialized, no previous action to 
+
+evaluate.", 
+
+"memory": "Input text: 'EVER ALLY/OLAM7W1MA'. Extracted 
+
+vessel_name : 'EVER ALLY' (EVER is shipping line prefix, OLAM7W1MA 
+
+is voyage suffix). Need to search on MarineTraffic .", 
+
+"next_goal ": "Navigate to https:// www.marinetraffic.com to begin vessel 
+
+search.", 
+
+"action": [ 
+
+{
+
+"navigate": { 
+
+"url ": "https:// www.marinetraffic.com ", 
+
+"new_tab ": false 
+
+}}, 
+
+{
+
+"wait": { 
+
+"seconds": 5 
+
+}
+
+}] 
+
+"thinking": " MarineTraffic access was blocked by Cloudflare security. 
+
+According to the user request's fallback strategy: ' 如果访问失败，导航到 
+
+VesselFinder ⽹站 ' ( If access fails, navigate to VesselFinder website). I 
+
+need to switch to the alternative vessel tracking website to continue the 
+
+task. The vessel_name extracted from 'EVER ALLY/OLAM7W1MA' is 
+
+'EVER ALLY'.", 
+
+"evaluation_previous_goal ": "Failed to access MarineTraffic due to 
+
+Cloudflare security block. Verdict: Failure", 
+
+"memory": " MarineTraffic blocked access via Cloudflare. Extracted 
+
+vessel_name from 'EVER ALLY/OLAM7W1MA' is 'EVER ALLY'. Need to 
+
+use VesselFinder as alternative website.", 
+
+"next_goal ": "Navigate to https:// www.vesselfinder.com as the 
+
+alternative vessel tracking website.", 
+
+"action": [ 
+
+{
+
+"navigate": { 
+
+"url ": "https:// www.vesselfinder.com /zh /vessels.html ", 
+
+"new_tab ": false 
+
+}}, 
+
+{
+
+"wait": { 
+
+"seconds": 5 
+
+}
+
+}] 
+
+Step 1 Step 2 
+
+"thinking": "I'm currently on a 404 error page at VesselFinder . However, I can see there's a search box at the top of the page 
+
+(element [200]) with placeholder 'Ship / Port / Container'. I need to use this search functionality to search for the vessel 'EV ER ALLY' 
+
+that I extracted from the input 'EVER ALLY/OLAM7W1MA'. My next step is to click on the search box and input the vessel name." ,
+
+"evaluation_previous_goal ": "Successfully navigated to VesselFinder website but landed on a 404 error page. Verdict: Partial 
+
+Success - need to use search functionality from this page.", 
+
+"memory": " MarineTraffic was blocked by Cloudflare. Now on VesselFinder but got 404 page. Extracted vessel_name is 'EVER 
+
+ALLY' from input 'EVER ALLY/OLAM7W1MA'. Need to use the search box on this page to search for the vessel.", 
+
+"next_goal ": "Click on the search box [200] and input 'EVER ALLY' to search for the vessel information.", 
+
+"action": [ 
+
+{
+
+"click": { 
+
+"index": 200 
+
+}}, 
+
+{
+
+"input": { 
+
+"index": 200, 
+
+"text": "EVER ALLY", 
+
+"clear": true 
+
+}}] 
+
+Step 3 
+
+Task Failed Figure 11: Failure trajectory of Gemini-3-Pro on a Logistics and Supply Chain Tracking task. The model successfully identifies the next subgoal and target information, while generate valid executable actions to interact with the page. However, it does not explore a feasible path to complete the task when the provided websites block access to the required information or present a 404 error. How to enable agents to proactively explore alternative paths outside of the provided candidate websites is an important future direction to enhance their robustness in real-world applications. 29 "thinking": "The website has loaded successfully at 
+
+https:// www.utailors.com /. The URL matches the target URL, so no 
+
+redirect occurred. From the screenshot and browser state, I can clearly 
+
+see this is an e -commerce site selling soccer/football jerseys and kits. I 
+
+can see product categories in the navigation (National Club, 
+
+International Clubs, National Teams, Retro, World Cup, Player, Specials) 
+
+and several products with prices ranging from €18.00 to €167.20. I need 
+
+to scroll down to see more products and gather complete information 
+
+about all products.", 
+
+"evaluation_previous_goal ": "Successfully navigated to 
+
+https:// www.utailors.com / and the page loaded completely. Verdict: 
+
+Success", 
+
+"memory": "Website loaded successfully at https:// www.utailors.com /
+
+with no redirect. This is an e -commerce site selling soccer jerseys and 
+
+football kits. Visible categories include: National Club, International 
+
+Clubs, National Teams, Retro, World Cup, Player, Specials. Initial prices 
+
+seen range from €18.00 to €167.20.", 
+
+"next_goal ": "Scroll down to view more products and gather complete 
+
+product information including all categories and price ranges.", 
+
+"action": [ 
+
+{
+
+"scroll": { 
+
+"down": true, 
+
+"pages": 2, 
+
+"index": 0 
+
+}}] 
+
+"thinking": "Analysis of current state: 1) Website loaded successfully at 
+
+utailors.com with no redirect. 2) Site clearly sells soccer jerseys/football 
+
+kits - confirmed e -commerce. 3) Categories identified: National Club, 
+
+International Clubs, National Teams, Retro, World Cup, Player, Specials. 
+
+4) Price range observed: €18.00 -€167.20 from previous steps. 5) 
+
+Currently at bottom of page (0.4 pages below, 7.2 above out of 8.7 total). 
+
+I need to: a) Scroll to bottom to ensure I've seen all products, b) Start 
+
+purchase flow by clicking on a product, c) Check payment methods for 
+
+credit card support. The footer shows 'Payment Method' link which could 
+
+help determine credit card support.", 
+
+"evaluation_previous_goal ": "Successfully scrolled down 3.0 pages and 
+
+can now see the bottom section of the website with footer information 
+
+including payment and delivery info. Verdict: Success", 
+
+"memory": "Website utailors.com is accessible with no redirect. Site 
+
+sells soccer jerseys/football kits. Categories: National Club, International 
+
+Clubs, National Teams, Retro, World Cup, Player, Specials. Scrolled 
+
+through ~8 pages total. Price range observed: €18.00 -€167.20. Footer 
+
+shows 'Payment Method' link and 'Secure Payment' section. Need to 
+
+complete product count and test checkout flow.", 
+
+"next_goal ": "Scroll to the very bottom to ensure all products are viewed, 
+
+then click on a product to begin the purchase flow.", 
+
+"action": [ 
+
+{
+
+"scroll": { 
+
+"down": true, 
+
+"pages": 1, 
+
+"index": null 
+
+}}] 
+
+Step 1 Step 4 
+
+"thinking": "Product page loaded successfully showing 'Mesh White 
+
+Authentic Football Custom Jersey Red' at €31.00. I can see payment 
+
+method logos (PayPal, Visa, Mastercard, AMEX) under 'We Accept:' 
+
+section. To test the checkout flow, I should click 'Buy It Now' button to 
+
+see if we can reach a payment/checkout page. This will help determine 
+
+if has_checkout_page is true.", 
+
+"evaluation_previous_goal ": "Waited for page to load and product 
+
+details are now visible. Verdict: Success", 
+
+"memory": "Product page loaded successfully. Product: Mesh White 
+
+Authentic Football Custom Jersey Red at €31.00. Payment logos visible 
+
+(Visa, Mastercard, AMEX, PayPal). Need to test checkout flow by 
+
+clicking Buy It Now.", 
+
+"next_goal ": "Click the 'Buy It Now' button to test the checkout flow and 
+
+verify if a payment page exists.", 
+
+"action": [ 
+
+{
+
+"click": { 
+
+"index": 8688 
+
+}}] 
+
+Step 7 
+
+Step 10 
+
+Output: 
+
+"product_ categories ": [ 
+
+"National Club ", " International Clubs ", " National Teams ", " Retro", 
+
+"World Cup ", " Player ", " Specials "] 
+
+Label: 
+
+"product_categories ": [ 
+
+"Baseball", "Football", "Basketball", "Hockey", "Soccer", "Jacket", 
+
+"SoftBall ", "Hoodie", "Shorts", "Hat"] 
+
+Wrong Answer Figure 12: Failure trajectory of Qwen3.5-397B-A17B on a Secure Payment Channel Validation task. The model correctly identifies the candidate webpages to complete the task, but fails to generate the true answer. This failure is attributed to the model’s limited ability to perform multi-hop reasoning and information synthesis across multiple pages, where too much states and information is presented and the model struggles to identify and aggregate the relevant pieces to arrive at the correct conclusion. 30
