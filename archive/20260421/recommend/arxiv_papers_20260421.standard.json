@@ -1,0 +1,1136 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-04-21T20:13:48.559726+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 107,
+    "deep_cap": 6,
+    "deep_selected": 17,
+    "quick_candidates": 132,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2604.13946v2",
+      "title": "CollabCoder: Plan-Code Co-Evolution via Collaborative Decision-Making for Efficient Code Generation",
+      "abstract": "Automated code generation remains a persistent challenge in software engineering, as conventional multi-agent frameworks are often constrained by static planning, isolated execution, high computational overhead, and limited adaptability to complex tasks. This paper introduces CollabCoder, a novel Plan-Code Co-Evolution framework that improves code generation through dynamic multi-agent collaboration. The core idea is to design a collaborative decision-making process between the plan module and the code module to decide which module should be executed for the debugging process. Extensive experiments on widely used benchmarks demonstrate that CollabCoder consistently improves code quality and robustness across tasks. Importantly, CollabCoder achieves performance comparable to or exceeding current state-of-the-art methods while reducing computational overhead, with efficiency gains becoming more pronounced as benchmark difficulty increases. On the more challenging LiveCodeBench and xCodeEval benchmarks, our approach improves performance by 11-20% over strong baselines while reducing the number of API calls by an average of 4-10 per execution.",
+      "authors": [
+        "Duy Tung Doan",
+        "Quang Huy Phung",
+        "Dzung Nguyen",
+        "Khac-Hoai Nam Bui"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.CL"
+      ],
+      "published": "2026-04-15T14:58:26+00:00",
+      "link": "https://arxiv.org/pdf/2604.13946v2",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "collaborative decision-making for efficient code generation",
+      "llm_evidence_cn": "高效代码生成的协作决策",
+      "llm_evidence": "高效代码生成的协作决策",
+      "canonical_evidence": "高效代码生成的协作决策",
+      "llm_tldr_en": "Introduces CollabCoder, a framework for efficient code generation via dynamic multi-agent plan-code co-evolution.",
+      "llm_tldr_cn": "引入了 CollabCoder，一个通过动态多智能体计划-代码协同进化实现高效代码生成的框架。",
+      "llm_tldr": "引入了 CollabCoder，一个通过动态多智能体计划-代码协同进化实现高效代码生成的框架。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.16529v1",
+      "title": "Scaling Test-Time Compute for Agentic Coding",
+      "abstract": "Test-time scaling has become a powerful way to improve large language models. However, existing methods are best suited to short, bounded outputs that can be directly compared, ranked or refined. Long-horizon coding agents violate this premise: each attempt produces an extended trajectory of actions, observations, errors, and partial progress taken by the agent. In this setting, the main challenge is no longer generating more attempts, but representing prior experience in a form that can be effectively selected from and reused. We propose a test-time scaling framework for agentic coding based on compact representations of rollout trajectories. Our framework converts each rollout into a structured summary that preserves its salient hypotheses, progress, and failure modes while discarding low-signal trace details. This representation enables two complementary forms of inference-time scaling. For parallel scaling, we introduce Recursive Tournament Voting (RTV), which recursively narrows a population of rollout summaries through small-group comparisons. For sequential scaling, we adapt Parallel-Distill-Refine (PDR) to the agentic setting by conditioning new rollouts on summaries distilled from prior attempts. Our method consistently improves the performance of frontier coding agents across SWE-Bench Verified and Terminal-Bench v2.0. For example, by using our method Claude-4.5-Opus improves from 70.9% to 77.6% on SWE-Bench Verified (mini-SWE-agent) and 46.9% to 59.1% on Terminal-Bench v2.0 (Terminus 1). Our results suggest that test-time scaling for long-horizon agents is fundamentally a problem of representation, selection, and reuse.",
+      "authors": [
+        "Joongwon Kim",
+        "Wannan Yang",
+        "Kelvin Niu",
+        "Hongming Zhang",
+        "Yun Zhu",
+        "Eryk Helenowski",
+        "Ruan Silva",
+        "Zhengxing Chen",
+        "Srinivasan Iyer",
+        "Manzil Zaheer",
+        "Daniel Fried",
+        "Hannaneh Hajishirzi",
+        "Sanjeev Arora",
+        "Gabriel Synnaeve",
+        "Ruslan Salakhutdinov",
+        "Anirudh Goyal"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-04-16T17:39:33+00:00",
+      "link": "https://arxiv.org/pdf/2604.16529v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "test-time scaling for agentic coding with compact representations",
+      "llm_evidence_cn": "代码智能体的推理时扩展与紧凑表示",
+      "llm_evidence": "代码智能体的推理时扩展与紧凑表示",
+      "canonical_evidence": "代码智能体的推理时扩展与紧凑表示",
+      "llm_tldr_en": "Introduces a test-time scaling framework for coding agents using compact trajectory summaries to improve efficiency.",
+      "llm_tldr_cn": "为代码智能体引入推理时扩展框架，通过紧凑的轨迹摘要提升效率。",
+      "llm_tldr": "为代码智能体引入推理时扩展框架，通过紧凑的轨迹摘要提升效率。",
+      "llm_tags": [
+        "query:q10"
+      ],
+      "matched_query_tag": "query:q10",
+      "matched_query_text": "latest research on code agent efficient reasoning",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.16890v1",
+      "title": "Step-GRPO: Internalizing Dynamic Early Exit for Efficient Reasoning",
+      "abstract": "Large reasoning models that use long chain-of-thought excel at problem-solving yet waste compute on redundant checks. Curbing this overthinking is hard: training-time length penalties can cripple ability, while inference-time early-exit adds system overhead. To bridge this gap, we propose Step-GRPO, a novel post-training framework that internalizes dynamic early-exit capabilities directly into the model. Step-GRPO shifts the optimization objective from raw tokens to semantic steps by utilizing linguistic markers to structure reasoning. We introduce a Dynamic Truncated Rollout mechanism that exposes the model to concise high-confidence trajectories during exploration, synergized with a Step-Aware Relative Reward that dynamically penalizes redundancy based on group-level baselines. Extensive experiments across three model sizes on diverse benchmarks demonstrate that Step-GRPO achieves a superior accuracy-efficiency trade-off. On Qwen3-8B, our method reduces token consumption by 32.0\\% compared to the vanilla model while avoiding the accuracy degradation observed in traditional length-penalty methods.",
+      "authors": [
+        "Benteng Chen",
+        "Weida Wang",
+        "Shufei Zhang",
+        "Mingbao Lin",
+        "Min Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-18T07:48:53+00:00",
+      "link": "https://arxiv.org/pdf/2604.16890v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "internalizing dynamic early exit for efficient reasoning",
+      "llm_evidence_cn": "内化动态提前退出机制以实现高效推理",
+      "llm_evidence": "内化动态提前退出机制以实现高效推理",
+      "canonical_evidence": "内化动态提前退出机制以实现高效推理",
+      "llm_tldr_en": "Proposes Step-GRPO to internalize early-exit in models, reducing redundant compute in reasoning steps.",
+      "llm_tldr_cn": "提出Step-GRPO框架，通过内化动态提前退出机制减少推理中的冗余计算。",
+      "llm_tldr": "提出Step-GRPO框架，通过内化动态提前退出机制减少推理中的冗余计算。",
+      "llm_tags": [
+        "query:q4"
+      ],
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17091v1",
+      "title": "GenericAgent: A Token-Efficient Self-Evolving LLM Agent via Contextual Information Density Maximization (V1.0)",
+      "abstract": "Long-horizon large language model (LLM) agents are fundamentally limited by context. As interactions become longer, tool descriptions, retrieved memories, and raw environmental feedback accumulate and push out the information needed for decision-making. At the same time, useful experience gained from tasks is often lost across episodes. We argue that long-horizon performance is determined not by context length, but by how much decision-relevant information is maintained within a finite context budget. We present GenericAgent (GA), a general-purpose, self-evolving LLM agent system built around a single principle: context information density maximization. GA implements this through four closely connected components: a minimal atomic tool set that keeps the interface simple, a hierarchical on-demand memory that only shows a small high-level view by default, a self-evolution mechanism that turns verified past trajectories into reusable SOPs and executable code, and a context truncation and compression layer that maintains information density during long executions. Across task completion, tool use efficiency, memory effectiveness, self-evolution, and web browsing, GA consistently outperforms leading agent systems while using significantly fewer tokens and interactions, and it continues to evolve over time. Project: https://github.com/lsdefine/GenericAgent",
+      "authors": [
+        "Jiaqing Liang",
+        "Jinyi Han",
+        "Weijia Li",
+        "Xinyi Wang",
+        "Zhoujia Zhang",
+        "Zishang Jiang",
+        "Ying Liao",
+        "Tingyun Li",
+        "Ying Huang",
+        "Hao Shen",
+        "Hanyu Wu",
+        "Fang Guo",
+        "Keyi Wang",
+        "Zhonghua Hong",
+        "Zhiyu Lu",
+        "Lipeng Ma",
+        "Sihang Jiang",
+        "Yanghua Xiao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-18T17:59:15+00:00",
+      "link": "https://arxiv.org/pdf/2604.17091v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "token-efficient agent via context information density maximization",
+      "llm_evidence_cn": "通过上下文信息密度最大化实现Token高效的智能体",
+      "llm_evidence": "通过上下文信息密度最大化实现Token高效的智能体",
+      "canonical_evidence": "通过上下文信息密度最大化实现Token高效的智能体",
+      "llm_tldr_en": "Presents GenericAgent, a token-efficient system that maximizes context density for long-horizon reasoning.",
+      "llm_tldr_cn": "提出GenericAgent，通过最大化上下文信息密度实现长程推理的Token高效智能体。",
+      "llm_tldr": "提出GenericAgent，通过最大化上下文信息密度实现长程推理的Token高效智能体。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17745v1",
+      "title": "HiRAS: A Hierarchical Multi-Agent Framework for Paper-to-Code Generation and Execution",
+      "abstract": "Recent advances in large language models have highlighted their potential to automate computational research, particularly reproducing experimental results. However, existing approaches still use fixed sequential agent pipelines with weak global coordination, which limits their robustness and overall performance. In this work, we propose Hierarchical Research Agent System (HiRAS), a hierarchical multi-agent framework for end-to-end experiment reproduction that employs supervisory manager agents to coordinate specialised agents across fine-grained stages. We also identify limitations in the reference-free evaluation of the Paper2Code benchmark and introduce Paper2Code-Extra (P2C-Ex), a refined protocol that incorporates repository-level information and better aligns with the original reference-based metric. We conduct extensive evaluation, validating the effectiveness and robustness of our proposed methods, and observing improvements, including >10\\% relative performance gain beyond the previous state-of-the-art using open-source backbone models and significantly reduced hallucination in evaluation. Our work is available on GitHub: https://github.com/KOU-199024/HiRAS.",
+      "authors": [
+        "Hanhua Hong",
+        "Yizhi LI",
+        "Jiaoyan Chen",
+        "Sophia Ananiadou",
+        "Xiaoli Li",
+        "Jung-jae Kim",
+        "Chenghua Lin"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-20T02:59:43+00:00",
+      "link": "https://arxiv.org/pdf/2604.17745v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "hierarchical multi-agent framework for paper-to-code generation",
+      "llm_evidence_cn": "用于论文到代码生成的层次化多智能体框架",
+      "llm_evidence": "用于论文到代码生成的层次化多智能体框架",
+      "canonical_evidence": "用于论文到代码生成的层次化多智能体框架",
+      "llm_tldr_en": "Proposes HiRAS, a hierarchical framework for robust and coordinated paper-to-code generation.",
+      "llm_tldr_cn": "提出HiRAS层次化框架，通过多智能体协作实现稳健的论文到代码自动生成。",
+      "llm_tldr": "提出HiRAS层次化框架，通过多智能体协作实现稳健的论文到代码自动生成。",
+      "llm_tags": [
+        "query:q10"
+      ],
+      "matched_query_tag": "query:q10",
+      "matched_query_text": "latest research on code agent efficient reasoning",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17821v1",
+      "title": "WebUncertainty: Dual-Level Uncertainty Driven Planning and Reasoning For Autonomous Web Agent",
+      "abstract": "Recent advancements in large language models (LLMs) have empowered autonomous web agents to execute natural language instructions directly on real-world webpages. However, existing agents often struggle with complex tasks involving dynamic interactions and long-horizon execution due to rigid planning strategies and hallucination-prone reasoning. To address these limitations, we propose WebUncertainty, a novel autonomous agent framework designed to tackle dual-level uncertainty in planning and reasoning. Specifically, we design a Task Uncertainty-Driven Adaptive Planning Mechanism that adaptively selects planning modes to navigate unknown environments. Furthermore, we introduce an Action Uncertainty-Driven Monte Carlo tree search (MCTS) Reasoning Mechanism. This mechanism incorporates the Confidence-induced Action Uncertainty (ConActU) strategy to quantify both aleatoric uncertainty (AU) and epistemic uncertainty (EU), thereby optimizing the search process and guiding robust decision-making. Experimental results on the WebArena and WebVoyager benchmarks demonstrate that WebUncertainty achieves superior performance compared to state-of-the-art baselines.",
+      "authors": [
+        "Lingfeng Zhang",
+        "yongan sun",
+        "Jinpeng Hu",
+        "Hui Ma",
+        "yang ying",
+        "Kuien Liu",
+        "Zenglin Shi",
+        "Meng Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-20T05:19:49+00:00",
+      "link": "https://arxiv.org/pdf/2604.17821v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "uncertainty driven planning and reasoning for autonomous web agent",
+      "llm_evidence_cn": "不确定性驱动的自主网络智能体规划与推理",
+      "llm_evidence": "不确定性驱动的自主网络智能体规划与推理",
+      "canonical_evidence": "不确定性驱动的自主网络智能体规划与推理",
+      "llm_tldr_en": "Proposes WebUncertainty to improve web agent reasoning and planning through uncertainty-driven mechanisms.",
+      "llm_tldr_cn": "提出WebUncertainty框架，通过不确定性驱动机制优化网络智能体的规划与推理。",
+      "llm_tldr": "提出WebUncertainty框架，通过不确定性驱动机制优化网络智能体的规划与推理。",
+      "llm_tags": [
+        "query:q3"
+      ],
+      "matched_query_tag": "query:q3",
+      "matched_query_text": "web agent efficient reasoning",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.11465v1",
+      "title": "Three Roles, One Model: Role Orchestration at Inference Time to Close the Performance Gap Between Small and Large Agents",
+      "abstract": "Large language model (LLM) agents show promise on realistic tool-use tasks, but deploying capable agents on modest hardware remains challenging. We study whether inference-time scaffolding alone, without any additional training compute, can improve the performance of a small model in complex multi-step environments. Operating on a single 24\\,GB GPU, we evaluate Qwen3-8B under both full-precision (FP16, 12K context) and 4-bit quantized (AWQ, 32K context) configurations. Without any intervention, the raw model achieves just 5.4\\% (FP16) and 3.0\\% (AWQ) task goal completion. Guided by a systematic failure mode analysis, we introduce a three-tier inference scaffolding pipeline that deploys the same frozen model in three distinct roles: (1) a summarization model that preserves critical artifacts (tokens, credentials, API responses) while compressing dialogue history; (2) the main agent model that reasons over the compressed context; and (3) an isolated correction model that reviews and revises the agent's code output without access to conversation history, breaking repetitive failure loops. Applied to the same unmodified model, this scaffolding yields 8.9\\% (FP16) and 5.9\\% (AWQ) task goal completion, roughly doubling performance in both settings, with particularly strong gains on difficulty-1 tasks (15.8\\%$\\to$26.3\\% FP16; 5.3\\%$\\to$14.0\\% AWQ). On full-precision inference, our scaffolded 8B model surpasses DeepSeek-Coder 33B Instruct (7.1\\%) from the original AppWorld evaluation, demonstrating that structured inference-time interventions can make small models competitive with systems 4$\\times$ their size. We formalize the approach as a scaffolded policy over a frozen base model, three invocations of the same weights with different conditioning, drawing connections to test-time compute scaling and action-space shaping in reinforcement learning.",
+      "authors": [
+        "S. Aaron McClendon",
+        "Jorge Gallego-Feliciano",
+        "Stavros Zervoudakis",
+        "Antonios Saravanos"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-13T13:40:33+00:00",
+      "link": "https://arxiv.org/pdf/2604.11465v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "inference-time scaffolding for efficient agent reasoning",
+      "llm_evidence_cn": "推理时脚手架实现高效智能体推理",
+      "llm_evidence": "推理时脚手架实现高效智能体推理",
+      "canonical_evidence": "推理时脚手架实现高效智能体推理",
+      "llm_tldr_en": "Improves small agent performance on modest hardware using inference-time scaffolding without extra training.",
+      "llm_tldr_cn": "通过推理时脚手架技术，在不增加训练的情况下提升小型智能体在有限硬件上的性能。",
+      "llm_tldr": "通过推理时脚手架技术，在不增加训练的情况下提升小型智能体在有限硬件上的性能。",
+      "llm_tags": [
+        "query:q4"
+      ],
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.16646v1",
+      "title": "Agentic Frameworks for Reasoning Tasks: An Empirical Study",
+      "abstract": "Recent advances in agentic frameworks have enabled AI agents to perform complex reasoning and decision-making. However, evidence comparing their reasoning performance, efficiency, and practical suitability remains limited. To address this gap, we empirically evaluate 22 widely used agentic frameworks across three reasoning benchmarks: BBH, GSM8K, and ARC. The frameworks were selected from 1,200 GitHub repositories collected between January 2023 and July 2025 and organized into a taxonomy based on architectural design. We evaluated them under a unified setting, measuring reasoning accuracy, execution time, computational cost, and cross-benchmark consistency.   Our results show that 19 of the 22 frameworks completed all three benchmarks. Among these, 12 showed stable performance, with mean accuracy of 74.6-75.9%, execution time of 4-6 seconds per task, and cost of 0.14-0.18 cents per task. Poorer results were mainly caused by orchestration problems rather than reasoning limits. For example, Camel failed to complete BBH after 11 days because of uncontrolled context growth, while Upsonic consumed USD 1,434 in one day because repeated extraction failures triggered costly retries. AutoGen and Mastra also exhausted API quotas through iterative interactions that increased prompt length without improving results.   We also found a sharp drop in mathematical reasoning. Mean accuracy on GSM8K was 44.35%, compared with 89.80% on BBH and 89.56% on ARC. Overall, this study provides the first large-scale empirical comparison of agentic frameworks for reasoning-intensive software engineering tasks and shows that framework selection should prioritize orchestration quality, especially memory control, failure handling, and cost management.",
+      "authors": [
+        "Zeeshan Rasheed",
+        "Abdul Malik Sami",
+        "Muhammad Waseem",
+        "Kai-Kristian Kemell",
+        "Mika Saari",
+        "Pekka Abrahamsson"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.SE"
+      ],
+      "published": "2026-04-17T19:02:54+00:00",
+      "link": "https://arxiv.org/pdf/2604.16646v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "evaluating reasoning performance and efficiency in agentic frameworks",
+      "llm_evidence_cn": "评估智能体框架的推理性能与效率",
+      "llm_evidence": "评估智能体框架的推理性能与效率",
+      "canonical_evidence": "评估智能体框架的推理性能与效率",
+      "llm_tldr_en": "This empirical study compares 22 agentic frameworks on reasoning accuracy, cost, and efficiency.",
+      "llm_tldr_cn": "这项实证研究在推理准确性、成本和效率方面比较了22个智能体框架。",
+      "llm_tldr": "这项实证研究在推理准确性、成本和效率方面比较了22个智能体框架。",
+      "llm_tags": [
+        "query:q4"
+      ],
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.16682v1",
+      "title": "KAIROS: Stateful, Context-Aware Power-Efficient Agentic Inference Serving",
+      "abstract": "Power has become a central bottleneck for AI inference. This problem is becoming more urgent as agentic AI emerges as a major workload class, yet prior power-management techniques focus almost entirely on single-turn LLM serving. Our analysis shows that agentic serving behaves fundamentally differently: each request carries long-lived context that evolves across tool-interleaved turns, and lowering GPU frequency can push the system into a thrashing regime where memory pressure sharply worsens both performance and power efficiency. These observations show that power optimization for agentic serving requires rethinking.   We present KAIROS, a context-aware power optimization system for agentic AI serving. KAIROS uses agent context as a first-class control signal to jointly manage GPU frequency, per-instance concurrency, and multi-instance request placement. This enables KAIROS to save power when memory headroom exists while avoiding thrashing and preserving performance targets. At a high level, KAIROS tracks requests at agent granularity, adapts local control to context growth and agent progress, and routes agents across instances to jointly improve power efficiency and memory stability. Evaluated across diverse software and data engineering agentic tasks, KAIROS achieves an average of 27% (up to 39.8%) power reduction while meeting the performance targets.",
+      "authors": [
+        "Yichao Yuan",
+        "Mosharaf Chowdhury",
+        "Nishil Talati"
+      ],
+      "primary_category": "cs.DC",
+      "categories": [
+        "cs.DC",
+        "cs.AI"
+      ],
+      "published": "2026-04-17T20:39:25+00:00",
+      "link": "https://arxiv.org/pdf/2604.16682v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "context-aware power-efficient agentic inference",
+      "llm_evidence_cn": "上下文感知的节能智能体推理",
+      "llm_evidence": "上下文感知的节能智能体推理",
+      "canonical_evidence": "上下文感知的节能智能体推理",
+      "llm_tldr_en": "Presents KAIROS, a system optimizing power and performance for stateful, long-lived agentic inference contexts.",
+      "llm_tldr_cn": "提出KAIROS系统，针对有状态的长期智能体推理上下文优化功耗与性能。",
+      "llm_tldr": "提出KAIROS系统，针对有状态的长期智能体推理上下文优化功耗与性能。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.16983v1",
+      "title": "Graph-Guided Adaptive Channel Elimination for KV Cache Compression",
+      "abstract": "Large Language Models have revolutionized natural language processing, achieving unprecedented success across a vast range of tasks. However, their practical application in long-context scenarios is severely hampered by the formidable memory footprint of the Key-Value cache. While channel pruning has emerged as a promising compression strategy, existing methods evaluate channel importance in isolation, fundamentally ignoring the inter-channel interactions that collectively dictate model performance. This oversight leads to suboptimal pruning decisions. To address this, we introduce \\textbf{GRACE} (\\textbf{GR}aph-guided \\textbf{A}daptive \\textbf{C}hannel \\textbf{E}limination), a novel framework that reframes KV cache compression as a graph-based optimization problem. GRACE models channels as nodes and their interactions as weighted edges, enabling the identification of a near-optimal channel subset for pruning by minimizing the reconstruction error of the attention weight matrix. Furthermore, GRACE incorporates an adaptive protection mechanism that shields salient key channels from removal, ensuring a robust autoregressive decoding process. Extensive experiments show that GRACE can reduce KV cache size by 60\\% with negligible performance degradation, consistently outperforming the state-of-the-art method.",
+      "authors": [
+        "Enwei Tong",
+        "Yao Zhu",
+        "Yuanchao Bai",
+        "Kai Wang",
+        "Xianming Liu",
+        "Xiangyang Ji"
+      ],
+      "primary_category": "eess.SP",
+      "categories": [
+        "eess.SP"
+      ],
+      "published": "2026-04-18T12:55:28+00:00",
+      "link": "https://arxiv.org/pdf/2604.16983v1",
+      "tags": [
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "KV cache compression via channel elimination",
+      "llm_evidence_cn": "通过通道消除进行KV缓存压缩",
+      "llm_evidence": "通过通道消除进行KV缓存压缩",
+      "canonical_evidence": "通过通道消除进行KV缓存压缩",
+      "llm_tldr_en": "Introduces GRACE, a graph-based framework for adaptive KV cache compression in long-context LLMs.",
+      "llm_tldr_cn": "引入GRACE框架，利用图优化实现长文本大模型的自适应KV缓存压缩。",
+      "llm_tldr": "引入GRACE框架，利用图优化实现长文本大模型的自适应KV缓存压缩。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17297v1",
+      "title": "CRISP: Compressing Redundancy in Chain-of-Thought via Intrinsic Saliency Pruning",
+      "abstract": "Long Chain-of-Thought (CoT) reasoning is pivotal for the success of recent reasoning models but suffers from high computational overhead and latency. While prior works attempt to compress CoT via external compressor, they often fail to align with the model's internal reasoning dynamics, resulting in the loss of critical logical steps. This paper presents \\textbf{C}ompressing \\textbf{R}edundancy in Chain-of-Thought via \\textbf{I}ntrinsic \\textbf{S}aliency \\textbf{P}runing (\\textbf{CRISP}), a framework that compresses CoT by exploiting the model's intrinsic saliency. Our analysis reveals a distinct phenomenon: the reasoning termination token \\texttt{[object Object]} acts as an information anchor, where its attention pattern effectively demarcates essential reasoning from redundancy. Based on this finding, we design a policy that utilizes these intrinsic attention signals to guide atomic compression operations. In contrast to coarse-grained pruning strategies, CRISP strategically distills the reasoning chain to maximize information density while preserving logical coherence. Empirical results across various backbone models and mathematical datasets demonstrate that CRISP achieves a 50-60% reduction in token count without compromising accuracy, effectively mitigating the efficiency bottleneck of long-context reasoning. We open-source our implementation to facilitate further research in efficient reasoning.",
+      "authors": [
+        "Yangsong Lan",
+        "Hongliang Dai",
+        "Piji Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-19T07:26:55+00:00",
+      "link": "https://arxiv.org/pdf/2604.17297v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Compressing redundancy in Chain-of-Thought via saliency pruning",
+      "llm_evidence_cn": "通过显著性剪枝压缩思维链中的冗余",
+      "llm_evidence": "通过显著性剪枝压缩思维链中的冗余",
+      "canonical_evidence": "通过显著性剪枝压缩思维链中的冗余",
+      "llm_tldr_en": "CRISP reduces CoT reasoning overhead by pruning redundant tokens based on intrinsic model saliency.",
+      "llm_tldr_cn": "CRISP通过模型内在显著性剪枝冗余Token，降低思维链推理的计算开销。",
+      "llm_tldr": "CRISP通过模型内在显著性剪枝冗余Token，降低思维链推理的计算开销。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17304v1",
+      "title": "Efficient Test-Time Scaling via Temporal Reasoning Aggregation",
+      "abstract": "Test-time scaling improves the reasoning performance of large language models but often results in token-inefficient overthinking, where models continue reasoning beyond what is necessary for a correct answer. Existing dynamic early-exit methods typically rely on single-step confidence signals, which are often unreliable for detecting reasoning convergence in multi-step settings. To mitigate this limitation, we propose TRACE, a training-free framework for efficient test-time scaling that determines when to terminate reasoning based on temporal aggregation of multi-step evidence rather than instantaneous signals. TRACE detects reasoning convergence over time by aggregating two complementary signals across recent reasoning steps: answer consistency, capturing the persistence of predicted answers, and confidence trajectory, modeling the temporal evolution of model confidence. Benefiting from these two factors, TRACE can accurately determine whether the reasoning process has converged, thereby promptly halting inference and effectively avoiding redundant reasoning steps. Extensive experiments on multiple challenging benchmarks show that TRACE reduces reasoning token usage by 25-30% on average while maintaining accuracy within 1-2% of full-length reasoning, consistently outperforming existing dynamic reasoning methods.",
+      "authors": [
+        "Jiakun Li",
+        "Xingwei He",
+        "Kefan Li",
+        "Hongzheng Chai",
+        "Hongyue Yu",
+        "Yuan Yuan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-19T07:39:40+00:00",
+      "link": "https://arxiv.org/pdf/2604.17304v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "efficient test-time scaling via temporal reasoning aggregation to avoid overthinking",
+      "llm_evidence_cn": "通过时间推理聚合实现高效的测试时扩展，避免过度思考",
+      "llm_evidence": "通过时间推理聚合实现高效的测试时扩展，避免过度思考",
+      "canonical_evidence": "通过时间推理聚合实现高效的测试时扩展，避免过度思考",
+      "llm_tldr_en": "Introduces TRACE to determine reasoning convergence, improving token efficiency during test-time scaling.",
+      "llm_tldr_cn": "引入TRACE框架检测推理收敛，提高测试时扩展的Token效率。",
+      "llm_tldr": "引入TRACE框架检测推理收敛，提高测试时扩展的Token效率。",
+      "llm_tags": [
+        "query:q4"
+      ],
+      "matched_query_tag": "query:q4",
+      "matched_query_text": "efficient reasoning in agents",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17400v1",
+      "title": "Phase-Scheduled Multi-Agent Systems for Token-Efficient Coordination",
+      "abstract": "Multi-agent systems (MAS) powered by large language models suffer from severe token inefficiency arising from two compounding sources: (i) unstructured parallel execution, where all agents activate simultaneously irrespective of input readiness; and (ii) unrestricted context sharing, where every agent receives the full accumulated context regardless of relevance. Existing mitigation strategies - static pruning, hierarchical decomposition, and learned routing - treat coordination as a structural allocation problem and fundamentally ignore its temporal dimension. We propose Phase-Scheduled Multi-Agent Systems (PSMAS), a framework that reconceptualizes agent activation as continuous control over a shared attention space modeled on a circular manifold.   Each agent i is assigned a fixed angular phase theta_i in the range [0, 2*pi], derived from the task dependency topology; a global sweep signal phi(t) rotates at velocity omega, activating only agents within an angular window epsilon. Idle agents receive compressed context summaries, reducing per-step token consumption. We implement PSMAS on LangGraph, evaluate on four structured benchmarks (HotPotQA-MAS, HumanEval-MAS, ALFWorld-Multi, WebArena-Coord) and two unstructured conversational settings, and prove stability, convergence, and optimality results for the sweep dynamics. PSMAS achieves a mean token reduction of 27.3 percent (range 21.4-34.8 percent) while maintaining task performance within 2.1 percentage points of a fully activated baseline (p < 0.01, n = 500 per configuration), and outperforms the strongest learned routing baseline by 5.6 percentage points in token reduction with 2.0 percentage points less performance drop. Crucially, we show that scheduling and compression are independent sources of gain: scheduling alone accounts for 18-20 percentage points of reduction, robust to compression degradation up to alpha = 0.40.",
+      "authors": [
+        "Mohit Dubey"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "math.AT"
+      ],
+      "published": "2026-04-19T12:03:54+00:00",
+      "link": "https://arxiv.org/pdf/2604.17400v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "token-efficient coordination in multi-agent systems via phase scheduling",
+      "llm_evidence_cn": "通过相位调度实现多智能体系统中的Token高效协作",
+      "llm_evidence": "通过相位调度实现多智能体系统中的Token高效协作",
+      "canonical_evidence": "通过相位调度实现多智能体系统中的Token高效协作",
+      "llm_tldr_en": "Proposes PSMAS to improve token efficiency in multi-agent systems through temporal coordination.",
+      "llm_tldr_cn": "提出PSMAS框架，通过时间维度的协作提高多智能体系统的Token效率。",
+      "llm_tldr": "提出PSMAS框架，通过时间维度的协作提高多智能体系统的Token效率。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17695v1",
+      "title": "MoE-nD: Per-Layer Mixture-of-Experts Routing for Multi-Axis KV Cache Compression",
+      "abstract": "KV cache memory is the dominant bottleneck for long-context LLM inference. Existing compression methods each act on a single axis of the four-dimensional KV tensor -- token eviction (sequence), quantization (precision), low-rank projection (head dimension), or cross-layer sharing -- but apply the same recipe to every layer. We show that this homogeneity leaves accuracy on the table: different layers respond very differently to each compression operation, and the optimal per-layer mix of eviction and quantization is far from uniform. We propose MoE-nD, a mixture-of-experts framework that routes each layer to its own (eviction-ratio, K-bits, V-bits) tuple under a global memory budget. An offline-calibrated greedy solver chooses the routing that minimizes predicted quality loss; at inference time, per-layer heterogeneous eviction and quantization are applied jointly through a single attention patch. On a 4-task subset of LongBench-v1 (16k inputs, n=50 per task, adapted reasoning-model protocol; see section Experiments), MoE-nD's hetero variant matches our uncompressed 1.9~GB baseline at 14x compression (136~MB) while every other compressed baseline we tested (1d, 2d_uniform, 2d) at comparable or smaller memory stays under 8/100. The gains hold on AIME reasoning benchmarks (+6 to +27 pts over the strongest per-layer-quantization baseline across eight configurations). Two null results -- MATH-500 and LongBench's TREC -- share a principled cause (short inputs, solver picks keep=1.0 on most layers), cleanly characterizing when per-layer eviction routing has headroom to help.",
+      "authors": [
+        "Libo Sun",
+        "Peixiong He",
+        "Po-Wei Harn",
+        "Xiao Qin"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-04-20T01:20:26+00:00",
+      "link": "https://arxiv.org/pdf/2604.17695v1",
+      "tags": [
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multi-axis KV cache compression for long-context LLM inference",
+      "llm_evidence_cn": "长上下文大模型推理的多轴 KV 缓存压缩",
+      "llm_evidence": "长上下文大模型推理的多轴 KV 缓存压缩",
+      "canonical_evidence": "长上下文大模型推理的多轴 KV 缓存压缩",
+      "llm_tldr_en": "Introduces MoE-nD, a mixture-of-experts framework for per-layer optimized KV cache compression.",
+      "llm_tldr_cn": "引入了 MoE-nD，一种用于逐层优化 KV 缓存压缩的混合专家框架。",
+      "llm_tldr": "引入了 MoE-nD，一种用于逐层优化 KV 缓存压缩的混合专家框架。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.17886v1",
+      "title": "Latent Preference Modeling for Cross-Session Personalized Tool Calling",
+      "abstract": "Users often omit essential details in their requests to LLM-based agents, resulting in under-specified inputs for tool use. This poses a fundamental challenge for tool-augmented agents, as API execution typically requires complete arguments, highlighting the need for personalized tool calling. To study this problem, we introduce MPT, a benchmark comprising 265 multi-session dialogues that cover three challenges: Preference Recall, Preference Induction, and Preference Transfer. We also propose PRefine, a test-time memory-augmented method that represents user preferences as evolving hypotheses. Through a generate--verify--refine loop, it extracts reusable constraints from history and improves tool-calling accuracy while using only 1.24% of the tokens required by full-history prompting. These results indicate that robust personalization in agentic systems depends on memory that captures the reasons behind user choices, not just the choices themselves.",
+      "authors": [
+        "Yejin Yoon",
+        "Minseo Kim",
+        "Taeuk Kim"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-04-20T06:57:50+00:00",
+      "link": "https://arxiv.org/pdf/2604.17886v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "efficient tool calling with token reduction",
+      "llm_evidence_cn": "减少token消耗的高效工具调用",
+      "llm_evidence": "减少token消耗的高效工具调用",
+      "canonical_evidence": "减少token消耗的高效工具调用",
+      "llm_tldr_en": "Improves tool-calling accuracy while using only 1.24% of tokens via latent preference modeling.",
+      "llm_tldr_cn": "通过潜偏好建模，在仅使用1.24% token的情况下提升工具调用准确率。",
+      "llm_tldr": "通过潜偏好建模，在仅使用1.24% token的情况下提升工具调用准确率。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.18224v1",
+      "title": "WebCompass: Towards Multimodal Web Coding Evaluation for Code Language Models",
+      "abstract": "Large language models are rapidly evolving into interactive coding agents capable of end-to-end web coding, yet existing benchmarks evaluate only narrow slices of this capability, typically text-conditioned generation with static-correctness metrics, leaving visual fidelity, interaction quality, and codebase-level reasoning largely unmeasured. We introduce WebCompass, a multimodal benchmark that provides unified lifecycle evaluation of web engineering capability. Recognizing that real-world web coding is an iterative cycle of generation, editing, and repair, WebCompass spans three input modalities (text, image, video) and three task types (generation, editing, repair), yielding seven task categories that mirror professional workflows. Through a multi-stage, human-in-the-loop pipeline, we curate instances covering 15 generation domains, 16 editing operation types, and 11 repair defect types, each annotated at Easy/Medium/Hard levels. For evaluation, we adopt a checklist-guided LLM-as-a-Judge protocol for editing and repair, and propose a novel Agent-as-a-Judge paradigm for generation that autonomously executes generated websites in a real browser, explores interactive behaviors via the Model Context Protocol (MCP), and iteratively synthesizes targeted test cases, closely approximating human acceptance testing. We evaluate representative closed-source and open-source models and observe that: (1) closed-source models remain substantially stronger and more balanced; (2) editing and repair exhibit distinct difficulty profiles, with repair preserving interactivity better but remaining execution-challenging; (3) aesthetics is the most persistent bottleneck, especially for open-source models; and (4) framework choice materially affects outcomes, with Vue consistently challenging while React and Vanilla/HTML perform more strongly depending on task type.",
+      "authors": [
+        "Xinping Lei",
+        "Xinyu Che",
+        "Junqi Xiong",
+        "Chenchen Zhang",
+        "Yukai Huang",
+        "Chenyu Zhou",
+        "Haoyang Huang",
+        "Minghao Liu",
+        "Letian Zhu",
+        "Hongyi Ye",
+        "Jinhua Hao",
+        "Ken Deng",
+        "Zizheng Zhan",
+        "Han Li",
+        "Dailin Li",
+        "Yifan Yao",
+        "Ming Sun",
+        "Zhaoxiang Zhang",
+        "Jiaheng Liu"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI"
+      ],
+      "published": "2026-04-20T13:09:38+00:00",
+      "link": "https://arxiv.org/pdf/2604.18224v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multimodal web coding agent evaluation",
+      "llm_evidence_cn": "多模态Web代码智能体评估",
+      "llm_evidence": "多模态Web代码智能体评估",
+      "canonical_evidence": "多模态Web代码智能体评估",
+      "llm_tldr_en": "Introduces WebCompass, a multimodal benchmark for evaluating end-to-end web coding and reasoning in agents.",
+      "llm_tldr_cn": "引入WebCompass，一个用于评估智能体端到端Web编程和推理能力的多模态基准。",
+      "llm_tldr": "引入WebCompass，一个用于评估智能体端到端Web编程和推理能力的多模态基准。",
+      "llm_tags": [
+        "query:profile-3:composite"
+      ],
+      "matched_query_tag": "query:profile-3:composite",
+      "matched_query_text": "Papers central to 帮我去找code agent 和web agent在高效推理方面最新的工作, especially work that connects or combines: a; code agent efficient reasoning; web agent efficient reasoning; efficient reasoning in agents; agent reasoning methods; code generation reasoning; context compression; web agent; agent; latest research on code agent efficient reasoning.",
+      "matched_requirement_id": "req-composite-profile-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2604.18394v1",
+      "title": "OpenGame: Open Agentic Coding for Games",
+      "abstract": "Game development sits at the intersection of creative design and intricate software engineering, demanding the joint orchestration of game engines, real-time loops, and tightly coupled state across many files. While Large Language Models (LLMs) and code agents now solve isolated programming tasks with ease, they consistently stumble when asked to produce a fully playable game from a high-level design, collapsing under cross-file inconsistencies, broken scene wiring, and logical incoherence. We bridge this gap with OpenGame, the first open-source agentic framework explicitly designed for end-to-end web game creation. At its core lies Game Skill, a reusable, evolving capability composed of a Template Skill that grows a library of project skeletons from experience and a Debug Skill that maintains a living protocol of verified fixes - together enabling the agent to scaffold stable architectures and systematically repair integration errors rather than patch isolated syntax bugs. Powering this framework is GameCoder-27B, a code LLM specialized for game engine mastery through a three-stage pipeline of continual pre-training, supervised fine-tuning, and execution-grounded reinforcement learning. Since verifying interactive playability is fundamentally harder than checking static code, we further introduce OpenGame-Bench, an evaluation pipeline that scores agentic game generation along Build Health, Visual Usability, and Intent Alignment via headless browser execution and VLM judging. Across 150 diverse game prompts, OpenGame establishes a new state-of-the-art. We hope OpenGame pushes code agents beyond discrete software engineering problems and toward building complex, interactive real-world applications. Our framework will be fully open-sourced.",
+      "authors": [
+        "Yilei Jiang",
+        "Jinyuan Hu",
+        "Qianyin Xiao",
+        "Yaozhi Zheng",
+        "Ruize Ma",
+        "Kaituo Feng",
+        "Jiaming Han",
+        "Tianshuo Peng",
+        "Kaixuan Fan",
+        "Manyuan Zhang",
+        "Xiangyu Yue"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-04-20T15:17:03+00:00",
+      "link": "https://arxiv.org/pdf/2604.18394v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic framework for web game coding",
+      "llm_evidence_cn": "网页游戏编程的代理框架",
+      "llm_evidence": "网页游戏编程的代理框架",
+      "canonical_evidence": "网页游戏编程的代理框架",
+      "llm_tldr_en": "Presents OpenGame, an agentic framework for end-to-end web game creation and debugging.",
+      "llm_tldr_cn": "推出OpenGame，一个用于端到端网页游戏创建与调试的开源代理框架。",
+      "llm_tldr": "推出OpenGame，一个用于端到端网页游戏创建与调试的开源代理框架。",
+      "llm_tags": [
+        "query:q10"
+      ],
+      "matched_query_tag": "query:q10",
+      "matched_query_text": "latest research on code agent efficient reasoning",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.26942v1",
+      "title": "The Observability Gap: Why Output-Level Human Feedback Fails for LLM Coding Agents",
+      "abstract": "Large language model (LLM) multi-agent coding systems typically fix agent capabilities at design time. We study an alternative setting, earned autonomy, in which a coding agent starts with zero pre-defined functions and incrementally builds a reusable function library through lightweight human feedback on visual output alone. We evaluate this setup in a Blender-based 3D scene generation task requiring both spatial reasoning and programmatic geometric control. Although the agent rediscovered core utility functions comparable to a human reference implementation, it achieved 0% full-scene success under output-only feedback across multiple instruction granularities, where success required satisfying object completeness, ground contact, collision avoidance, and scale plausibility simultaneously. Our analysis identifies a structural observability gap: bugs originate in code logic and execution state, while human evaluation occurs only at the output layer, and the many-to-one mapping from internal states to visible outcomes prevents symptom-level feedback from reliably identifying root causes. This mismatch leads to persistent failure mode oscillation rather than convergence. A diagnostic intervention that injected minimal code-level knowledge restored convergence, strongly supporting the interpretation that the main bottleneck lies in feedback observability rather than programming competence. We formalize this phenomenon as a feedback paradox in domains with deep causal chains between internal code logic and perceptual outcomes, and argue that effective human-agent collaboration in such settings requires intermediate observability beyond output-only evaluation.",
+      "authors": [
+        "Yinghao Wang",
+        "Cheng Wang"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-27T19:32:18+00:00",
+      "link": "https://arxiv.org/pdf/2603.26942v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "study of coding agents building reusable functions through feedback",
+      "llm_evidence_cn": "研究代码智能体如何通过反馈构建可重用函数",
+      "llm_evidence": "研究代码智能体如何通过反馈构建可重用函数",
+      "canonical_evidence": "研究代码智能体如何通过反馈构建可重用函数",
+      "llm_tldr_en": "Examines the observability gap in human feedback for coding agents during 3D scene generation tasks.",
+      "llm_tldr_cn": "研究了在3D场景生成任务中，人类反馈对代码智能体的可观察性差距问题。",
+      "llm_tldr": "研究了在3D场景生成任务中，人类反馈对代码智能体的可观察性差距问题。",
+      "llm_tags": [
+        "query:q2"
+      ],
+      "matched_query_tag": "query:q2",
+      "matched_query_text": "code agent efficient reasoning",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.26942v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2604.11623v1",
+      "title": "Context Kubernetes: Declarative Orchestration of Enterprise Knowledge for Agentic AI Systems",
+      "abstract": "We introduce Context Kubernetes, an architecture for orchestrating enterprise knowledge in agentic AI systems, with a prototype implementation and eight experiments. The core observation is that delivering the right knowledge, to the right agent, with the right permissions, at the right freshness -- across an entire organization -- is structurally analogous to the container orchestration problem Kubernetes solved a decade ago. We formalize six core abstractions, a YAML-based declarative manifest for knowledge-architecture-as-code, a reconciliation loop, and a three-tier agent permission model where agent authority is always a strict subset of human authority. Three value experiments show: (1) without governance, agents serve phantom content from deleted sources and leak cross-domain data in 26.5% of queries; (2) without freshness monitoring, stale content is served silently -- with reconciliation, staleness is detected in under 1ms; (3) in five attack scenarios, flat permissions block 0/5 attacks, basic RBAC blocks 4/5, and the three-tier model blocks 5/5. Five correctness experiments confirm zero unauthorized deliveries, zero invariant violations, and architectural enforcement of out-of-band approval isolation that no surveyed enterprise platform provides. A survey of four major platforms (Microsoft, Salesforce, AWS, Google) documents that none architecturally isolates agent approval channels. We identify four properties that make context orchestration harder than container orchestration, and argue that these make the solution more valuable.",
+      "authors": [
+        "Charafeddine Mouzouni"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.SE"
+      ],
+      "published": "2026-04-13T15:35:55+00:00",
+      "link": "https://arxiv.org/pdf/2604.11623v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "orchestrating enterprise knowledge for agentic AI systems",
+      "llm_evidence_cn": "为智能体系统编排企业知识",
+      "llm_evidence": "为智能体系统编排企业知识",
+      "canonical_evidence": "为智能体系统编排企业知识",
+      "llm_tldr_en": "Introduces Context Kubernetes for declarative orchestration of knowledge in agentic AI systems.",
+      "llm_tldr_cn": "引入Context Kubernetes，为智能体系统提供声明式的企业知识编排架构。",
+      "llm_tldr": "引入Context Kubernetes，为智能体系统提供声明式的企业知识编排架构。",
+      "llm_tags": [
+        "query:q9"
+      ],
+      "matched_query_tag": "query:q9",
+      "matched_query_text": "agent",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2604.11623v3",
+      "title": "Context Kubernetes: Declarative Orchestration of Enterprise Knowledge for Agentic AI Systems",
+      "abstract": "We introduce Context Kubernetes, an architecture for orchestrating enterprise knowledge in agentic AI systems, with a prototype implementation and eight experiments. The core observation is that delivering the right knowledge, to the right agent, with the right permissions, at the right freshness -- across an entire organization -- is structurally analogous to the container orchestration problem Kubernetes solved a decade ago. We formalize six core abstractions, a YAML-based declarative manifest for knowledge-architecture-as-code, a reconciliation loop, and a three-tier agent permission model where agent authority is always a strict subset of human authority. On synthetic seed data, we compare four governance baselines of increasing strength: ungoverned RAG, ACL-filtered retrieval, RBAC-aware routing, and the full architecture. Each layer contributes a different capability: ACL filtering eliminates cross-domain leaks, intent routing reduces noise by 19 percentage points, and only the three-tier model blocks all five tested attack scenarios -- the one attack RBAC misses is an agent sending confidential pricing via email, which RBAC cannot distinguish from ordinary email. TLA+ model-checking verifies safety properties across 4.6 million reachable states with zero violations. A survey of four major platforms (Microsoft, Salesforce, AWS, Google) documents that none architecturally isolates agent approval channels. We identify four properties that make context orchestration harder than container orchestration, and argue these make the solution more valuable.",
+      "authors": [
+        "Charafeddine Mouzouni"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.SE"
+      ],
+      "published": "2026-04-13T15:35:55+00:00",
+      "link": "https://arxiv.org/pdf/2604.11623v3",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "orchestrating knowledge for agentic AI systems",
+      "llm_evidence_cn": "为智能体AI系统编排知识",
+      "llm_evidence": "为智能体AI系统编排知识",
+      "canonical_evidence": "为智能体AI系统编排知识",
+      "llm_tldr_en": "Context Kubernetes provides a declarative architecture for managing enterprise knowledge in AI agents.",
+      "llm_tldr_cn": "Context Kubernetes为管理AI智能体中的企业知识提供了一种声明式架构。",
+      "llm_tldr": "Context Kubernetes为管理AI智能体中的企业知识提供了一种声明式架构。",
+      "llm_tags": [
+        "query:q9"
+      ],
+      "matched_query_tag": "query:q9",
+      "matched_query_text": "agent",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.27127v1",
+      "title": "Red-MIRROR: Agentic LLM-based Autonomous Penetration Testing with Reflective Verification and Knowledge-augmented Interaction",
+      "abstract": "Web applications remain the dominant attack surface in cybersecurity, where vulnerabilities such as SQL injection, XSS, and business logic flaws continue to cause significant data breaches. While penetration testing is effective for identifying these weaknesses, traditional manual approaches are time-consuming and heavily dependent on scarce expert knowledge. Recent Large Language Models (LLM)-based multi-agent systems have shown promise in automating penetration testing, yet they still suffer from critical limitations: over-reliance on parametric knowledge, fragmented session memory, and insufficient validation of attack payloads and responses. This paper proposes Red-MIRROR, a novel multi-agent automated penetration testing system that introduces a tightly coupled memory-reflection backbone to explicitly govern inter-agent reasoning. By synthesizing Retrieval-Augmented Generation (RAG) for external knowledge augmentation, a Shared Recurrent Memory Mechanism (SRMM) for persistent state management, and a Dual-Phase Reflection mechanism for adaptive validation, Red-MIRROR provides a robust solution for complex web exploitation. Empirical evaluation on the XBOW benchmark and Vulhub CVEs shows that Red-MIRROR achieves performance comparable to state-of-the-art agents on Vulhub scenarios, while demonstrating a clear advantage on the XBOW benchmark. On the XBOW benchmark, Red-MIRROR attains an overall success rate of 86.0 percent, outperforming PentestAgent (50.0 percent), AutoPT (46.0 percent), and the VulnBot baseline (6.0 percent). Furthermore, the system achieves a 93.99 percent subtask completion rate, indicating strong long-horizon reasoning and payload refinement capability. Finally, we discuss ethical implications and propose safeguards to mitigate misuse risks.",
+      "authors": [
+        "Tran Vy Khang",
+        "Nguyen Dang Nguyen Khang",
+        "Nghi Hoang Khoa",
+        "Do Thi Thu Hien",
+        "Van-Hau Pham",
+        "Phan The Duy"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-03-28T04:34:09+00:00",
+      "link": "https://arxiv.org/pdf/2603.27127v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "agentic LLM-based autonomous penetration testing for web applications",
+      "llm_evidence_cn": "基于智能体LLM的Web应用自动渗透测试",
+      "llm_evidence": "基于智能体LLM的Web应用自动渗透测试",
+      "canonical_evidence": "基于智能体LLM的Web应用自动渗透测试",
+      "llm_tldr_en": "Presents Red-MIRROR, a multi-agent system for autonomous web application penetration testing.",
+      "llm_tldr_cn": "提出Red-MIRROR，一种用于自动化Web应用渗透测试的多智能体系统。",
+      "llm_tldr": "提出Red-MIRROR，一种用于自动化Web应用渗透测试的多智能体系统。",
+      "llm_tags": [
+        "query:q8"
+      ],
+      "matched_query_tag": "query:q8",
+      "matched_query_text": "web agent",
+      "matched_requirement_id": "req-8",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.27127v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2604.12184v1",
+      "title": "TRUST Agents: A Collaborative Multi-Agent Framework for Fake News Detection, Explainable Verification, and Logic-Aware Claim Reasoning",
+      "abstract": "TRUST Agents is a collaborative multi-agent framework for explainable fact verification and fake news detection. Rather than treating verification as a simple true-or-false classification task, the system identifies verifiable claims, retrieves relevant evidence, compares claims against that evidence, reasons under uncertainty, and generates explanations that humans can inspect. The baseline pipeline consists of four specialized agents. A claim extractor uses named entity recognition, dependency parsing, and LLM-based extraction to identify factual claims. A retrieval agent performs hybrid sparse and dense search using BM25 and FAISS. A verifier agent compares claims with retrieved evidence and produces verdicts with calibrated confidence. An explainer agent then generates a human-readable report with explicit evidence citations. To handle complex claims more effectively, we introduce a research-oriented extension with three additional components: a decomposer agent inspired by LoCal-style claim decomposition, a Delphi-inspired multi-agent jury with specialized verifier personas, and a logic aggregator that combines atomic verdicts using conjunction, disjunction, negation, and implication. We evaluate both pipelines on the LIAR benchmark against fine-tuned BERT, fine-tuned RoBERTa, and a zero-shot LLM baseline. Although supervised encoders remain stronger on raw metrics, TRUST Agents improves interpretability, evidence transparency, and reasoning over compound claims. Results also show that retrieval quality and uncertainty calibration remain the main bottlenecks in trustworthy automated fact verification.",
+      "authors": [
+        "Gautama Shastry Bulusu Venkata",
+        "Santhosh Kakarla",
+        "Maheedhar Omtri Mohan",
+        "Aishwarya Gaddam"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-14T01:31:14+00:00",
+      "link": "https://arxiv.org/pdf/2604.12184v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-agent framework for logic-aware claim reasoning",
+      "llm_evidence_cn": "逻辑感知声明推理的多智能体框架",
+      "llm_evidence": "逻辑感知声明推理的多智能体框架",
+      "canonical_evidence": "逻辑感知声明推理的多智能体框架",
+      "llm_tldr_en": "TRUST Agents uses a collaborative multi-agent framework for explainable fact verification and reasoning.",
+      "llm_tldr_cn": "TRUST Agents使用协作式多智能体框架进行可解释的事实核查与推理。",
+      "llm_tldr": "TRUST Agents使用协作式多智能体框架进行可解释的事实核查与推理。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2604.11741v1",
+      "title": "Collaborative Multi-Agent Scripts Generation for Enhancing Imperfect-Information Reasoning in Murder Mystery Games",
+      "abstract": "Vision-language models (VLMs) have shown impressive capabilities in perceptual tasks, yet they degrade in complex multi-hop reasoning under multiplayer game settings with imperfect and deceptive information. In this paper, we study a representative multiplayer task, Murder Mystery Games, which require inferring hidden truths based on partial clues provided by roles with different intentions. To address this challenge, we propose a collaborative multi-agent framework for evaluating and synthesizing high-quality, role-driven multiplayer game scripts, enabling fine-grained interaction patterns tailored to character identities (i.e., murderer vs. innocent). Our system generates rich multimodal contexts, including character backstories, visual and textual clues, and multi-hop reasoning chains, through coordinated agent interactions. We design a two-stage agent-monitored training strategy to enhance the reasoning ability of VLMs: (1) chain-of-thought based fine-tuning on curated and synthetic datasets that model uncertainty and deception; (2) GRPO-based reinforcement learning with agent-monitored reward shaping, encouraging the model to develop character-specific reasoning behaviors and effective multimodal multi-hop inference. Extensive experiments demonstrate that our method significantly boosts the performance of VLMs in narrative reasoning, hidden fact extraction, and deception-resilient understanding. Our contributions offer a scalable solution for training and evaluating VLMs under uncertain, adversarial, and socially complex conditions, laying the groundwork for future benchmarks in multimodal multi-hop reasoning under imperfect information.",
+      "authors": [
+        "Keyang Zhong",
+        "Junlin Xie",
+        "Hefeng Wu",
+        "Haofeng Li",
+        "Guanbin Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-04-13T17:16:23+00:00",
+      "link": "https://arxiv.org/pdf/2604.11741v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "collaborative multi-agent framework for complex multi-hop reasoning",
+      "llm_evidence_cn": "用于复杂多跳推理的协作多代理框架",
+      "llm_evidence": "用于复杂多跳推理的协作多代理框架",
+      "canonical_evidence": "用于复杂多跳推理的协作多代理框架",
+      "llm_tldr_en": "Uses a multi-agent framework to enhance reasoning in games with imperfect and deceptive information.",
+      "llm_tldr_cn": "使用多代理框架来增强在具有不完全和欺骗性信息的博弈中的推理能力。",
+      "llm_tldr": "使用多代理框架来增强在具有不完全和欺骗性信息的博弈中的推理能力。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.27813v1",
+      "title": "MuSEAgent: A Multimodal Reasoning Agent with Stateful Experiences",
+      "abstract": "Research agents have recently achieved significant progress in information seeking and synthesis across heterogeneous textual and visual sources. In this paper, we introduce MuSEAgent, a multimodal reasoning agent that enhances decision-making by extending the capabilities of research agents to discover and leverage stateful experiences. Rather than relying on trajectory-level retrieval, we propose a stateful experience learning paradigm that abstracts interaction data into atomic decision experiences through hindsight reasoning. These experiences are organized into a quality-filtered experience bank that supports policy-driven experience retrieval at inference time. Specifically, MuSEAgent enables adaptive experience exploitation through complementary wide- and deep-search strategies, allowing the agent to dynamically retrieve multimodal guidance across diverse compositional semantic viewpoints. Extensive experiments demonstrate that MuSEAgent consistently outperforms strong trajectory-level experience retrieval baselines on both fine-grained visual perception and complex multimodal reasoning tasks. These results validate the effectiveness of stateful experience modeling in improving multimodal agent reasoning.",
+      "authors": [
+        "Shijian Wang",
+        "Jiarui Jin",
+        "Runhao Fu",
+        "Zexuan Yan",
+        "Xingjian Wang",
+        "Mengkang Hu",
+        "Eric Wang",
+        "Xiaoxi Li",
+        "Kangning Zhang",
+        "Li Yao",
+        "Wenxiang Jiao",
+        "Xuelian Cheng",
+        "Yuan Lu",
+        "Zongyuan Ge"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-29T18:54:31+00:00",
+      "link": "https://arxiv.org/pdf/2603.27813v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multimodal reasoning agent with stateful experiences",
+      "llm_evidence_cn": "具有状态经验的多模态推理智能体",
+      "llm_evidence": "具有状态经验的多模态推理智能体",
+      "canonical_evidence": "具有状态经验的多模态推理智能体",
+      "llm_tldr_en": "Introduces MuSEAgent, which uses a stateful experience learning paradigm to enhance multimodal reasoning.",
+      "llm_tldr_cn": "引入MuSEAgent，利用有状态经验学习范式来增强多模态推理能力。",
+      "llm_tldr": "引入MuSEAgent，利用有状态经验学习范式来增强多模态推理能力。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.27813v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2604.12290v1",
+      "title": "Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks with Generative Optimization",
+      "abstract": "Current LLM agent benchmarks, which predominantly focus on binary pass/fail tasks such as code generation or search-based question answering, often neglect the value of real-world engineering that is often captured through the iterative optimization of feasible designs. To this end, we introduce Frontier-Eng, a human-verified benchmark for generative optimization -- an iterative propose-execute-evaluate loop in which an agent generates candidate artifacts, receives executable verifier feedback, and revises them under a fixed interaction budget -- spanning $47$ tasks across five broad engineering categories. Unlike previous suites, Frontier-Eng tasks are grounded in industrial-grade simulators and verifiers that provide continuous reward signals and enforce hard feasibility constraints under constrained budgets. We evaluate eight frontier language models using representative search frameworks, finding that while Claude 4.6 Opus achieves the most robust performance, the benchmark remains challenging for all models. Our analysis suggests a dual power-law decay in improvement frequency ($\\sim$ 1/iteration) and magnitude ($\\sim$ 1/improvement count). We further show that although width improves parallelism and diversity, depth remains crucial for hard-won improvements under a fixed budget. Frontier-Eng establishes a new standard for assessing the capacity of AI agents to integrate domain knowledge with executable feedback to solve complex, open-ended engineering problems.",
+      "authors": [
+        "Yizhe Chi",
+        "Deyao Hong",
+        "Dapeng Jiang",
+        "Tianwei Luo",
+        "Kaisen Yang",
+        "Boshi Zhang",
+        "Zhe Cao",
+        "Xiaoyan Fan",
+        "Bingxiang He",
+        "Han Hao",
+        "Weiyang Jin",
+        "Dianqiao Lei",
+        "Qingle Liu",
+        "Houde Qian",
+        "Bowen Wang",
+        "Situ Wang",
+        "Youjie Zheng",
+        "Yifan Zhou",
+        "Calvin Xiao",
+        "Eren Cai",
+        "Qinhuai Na"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-04-14T05:02:06+00:00",
+      "link": "https://arxiv.org/pdf/2604.12290v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "benchmarking self-evolving agents on engineering tasks",
+      "llm_evidence_cn": "在工程任务上对自我进化智能体进行基准测试",
+      "llm_evidence": "在工程任务上对自我进化智能体进行基准测试",
+      "canonical_evidence": "在工程任务上对自我进化智能体进行基准测试",
+      "llm_tldr_en": "Introduces Frontier-Eng, a benchmark for evaluating self-evolving agents on real-world engineering optimization.",
+      "llm_tldr_cn": "引入了 Frontier-Eng，这是一个用于评估真实世界工程优化中自我进化智能体的基准。",
+      "llm_tldr": "引入了 Frontier-Eng，这是一个用于评估真实世界工程优化中自我进化智能体的基准。",
+      "llm_tags": [
+        "query:q9"
+      ],
+      "matched_query_tag": "query:q9",
+      "matched_query_text": "agent",
+      "matched_requirement_id": "req-9",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2604.11767v1",
+      "title": "$λ_A$: A Typed Lambda Calculus for LLM Agent Composition",
+      "abstract": "Existing LLM agent frameworks lack formal semantics: there is no principled way to determine whether an agent configuration is well-formed or will terminate. We present $λ_A$, a typed lambda calculus for agent composition that extends the simply-typed lambda calculus with oracle calls, bounded fixpoints (the ReAct loop), probabilistic choice, and mutable environments. We prove type safety, termination of bounded fixpoints, and soundness of derived lint rules, with partial Coq mechanization (1,567 lines, 43 completed proofs). As a practical application, we derive a lint tool that detects structural configuration errors directly from the operational semantics. An evaluation on 835 real-world GitHub agent configurations shows that 94.1% are structurally incomplete under $λ_A$, with YAML-only lint precision at 54%, rising to 96--100% under joint YAML+Python AST analysis on 175 samples. This gap quantifies, for the first time, the degree of semantic entanglement between declarative configuration and imperative code in the agent ecosystem. We further show that five mainstream paradigms (LangGraph, CrewAI, AutoGen, OpenAI SDK, Dify) embed as typed $λ_A$ fragments, establishing $λ_A$ as a unifying calculus for LLM agent composition.",
+      "authors": [
+        "Qin Liu"
+      ],
+      "primary_category": "cs.PL",
+      "categories": [
+        "cs.PL",
+        "cs.MA",
+        "cs.SE"
+      ],
+      "published": "2026-04-13T17:39:23+00:00",
+      "link": "https://arxiv.org/pdf/2604.11767v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "formal semantics and typed lambda calculus for agent composition",
+      "llm_evidence_cn": "智能体组合的正式语义和类型化 Lambda 演算",
+      "llm_evidence": "智能体组合的正式语义和类型化 Lambda 演算",
+      "canonical_evidence": "智能体组合的正式语义和类型化 Lambda 演算",
+      "llm_tldr_en": "Develops a typed lambda calculus for formalizing and verifying LLM agent configurations and workflows.",
+      "llm_tldr_cn": "开发了一种类型化 Lambda 演算，用于形式化和验证大模型智能体的配置与工作流。",
+      "llm_tldr": "开发了一种类型化 Lambda 演算，用于形式化和验证大模型智能体的配置与工作流。",
+      "llm_tags": [
+        "query:q5"
+      ],
+      "matched_query_tag": "query:q5",
+      "matched_query_text": "agent reasoning methods",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.29322v1",
+      "title": "VACP: Visual Analytics Context Protocol",
+      "abstract": "The rise of AI agents introduces a fundamental shift in Visual Analytics (VA), in which agents act as a new user group. Current agentic approaches - based on computer vision and raw DOM access - fail to perform VA tasks accurately and efficiently. This paper introduces the Visual Analytics Context Protocol (VACP), a framework designed to make VA applications \"agent-ready\" that extends generic protocols by explicitly exposing application state, available interactions, and mechanisms for direct execution. To support our context protocol, we contribute a formal specification of AI agent requirements and knowledge representations in VA interfaces. We instantiate VACP as a library compatible with major visualization grammars and web frameworks, enabling augmentation of existing systems and the development of new ones. Our evaluation across representative VA tasks demonstrates that VACP-enabled agents achieve higher success rates in interface interpretation and execution compared to current agentic approaches, while reducing token consumption and latency. VACP closes the gap between human-centric VA interfaces and machine perceivability, ensuring agents can reliably act as collaborative users in VA systems.",
+      "authors": [
+        "Tobias Stähle",
+        "Péter Ferenc Gyarmati",
+        "Thilo Spinner",
+        "Rita Sevastjanova",
+        "Dominik Moritz",
+        "Mennatallah El-Assady"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-03-31T06:45:31+00:00",
+      "link": "https://arxiv.org/pdf/2603.29322v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "agent-ready framework for web-based visual analytics",
+      "llm_evidence_cn": "面向 Web 可视化分析的智能体就绪框架",
+      "llm_evidence": "面向 Web 可视化分析的智能体就绪框架",
+      "canonical_evidence": "面向 Web 可视化分析的智能体就绪框架",
+      "llm_tldr_en": "Introduces VACP to make visual analytics applications more efficient for AI agents via state exposure.",
+      "llm_tldr_cn": "引入VACP协议，通过暴露应用状态使可视化分析应用对AI智能体更高效。",
+      "llm_tldr": "引入VACP协议，通过暴露应用状态使可视化分析应用对AI智能体更高效。",
+      "llm_tags": [
+        "query:q8"
+      ],
+      "matched_query_tag": "query:q8",
+      "matched_query_text": "web agent",
+      "matched_requirement_id": "req-8",
+      "selection_source": "carryover_cache",
+      "paper_id": "2603.29322v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2604.12610v1",
+      "title": "Transforming External Knowledge into Triplets for Enhanced Retrieval in RAG of LLMs",
+      "abstract": "Retrieval-Augmented Generation (RAG) mitigates hallucination in large language models (LLMs) by incorporating external knowledge during generation. However, the effectiveness of RAG depends not only on the design of the retriever and the capacity of the underlying model, but also on how retrieved evidence is structured and aligned with the query. Existing RAG approaches typically retrieve and concatenate unstructured text fragments as context, which often introduces redundant or weakly relevant information. This practice leads to excessive context accumulation, reduced semantic alignment, and fragmented reasoning chains, thereby degrading generation quality while increasing token consumption. To address these challenges, we propose Tri-RAG, a structured triplet-based retrieval framework that improves retrieval efficiency through reasoning-aligned context construction. Tri-RAG automatically transforms external knowledge from natural language into standardized structured triplets consisting of Condition, Proof, and Conclusion, explicitly capturing logical relations among knowledge fragments using lightweight prompt-based adaptation with frozen model parameters. Building on this representation, the triplet head Condition is treated as an explicit semantic anchor for retrieval and matching, enabling precise identification of query-relevant knowledge units without directly concatenating lengthy raw texts. As a result, Tri-RAG achieves a favorable balance between retrieval accuracy and context token efficiency. Experimental results across multiple benchmark datasets demonstrate that Tri-RAG significantly improves retrieval quality and reasoning efficiency, while producing more stable generation behavior and more efficient resource utilization in complex reasoning scenarios.",
+      "authors": [
+        "Xudong Wang",
+        "Chaoning Zhang",
+        "Qigan Sun",
+        "Zhenzhen Huang",
+        "Chang Lu",
+        "Sheng Zheng",
+        "Zeyu Ma",
+        "Caiyan Qin",
+        "Yang Yang",
+        "Hengtao Shen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-04-14T11:36:29+00:00",
+      "link": "https://arxiv.org/pdf/2604.12610v1",
+      "tags": [
+        "keyword:高效推理",
+        "query:高效推理"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Reducing token consumption and context accumulation in RAG",
+      "llm_evidence_cn": "减少RAG中的Token消耗和上下文堆积",
+      "llm_evidence": "减少RAG中的Token消耗和上下文堆积",
+      "canonical_evidence": "减少RAG中的Token消耗和上下文堆积",
+      "llm_tldr_en": "Tri-RAG transforms knowledge into triplets to reduce token consumption and improve reasoning alignment in RAG.",
+      "llm_tldr_cn": "Tri-RAG将知识转化为三元组，以减少Token消耗并提高RAG中的推理对齐。",
+      "llm_tldr": "Tri-RAG将知识转化为三元组，以减少Token消耗并提高RAG中的推理对齐。",
+      "llm_tags": [
+        "query:tokencomp:composite"
+      ],
+      "matched_query_tag": "query:tokencomp:composite",
+      "matched_query_text": "Papers central to 请帮我去找token compression相关论文, especially work that connects or combines: token compression techniques in natural language processing; pruning unnecessary tokens in input sequences; dynamic selection of tokens for processing; methods for compressing tokens in language models; techniques to reduce token count in transformers; approaches for efficient token handling in NLP; strategies for token compression in long sequences.",
+      "matched_requirement_id": "req-composite-tokencomp",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
