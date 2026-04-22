@@ -1,0 +1,400 @@
+Title: From Clinical Intent to Clinical Model: An Autonomous Coding-Agent Framework for Clinician-driven AI Development
+
+URL Source: https://arxiv.org/pdf/2604.17110v1
+
+Published Time: Tue, 21 Apr 2026 00:54:15 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# From Clinical Intent to Clinical Model: An Autonomous Coding-Agent Framework for Clinician-driven AI Development 
+
+## Zihao Zhao 1, , Frederik Hauke 1, Juliana De Castilhos 1, Jakob Nikolas Kather 2,3,4 , Sven Nebelung 1, and Daniel Truhn 1,* 
+
+> 1
+
+University Hospital Aachen, Department of Diagnostic and Interventional Radiology, 52074 Aachen, Germany 
+
+> 2
+
+Else Kr ¨ oner Fresenius Center for Digital Health, TU Dresden, Dresden, Germany 
+
+> 3
+
+Department of Medicine I, Faculty of Medicine and University Hospital Carl Gustav Carus, TUD Dresden University of Technology, Dresden, Germany 
+
+> 4
+
+Department of Medical Oncology, National Center for Tumor Diseases (NCT), Heidelberg University Hospital, Heidelberg, Germany 
+
+> *
+
+dtruhn@ukaachen.de 
+
+## ABSTRACT 
+
+Clinical AI development has traditionally followed a collaborative paradigm that depends on close interaction between clinicians and specialized AI teams. This paradigm imposes a practical challenge: clinicians must repeatedly communicate and refine their requirements with AI developers before those requirements can be translated into executable model development. This iterative process is time-consuming, and even after repeated discussion, misalignment may still exist because the two sides do not fully share each other’s expertise. However, autonomous coding agents may change this paradigm, raising the possibility that clinicians could develop clinical AI models independently through natural-language interaction alone. In this study, we present such an autonomous prototype for clinician-driven clinical AI development. Built upon coding agents, the system can interpret clinical requirements, perform iterative experimentation and refinement, and returns a trained task-specific model. We evaluated the system on five clinical tasks spanning dermoscopic lesion classification, melanoma-versus-nevus triage, wrist-fracture detection (including a weakly supervised variant with only 5% bounding-box annotations), and debiased pneumothorax classification on chest radiographs. Across these settings, the system consistently developed models from clinician requests and achieved promising performance. Notably, in a debiased pneumothorax classification task on chest radiographs, where chest drains can act as a major confounder, the system successfully mitigated shortcut learning and nearly halved the model’s reliance on chest drains. These findings provide proof of concept that autonomous coding agents may help shift clinical AI development toward a more clinician-driven paradigm, reducing the communication overhead and dependence on specialized AI developers. Although further validation and robustness assessment are needed, this study suggests a promising path toward making clinical AI development more accessible. 
+
+## Introduction 
+
+Development of artificial intelligence (AI) for medicine has traditionally relied on close collaboration between clinicians and specialized AI teams 1–3 . In this workflow, clinicians contribute the clinical question, define the intended use case, and provide domain knowledge, whereas AI engineers translate these needs into data curation, model design, training loops, and evaluation. Although this collaborative paradigm has enabled important progress in medical AI, it also creates a substantial practical challenge 4–7 . Clinicians must repeatedly communicate, clarify, and refine their requirements before those requirements can be converted into executable model development. This process is often slow and communication-intensive 4, 5 . More importantly, repeated discussion does not necessarily guarantee faithful alignment 6, 7 . Clinicians may lack detailed knowledge of data science, whereas AI developers may lack a deep understanding of task-specific clinical priorities, acceptable failure modes, and the real-world cost of error 8. As a result, the final model may be optimized primarily for aggregate metric performance while failing in clinically relevant edge cases or relying on spurious shortcuts 9–11 . A well-known example is a pneumothorax classifier that keys on chest drains, which are inserted after diagnosis, rather than on the radiographic signs of the disease itself. Recent advances in autonomous coding agents may change this long-standing paradigm 12–18 . Large language model (LLM)-based agents are increasingly capable of writing code, configuring experiments, debugging failures, and iteratively refining solutions with limited human intervention 12–15 . More recently, the emergence of increasingly autonomous “AI scientist” systems has further suggested that complex workflows could be partially automated through natural-language interaction 1
+
+> arXiv:2604.17110v1 [cs.CV] 18 Apr 2026
+
+## Conventional 
+
+AI 
+
+AI  Our proposed 
+
+Iterative 
+
+hacking        
+
+> Communication
+> cost &Potential
+> misalignment
+> lan
+> Doctor AI Expert
+> AI Model
+> Doctor AI Model
+
+Powered by                      
+
+> Not a specialist in either domain, but
+> broad enough to bridge medicine &AI
+> Autonomous iterative refinement
+> aligned with clinical goals
+> Via agent
+> Doctor ⇔AI Expert ⇔AI Model
+> Doctor ⇔Model Development
+> From amulti -party, communication intensive
+> process prone to
+
+Figure 1. Comparison between conventional multi-party workflow and our proposed clinician-driven workflow. In the conventional paradigm, clinicians rely on discussions with AI experts to translate clinical needs into technical implementation, which may incur coordination costs and introduce misalignment because each side lacks deep knowledge of the other’s domain. Our proposed framework replaces this intermediate human bottleneck with an autonomous coding agent. Although not a specialist in any single domain, the agent has sufficiently broad knowledge to bridge medicine and AI, while its strong autonomous coding capability makes direct clinician-driven AI development possible. 1
+
+radiologists using AI solutions exhibited higher levels of 
+
+burnout compared to those who did not use AI in practice due 
+
+to workflow complexities, lack of training, and impact on 
+
+decision making                        
+
+> I would like to have a model to help me
+> diagnose pneumothorax on chest X-
+> rays .My concern is that the presence
+> of a chest drain may act as a strong
+> confounder .Many models […] simply
+> by detect ing chest drains […] Please
+> take this issue seriousl y.
+> -->[Clinical objective ],
+> [Risk preference], [Output format ]
+
+Semantic  Parser 
+
+Task  Initializer         
+
+> -->From text to code:
+> [Model arch.], [Training recipe],
+> [Evaluation protocol]
+
+Pneumothorax classification  robust to 
+
+chest drain confounding     
+
+> I’m haunted by ‘negative’ scans that
+> turn into invasive cancer later. The
+> pre -cancerous ‘sparks’ must be there,
+> invisible to my naked eyes. If AI can
+> flag these earliest signals , I would be
+> so happy
+
+--> [Clinical Objective] ,
+
+[Risk Preference] , [Output  format ]
+
+Task  Formalizer 
+
+--> AI  paradigm  (cls /
+
+det/seg/regress/…)    
+
+> -->AutoResearch
+> -->Clarification
+> &Negotiation
+
+Agent&Human -driven  Optimization 
+
+Det  model  focusing  on  (1)  calcification, 
+
+(2)  distortion,  and  (3)  asymmetry   
+
+> -->Clarification
+> &Negotiation
+
+Autonomous  Developer    
+
+> -->Iterative code tuning
+
+Figure 2. Overview of the proposed framework for clinician-driven clinical AI development. A clinician describes their need in natural language, including task-specific concerns such as shortcut learning from chest drains on chest radiographs. 
+
+Semantic Parser: the request is first converted into a structured representation. Task Initializer: this representation is then translated into executable code. Autonomous Developer: the system subsequently performs iterative code tuning while allowing the clinician to request explanations for ongoing optimization choices and to negotiate acceptable trade-offs when clinical objectives cannot be fully satisfied. The resulting workflow produces a model aligned with the clinician’s intent, illustrated here by pneumothorax classification that is more robust to chest-drain confounding. alone 16, 18 . For clinical AI, this opens up a new possibility: clinicians may no longer need to rely entirely on specialized AI teams. Instead, they may be able to describe a task in natural language and directly steer model development themselves. Although current LLM-based agents remain far from matching top-tier domain specialists in either medicine or machine learning 19, 20 , they possess broad cross-domain knowledge that allows them to function as an effective bridge between clinical reasoning and AI development 21 . As illustrated in Figure 1, such a shift would do more than reduce the coding burden. It could shorten the translation chain between clinicians and models, accelerate iteration, and help keep development more tightly aligned with the original clinical objective. 
+
+2/14 Algorithm 1: Pseudocode of the iterative code tuning loop in the autonomous developer 
+
+Input: semantic parser output p, coding agent Π, maximum loop count Tc ← Π(p); // write initial runnable codebase 
+
+b⋆ ← Execute (c); // execute train/val to get the current best validation result 
+
+for t ← 1 to T − 1 do 
+
+ˆc ← Π(c, p); // propose a modification to the current codebase 
+
+b ← Execute ( ˆc); // execute the modified codebase for this run 
+
+log b to an external results table; 
+
+if Better (b, b⋆) then 
+
+c ← ˆc; // accept the code modification 
+
+b⋆ ← b;
+
+else 
+
+discard ˆ c; // keep the previous codebase 
+
+In this study, we present a prototype for what we refer to as clinician-initiated, autonomously developed clinical AI: the clinician specifies the task and the clinically relevant priorities in natural language, and the system thereafter carries out model development on its own. We adopt this unified phrasing to resolve the apparent tension between “autonomous” (a property of the agent during development) and “clinician-driven” (a property of the development paradigm as a whole); the two are complementary rather than conflicting. As illustrated in Figure 2, the system accepts a clinician-phrased natural-language request (hereafter a “clinician request”) and converts it into an executable workflow through three stages: semantic parsing of the clinical intent into a structured task representation; task initialization into a model architecture, training recipe, and evaluation protocol; and autonomous development through iterative code generation, experimentation, debugging, and refinement. Importantly, the clinician remains involved at the level of intent rather than implementation, with the ability to inspect optimization decisions and negotiate trade-offs when clinical goals cannot be fully satisfied simultaneously. We do not claim that this framework removes all barriers to clinical AI development. Rather, we use it as a proof of concept to test whether recent progress in autonomous coding agents has made clinician-driven model development technically plausible. We evaluated the proposed system on five tasks that span both well-defined supervised settings and more challenging ones. The well-defined supervised tasks included eight-class dermoscopic lesion classification with priority placed on melanoma performance, melanoma-versus-nevus classification with the explicit goal of minimizing missed melanomas, and wrist-fracture detection on radiographs. The two more complex tasks were designed to reflect more realistic clinical development challenges: wrist-fracture detection under highly limited localization supervision, with only 5% bounding-box annotations and 95% image-level labels, and debiased pneumothorax classification on chest radiographs, in which chest drains can act as a major confounder. Across these settings, the prototype consistently generated task-specific models directly from clinician requests and achieved promising performance. Taken together, these findings provide proof of concept that autonomous coding agents may help shift clinical AI devel-opment toward a more clinician-driven paradigm. By reducing the communication overhead and dependence inherent in the traditional clinician–AI team workflow, such systems could make clinical AI development more accessible to domain experts who have the clearest understanding of the underlying clinical problem but lack formal training in deep-learning implementation. 
+
+## Results 
+
+In this section, we first evaluate the proposed framework in three well-defined supervised settings to examine whether it can handle less constrained clinician requests. We then investigate two more challenging settings that better reflect practical difficulties in real-world clinical AI development. 
+
+Implementation details 
+
+Unless otherwise specified, all experiments were conducted using Claude Opus 4.6 as the coding agent underlying the proposed framework. Through prompt engineering, the same Claude Opus 4.6 chatbot was used to perform the three roles in the framework: the semantic parser, the task initializer, and the autonomous developer. In the autonomous developer stage, the agent was instructed to start from the minimally executable version generated by the task initializer and perform at most 30 rounds of improvement. After each code modification, the updated codebase was executed for a 40-minute train/validation run, and the best validation result achieved during that run was recorded as the 
+
+> 3/14
+
+# Dermoscopy  classification (8 -class) 
+
+# Melanoma vs. Nevus classification 
+
+# Wrist X-ray fracture detection 
+
+> Test  metrics Test  metrics Test  metrics
+
+Figure 3. Results on three well-defined supervised clinician-driven clinical AI tasks. Starting from clinician requests, the proposed framework generated an initial model and then iteratively refined it through autonomous code tuning. Across 8-class dermoscopy classification, melanoma-versus-nevus classification, and wrist X-ray fracture detection, the refined model consistently outperformed the initial model on the test set. Notably, the gains were aligned with the clinical intent expressed in the original requests, including improved melanoma-focused performance and better fracture detection quality. Error bars represent 95% bootstrap confidence intervals. Asterisks indicate statistical significance from bootstrap testing. 
+
+> 4/14
+
+outcome of the corresponding iteration (Algorithm 1). All experiments were conducted on two NVIDIA L40S GPUs. Crucially, the test set of each task was held out from the start of the study and was never visible to the agent, the iteration loop, or the validation-driven acceptance rule. Only after iterative code tuning had concluded did we evaluate the initial and the final refined model on this test set, which was touched exactly once per task. This ensures that the reported test-set metrics reflect genuine generalisation rather than indirect optimisation against the test distribution. 95% Confidence Intervals (CIs) 22 and Bootstrap tests 23 were adopted to evaluate statistical significance. 
+
+Plain clinician requests yield working models 
+
+We first evaluated the proposed framework on three well-defined supervised clinical tasks to examine whether it could reliably handle clinician requests that were natural in wording but less constrained in technical complexity. These experiments were based on two public datasets: ISIC 2019 24 for dermoscopic skin-lesion analysis and GRAZPEDWRI-DX 25 for wrist-fracture detection. ISIC 2019 is a large benchmark released by the International Skin Imaging Collaboration, containing 25,331 dermoscopy images spanning eight diagnostic categories, including melanoma, melanocytic nevus, and basal cell carcinoma. GRAZPEDWRI-DX is a publicly released collection of pediatric wrist radiographs acquired at University Hospital Graz (Austria); it contains approximately 20,000 X-ray images from around 6,000 patients, with radiologist-drawn bounding boxes marking fractures and several secondary findings, and has become a standard reference benchmark for automated fracture detection in pediatric musculoskeletal imaging. The three tasks were initiated entirely through clinician-like natural-language requests. 
+
+“I want an AI model to help diagnose skin lesions. Priority should be given to melanoma.” 
+
+“I want to have an AI model to help me distinguish melanoma from nevus. Please try your best to not miss a single case.” 
+
+“I need a tool that can look at wrist X-rays and help me find fractures. Ideally, it should mark suspicious fractures on images during my workflow so they are less likely to be missed.” 
+
+These requests were intentionally phrased in a clinically natural manner rather than in machine-learning terminology. Specifically, the first request placed a special emphasis on a clinically critical class: melanoma. The second implicitly indicates that sensitivity should be prioritized during the refinement process. The third implies a detection setting in which the model only needs to focus on a single class. Despite this diversity, the semantic parser successfully interpreted all three requests, and the task initializer consistently translated them into executable model-development pipelines. In Figure 3, we illustrate the test-set performance of the auto-developed method, using the initial-version model as the baseline. Across all three tasks, the framework not only produced runnable initial solutions, but also improved them through iterative code refinement. In the eight-class dermoscopy classification task, refinement improved overall AUC from 0.8786 [0.8682, 0.8888] to 0.9153 [0.9054, 0.9245] (p < 0.0001) and overall F1 from 0.4675 [0.4509, 0.4837] to 0.6292 [0.6074, 0.6488] (p < 0.0001). Importantly, the melanoma-related metrics emphasized in the original request also improved significantly (p < 0.0001), with melanoma AUC increasing from 0.8422 [0.8296, 0.8545] to 0.9155 [0.9066, 0.9238], melanoma sensitivity from 0.6775 [0.6520, 0.7026] to 0.7415 [0.7177, 0.7649], and melanoma specificity from 0.8133 [0.8022, 0.8243] to 0.9095 [0.9016, 0.9174]. Consistent with this clinical priority, the coding agent proposed using focal loss 26 to place greater emphasis on melanoma during training. A similar pattern appeared in the melanoma-versus-nevus task. After 30 rounds of refinement, the refined model significantly outperformed the initial model across all evaluated metrics (all p < 0.0001). Most notably, AUC improved from 0.7754 [0.7594, 0.7911] to 0.9424 [0.9347, 0.9497], and sensitivity at 80% specificity increased from 0.6021 [0.5707, 0.6335] to 0.9089 [0.8903, 0.9254]. Sensitivity and specificity also increased significantly (both p < 0.0001). This result is particularly meaningful because the original request explicitly prioritized avoiding missed melanomas. It therefore suggests that the framework can adapt not only to the target task itself, but also to clinically asymmetric preferences over error types. In the wrist-fracture detection task, the framework again showed improvement after refinement. Detection performance was quantified using standard COCO-style metrics. Intersection-over-union (IoU) measures how closely a predicted bounding box overlaps the true fracture location, ranging from 0 (no overlap) to 1 (perfect overlap). A detection counts as correct once its IoU exceeds a chosen threshold. mAP@50 uses a loose threshold of 0.5, so a box only has to cover roughly half of the true fracture; it therefore reflects primarily whether fractures are found at all. mAP@50:95 averages the metric across stricter overlap requirements (IoU 0.5 to 0.95 in steps of 0.05), additionally rewarding tight, accurate localization. Precision@50 and F1@50 are computed at IoU 0.5. Specifically, mAP@50:95 increased from 0.4705 [0.4620, 0.4822] to 0.5114 [0.5031, 0.5220], precision@50 increased from 0.7739 [0.7607, 0.7868] to 0.8172 [0.8050, 0.8292], and F1@50 increased from 0.8438 [0.8342, 0.8531] to 0.8698 [0.8604, 0.8783]. Although the gain in mAP@50 was modest because the initial model was already 
+
+> 5/14 Test  metrics
+
+Figure 4. Autonomous refinement in the mixed-supervision wrist-fracture detection setting. Top: Running-best validation mAP@50 over 17 completed non-crash runs. The remaining 13 runs did not improve upon the current best result. Bottom: Test-set comparison between the initial model and the final refined model. The refined model achieved higher mAP@50, mAP@50:95, recall, and F1, at the cost of a slight decrease in precision. strong, the clearer improvements (p < 0.001) in mAP@50:95, precision, and F1 suggest that the framework was able to refine localization quality and reduce false positives while preserving high recall. In summary, these experiments provide an initial proof of feasibility. Even when specified only through informal clinician requests, well-defined supervised clinical AI tasks could be correctly instantiated and meaningfully improved by the proposed autonomous framework. Moreover, the observed gains were not merely numerical, but were broadly aligned with the clinically relevant priorities embedded in the original requests. 
+
+Coding agents exploit weak supervision on their own 
+
+We next returned to wrist-fracture detection on GRAZPEDWRI-DX, the pediatric wrist radiograph dataset introduced above, and re-evaluated the framework under a mixed-supervision 27–29 setting. In this experiment, only 5% of the training images (425 samples) had bounding-box annotations, whereas the remaining 95% (7,637 samples) had only image-level labels indicating whether a fracture was present. This setup is more realistic for clinical practice, where obtaining large numbers of expert bounding-box annotations is often prohibitively time-consuming 30 . The clinician-style request used to initiate this task was identical to that in the fully annotated setting. Importantly, we did not explicitly tell the agent that box annotations were sparse. Instead, the framework was expected to infer the supervision structure during dataset investigation and decide autonomously whether, and how, to make use of the image-level-only majority. This experiment therefore tests not only whether the framework can optimize a detection model, but also whether it can recognize and respond to a non-trivial supervision setting without being 
+
+> 6/14
+
+explicitly instructed to do so. Figure 4 summarizes the mixed-supervision experiment from two complementary perspectives. The top panel tracks the running-best validation mAP@50 over completed runs, showing how the agent progressively improved the model during refinement. The bottom panel reports the final test-set comparison between the initial model and the refined model. 
+
+> The agent autonomously constructed a mixed-supervision training strategy
+
+Starting from a minimal YOLOv8m detector baseline 31 , the agent progressively assembled a mixed-supervision training recipe. The first major breakthrough came from distributed training with a larger batch size, which allowed more training epochs within the pre-defined 40-minute time budget. A second early gain came from rebuilding the training set with a curated 2:1 ratio of negative to positive samples after the agent observed substantial false-positive detections 32, 33 . The agent then recognized that the image-level-only pool could be repurposed as a source of weak supervision and proposed a teacher–student pseudo-labeling strategy 34, 35 . It trained on a stratified mixture of 425 real box-annotated images and 6,192 pseudo-labeled images, producing the largest improvement in the trajectory. A final refinement with label smoothing ( α = 0.05 ) and stronger augmentation yielded a smaller additional gain. During this process, most of the breakthrough came from a small number of successful refinements. Although the agent explored a fairly broad design space (30 attempts in total). All code-tuning attempts after run 17 failed to improve on the current best, including iterative pseudo-labeling, alternative backbones, multi-scale training, etc. 
+
+> Refined model misses fewer fractures without inflating false positives
+
+On the held-out test set, the final refined model clearly outperformed the initial model (Figure 4). In particular, mAP@50 improved from 0.7943 [0.7827, 0.8059] to 0.8517 [0.8417, 0.8615], and mAP@50:95 improved more markedly from 0.5462 [0.5351, 0.5573] to 0.6360 [0.6253, 0.6463]. Recall showed the largest gain, increasing from 0.5066 [0.4895, 0.5239] to 0.7173 [0.7025, 0.7321], while F1 improved from 0.6639 [0.6484, 0.6792] to 0.8133 [0.8022, 0.8244]. These results indicate that 
+
+Figure 5. The refined model relies substantially less on chest drains. (A) Predicted pneumothorax probability distributions stratified by true label and model-predicted chest-drain status. Gray: baseline model without debiasing; teal: refined model with debiasing. This panel provides a qualitative view of how debiasing shifts predictions across subgroups, with the most notable change observed in the pneumothorax-negative, drain-present subgroup. (B) Fraction of false-positive predictions attributable to model-predicted chest-drain presence, reduced from 60% to 31%. (C) Raw and label-controlled partial correlation between predicted pneumothorax probability and chest-drain probability. The partial correlation, which captures residual shortcut dependence beyond the true disease label, is reduced by 47%. 
+
+> 7/14
+
+iterative refinement improved not only coarse detection success but also localization quality and the overall balance between missed fractures and false positives. The only metric that decreased was precision, which fell slightly from 0.9627 [0.9537, 0.9713] to 0.9392 [0.9296, 0.9485]. However, this modest reduction was outweighed by the much larger gain in recall. From a clinical perspective, this trade-off is sensible. In fracture screening, missed fractures are typically more costly than additional review triggered by false-positive detections. Although this preference was not stated in machine-learning terms, it is consistent with the original clinician-style request, which emphasized that suspicious fractures should be less likely to be missed. Taken together, these results suggest that the framework was able not only to exploit mixed supervision effectively, but also to move toward a clinically appropriate operating point without explicit technical guidance. 
+
+Coding agents mitigate clinician-flagged shortcuts 
+
+Finally, we evaluated the proposed framework on the SIIM-ACR Pneumothorax dataset 36 , a chest-radiograph benchmark with a well-documented shortcut. Chest drains are inserted after a pneumothorax is diagnosed, so their presence in an image reflects a consequence of the diagnosis rather than a radiographic sign of the disease itself. A classifier that keys on drains rather than on the actual radiographic features can therefore achieve deceptively strong performance, a canonical form of shortcut learning 9–11 .SIIM-ACR does not annotate chest drains, so to detect and counteract the shortcut we first needed a way to tell, for each image, whether a drain was visible. We trained a dedicated chest-drain classifier (ConvNeXt-Tiny 37 , itself developed with our clinician-driven framework) on NEATX 38 , which provides drain annotations for a subset of NIH ChestX-ray14 39 . After iterative code tuning, this classifier reached an AUC of 0.9987, a sensitivity of 1.0000, and a specificity of 0.9521 on its held-out test set. We then applied it to every SIIM-ACR image to obtain a model-predicted drain label. With these labels, the co-occurrence structure of the dataset became visible: 59.9% of pneumothorax-positive training cases had a predicted drain, compared with only 10.2% of pneumothorax-negative cases. The predicted drain labels were used both during training of the pneumothorax model (for debiasing) and during evaluation (for confound analysis); because they are predicted rather than manually verified, some residual label noise may slightly affect the reported confound metrics. Unlike the previous experiments, the clinician request that initiated this experiment explicitly raised the chest-drain confounding issue (Figure 2). The request did not merely specify a prediction target; it imposed a methodological constraint that the framework should actively reduce reliance on a known spurious correlation. 
+
+> The agent autonomously constructed a multi-component debiasing strategy
+
+The semantic parser interpreted the request as a binary classification task with an explicit requirement to mitigate confounding, and prioritized AUC as the primary validation metric. During dataset inspection, the agent verified the shortcut structure by cross-tabulating pneumothorax labels against the model-predicted chest-drain labels. It found that 59.9% of pneumothorax-positive training cases were predicted to have a chest drain, compared with only 10.2% of negative cases. It also observed that a naive drain-only classifier achieved an AUC of 0.746 on the test set, confirming that drain presence alone carried substantial predictive signal. Starting from a ConvNeXt-Tiny 37 backbone with an auxiliary segmentation head that used the available pneumothorax masks, the agent progressively assembled a debiasing strategy over 30 completed runs: 1. Group-balanced sampling. Training batches were sampled to balance the four pneumothorax × drain subgroups, reducing the correlation between disease label and drain presence at the batch level. 2. Gradient reversal. An adversarial drain-prediction head was attached through a gradient reversal layer 40 , encouraging the backbone to learn features that remained predictive of pneumothorax while being less informative about drain presence. The agent tuned the reversal strength to λ = 0.3 after finding that weaker values ( λ = 0.1 ) produced limited debiasing, whereas stronger values destabilized training. 3. Mixup and label smoothing. Mixup 41 (α = 0.2 ) and label smoothing ( ε = 0.05 ) were introduced as additional regularizers. The agent found that these components complemented adversarial training by reducing overly confident shortcut-driven predictions. Figure 5 summarizes a post-hoc confound analysis on the held-out test set, comparing a baseline model trained without any explicit debiasing objective against the refined model produced under the clinician’s shortcut-aware request. Panel A provides a qualitative view of subgroup-level prediction shifts, whereas panels B and C quantify the reduction in shortcut dependence more directly. 
+
+> Lower predicted risk for drain-present, pneumothorax-negative patients
+
+We first examined the distribution of predicted pneumothorax probabilities across four test-set subgroups defined by ground-truth pneumothorax status and model-predicted chest-drain status. This analysis is primarily qualitative: rather than serving as the main evidence of debiasing, it provides an intuitive view of how the model’s predictions shift across clinically relevant 
+
+> 8/14
+
+subgroups. The subgroup of greatest interest is pneumothorax-negative patients predicted to have a chest drain, such as patients undergoing post-treatment follow-up. In this subgroup, the baseline model assigned a median predicted pneumothorax probability of 0.55, indicating substantial reliance on the chest-drain shortcut. In contrast, the debiased model reduced the median predicted probability to 0.38, moving it below the decision threshold and suggesting less frequent shortcut-driven false alarms. For pneumothorax-positive patients, predicted probabilities remained broadly high regardless of drain status in both models, indicating that the debiasing strategy left true-positive detection largely unchanged. Although the subgroup distributions still overlap, the directional shift in this clinically important subgroup is consistent with the stronger quantitative evidence shown in Panels B and C. 
+
+> Fewer false alarms driven by chest drains
+
+To quantify the practical impact of shortcut reliance, we next binarized predictions at the Youden-optimal threshold 42 and examined the composition of false-positive errors, that is, pneumothorax-negative patients incorrectly classified as positive. If a model relies heavily on the chest-drain shortcut, false positives should be disproportionately concentrated in drain-present patients, even though this subgroup accounts for only about 10% of pneumothorax-negative cases. In the baseline model, 60% of all false-positive predictions occurred in patients predicted to have a chest drain, nearly six times the expected rate. After debiasing, this proportion fell to 31%, nearly halving the share of false positives attributable to the chest-drain confound. This shift indicates that the refined model’s errors were distributed more evenly across subgroups, rather than being concentrated in the confounded subset. 
+
+> Confound dependence
+
+To quantify shortcut dependence more directly, beyond thresholded error counts, we computed two correlation measures between the model’s predicted pneumothorax probability and the continuous chest-drain probability produced by the drain classifier. The raw Pearson correlation captures overall association, but it is not fully informative because chest drains and pneumothorax genuinely co-occur in clinical data. We therefore also computed a partial correlation after regressing out the ground-truth pneumothorax label from both variables, thereby isolating the residual association between model output and drain presence beyond what can be explained by true disease status. The raw correlation decreased from 0.67 in the baseline model to 0.53 in the debiased model, a 21% relative reduction. More importantly, the partial correlation dropped from 0.48 to 0.26, corresponding to a 47% relative reduction. This suggests that nearly half of the baseline model’s spurious dependence on model-predicted chest-drain presence was removed by the debiasing strategy. Collectively, these results show that the autonomous framework was able to identify a clinically specified confounder, assemble a multi-component debiasing strategy without human algorithmic guidance, and produce a model with substantially reduced shortcut reliance. The shortcut was not eliminated entirely, as the partial correlation remained at 0.26 and the drain-present negative subgroup still received somewhat elevated predicted probabilities. Even so, the reduction was both statistically and practically meaningful. From a deployment perspective, nearly halving the fraction of drain-attributable false positives could materially reduce unnecessary follow-up in post-treatment patients, a population that is routinely imaged and therefore particularly vulnerable to this failure mode. 
+
+## Discussion and Conclusion 
+
+The prototype addresses a well-recognized problem in clinical AI translation: clinicians define utility, risk preference, and clinically important failure modes, whereas model-development workflows are often driven by technical developers who do not fully reflect those priorities. This gap can contribute to misalignment, reduced trust, and downstream safety concerns 4.Relative to classical AutoML 43 , the key conceptual difference is that the objective here is not simply to maximize a standard benchmark metric under fixed constraints. Instead, the aim is to develop the best model under clinician-specified preferences and anticipated failure modes, expressed in natural language. In other words, the target is closer to “best performance subject to clinically stated priorities” than to “best AUC on a benchmark.” If the semantic parsing stage can reliably translate requests such as “do not miss melanomas” or “do not rely on chest drains” into concrete choices of metrics, losses, and training strategies, this would represent a meaningful shift in how development objectives are specified and audited. The present work also differs from recent LLM-assisted AutoML studies 16 . Those studies have shown that conversational models can automatically construct competitive pipelines for structured clinical prediction tasks, but their scope has largely remained within traditional machine-learning settings, such as XGBoost or random forests. By contrast, our study focuses on medical imaging tasks that require substantially more complex deep-learning pipelines, and on repeated codebase-level refinement through execution, debugging, and iterative modification. The emphasis is therefore less on one-shot pipeline generation and more on autonomous experimental development through repeated interaction with an executable training workflow. Our framework is also distinct from emerging “AI scientist” systems 18, 44 . Those systems aim for much broader end-to-end automation, often including idea generation, hypothesis formation, experiment design, execution, and reflective iteration, 
+
+> 9/14
+
+with the longer-term ambition of producing novel research contributions autonomously. Our goal here is narrower and more clinician-centered. In our framework, the high-level objective, the clinical constraints, and the judgment of whether a trade-off is acceptable remain with the clinician. The autonomous agent is not asked to invent the research question or define success on its own. Rather, it aligns technical development as closely as possible with the clinician’s intent. From this viewpoint, the proposed framework is better understood as an alignment-oriented development interface than as an autonomous scientific discoverer. A reasonable explanation is that the autonomous developer effectively plays the role of a mid-level engineer carrying out iterative, heuristic model development. Rather than inventing new algorithms, it searches over a space of established design choices, including model architectures, loss functions, sampling schemes, regularizers, and training procedures, by repeatedly editing code, running experiments, and retaining changes that improve a prespecified validation objective. Our results suggest that, under constrained budgets, this capability may already be sufficient to support nontrivial model refinement in clinical AI settings. The mixed-supervision and confound-mitigation experiments are particularly informative because they require more than superficial hyperparameter adjustment. In the mixed-supervision setting, the agent moved beyond a standard fully supervised detector and assembled a teacher–student pseudo-labeling strategy that leveraged the much larger weakly labeled pool. This trajectory is consistent with a well-established pattern in the literature: when pseudo-label quality becomes sufficiently reliable, weakly labeled data can be converted into useful supervision and produce gains that are disproportionate to the amount of fully annotated data 35 . Likewise, in the shortcut-prone pneumothorax setting, the selected strategy, including subgroup-balanced sampling, adversarial training through gradient reversal, and confidence regularization, closely matches an existing family of deconfounding approaches 45 designed to preserve target-relevant information while suppressing nuisance-related signals. The supporting role of mixup and label smoothing is also plausible, as both have repeatedly been associated with less overconfident predictions and better robustness under perturbation. Taken together, these case studies suggest that the framework works not because it discovers entirely new principles, but because it can identify, combine, and refine established techniques in a way that is appropriate for the problem described by the clinician. At the same time, this reliance on existing and widely validated methods also clarifies the limits of the current evidence. The framework appears most likely to succeed when the clinical request can be mapped onto a development space that is already well represented in the deep-learning literature. If the relevant solution depends on highly specialized domain knowledge, undocumented institutional practices, or modeling ideas that are not recoverable from standard public benchmarks and common implementation patterns, performance may degrade substantially. Hence, the agent is currently better understood as an autonomous integrator of known techniques than as a reliable source of methodological innovation. The framework may also fail when clinically important failure modes are not easily captured by the explicit task description. Real-world shortcut learning in medical AI is often driven by diffuse site effects, acquisition artifacts, annotation conventions, and hidden population structure 10, 46–48 rather than by a single identifiable confounder. These sources of bias are often difficult to enumerate in advance and may remain invisible in public benchmark settings. As a result, even a system that successfully mitigates one specified shortcut may still generalize poorly under external evaluation if other latent sources of spurious correlation remain unaddressed. The chest-drain experiment should therefore be interpreted carefully: it shows that the agent can implement a clinician-specified deconfounding objective, but it does not establish that the framework can reliably detect, diagnose, or correct unknown shortcuts on its own. Several steps are needed before this framework can be considered useful beyond a proof-of-concept setting. First, evaluation should move from a small set of public benchmarks to broader and more heterogeneous clinical environments. Future work should therefore prioritize external validation, multi-center testing, and prospective studies in which the framework is used on tasks that more closely reflect real deployment conditions. Second, future development should focus on strengthening the faithfulness of the translation from clinical intent to technical objective. Currently, a key assumption is that a clinician’s request can be reliably mapped to concrete choices of metrics, losses, sampling strategies, and model-selection criteria. This step is central to the entire proposal, because the promise of clinician-driven development depends not only on whether the agent can optimize a pipeline, but also on whether it is optimizing the right target. Further benchmarking of semantic parsing is required to investigate whether current coding agents can remain aligned with the clinician’s priorities across different settings. A third direction is to move beyond tasks in which the clinically important concern can be expressed as a single target or a single known confounder. Many real clinical problems 49–51 involve multiple competing objectives, ambiguous labels, workflow constraints, subgroup-specific risks, and latent shortcut structures that are not obvious in advance. Extending the framework to these settings will likely require more interaction between clinician and agent, including clarification, negotiation of trade-offs, and uncertainty-aware reporting of what the system can and cannot guarantee. The future of clinician-driven AI development may depend less on making the agent fully autonomous than on designing better interfaces for maintaining clinician control over complex optimization choices. 
+
+> 10/14
+
+Finally, an important long-term direction is to study this framework as a human–AI collaboration system 52–54 rather than only as an automated training loop. The most valuable role of such agents may not be to replace clinical AI specialists outright, but to reduce the translation burden between clinicians and technical implementation, accelerate early-stage experimentation, and make model development more accessible to domain experts. Understanding when the agent should act autonomously, when it should request clarification, and when specialist human oversight remains essential will be critical for safe and realistic adoption. This study supports a workflow-level contribution rather than an algorithmic one. Under constrained compute and evaluation budgets, recent autonomous coding agents appear capable of translating clinician requests into executable deep-learning pipelines and refining those pipelines through iterative experimentation. The significance of this result lies not in the invention of new modeling techniques, but in showing that clinically meaningful objectives can, at least in some settings, be carried forward from a clinician’s request into an end-to-end development process. The proposed system does not merely suggest code snippets or parameter settings, but repeatedly edits an executable codebase, runs experiments, inspects failures, and selects improvements under a fixed iteration budget. At the same time, the findings should not be overstated. The framework is most convincing as evidence of technical feasibility, not as proof that clinicians can now develop clinical AI independently. Its success still depends on the quality of the validation signal, the tractability of the task, the availability of established technical solutions, and the extent to which clinically important risks can be articulated in advance. Problems involving hidden shortcut signals are likely to remain challenging. In conclusion, the results support a cautious but meaningful conclusion: autonomous coding agents may provide a foundation for a more clinician-driven model-development paradigm in clinical AI. Rather than replacing scientific judgement or specialist oversight, such a system attempts to narrow the gap between clinical intent and technical implementation. That possibility is important, because it suggests a path toward model-development workflows that are not only more efficient, but also more directly shaped by the clinicians who best understand the real-world clinical problem. 
+
+## Data availability 
+
+All datasets used in this study are publicly available. The ISIC 2019 dermoscopy dataset 24 is distributed by the International Skin Imaging Collaboration ( https://challenge.isic-archive.com/data/ ). The GRAZPEDWRI-DX pediatric wrist radiograph dataset 25 is available via figshare. The SIIM-ACR Pneumothorax dataset 36 is hosted on Kaggle ( https: //www.kaggle.com/competitions/siim-acr-pneumothorax-segmentation ). The NEATX chest-drain annotations 38 cover a subset of the NIH ChestX-ray14 dataset 39 , which is publicly available from the U.S. National Institutes of Health. 
+
+## Acknowledgements 
+
+The authors gratefully acknowledge the computing time granted by the Jülich Aachen Research Alliance (JARA) on the AI Factory at Forschungszentrum Jülich. This work was funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council Executive Agency. Neither the European Union nor the granting authority can be held responsible for them. 
+
+## Conflicts of Interest 
+
+DT holds shares in StratifAI and Synagen. He has received honoraria from Bayer, AstraZeneca, Philips, Roche, Pfizer, and Gilead. JNK declares ongoing consulting services for AstraZeneca, Panakeia, and Bioptimus. Furthermore, he holds shares in StratifAI, Synagen, and Spira Labs, has received an institutional research grant from GSK and AstraZeneca, as well as honoraria from AstraZeneca, Bayer, Daiichi Sankyo, Eisai, Janssen, Merck, MSD, BMS, Roche, Pfizer, and Fresenius. All other authors declare no conflicts of interest. 
+
+## References 
+
+1. Ghassemi, M. et al. A review of challenges and opportunities in machine learning for health. AMIA Summits on Transl. Sci. Proc. 2020 , 191 (2020). 
+
+2. Mongan, J., Kalpathy-Cramer, J., Flanders, A. & George Linguraru, M. Rsna-miccai panel discussion: Machine learning for radiology from challenges to clinical applications. Radiol. Artif. Intell. 3, e210118 (2021). 
+
+3. Galsgaard, A. et al. Artificial intelligence and multidisciplinary team meetings; a communication challenge for radiologists’ sense of agency and position as spider in a web? Eur. J. Radiol. 155 , 110231 (2022). 
+
+> 11/14
+
+4. Wysocki, O. et al. Assessing the communication gap between ai models and healthcare professionals: Explainability, utility and trust in ai-driven clinical decision-making. Artif. Intell. 316 , 103839 (2023). 
+
+5. Gisselbaek, M. et al. Bridging the gap between scientists and clinicians: addressing collaboration challenges in clinical ai integration. BMC anesthesiology 25 , 269 (2025). 
+
+6. Bienefeld, N. et al. Solving the explainable ai conundrum by bridging clinicians’ needs and developers’ goals. npj digital medicine 6, 94 (2023). 
+
+7. Sokol, K., Fackler, J. & Vogt, J. E. Artificial intelligence should genuinely support clinical reasoning and decision making to bridge the translational gap. npj Digit. Medicine 8, 345 (2025). 
+
+8. Mekki, Y. M. Physicians should build their own machine-learning models. Patterns 5 (2024). 
+
+9. Geirhos, R. et al. Shortcut learning in deep neural networks. Nat. Mach. Intell. 2, 665–673 (2020). 
+
+10. Yang, Y., Zhang, H., Gichoya, J. W., Katabi, D. & Ghassemi, M. The limits of fair medical imaging ai in real-world generalization. Nat. medicine 30 , 2838–2848 (2024). 
+
+11. Ong Ly, C. et al. Shortcut learning in medical ai hinders generalization: method for estimating ai model generalization without external data. NPJ digital medicine 7, 124 (2024). 
+
+12. Yang, J. et al. Swe-agent: Agent-computer interfaces enable automated software engineering. Adv. Neural Inf. Process. Syst. 37 , 50528–50652 (2024). 
+
+13. Grishina, A., Liventsev, V., Härmä, A. & Moonen, L. Fully autonomous programming using iterative multi-agent debugging with large language models. ACM Transactions on Evol. Learn. 5, 1–37 (2025). 
+
+14. OpenAI. Codex. https://github.com/openai/codex (2025). Accessed 12 April 2026. 
+
+15. Anthropic. Claude code. https://github.com/anthropics/claude-code (2025). Accessed 12 April 2026. 
+
+16. Tayebi Arasteh, S. et al. Large language models streamline automated machine learning for clinical studies. Nat. Commun. 
+
+15 , 1603 (2024). 
+
+17. Zhao, Z., Hauke, F., De Castilhos, J., Nebelung, S. & Truhn, D. Can agents distinguish visually hard-to-separate diseases in a zero-shot setting? a pilot study. arXiv preprint arXiv:2602.22959 (2026). 
+
+18. Lu, C. et al. Towards end-to-end automation of ai research. Nature 651 , 914–919 (2026). 
+
+19. Takita, H. et al. A systematic review and meta-analysis of diagnostic performance comparison between generative ai and physicians. npj Digit. Medicine 8, 175 (2025). 
+
+20. Jimenez, C. E. et al. SWE-bench: Can language models resolve real-world github issues? In The Twelfth International Conference on Learning Representations (2024). 
+
+21. Wang, Z. et al. A perspective for adapting generalist ai to specialized medical ai applications and their challenges. NPJ Digit. Medicine 8, 429 (2025). 
+
+22. Hazra, A. Using the confidence interval confidently. J. thoracic disease 9, 4125 (2017). 
+
+23. Efron, B. Bootstrap methods: another look at the jackknife. In Breakthroughs in statistics: Methodology and distribution ,569–593 (Springer, 1992). 
+
+24. Cassidy, B., Kendrick, C., Brodzicki, A., Jaworek-Korjakowska, J. & Yap, M. H. Analysis of the isic image datasets: Usage, benchmarks and recommendations. Med. image analysis 75 , 102305 (2022). 
+
+25. Nagy, E., Janisch, M., Hrži´ c, F., Sorantin, E. & Tschauner, S. A pediatric wrist trauma x-ray dataset (grazpedwri-dx) for machine learning. Sci. data 9, 222 (2022). 
+
+26. Lin, T.-Y., Goyal, P., Girshick, R., He, K. & Dollár, P. Focal loss for dense object detection. In Proceedings of the IEEE international conference on computer vision , 2980–2988 (2017). 
+
+27. Dolz, J., Desrosiers, C. & Ayed, I. B. Teach me to segment with mixed supervision: Confident students become masters. In International conference on information processing in medical imaging , 517–529 (Springer, 2021). 
+
+28. Liu, B., Desrosiers, C., Ayed, I. B. & Dolz, J. Segmentation with mixed supervision: Confidence maximization helps knowledge distillation. Med. Image Analysis 83 , 102670 (2023). 
+
+29. Kong, Y. et al. Gaze-detr: using expert gaze to reduce false positives in vulvovaginal candidiasis screening. In International Conference on Medical Image Computing and Computer-Assisted Intervention , 133–143 (Springer, 2024). 
+
+> 12/14
+
+30. Flanders, A. E. et al. The evolution of radiology image annotation in the era of large language models. Radiol. Artif. Intell. 
+
+7, e240631 (2025). 
+
+31. Jocher, G., Chaurasia, A. & Qiu, J. Ultralytics yolov8 (2023). 
+
+32. He, H. & Garcia, E. A. Learning from imbalanced data. IEEE Transactions on knowledge data engineering 21 , 1263–1284 (2009). 
+
+33. Buda, M., Maki, A. & Mazurowski, M. A. A systematic study of the class imbalance problem in convolutional neural networks. Neural networks 106 , 249–259 (2018). 
+
+34. Dong, X. & Yang, Y. Teacher supervises students how to learn from partially labeled images for facial landmark detection. In Proceedings of the IEEE/CVF international conference on computer vision , 783–792 (2019). 
+
+35. Kage, P., Rothenberger, J., Andreadis, P. & Diochnos, D. A review of pseudo-labeling for computer vision. J. Artif. Intell. Res. 85 (2026). 
+
+36. Zawacki, A. et al. Siim-acr pneumothorax segmentation. https://kaggle.com/competitions/ siim-acr-pneumothorax-segmentation (2019). Kaggle. 
+
+37. Liu, Z. et al. A convnet for the 2020s. In Proceedings of the IEEE/CVF conference on computer vision and pattern recognition , 11976–11986 (2022). 
+
+38. Cheplygina, V., Damgaard, C., Eriksen, T. N., Juodelyte, D. & Jiménez-Sánchez, A. Augmenting chest x-ray datasets with non-expert annotations. In Annual Conference on Medical Image Understanding and Analysis , 133–144 (Springer, 2025). 
+
+39. Wang, X. et al. Chestx-ray8: Hospital-scale chest x-ray database and benchmarks on weakly-supervised classification and localization of common thorax diseases. In Proceedings of the IEEE conference on computer vision and pattern recognition , 2097–2106 (2017). 
+
+40. Ganin, Y. & Lempitsky, V. Unsupervised domain adaptation by backpropagation. In International conference on machine learning , 1180–1189 (PMLR, 2015). 
+
+41. Zhang, H., Cisse, M., Dauphin, Y. N. & Lopez-Paz, D. mixup: Beyond empirical risk minimization. In International Conference on Learning Representations (2018). 
+
+42. Schisterman, E. F., Faraggi, D., Reiser, B. & Hu, J. Youden index and the optimal threshold for markers with mass at zero. 
+
+Stat. medicine 27 , 297–315 (2008). 
+
+43. Karmaker, S. K. et al. Automl to date and beyond: Challenges and opportunities. Acm computing surveys (csur) 54 , 1–36 (2021). 
+
+44. Wu, H. et al. Towards a medical ai scientist. arXiv preprint arXiv:2603.28589 (2026). 
+
+45. Jiang, Y. et al. The role of deconfounding in meta-learning. In International conference on machine learning , 10161–10176 (PMLR, 2022). 
+
+46. Oakden-Rayner, L., Dunnmon, J., Carneiro, G. & Ré, C. Hidden stratification causes clinically meaningful failures in machine learning for medical imaging. In Proceedings of the ACM conference on health, inference, and learning , 151–159 (2020). 
+
+47. DeGrave, A. J., Janizek, J. D. & Lee, S.-I. Ai for radiographic covid-19 detection selects shortcuts over signal. Nat. Mach. Intell. 3, 610–619 (2021). 
+
+48. Gichoya, J. W. et al. Ai recognition of patient race in medical imaging: a modelling study. The Lancet Digit. Heal. 4,e406–e414 (2022). 
+
+49. Ehrmann, D. E., Joshi, S., Goodfellow, S. D., Mazwi, M. L. & Eytan, D. Making machine learning matter to clinicians: model actionability in medical decision-making. NPJ Digit. Medicine 6, 7 (2023). 
+
+50. Chen, R. J. et al. Algorithmic fairness in artificial intelligence for medicine and healthcare. Nat. biomedical engineering 7,719–742 (2023). 
+
+51. Moradpour, M., Ritter, Z. & Haushild, A.-C. Multi-objective performance optimization of machine learning models in healthcare. In Digital Health and Informatics Innovations for Sustainable Health Care Systems , 822–826 (IOS Press, 2024). 
+
+52. Zhang, S. et al. Rethinking human-ai collaboration in complex medical decision making: a case study in sepsis diagnosis. In Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems , 1–18 (2024). 
+
+> 13/14
+
+53. Khoobi, M. et al. Effect of reporting mode and clinical experience on radiologists’ gaze and image analysis behavior at chest radiography. Radiology 318 , e251348 (2026). 
+
+54. Shao, E. et al. Sciscigpt: advancing human–ai collaboration in the science of science. Nat. Comput. Sci. 6, 301–315 (2026).

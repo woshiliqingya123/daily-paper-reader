@@ -6,106 +6,103 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-21
-- 运行时间：2026-04-21 20:17:56 UTC
+- 最新运行日期：2026-04-22
+- 运行时间：2026-04-22 20:40:41 UTC
 - 运行状态：成功
-- 本次总论文数：28
-- 精读区：17
+- 本次总论文数：27
+- 精读区：16
 - 速读区：11
 
 ### 今日简报（AI）
-今日深度研读 28 篇论文，核心突破指向 AI 编程智能体从“单向生成”向“协同演化”与“推理规模化”的范式转移。
-满分论文揭示了规划-代码协同决策及增加测试时计算量是提升复杂编程任务成功率的关键。
-建议开发者关注多模态推理与自动化渗透测试工具，探索 AI 在系统级安全与复杂交互场景的落地潜力。
-- 详情：[/202604/21/README](/202604/21/README)
+今日深度解析 27 篇 AI 论文，重点攻克 Web Agent 在复杂网页环境下的规划与导航难题。
+满分论文 WebUncertainty 与 Mango 揭示了双层不确定性推理及全局视图优化是提升智能体自主性的核心。
+建议优先研读网页智能体的鲁棒性设计，并关注多智能体 RAG 系统中动态编排的演进趋势。
+- 详情：[/202604/22/README](/202604/22/README)
 
 ### 精读区论文标签
-1. [CollabCoder: Plan-Code Co-Evolution via Collaborative Decision-Making for Efficient Code Generation](/202604/21/2604.13946v2-collabcoder-plan-code-co-evolution-via-collaborative-decision-making-for-efficient-code-generation)  
-   标签：评分：10.0/10、query:profile-3
-   evidence：高效代码生成的协作决策
-2. [Scaling Test-Time Compute for Agentic Coding](/202604/21/2604.16529v1-scaling-test-time-compute-for-agentic-coding)  
-   标签：评分：10.0/10、query:q10
-   evidence：代码智能体的推理时扩展与紧凑表示
-3. [Step-GRPO: Internalizing Dynamic Early Exit for Efficient Reasoning](/202604/21/2604.16890v1-step-grpo-internalizing-dynamic-early-exit-for-efficient-reasoning)  
-   标签：评分：10.0/10、query:q4
-   evidence：内化动态提前退出机制以实现高效推理
-4. [GenericAgent: A Token-Efficient Self-Evolving LLM Agent via Contextual Information Density Maximization (V1.0)](/202604/21/2604.17091v1-genericagent-a-token-efficient-self-evolving-llm-agent-via-contextual-information-density-maximization-v10)  
-   标签：评分：10.0/10、query:profile-3
-   evidence：通过上下文信息密度最大化实现Token高效的智能体
-5. [HiRAS: A Hierarchical Multi-Agent Framework for Paper-to-Code Generation and Execution](/202604/21/2604.17745v1-hiras-a-hierarchical-multi-agent-framework-for-paper-to-code-generation-and-execution)  
-   标签：评分：10.0/10、query:q10
-   evidence：用于论文到代码生成的层次化多智能体框架
-6. [WebUncertainty: Dual-Level Uncertainty Driven Planning and Reasoning For Autonomous Web Agent](/202604/21/2604.17821v1-webuncertainty-dual-level-uncertainty-driven-planning-and-reasoning-for-autonomous-web-agent)  
+1. [WebUncertainty: Dual-Level Uncertainty Driven Planning and Reasoning For Autonomous Web Agent](/202604/22/2604.17821v2-webuncertainty-dual-level-uncertainty-driven-planning-and-reasoning-for-autonomous-web-agent)  
    标签：评分：10.0/10、query:q3
-   evidence：不确定性驱动的自主网络智能体规划与推理
-7. [Three Roles, One Model: Role Orchestration at Inference Time to Close the Performance Gap Between Small and Large Agents](/202604/21/2604.11465v1-three-roles-one-model-role-orchestration-at-inference-time-to-close-the-performance-gap-between-small-and-large-agents)  
+   evidence：Web智能体的不确定性驱动规划与推理
+2. [Mango: Multi-Agent Web Navigation via Global-View Optimization](/202604/22/2604.18779v1-mango-multi-agent-web-navigation-via-global-view-optimization)  
+   标签：评分：10.0/10、query:q3
+   evidence：通过全局视图优化实现多智能体网页导航
+3. [A Self-Evolving Framework for Efficient Terminal Agents via Observational Context Compression](/202604/22/2604.19572v1-a-self-evolving-framework-for-efficient-terminal-agents-via-observational-context-compression)  
+   标签：评分：10.0/10、query:profile-3
+   evidence：终端智能体的高效上下文压缩
+4. [OpenMobile: Building Open Mobile Agents with Task and Trajectory Synthesis](/202604/22/2604.15093v1-openmobile-building-open-mobile-agents-with-task-and-trajectory-synthesis)  
+   标签：评分：9.0/10、query:q8
+   evidence：具有任务和轨迹合成功能的开源移动智能体框架
+5. [RankGuide: Tensor-Rank-Guided Routing and Steering for Efficient Reasoning](/202604/22/2604.16694v1-rankguide-tensor-rank-guided-routing-and-steering-for-efficient-reasoning)  
    标签：评分：9.0/10、query:q4
-   evidence：推理时脚手架实现高效智能体推理
-8. [Agentic Frameworks for Reasoning Tasks: An Empirical Study](/202604/21/2604.16646v1-agentic-frameworks-for-reasoning-tasks-an-empirical-study)  
+   evidence：通过模型协作实现高效推理
+6. [HieraSparse: Hierarchical Semi-Structured Sparse KV Attention](/202604/22/2604.16864v1-hierasparse-hierarchical-semi-structured-sparse-kv-attention)  
+   标签：评分：9.0/10、query:tokencomp
+   evidence：KV缓存压缩框架
+7. [From Clinical Intent to Clinical Model: An Autonomous Coding-Agent Framework for Clinician-driven AI Development](/202604/22/2604.17110v1-from-clinical-intent-to-clinical-model-an-autonomous-coding-agent-framework-for-clinician-driven-ai-development)  
+   标签：评分：9.0/10、query:q2
+   evidence：用于 AI 开发的自主代码智能体框架
+8. [HiveMind: OS-Inspired Scheduling for Concurrent LLM Agent Workloads](/202604/22/2604.17111v1-hivemind-os-inspired-scheduling-for-concurrent-llm-agent-workloads)  
+   标签：评分：9.0/10、query:profile-3
+   evidence：并发 LLM 代码智能体调度以管理 token 预算
+9. [MemSearch-o1: Empowering Large Language Models with Reasoning-Aligned Memory Growth in Agentic Search](/202604/22/2604.17265v1-memsearch-o1-empowering-large-language-models-with-reasoning-aligned-memory-growth-in-agentic-search)  
    标签：评分：9.0/10、query:q4
-   evidence：评估智能体框架的推理性能与效率
-9. [KAIROS: Stateful, Context-Aware Power-Efficient Agentic Inference Serving](/202604/21/2604.16682v1-kairos-stateful-context-aware-power-efficient-agentic-inference-serving)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：上下文感知的节能智能体推理
-10. [Graph-Guided Adaptive Channel Elimination for KV Cache Compression](/202604/21/2604.16983v1-graph-guided-adaptive-channel-elimination-for-kv-cache-compression)  
-   标签：评分：9.0/10、query:tokencomp
-   evidence：通过通道消除进行KV缓存压缩
-11. [CRISP: Compressing Redundancy in Chain-of-Thought via Intrinsic Saliency Pruning](/202604/21/2604.17297v1-crisp-compressing-redundancy-in-chain-of-thought-via-intrinsic-saliency-pruning)  
-   标签：评分：9.0/10、query:tokencomp
-   evidence：通过显著性剪枝压缩思维链中的冗余
-12. [Efficient Test-Time Scaling via Temporal Reasoning Aggregation](/202604/21/2604.17304v1-efficient-test-time-scaling-via-temporal-reasoning-aggregation)  
-   标签：评分：9.0/10、query:q4
-   evidence：通过时间推理聚合实现高效的测试时扩展，避免过度思考
-13. [Phase-Scheduled Multi-Agent Systems for Token-Efficient Coordination](/202604/21/2604.17400v1-phase-scheduled-multi-agent-systems-for-token-efficient-coordination)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：通过相位调度实现多智能体系统中的Token高效协作
-14. [MoE-nD: Per-Layer Mixture-of-Experts Routing for Multi-Axis KV Cache Compression](/202604/21/2604.17695v1-moe-nd-per-layer-mixture-of-experts-routing-for-multi-axis-kv-cache-compression)  
-   标签：评分：9.0/10、query:tokencomp
-   evidence：长上下文大模型推理的多轴 KV 缓存压缩
-15. [Latent Preference Modeling for Cross-Session Personalized Tool Calling](/202604/21/2604.17886v1-latent-preference-modeling-for-cross-session-personalized-tool-calling)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：减少token消耗的高效工具调用
-16. [WebCompass: Towards Multimodal Web Coding Evaluation for Code Language Models](/202604/21/2604.18224v1-webcompass-towards-multimodal-web-coding-evaluation-for-code-language-models)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：多模态Web代码智能体评估
-17. [OpenGame: Open Agentic Coding for Games](/202604/21/2604.18394v1-opengame-open-agentic-coding-for-games)  
+   evidence：智能体搜索中与推理对齐的记忆增长
+10. [Clover: A Neural-Symbolic Agentic Harness with Stochastic Tree-of-Thoughts for Verified RTL Repair](/202604/22/2604.17288v1-clover-a-neural-symbolic-agentic-harness-with-stochastic-tree-of-thoughts-for-verified-rtl-repair)  
    标签：评分：9.0/10、query:q10
-   evidence：网页游戏编程的代理框架
+   evidence：用于验证RTL修复的神经常规智能体框架
+11. [Probabilistic Programs of Thought](/202604/22/2604.17290v1-probabilistic-programs-of-thought)  
+   标签：评分：9.0/10、query:q10
+   evidence：通过概率思维程序实现高效的代码生成推理
+12. [AutoSearch: Adaptive Search Depth for Efficient Agentic RAG via Reinforcement Learning](/202604/22/2604.17337v1-autosearch-adaptive-search-depth-for-efficient-agentic-rag-via-reinforcement-learning)  
+   标签：评分：9.0/10、query:q4
+   evidence：针对高效智能体RAG的自适应搜索深度
+13. [CADMAS-CTX: Contextual Capability Calibration for Multi-Agent Delegation](/202604/22/2604.17950v1-cadmas-ctx-contextual-capability-calibration-for-multi-agent-delegation)  
+   标签：评分：9.0/10、query:profile-3
+   evidence：代码智能体的上下文能力校准
+14. [On Accelerating Grounded Code Development for Research](/202604/22/2604.19022v1-on-accelerating-grounded-code-development-for-research)  
+   标签：评分：9.0/10、query:q10
+   evidence：加速代码智能体的落地代码开发
+15. [DR-MMSearchAgent: Deepening Reasoning in Multimodal Search Agents](/202604/22/2604.19264v1-dr-mmsearchagent-deepening-reasoning-in-multimodal-search-agents)  
+   标签：评分：9.0/10、query:profile-3
+   evidence：深化多模态搜索智能体的推理并减少冗余上下文
+16. [DASH-KV: Accelerating Long-Context LLM Inference via Asymmetric KV Cache Hashing](/202604/22/2604.19351v1-dash-kv-accelerating-long-context-llm-inference-via-asymmetric-kv-cache-hashing)  
+   标签：评分：9.0/10、query:tokencomp
+   evidence：通过非对称哈希进行KV缓存压缩以实现长上下文推理
 
 ### 速读区论文标签
-1. [The Observability Gap: Why Output-Level Human Feedback Fails for LLM Coding Agents](/202604/21/2603.26942v1-the-observability-gap-why-output-level-human-feedback-fails-for-llm-coding-agents)  
+1. [Agent psychometrics: Task-level performance prediction in agentic coding benchmarks](/202604/22/2604.00594v1-agent-psychometrics-task-level-performance-prediction-in-agentic-coding-benchmarks)  
    标签：评分：8.0/10、query:q2
-   evidence：研究代码智能体如何通过反馈构建可重用函数
-2. [Red-MIRROR: Agentic LLM-based Autonomous Penetration Testing with Reflective Verification and Knowledge-augmented Interaction](/202604/21/2603.27127v1-red-mirror-agentic-llm-based-autonomous-penetration-testing-with-reflective-verification-and-knowledge-augmented-interaction)  
-   标签：评分：8.0/10、query:q8
-   evidence：基于智能体LLM的Web应用自动渗透测试
-3. [MuSEAgent: A Multimodal Reasoning Agent with Stateful Experiences](/202604/21/2603.27813v1-museagent-a-multimodal-reasoning-agent-with-stateful-experiences)  
+   evidence：智能体编程基准测试中的性能预测
+2. [Experience as a Compass: Multi-agent RAG with Evolving Orchestration and Agent Prompts](/202604/22/2604.00901v2-experience-as-a-compass-multi-agent-rag-with-evolving-orchestration-and-agent-prompts)  
+   标签：评分：8.0/10、query:profile-3
+   evidence：具有演化编排功能的多智能体 RAG，用于复杂推理
+3. [Investigating Autonomous Agent Contributions in the Wild: Activity Patterns and Code Change over Time](/202604/22/2604.00917v1-investigating-autonomous-agent-contributions-in-the-wild-activity-patterns-and-code-change-over-time)  
+   标签：评分：8.0/10、query:q2
+   evidence：自主代码智能体活动与代码变更
+4. [OrgAgent: Organize Your Multi-Agent System like a Company](/202604/22/2604.01020v1-orgagent-organize-your-multi-agent-system-like-a-company)  
    标签：评分：8.0/10、query:q5
-   evidence：具有状态经验的多模态推理智能体
-4. [VACP: Visual Analytics Context Protocol](/202604/21/2603.29322v1-vacp-visual-analytics-context-protocol)  
-   标签：评分：8.0/10、query:q8
-   evidence：面向 Web 可视化分析的智能体就绪框架
-5. [Context Kubernetes: Declarative Orchestration of Enterprise Knowledge for Agentic AI Systems](/202604/21/2604.11623v1-context-kubernetes-declarative-orchestration-of-enterprise-knowledge-for-agentic-ai-systems)  
-   标签：评分：7.0/10、query:q9
-   evidence：为智能体系统编排企业知识
-6. [TRUST Agents: A Collaborative Multi-Agent Framework for Fake News Detection, Explainable Verification, and Logic-Aware Claim Reasoning](/202604/21/2604.12184v1-trust-agents-a-collaborative-multi-agent-framework-for-fake-news-detection-explainable-verification-and-logic-aware-claim-reasoning)  
+   evidence：用于复杂推理的分层多智能体框架
+5. [Modality-Native Routing in Agent-to-Agent Networks: A Multimodal A2A Protocol Extension](/202604/22/2604.12213v1-modality-native-routing-in-agent-to-agent-networks-a-multimodal-a2a-protocol-extension)  
    标签：评分：7.0/10、query:q5
-   evidence：逻辑感知声明推理的多智能体框架
-7. [Frontier-Eng: Benchmarking Self-Evolving Agents on Real-World Engineering Tasks with Generative Optimization](/202604/21/2604.12290v1-frontier-eng-benchmarking-self-evolving-agents-on-real-world-engineering-tasks-with-generative-optimization)  
-   标签：评分：7.0/10、query:q9
-   evidence：在工程任务上对自我进化智能体进行基准测试
-8. [Transforming External Knowledge into Triplets for Enhanced Retrieval in RAG of LLMs](/202604/21/2604.12610v1-transforming-external-knowledge-into-triplets-for-enhanced-retrieval-in-rag-of-llms)  
-   标签：评分：7.0/10、query:tokencomp
-   evidence：减少RAG中的Token消耗和上下文堆积
-9. [Context Kubernetes: Declarative Orchestration of Enterprise Knowledge for Agentic AI Systems](/202604/21/2604.11623v3-context-kubernetes-declarative-orchestration-of-enterprise-knowledge-for-agentic-ai-systems)  
+   evidence：多模态智能体间推理协议
+6. [AgentSPEX: An Agent SPecification and EXecution Language](/202604/22/2604.13346v1-agentspex-an-agent-specification-and-execution-language)  
+   标签：评分：7.0/10、query:q5
+   evidence：具有显式控制流和推理的智能体规范语言
+7. [Cross-Domain Query Translation for Network Troubleshooting: A Multi-Agent LLM Framework with Privacy Preservation and Self-Reflection](/202604/22/2604.13353v1-cross-domain-query-translation-for-network-troubleshooting-a-multi-agent-llm-framework-with-privacy-preservation-and-self-reflection)  
+   标签：评分：7.0/10、query:q5
+   evidence：基于多智能体反思推理的查询转换
+8. [AgentComm: Semantic Communication for Embodied Agents](/202604/22/2604.13558v1-agentcomm-semantic-communication-for-embodied-agents)  
+   标签：评分：7.0/10、query:q4
+   evidence：高效智能体的语义通信
+9. [CIA: Inferring the Communication Topology from LLM-based Multi-Agent Systems](/202604/22/2604.12461v1-cia-inferring-the-communication-topology-from-llm-based-multi-agent-systems)  
+   标签：评分：6.0/10、query:q5
+   evidence：推断多智能体系统中的推理输出
+10. [Parallax: Why AI Agents That Think Must Never Act](/202604/22/2604.12986v1-parallax-why-ai-agents-that-think-must-never-act)  
    标签：评分：6.0/10、query:q9
-   evidence：为智能体AI系统编排知识
-10. [Collaborative Multi-Agent Scripts Generation for Enhancing Imperfect-Information Reasoning in Murder Mystery Games](/202604/21/2604.11741v1-collaborative-multi-agent-scripts-generation-for-enhancing-imperfect-information-reasoning-in-murder-mystery-games)  
+   evidence：安全自主AI智能体执行范式
+11. [Agentic Open RAN: A Deterministic and Auditable Framework for Intent-Driven Radio Control](/202604/22/2604.13384v1-agentic-open-ran-a-deterministic-and-auditable-framework-for-intent-driven-radio-control)  
    标签：评分：6.0/10、query:q5
-   evidence：用于复杂多跳推理的协作多代理框架
-11. [$λ_A$: A Typed Lambda Calculus for LLM Agent Composition](/202604/21/2604.11767v1-a-a-typed-lambda-calculus-for-llm-agent-composition)  
-   标签：评分：6.0/10、query:q5
-   evidence：智能体组合的正式语义和类型化 Lambda 演算
+   evidence：在无线电控制的智能体框架中将推理与执行解耦
 
 
 <div class="dpr-home-promo-card">
