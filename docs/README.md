@@ -6,103 +6,73 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-04-22
-- 运行时间：2026-04-22 20:40:41 UTC
+- 最新运行日期：2026-04-23
+- 运行时间：2026-04-23 20:03:44 UTC
 - 运行状态：成功
-- 本次总论文数：27
-- 精读区：16
+- 本次总论文数：17
+- 精读区：6
 - 速读区：11
 
 ### 今日简报（AI）
-今日深度解析 27 篇 AI 论文，重点攻克 Web Agent 在复杂网页环境下的规划与导航难题。
-满分论文 WebUncertainty 与 Mango 揭示了双层不确定性推理及全局视图优化是提升智能体自主性的核心。
-建议优先研读网页智能体的鲁棒性设计，并关注多智能体 RAG 系统中动态编排的演进趋势。
-- 详情：[/202604/22/README](/202604/22/README)
+今日精选 17 篇前沿论文，深度聚焦可靠的“氛围编程”（Vibe Coding）与多模态视觉压缩技术。
+重点推荐 ZORO 提出的主动规则机制以提升编程可靠性，以及 EvoComp 通过进化标注实现的视觉 Token 高效压缩。
+建议关注自动化编程与多模态效率优化的读者优先研读这两篇 9.0 分的顶尖佳作。
+- 详情：[/202604/23/README](/202604/23/README)
 
 ### 精读区论文标签
-1. [WebUncertainty: Dual-Level Uncertainty Driven Planning and Reasoning For Autonomous Web Agent](/202604/22/2604.17821v2-webuncertainty-dual-level-uncertainty-driven-planning-and-reasoning-for-autonomous-web-agent)  
-   标签：评分：10.0/10、query:q3
-   evidence：Web智能体的不确定性驱动规划与推理
-2. [Mango: Multi-Agent Web Navigation via Global-View Optimization](/202604/22/2604.18779v1-mango-multi-agent-web-navigation-via-global-view-optimization)  
-   标签：评分：10.0/10、query:q3
-   evidence：通过全局视图优化实现多智能体网页导航
-3. [A Self-Evolving Framework for Efficient Terminal Agents via Observational Context Compression](/202604/22/2604.19572v1-a-self-evolving-framework-for-efficient-terminal-agents-via-observational-context-compression)  
-   标签：评分：10.0/10、query:profile-3
-   evidence：终端智能体的高效上下文压缩
-4. [OpenMobile: Building Open Mobile Agents with Task and Trajectory Synthesis](/202604/22/2604.15093v1-openmobile-building-open-mobile-agents-with-task-and-trajectory-synthesis)  
-   标签：评分：9.0/10、query:q8
-   evidence：具有任务和轨迹合成功能的开源移动智能体框架
-5. [RankGuide: Tensor-Rank-Guided Routing and Steering for Efficient Reasoning](/202604/22/2604.16694v1-rankguide-tensor-rank-guided-routing-and-steering-for-efficient-reasoning)  
-   标签：评分：9.0/10、query:q4
-   evidence：通过模型协作实现高效推理
-6. [HieraSparse: Hierarchical Semi-Structured Sparse KV Attention](/202604/22/2604.16864v1-hierasparse-hierarchical-semi-structured-sparse-kv-attention)  
+1. [ZORO: Active Rules for Reliable Vibe Coding](/202604/23/2604.15625v1-zoro-active-rules-for-reliable-vibe-coding)  
+   标签：评分：9.0/10、query:q10
+   evidence：直接与代码智能体集成以执行规则约束
+2. [EvoComp: Learning Visual Token Compression for Multimodal Large Language Models via Semantic-Guided Evolutionary Labeling](/202604/23/2604.17087v1-evocomp-learning-visual-token-compression-for-multimodal-large-language-models-via-semantic-guided-evolutionary-labeling)  
    标签：评分：9.0/10、query:tokencomp
-   evidence：KV缓存压缩框架
-7. [From Clinical Intent to Clinical Model: An Autonomous Coding-Agent Framework for Clinician-driven AI Development](/202604/22/2604.17110v1-from-clinical-intent-to-clinical-model-an-autonomous-coding-agent-framework-for-clinician-driven-ai-development)  
-   标签：评分：9.0/10、query:q2
-   evidence：用于 AI 开发的自主代码智能体框架
-8. [HiveMind: OS-Inspired Scheduling for Concurrent LLM Agent Workloads](/202604/22/2604.17111v1-hivemind-os-inspired-scheduling-for-concurrent-llm-agent-workloads)  
+   evidence：多模态模型的视觉Token压缩
+3. [CoSearch: Joint Training of Reasoning and Document Ranking via Reinforcement Learning for Agentic Search](/202604/23/2604.17555v2-cosearch-joint-training-of-reasoning-and-document-ranking-via-reinforcement-learning-for-agentic-search)  
    标签：评分：9.0/10、query:profile-3
-   evidence：并发 LLM 代码智能体调度以管理 token 预算
-9. [MemSearch-o1: Empowering Large Language Models with Reasoning-Aligned Memory Growth in Agentic Search](/202604/22/2604.17265v1-memsearch-o1-empowering-large-language-models-with-reasoning-aligned-memory-growth-in-agentic-search)  
+   evidence：智能体搜索中推理与文档排序的联合训练
+4. [WebGen-R1: Incentivizing Large Language Models to Generate Functional and Aesthetic Websites with Reinforcement Learning](/202604/23/2604.20398v1-webgen-r1-incentivizing-large-language-models-to-generate-functional-and-aesthetic-websites-with-reinforcement-learning)  
+   标签：评分：9.0/10、query:profile-3
+   evidence：强化学习用于高效网页生成和代码生成推理
+5. [Efficient Test-Time Inference via Deterministic Exploration of Truncated Decoding Trees](/202604/23/2604.20500v1-efficient-test-time-inference-via-deterministic-exploration-of-truncated-decoding-trees)  
    标签：评分：9.0/10、query:q4
-   evidence：智能体搜索中与推理对齐的记忆增长
-10. [Clover: A Neural-Symbolic Agentic Harness with Stochastic Tree-of-Thoughts for Verified RTL Repair](/202604/22/2604.17288v1-clover-a-neural-symbolic-agentic-harness-with-stochastic-tree-of-thoughts-for-verified-rtl-repair)  
-   标签：评分：9.0/10、query:q10
-   evidence：用于验证RTL修复的神经常规智能体框架
-11. [Probabilistic Programs of Thought](/202604/22/2604.17290v1-probabilistic-programs-of-thought)  
-   标签：评分：9.0/10、query:q10
-   evidence：通过概率思维程序实现高效的代码生成推理
-12. [AutoSearch: Adaptive Search Depth for Efficient Agentic RAG via Reinforcement Learning](/202604/22/2604.17337v1-autosearch-adaptive-search-depth-for-efficient-agentic-rag-via-reinforcement-learning)  
-   标签：评分：9.0/10、query:q4
-   evidence：针对高效智能体RAG的自适应搜索深度
-13. [CADMAS-CTX: Contextual Capability Calibration for Multi-Agent Delegation](/202604/22/2604.17950v1-cadmas-ctx-contextual-capability-calibration-for-multi-agent-delegation)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：代码智能体的上下文能力校准
-14. [On Accelerating Grounded Code Development for Research](/202604/22/2604.19022v1-on-accelerating-grounded-code-development-for-research)  
-   标签：评分：9.0/10、query:q10
-   evidence：加速代码智能体的落地代码开发
-15. [DR-MMSearchAgent: Deepening Reasoning in Multimodal Search Agents](/202604/22/2604.19264v1-dr-mmsearchagent-deepening-reasoning-in-multimodal-search-agents)  
-   标签：评分：9.0/10、query:profile-3
-   evidence：深化多模态搜索智能体的推理并减少冗余上下文
-16. [DASH-KV: Accelerating Long-Context LLM Inference via Asymmetric KV Cache Hashing](/202604/22/2604.19351v1-dash-kv-accelerating-long-context-llm-inference-via-asymmetric-kv-cache-hashing)  
-   标签：评分：9.0/10、query:tokencomp
-   evidence：通过非对称哈希进行KV缓存压缩以实现长上下文推理
+   evidence：通过代码领域的确定性探索实现高效推理
+6. [Don't Retrieve, Navigate: Distilling Enterprise Knowledge into Navigable Agent Skills for QA and RAG](/202604/23/2604.14572v1-dont-retrieve-navigate-distilling-enterprise-knowledge-into-navigable-agent-skills-for-qa-and-rag)  
+   标签：评分：8.0/10、query:profile-3
+   evidence：用于高效问答的可导航智能体技能
 
 ### 速读区论文标签
-1. [Agent psychometrics: Task-level performance prediction in agentic coding benchmarks](/202604/22/2604.00594v1-agent-psychometrics-task-level-performance-prediction-in-agentic-coding-benchmarks)  
-   标签：评分：8.0/10、query:q2
-   evidence：智能体编程基准测试中的性能预测
-2. [Experience as a Compass: Multi-agent RAG with Evolving Orchestration and Agent Prompts](/202604/22/2604.00901v2-experience-as-a-compass-multi-agent-rag-with-evolving-orchestration-and-agent-prompts)  
-   标签：评分：8.0/10、query:profile-3
-   evidence：具有演化编排功能的多智能体 RAG，用于复杂推理
-3. [Investigating Autonomous Agent Contributions in the Wild: Activity Patterns and Code Change over Time](/202604/22/2604.00917v1-investigating-autonomous-agent-contributions-in-the-wild-activity-patterns-and-code-change-over-time)  
-   标签：评分：8.0/10、query:q2
-   evidence：自主代码智能体活动与代码变更
-4. [OrgAgent: Organize Your Multi-Agent System like a Company](/202604/22/2604.01020v1-orgagent-organize-your-multi-agent-system-like-a-company)  
+1. [ByteRover: Agent-Native Memory Through LLM-Curated Hierarchical Context](/202604/23/2604.01599v1-byterover-agent-native-memory-through-llm-curated-hierarchical-context)  
    标签：评分：8.0/10、query:q5
-   evidence：用于复杂推理的分层多智能体框架
-5. [Modality-Native Routing in Agent-to-Agent Networks: A Multimodal A2A Protocol Extension](/202604/22/2604.12213v1-modality-native-routing-in-agent-to-agent-networks-a-multimodal-a2a-protocol-extension)  
+   evidence：用于长上下文推理的智能体原生记忆架构
+2. [GraphWalk: Enabling Reasoning in Large Language Models through Tool-Based Graph Navigation](/202604/23/2604.01610v1-graphwalk-enabling-reasoning-in-large-language-models-through-tool-based-graph-navigation)  
+   标签：评分：8.0/10、query:q5
+   evidence：智能体中用于多跳推理的工具化图导航
+3. [Efficient Reasoning via Thought Compression for Language Segmentation](/202604/23/2604.02040v1-efficient-reasoning-via-thought-compression-for-language-segmentation)  
+   标签：评分：8.0/10、query:q4
+   evidence：通过思维压缩实现高效推理
+4. [Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets](/202604/23/2604.02460v1-single-agent-llms-outperform-multi-agent-systems-on-multi-hop-reasoning-under-equal-thinking-token-budgets)  
+   标签：评分：8.0/10、query:q4
+   evidence：智能体的高效推理与Token预算
+5. [Enhancing LLM-based Search Agents via Contribution Weighted Group Relative Policy Optimization](/202604/23/2604.14267v1-enhancing-llm-based-search-agents-via-contribution-weighted-group-relative-policy-optimization)  
    标签：评分：7.0/10、query:q5
-   evidence：多模态智能体间推理协议
-6. [AgentSPEX: An Agent SPecification and EXecution Language](/202604/22/2604.13346v1-agentspex-an-agent-specification-and-execution-language)  
+   evidence：通过策略优化和过程监督增强搜索智能体
+6. [Credo: Declarative Control of LLM Pipelines via Beliefs and Policies](/202604/23/2604.14401v1-credo-declarative-control-of-llm-pipelines-via-beliefs-and-policies)  
    标签：评分：7.0/10、query:q5
-   evidence：具有显式控制流和推理的智能体规范语言
-7. [Cross-Domain Query Translation for Network Troubleshooting: A Multi-Agent LLM Framework with Privacy Preservation and Self-Reflection](/202604/22/2604.13353v1-cross-domain-query-translation-for-network-troubleshooting-a-multi-agent-llm-framework-with-privacy-preservation-and-self-reflection)  
-   标签：评分：7.0/10、query:q5
-   evidence：基于多智能体反思推理的查询转换
-8. [AgentComm: Semantic Communication for Embodied Agents](/202604/22/2604.13558v1-agentcomm-semantic-communication-for-embodied-agents)  
+   evidence：通过信念和策略对智能体行为进行声明式控制
+7. [AgileLog: A Forkable Shared Log for Agents on Data Streams](/202604/23/2604.14590v2-agilelog-a-forkable-shared-log-for-agents-on-data-streams)  
    标签：评分：7.0/10、query:q4
-   evidence：高效智能体的语义通信
-9. [CIA: Inferring the Communication Topology from LLM-based Multi-Agent Systems](/202604/22/2604.12461v1-cia-inferring-the-communication-topology-from-llm-based-multi-agent-systems)  
+   evidence：数据流智能体的高效推理
+8. [Toward Agentic RAG for Ukrainian](/202604/23/2604.14896v1-toward-agentic-rag-for-ukrainian)  
+   标签：评分：7.0/10、query:q5
+   evidence：执行查询改写和推理循环的智能体层
+9. [A Unified Model and Document Representation for On-Device Retrieval-Augmented Generation](/202604/23/2604.14403v1-a-unified-model-and-document-representation-for-on-device-retrieval-augmented-generation)  
+   标签：评分：6.0/10、query:tokencomp
+   evidence：端侧RAG的上下文大小与内存平衡
+10. [Think Multilingual, Not Harder: A Data-Efficient Framework for Teaching Reasoning Models to Code-Switch](/202604/23/2604.15490v1-think-multilingual-not-harder-a-data-efficient-framework-for-teaching-reasoning-models-to-code-switch)  
    标签：评分：6.0/10、query:q5
-   evidence：推断多智能体系统中的推理输出
-10. [Parallax: Why AI Agents That Think Must Never Act](/202604/22/2604.12986v1-parallax-why-ai-agents-that-think-must-never-act)  
+   evidence：教推理模型在不同语言间进行语码转换
+11. [Exploring Agentic Visual Analytics: A Co-Evolutionary Framework of Roles and Workflows](/202604/23/2604.15813v1-exploring-agentic-visual-analytics-a-co-evolutionary-framework-of-roles-and-workflows)  
    标签：评分：6.0/10、query:q9
-   evidence：安全自主AI智能体执行范式
-11. [Agentic Open RAN: A Deterministic and Auditable Framework for Intent-Driven Radio Control](/202604/22/2604.13384v1-agentic-open-ran-a-deterministic-and-auditable-framework-for-intent-driven-radio-control)  
-   标签：评分：6.0/10、query:q5
-   evidence：在无线电控制的智能体框架中将推理与执行解耦
+   evidence：代理视觉分析框架
 
 
 <div class="dpr-home-promo-card">
