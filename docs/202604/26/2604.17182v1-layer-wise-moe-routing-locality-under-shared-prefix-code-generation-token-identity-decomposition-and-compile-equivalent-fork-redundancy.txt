@@ -1,0 +1,240 @@
+Title: Layer-wise MoE Routing Locality under Shared-Prefix Code Generation: Token-Identity Decomposition and Compile-Equivalent Fork Redundancy
+
+URL Source: https://arxiv.org/pdf/2604.17182v1
+
+Published Time: Tue, 21 Apr 2026 01:08:16 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Layer-wise MoE Routing Locality under Shared-Prefix Code Generation: Token-Identity Decomposition and Compile-Equivalent Fork Redundancy 
+
+Shun-ichiro Hayashi 1, Daichi Mukunoki 2, Tetsuya Hoshino 2, Takahiro Katagiri 2
+
+> 1
+
+Graduate School of Informatics, Nagoya University, Japan 
+
+> 2
+
+Information Technology Center, Nagoya University, Japan hayashi@hpc.itc.nagoya-u.ac.jp, {mukunoki, hoshino, katagiri }@cc.nagoya-u.ac.jp 
+
+Abstract —In LLM-based code generation, multiple code can-didates are often generated in parallel from the same prompt— for example, in best-of-N sampling or multi-candidate code completion. These requests can share KV caches through acommon prefix, yet the extent to which their Mixture-of-Experts (MoE) expert routing overlaps, and how this overlap varies across layers, remains insufficiently understood. We study Qwen3.5-35B-A3B-FP8 (256 routed experts, top-8) by performing tree-search-based branching generation from a shared prefix (851 completed codes, temperature 0.7) and analyzing the results with a compiler-output-based alignment ( gcc -S -O0 assembly) that controls for token-identity confounds. Our findings are threefold: (1) At positions where both sequences generated the same token, Jaccard similarity reaches 0.649 (40 × random), while even at positions with different tokens it remains 0.175 (11 × random). (2) A layer-wise decomposition reveals a crossing pattern: same-token routing similarity exceeds different-token similarity across all layers, but dips in the middle layers (L14–20), while different-token similarity peaks in the middle layers at 14 × random. (3) In tree-search code generation, 67% of successfully compiled codes concentrate in the top three assembly-equivalent groups, and 99.6% of within-group differences consist of comments and blank lines. We show that diversity in top-P search, including beam search, poses a significant challenge. These results refine the “context-independent routing” claim of prior work through layer-wise decomposition and suggest opportunities for improving search efficiency in LLM code generation. 
+
+I. I NTRODUCTION 
+
+In LLM-based code generation, multiple code candidates are often generated in parallel from the same prompt. Multi-candidate code completion and best-of-N sampling for quality improvement are typical examples. Because these requests share a common prefix (prompt plus shared context), KV cache reuse [1] yields high throughput efficiency, and GPU utilization improves as the number of concurrent requests increases. However, whether such candidate sets actually exhibit meaningful diversity has not been sufficiently investigated. If diversity is ensured, best-of-N search becomes more effective, opening the possibility of jointly improving code quality and parallel throughput. Conversely, if most candidates are essentially identical code, redundant computation is wasted and the gains of parallelism diminish. Mixture-of-Experts (MoE) models [2], [3] activate only a small subset of experts per token. OpenMoE [4] aggregated token-ID-level routing distributions across an entire dataset and reported that expert routing is primarily determined by token identity rather than context. However, this analysis (1) did not verify whether the same token ID is routed to the same experts when it appears in different contexts, (2) did not decompose routing by layer (reporting only a single layer), and (3) did not measure routing similarity when different tokens are generated from the same prefix. In this work, we control for the same-prefix/different-token condition through tree-search-based code generation from a shared prefix and analyze MoE routing bias along multiple axes—layer, token identity, and compile equivalence—while quantitatively evaluating code diversity based on compiler output (assembly). Regarding MoE inference optimization, neuron-level of-floading [5], expert-level offloading [6], activation predic-tion [7], and intra-batch expert sharing [8] have been proposed, but these focus on expert activation patterns within a sin-gle request. Recently, layer-dependent convergence-divergence patterns in routing have been reported in natural-language multilingual settings [9], but to our knowledge no study has jointly analyzed routing bias and generation diversity in code generation tasks. Our contributions are as follows: 1) Measurement of expert-set overlap across branching generation requests. Prior MoE analyses have focused on intra-request token-level activation; we measure the overlap of per-layer expert sets across multiple genera-tion sequences branched from a shared prefix via tree search, showing that structural overlap exceeding 11 ×
+
+random persists in the inter-request direction. 2) Observation of a layer-dependent crossing structure. De-composing routing by layer reveals a two-phase structure in which token identity dominates in the input layers while context dominates in the middle layers. This result provides material for a layer-wise reinterpretation of the 
+
+> arXiv:2604.17182v1 [cs.SE] 19 Apr 2026
+
+“context-independent” claim made by OpenMoE based on single-layer visualization. 3) Quantification of code redundancy via compiler output. By classifying generated codes according to gcc -S -O0 assembly output, we quantify that the majority of diversity produced by top-P search consists of superfi-cial source-level variation such as comments and blank lines, and show that the bottleneck for semantic diversity lies in natural-language comments. 4) Observation of comment-induced algorithm branching. Even when comment generation is explicitly prohib-ited in the prompt, differences in leaked reasoning comments trigger divergent dead-code structures down-stream, demonstrating that diversity in LLM code gen-eration depends on natural-language variation. II. R ELATED WORK 
+
+A. Routing Analysis in MoE Inference 
+
+Prior work on MoE routing bias has primarily targeted short sequences (tens to hundreds of tokens) within a single request. MoE-Infinity [6] showed that active experts account for only 3–20% of the total under a 512-prompt + 32-generation token setting. fMoE [7] analyzed expert activation patterns in offloading workloads (mean sequence length ∼165 tokens). All of these are intra-request analyses; no study has measured inter-request routing similarity under parallel generation from a shared context. 
+
+B. Context Dependence of Routing 
+
+OpenMoE [4] visualized routing patterns over 2048-token sequences and concluded that routing is “context-independent.” However, the quantitative analysis was limited and no rigorous layer-wise decomposition was performed. We verify this claim through layer-wise decomposition and show that while token identity dominates in the input layers, it is contradicted in the middle layers. Recently, layer-dependent routing patterns have been re-ported in multilingual MoE models. Zheng et al. [9] observed that routing diverges in shallow layers (language-specific ex-perts), converges in middle layers (language-agnostic shared experts), and diverges again in deep layers. Independently, Nuriyev & Kulp [10] demonstrated that expert selections alone carry enough information to reconstruct input tokens with 91.2% top-1 accuracy, confirming that routing patterns encode rich semantic content. These studies approach routing from different angles (multilingual structure and information leakage, respectively); our work differs in that it measures routing similarity across multiple requests branched from the same context in a monolingual (code generation) setting. Table I compares experimental settings with prior work. 
+
+C. Forward Pass Redundancy in Inference Engines 
+
+SGLang [1] and vLLM share KV caches for common prefixes, but decode-phase forward passes are executed inde-pendently for each request. Hydragen [11] achieved shared at-tention computation, but sharing at the MoE layer (FFN/expert computation) has been addressed only through approximate methods. XShare [8] constrains intra-batch expert activation as an approximation, but may incur quality degradation. Our findings suggest the possibility of non-approximate expert sharing that exploits structural routing bias. III. E XPERIMENTAL SETUP 
+
+This study investigates MoE routing characteristics when generating multiple code candidates in parallel from the same prompt, through the following experiments: 1) Measure expert routing overlap between codes branched from a shared prefix via tree-search-based generation. 2) Control for token-identity confounds (same-tok/diff-tok separation) to elucidate the layer-wise routing locality structure. 3) Quantify generation diversity and redundancy through alignment based on compiler output with optimization suppressed ( gcc -S -O0 ). 
+
+A. Computing Environment 
+
+Experiments were conducted on a single NVIDIA GH200 Grace Hopper Superchip node (NVIDIA H100 GPU, 96 GB HBM3 + Grace CPU, 120 GB LPDDR5X, NVLink-C2C 900 GB/s). The OS was RHEL 9.4 (aarch64) with 
+
+gcc 11.4.1 .
+
+B. Model and Inference Engine 
+
+We used Qwen3.5-35B-A3B-FP8 [3], a hybrid GDN (Gated Delta Net) architecture with 40 layers: 30 GDN layers (linear attention) and 10 full-attention layers (layer indices 4n+3 ,
+
+n = 0 , . . . , 9). The MoE configuration is 256 routed experts + 1 shared expert with top-8 routing. The shared expert is always active and does not participate in routing; it is therefore excluded from our routing data. We used SGLang 0.5.9 as the inference engine. Gen-eration requests were sent directly to SGLang’s native raw text completion endpoint /generate , rather than the OpenAI-compatible /v1/chat/completions . We chose 
+
+/generate because the latter enables Qwen3.5’s <think> 
+
+block by default, which is incompatible with the manual prefix control (§III-C, thinking skip) and routing metadata retrieval required by this study. The server was launched with the --enable-return-routed-experts flag, and per-token routed expert IDs were extracted from the re-sponse’s meta_info["routed_experts"] (a Base64-encoded int32 array). 
+
+C. Tree-Search-Based Branching Generation 
+
+C-language code was generated using the following prompt:                                                
+
+> [System] You are a helpful coding assistant. Write clean C code.
+> [User] Write a C function that sorts an integer array. Compiler: gcc (Linux). Standard library only. The input has 1,000,000 elements, approximately 80% pre-sorted with 20% random insertions. Single-threaded. Do not include comments. Output code only. TABLE I COMPARISON OF EXPERIMENTAL SETTINGS WITH PRIOR WORK .Study Model #Experts Active Input Gen Analysis target Key feature MoE-Infinity [6] Mixtral et al. 8–128 1–6 512 32 Single-seq activation 3–20% active fMoE [7] Mixtral et al. 8–60 2–4 ∼165 Single-seq prediction Offload opt. OpenMoE [4] OpenMoE 32 22048 Single-seq visualization Context-indep. claim Zheng+ [9] Qwen3 et al. 16–128 2–8 ∼thousands Multilingual routing Conv-div pattern
+> Ours Qwen3.5 256 898 ∼300 Cross-req pairwise layer ×tok ×O0 decomp.
+
+The key parameters are: target cumulative probabil-ity Ptarget = 0.40 , maximum forks per decision point 
+
+K = 20 , timeout 30 minutes, and maximum concur-rent generations 50. Sampling uses temperature T =0 .7,top-p=0 .95 , top-k=20 , and maximum generation length 2048 tokens. Recent reasoning-capable LLMs, including the Qwen3.5 family, generate a reasoning process inside 
+
+<think>...</think> tags before the main response by default. The official Qwen3 chat template [3] inserts an empty 
+
+<think> \n\n</think> \n\n at the start of the assistant turn when the enable_thinking=false argument is given, causing the model to interpret the thinking block as “already completed” and begin generating the main response directly. Because our requests are sent via the /generate 
+
+endpoint, which does not apply the chat template, we manually inject the same empty tag sequence at the end of the prefix to reproduce this behavior (hereafter called thinking skip ). This setting prevents thinking tokens from contaminating the rout-ing measurements and suppresses generation-length inflation; side effects are discussed in §V-E. The tree is expanded as follows: 1) Generate the root node (until the model emits the end-of-response token </function> ). 2) At every decode step of a completed node, detect decision points (DPs) where the top-30 logprobs yield cumulative probability ≤ Ptarget and at least two candi-dates. 3) Fork up to K children for each candidate token at each DP. 4) Generate forked nodes asynchronously; scan DPs imme-diately upon completion. 5) Repeat until all DPs are exhausted or timeout is reached. The tree at P =Ptarget =0 .40 diverged (branching ratio 
+
+≈ 6), and exhaustive search did not complete within the 30-minute timeout. The 851 completed codes that reached 
+
+</function> (finish_reason=stop ) at timeout were used for analysis; 4,870 truncated codes and 24 errors were excluded. For each completed code, we recorded token IDs, top-30 logprobs, and routed expert IDs for all 40 layers ×
+
+top-8. 
+
+Sibling pairs. In the tree structure, if decode step d of a completed code A is a decision point, a completed code B
+
+generated by selecting a different candidate token at that step is called a sibling of A. A sibling pair (A, B ) shares the entire context from the prompt through step d of A, differing only from step d+1 onward. This sharing ensures that step-aligned comparison between siblings is exact from step d onward. Twenty sibling pairs were obtained in this experiment. 
+
+D. Compile-Equivalence-Based Alignment 
+
+The nodes obtained by tree search differ in token sequence length due to variation in comments, whitespace, and newlines. Direct comparison by step number (step-aligned) causes mis-alignment to accumulate from comment insertions, resulting in comparison of unrelated code positions. We generated assembly with gcc -S -O0 (aarch64, on GH200) and classified nodes producing identical assembly into O0-equivalent groups , which serve as the analysis units hereafter. Of 851 completed codes, 691 compiled successfully (81%), forming 189 O0-equivalent groups (top three groups: 219, 201, and 40 nodes). Within an O0-equivalent group the code bodies are identical strings; we used Python’s difflib.SequenceMatcher 
+
+for token-sequence alignment to identify corresponding to-ken positions, classifying them as same-token (same-tok) or different-token (diff-tok) positions. 
+
+E. Metrics 
+
+For each layer, we compute the Jaccard similarity J = |A ∩
+
+B|/|A ∪ B| of the expert sets (8 experts each) between two nodes, reporting either the all-layer average or layer-specific values. The theoretical Jaccard value when randomly selecting 8 out of 256 routed experts is approximately 0.016. The effective number of experts is defined as 2H , where H
+
+is the Shannon entropy of the expert selection distribution. IV. R ESULTS 
+
+A. Overview of Routing Locality 
+
+In the following sections, Jaccard similarity is measured using token-position pairs under four conditions:  
+
+> •
+
+W-same: positions within an O0-equivalent group where both nodes generated the same token.  
+
+> •
+
+W-diff: positions within an O0-equivalent group where both nodes generated different tokens.  
+
+> •
+
+B-same: positions between different O0-equivalent groups where both nodes generated the same token.  
+
+> •
+
+B-diff: positions between different O0-equivalent groups where both nodes generated different tokens. Table II shows Jaccard similarity by layer under these four conditions. TABLE II LAYER -WISE JACCARD SIMILARITY (P =0.40, n=851 COMPLETED CODES ). W=W ITHIN O0-EQUIVALENT (ALIGNED ), B=B ETWEEN O0                                            
+
+> GROUPS (ALIGNED ). R ANDOM BASELINE 0.016. Layer W-same W-diff B-same B-diff 00.828 0.087 0.709 0.101 40.674 0.122 0.513 0.103 80.664 0.177 0.495 0.190 14 0.618 0.223 0.485 0.223 20 0.597 0.212 0.437 0.194 26 0.575 0.194 0.433 0.188 34 0.666 0.116 0.483 0.156 38 0.616 0.207 0.401 0.118 Mean 0.649 0.179 0.483 0.175
+> Fig. 1. Layer-wise Jaccard similarity crossing pattern ( n=851 completed codes). W=Within O0-equivalent (solid), B=Between O0 groups (dashed), All pairs=all-pair aggregate (purple). Same-token (blue) decreases in the middle layers; different-token (orange) peaks in the middle layers. Pink bands indicate full-attention layers ( 4n+3 ). Random baseline 0.016 (gray dotted).
+
+Jaccard values under all conditions substantially exceed the random baseline (0.016). Even under the strictest condition (B-diff: different tokens between different O0 groups), the value is 0.175 (11 × random), confirming that the shared prefix induces structural routing bias. Figure 1 plots these four conditions by layer. The all-pair aggregate (purple line in Fig. 1) nearly overlaps the diff-tok line because diff-tok pairs dominate. 
+
+B. Layer-Dependent Crossing Pattern 
+
+From Fig. 1, same-token and different-token pairs exhibit contrasting patterns:  
+
+> •
+
+Same-tok (blue): maximum at the input layer (L0 ≈ 0.8), dipping in the middle layers (L14–20 ≈ 0.6), with partial recovery in the deep layers.  
+
+> •
+
+Diff-tok (orange): minimum at the input layer (L0 ≈ 0.09, low compared to the middle layers), peaking in the middle layers (L14 ≈ 0.22, 14 × random), then declining in the deep layers. Within (solid) and Between (dashed) show the same trend, but for same-tok, Within > Between (code structure is re-  
+
+> Fig. 2. Jaccard similarity distribution for MoE layers preceded by GDN (30 layers) vs. full attention (10 layers). No significant difference ( p > 0.8). FA boxes are hatched.
+
+flected in routing), whereas for diff-tok, Within ≈ Between (code structure has little influence). No significant difference in routing characteristics was ob-served between GDN layers (30/40 layers) and full-attention layers (10/40 layers) (same-tok: p=0.84, diff-tok: p=0.89, Mann-Whitney U test; Fig. 2). What dominates routing charac-teristics is layer position, not the type of attention mechanism immediately preceding the MoE layer. 
+
+C. L14 Expert Co-Activation Structure 
+
+Jaccard similarity is a relative measure between expert sets and does not convey how many times individual experts are co-selected in top-8 with other experts—i.e., absolute co-activation counts. In this section, we select a specific layer and directly observe co-activation counts. As a representative, we choose L14, the layer identified in §IV-B as the diff-tok Jaccard peak. Figure 3 shows the 256 × 256 expert co-activation matrix at L14, sorted in descending order of activation count (rank 0 corresponds to the most-activated expert). At the top-left corner (rank 0–4), the five most frequently activated experts (id=132, 248, 44, 173, 18) are placed; at the bottom-right (rank 255), expert id=11 is positioned. Of the to-tal 244,216 token positions, id=132 appears in 163,756 (67%) of L14 top-8 selections. Expert id=11 was never activated at L14 in this experiment. Of all  256 2
+
+ = 32 ,640 expert pairs, 12,677 pairs (38.8%) had zero co-activation, a degree of structured zero-dominance that cannot arise from random top-8 selection. The above observations are specific to this experi-ment (shared-prefix code generation, Qwen3.5-35B-A3B-FP8, 
+
+n=851) at L14; generalization to other tasks or MoE models requires further study. The crossing pattern reported in §IV-B (diff-tok Jaccard peak in the middle layers) can be interpreted Fig. 3. 256 × 256 expert co-activation matrix at L14 ( n=851 completed codes). Each cell (i, j ) shows the number of token positions where experts i   
+
+> and jwere both selected in top-8 (log scale). Axes are sorted by L14 activation count in descending order; diagonal and zero-count cells are masked in gray.
+> Fig. 4. Routing overlap decay after fork (same-branch step sibling pairs,
+> n=851 completed codes). Both same-token pairs (blue) and different-token pairs (orange) remain above the random baseline (red dashed) throughout. Gray bars show the same-token ratio (right axis).
+
+as arising against the backdrop of such hierarchical routing structure in the middle layers. 
+
+D. Routing Overlap Decay after Fork 
+
+Figure 4 shows the decay of routing overlap with decode steps for sibling pairs (20 pairs) generated from the same branching point. Same-token Jaccard decreases from 0.578 immediately after the fork to 0.294 after 200 steps, but remains at 18 × the random baseline. Different-token Jaccard decreases from 0.257 to 0.086, stabilizing at approximately 5 × random. The same-token ratio drops sharply from 20% immediately after the fork                                          
+
+> TABLE III JACCARD SIMILARITY BY TOKEN TYPE (W ITHIN O0-EQUIVALENT ,
+> ALL -LAYER AVERAGE ). nIS THE CUMULATIVE COUNT OF TOKEN POSITIONS SATISFYING EACH CONDITION ACROSS PAIR TRAVERSALS
+> (SAME -TOK :POSITIONS WHERE BOTH NODES SELECTED THE SAME TOKEN ;DIFF -TOK :POSITIONS WHERE THEY SELECTED DIFFERENT TOKENS ). Type same-tok Jndiff-tok Jn
+> keyword 0.685 23 0.171 1579 punctuation 0.668 4856 0.152 490 identifier 0.653 11058 0.193 7112 operator 0.627 208 0.132 8835 whitespace 0.594 7697 0.125 7409 comment 0.553 49 0.107 1336 number 0.522 428 0.095 799
+
+to 2% at distant steps, indicating rapid context differentiation after branching. 
+
+E. Token-Type Dependence 
+
+Table III shows Jaccard similarity by token type within O0-equivalent groups. For same-tok, keywords (0.685) score highest, indicating that structurally deterministic tokens exhibit the most consis-tent routing. For diff-tok, identifier positions (0.193, 12 × ran-dom) score highest, indicating that context-dependent routing is strongest at variable-name and function-name positions. At L14, identifier positions reach 0.235 (15 × random). Numeric tokens score lowest on both metrics; routing of numeric values shows the weakest context dependence. V. D ISCUSSION 
+
+A. Interpretation of the Crossing Pattern 
+
+The crossing pattern observed in this study (same-tok dip-ping in the middle layers while diff-tok rises) likely reflects the process by which each MoE layer progressively transforms token representations. In the input layer (L0), token surface form dominates: same tokens are routed to the same experts (same-tok = 0.828), while different-token routing similarity is low compared to the middle layers (diff-tok ≈ 0.09, 5–6 × random). In the middle layers (L14–20), contextual information is incorpo-rated: even identical tokens may be routed to different experts when surrounding context differs (same-tok decreases), and conversely, different tokens sharing sufficient context acquire similar representations and are routed to similar experts (diff-tok increases). This interpretation is consistent with the divergence-convergence-divergence pattern reported by Zheng et al. [9] in multilingual settings; a similar layer-wise structure is ob-served in our monolingual code-generation setting. However, this study is limited to code generation, where superficial variation in newlines, whitespace, and comments dominates branching (§V-E); natural-language generation may exhibit different characteristics. Replication in other domains is left for future work. Fig. 5. Distribution of O0-equivalent groups ( n=851 completed codes). G1+G2 account for 49%; the top three groups cover 54%. 
+
+B. Refinement of the OpenMoE Claim 
+
+OpenMoE [4] concluded that “routing is context-independent and dominated by token identity.” Our results refine this claim through layer-wise decomposition: token identity is dominant in the input layers (L0 diff-tok ≈ 0.09, low relative to the middle layers), but the middle layers are clearly context-dependent (L14 diff-tok = 0.223, 14 × random). This discrepancy may stem from OpenMoE’s lack of layer-wise decomposition. 
+
+C. Implications for Expert Offloading 
+
+The existence of routing locality has implications for CPU/GPU expert offloading in MoE models. Because context-dependent routing peaks in the middle layers, keeping asmall set of middle-layer experts GPU-resident is particularly effective for parallel generation from a shared prefix. Moreover, the fact that diff-tok Jaccard is 0.175 (11 ×
+
+random) even between nodes in different O0-equivalent groups indicates that branched request groups tend to activate similar expert sets, implying high predictability of expert activation. 
+
+D. Comment-Induced Algorithm Branching 
+
+Detailed examination of inter-O0-group differences reveals that the forced tokens at group-separating branch points are natural-language text within comments, such as standard ,
+
+merge , and custom . That is, the LLM generating different comment explanations propagated into differences in subse-quent code structure (algorithm selection). Figure 5 shows the distribution of nodes across O0-equivalent groups. Hereafter, the top groups are referred to as G1, G2, G3 (G for group). G1 (219 nodes, 26%) and G2 (201 nodes, 24%) account for 49% of the total; adding G3 (40 nodes) brings the coverage to 54%. Of the remaining 231 codes, 172 singletons (codes whose O0 assembly matched no other code) account for 20%. Representative code for the three groups is shown in List-ings 1–4. Although the prompt specifies “80% pre-sorted, 1M elements,” the LLM attempts run detection (lines 16–36) but the merge logic (lines 37–44) becomes unused dead code, ultimately falling back to qsort() (lines 45–46). All three groups follow this pattern; differences lie only in the dead-code portion from line 38 onward. G1 and G2 are identical through lines 1–44; only the call order of free(buf) and qsort() in lines 45–46 differs. G1 ( free →qsort ) risks use-after-free if intermediate results remain in buf ; G2 ( qsort →free ) is safer. G3 differs in variable declarations from line 39 onward ( int k vs. int len ), but all are dead code and execution results are identical across the three groups.                                                                                                                                                  
+
+> Listing 1. Common portion of the three groups (lines 1–38)
+> int compare_ints(const void *a, const void *b) {int ia =*(const int *)a; int ib =*(const int *)b; if (ia <ib) return -1; if (ia >ib) return 1; return 0; }void sort_mixed_array(int *arr, int n) {int *buf =(int *)malloc(n * sizeof(int)); if (!buf) return; int *run_start =arr; int run_len =1; int i; for (i =1; i<n; i++) {/* run detection */ if (arr[i] <arr[i-1]) {/* ... copy to buf +partial qsort ... */ run_len =1; continue; }run_len++; }/* last run also copied to buf +qsort */ int *dst =arr; int *src =buf;
+> Listing 2. G1 (219): dead code followed by free →qsort
+> int k=0; /* dead code below */ int run_count =0; int runs[10000]; /* unused */
+> free(buf); /* G1: free first */ qsort(arr, n, sizeof(int), compare_ints); }
+> Listing 3. G2 (201): dead code followed by qsort →free
+> int k=0; /* same dead code */ int run_count =0; int runs[10000];
+> qsort(arr, n, sizeof(int), compare_ints);
+> free(buf); /* G2: free after */ }
+> Listing 4. G3 (40): different dead-code variables
+> int len =0;
+> int prev =-2147483648; int i_prev =0; int k=0; qsort(arr, n, sizeof(int), compare_ints); free(buf); }
+
+Within each group, function names (compare_ints ,
+
+sort_mixed_array ) and variable names are identical across all nodes, and 99.6% of differences consist of comments and blank lines. These results indicate that in LLM code generation: (1) natural-language text in comments triggers dead-code structure selection, (2) variable-name selection for identical code structures is highly deterministic, and (3) even when conditions are explicitly stated in the prompt, the model tends to converge to a qsort fallback. 
+
+E. Computational Explosion of Branching Trees and Whites-pace Dominance 
+
+In tree search, increasing Ptarget causes the branching tree to diverge exponentially. The critical threshold at temperature 
+
+T =0.7 is Pc ≈ 0.36 ; at P =0.40, 5,745 forks had been generated by the time 851 completed codes were obtained (branching ratio ≈ 6). The primary driver of this explosion is branching that produces no difference in execution results, caused by new-lines, whitespace, and comments. Of the 851 completed codes at P =0.40, 691 compiled successfully, forming 189 O0-equivalent groups; the top three groups (219, 201, 40 nodes) account for 67% of the total. Within these groups, O0 assem-bly is identical. Exhaustive classification of differences within the largest group (219 nodes) shows that 88.4% are comment-wording variations and 11.2% are blank-line presence/absence, yielding 99.6% comments or blank lines overall. Notably, comments are generated despite the prompt specifying “Do not include comments.” This is attributed to the thinking skip causing the model to output design reasoning—which would normally appear in the <think> block—as post-code comments (12–30 lines). Execution-code differences account for only 0.04%; virtually identical code was generated in large quantities. Listing 5 shows a typical example. A node with 3 comment lines (57 lines total) and a node with 112 comment lines (168 lines total) become identical 47-line code after comment removal. The 112-line version contains thinking-style self-questioning such as “Actually, the most efficient...”, “Let’s just use qsort.”, “Is there a better way?”, and “Okay, the most practical solution...”, suggesting it is substitute output for the 
+
+<think> block.                                                                                       
+
+> Listing 5. Typical comment difference within the same O0 group (G1)
+> === Node A(57 lines =code 47 +comment 3) === ... // Simplified approach: Since 80% is sorted, // just use stdlib qsort.
+> free(buf);
+> qsort(arr, n, sizeof(int), compare_ints); === Node B(168 lines =code 47 +comment 112) === ... // Actually, the most efficient...is to use qsort // But if we want to be smarter: // 1. Find the unsorted segments. // Let’s just use qsort. // Is there abetter way? // Okay, the most practical solution... is to use // Let’s just use qsort.
+> free(buf);
+> qsort(arr, n, sizeof(int), compare_ints); === After comment removal: IDENTICAL (47 lines) ===
+
+This problem also arises in beam search: many of the K
+
+beam slots are consumed by whitespace and newline variants, preventing allocation of beam budget to semantically distinct code branches. AST normalization or compile-equivalence-based beam pruning could serve as effective countermeasures. 
+
+F. Limitations and Future Work 
+
+(1) This experiment uses only one C code generation task; generality to natural language or other programming languages is unverified. (2) The tree search at Ptarget =0.40 diverged at temperature T =0.7 (branching ratio ≈ 6) and did not reach exhaustive exploration. The 851 completed codes reached </function> within the 30-minute timeout and represent partial exploration. The critical threshold is estimated at Pc ≈ 0.36 . (3) Alignment coverage is approximately 26%, and token-sequence overlap between nodes at different depths is limited. (4) Results are from a single model; reproducibil-ity on different MoE architectures is left for future work. (5) No verification has been performed translating routing locality into actual offloading throughput. (6) Thinking skip (<think> block emptied before generation) was applied, a special condition under which the model’s reasoning process leaks into comments. Under standard generation with thinking enabled, reasoning leakage into comments may be suppressed, potentially improving branching diversity. However, enabling thinking causes each request to generate a distinct reasoning path almost immediately, shortening the shared prefix and reducing KV cache sharing—a trade-off. VI. C ONCLUSION 
+
+We systematically measured MoE expert routing bias across multiple generation sequences branched from a shared prefix via tree-search-based generation and compiler-output-based alignment. Inter-request expert-set overlap reaches 11 × random even at positions where different tokens were generated, demon-strating that the shared prefix leaves a strong correlation in downstream expert activation. Routing locality exhibits a layer-dependent crossing struc-ture: token identity dominates in the input layers, while context-dependent routing peaks in the middle layers (diff-tok: 14 × random). This result provides material for a layer-wise reinterpretation of the “context-independent routing” claim of OpenMoE. In tree-search code generation, 67% of successfully com-piled codes concentrate in the top three O0-equivalent groups, and 99.6% of within-group differences are execution-equivalent redundancy caused by comments and blank lines. We quantitatively demonstrated that in top-P search and beam search, resources are not allocated to semantically distinct code branches. Runtime AST-equivalence-based pruning could serve as an effective countermeasure. Furthermore, we observed that differences in leaked rea-soning comments trigger divergent dead-code structures down-stream, even when comment generation is explicitly prohibited in the prompt. This demonstrates that diversity in LLM code generation depends on natural-language variation. These findings provide implications for MoE expert offload-ing strategies and highlight the challenges of ensuring diversity in LLM code generation. ACKNOWLEDGMENT 
+
+This work was supported by the Joint Usage/Research Center for Interdisciplinary Large-scale Information Infras-tructures (JHPCN) and the High-Performance Computing In-frastructure (HPCI) under Project IDs jh250015 and jh260017. It was also partially supported by JSPS KAKENHI Grant Number JP24K02945. In addition, this work was supported by the JST Research and Development Program for Next-generation Edge AI Semiconductors (Grant Number JPM-JES2511). REFERENCES [1] L. Zheng, L. Yin, Z. Xie et al. , “SGLang: Efficient execution of struc-tured language model programs,” in Advances in Neural Information Processing Systems (NeurIPS) , 2024, arXiv preprint arXiv:2312.07104. [2] DeepSeek-AI, “DeepSeek-V3 technical report,” arXiv preprint arXiv:2412.19437 , 2024. [3] Q. Team, “Qwen3.5 model family,” https://huggingface.co/Qwen/ Qwen3.5-35B-A3B, 2025. [4] F. Xue et al. , “OpenMoE: An early effort on open mixture-of-experts language models,” in Proceedings of the 41st International Conference on Machine Learning (ICML) , ser. Proceedings of Machine Learning Research, vol. 235, 2024, pp. 55 625–55 655, arXiv:2402.01739. [5] Y. Song, Z. Mi, H. Xie, and H. Chen, “PowerInfer: Fast large lan-guage model serving with a consumer-grade GPU,” arXiv preprint arXiv:2312.12456 , 2024, sOSP 2024. [6] L. Xue et al. , “MoE-Infinity: Offloading-efficient MoE model serving,” 
+
+arXiv preprint arXiv:2401.14361 , 2024. [7] H. Yu, X. Cui, H. Zhang, H. Wang, and H. Wang, “Taming latency-memory trade-off in MoE-based LLM serving via fine-grained expert offloading,” in Proceedings of the European Conference on Computer Systems (EuroSys) , 2026, arXiv preprint arXiv:2502.05370. [8] D. Vankov, N. Ivkin, K. Ulrich, X. Song, A. Khetan, and G. Karypis, “XShare: Collaborative in-batch expert sharing for faster MoE infer-ence,” arXiv preprint arXiv:2602.07265 , 2026. [9] K. Zheng et al. , “Unveiling language routing isolation in multilingual MoE models for interpretable subnetwork adaptation,” arXiv preprint arXiv:2604.03592 , 2026. [10] A. Nuriyev and G. Kulp, “Expert selections in MoE models reveal (almost) as much as text,” arXiv preprint arXiv:2602.04105 , 2026. [11] J. Juravsky et al. , “Hydragen: High-throughput LLM inference with shared prefixes,” in Proceedings of ICML , 2024, arXiv preprint arXiv:2402.05099.
